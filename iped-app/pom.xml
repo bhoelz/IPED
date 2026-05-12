@@ -23,6 +23,31 @@
         </dependency>
         <dependency>
             <groupId>iped</groupId>
+            <artifactId>iped-tasks-transcript</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-tasks-image</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-tasks-storage-index</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-tasks-graph</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-tasks-forensics</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
             <artifactId>iped-geo</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -685,24 +710,6 @@
                                 <manifestEntries>
                                     <SplashScreen-Image>iped/app/splash/iped.png</SplashScreen-Image>
                                 </manifestEntries>                                
-                            </archive>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>create-webapi-jar</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <finalName>iped-webapi</finalName>
-                            <outputDirectory>${lib.dir}</outputDirectory>
-                            <forceCreation>true</forceCreation>
-                            <archive>
-                                <addMavenDescriptor>false</addMavenDescriptor>
-                                <manifest>
-                                    <addClasspath>true</addClasspath>
-                                    <mainClass>iped.engine.webapi.Main</mainClass>
-                                </manifest>
                             </archive>
                         </configuration>
                     </execution>
