@@ -1,0 +1,723 @@
+openapi: 3.1.0
+info:
+  title: IPED Web API - Phase 1 Initial Contracts
+  version: 0.1.0-phase1
+  description: >
+    Initial API contract baseline for web modernization (Phase 1),
+    focused on case/session, search/results, item data, viewer sessions,
+    renditions and async jobs.
+servers:
+  - url: https://api.iped.local
+tags:
+  - name: Cases
+  - name: Search
+  - name: Items
+  - name: Viewer
+  - name: Jobs
+paths:
+  /cases/{caseId}/sessions:
+    post:
+      tags: [Cases]
+      summary: Create analysis session for case
+      operationId: createCaseSession
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseSessionCreateRequest'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseSession'
+  /cases/{caseId}/metadata:
+    get:
+      tags: [Cases]
+      summary: Get case metadata
+      operationId: getCaseMetadata
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      responses:
+        '200':
+          description: Case metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseMetadata'
+  /cases/{caseId}/search:
+    post:
+      tags: [Search]
+      summary: Start search query
+      operationId: createSearch
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchCreateRequest'
+      responses:
+        '202':
+          description: Search accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchCreateResponse'
+  /cases/{caseId}/search/{searchId}/results:
+    get:
+      tags: [Search]
+      summary: Get search results page
+      operationId: getSearchResults
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/searchId'
+      responses:
+        '200':
+          description: Search results page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultsPage'
+  /cases/{caseId}/search/{searchId}/facets:
+    post:
+      tags: [Search]
+      summary: Compute or refresh facets
+      operationId: computeSearchFacets
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/searchId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchFacetsRequest'
+      responses:
+        '200':
+          description: Facets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchFacetsResponse'
+  /cases/{caseId}/items/{itemId}:
+    get:
+      tags: [Items]
+      summary: Get item metadata and summary
+      operationId: getItem
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/itemId'
+      responses:
+        '200':
+          description: Item details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDetails'
+  /cases/{caseId}/items/{itemId}/relationships:
+    get:
+      tags: [Items]
+      summary: Get item relationships
+      operationId: getItemRelationships
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/itemId'
+      responses:
+        '200':
+          description: Item relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemRelationships'
+  /cases/{caseId}/items/{itemId}/renditions/text:
+    get:
+      tags: [Items]
+      summary: Get text rendition
+      operationId: getTextRendition
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/itemId'
+      responses:
+        '200':
+          description: Text rendition
+          content:
+            text/plain:
+              schema:
+                type: string
+  /cases/{caseId}/items/{itemId}/renditions/html:
+    get:
+      tags: [Items]
+      summary: Get HTML rendition
+      operationId: getHtmlRendition
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/itemId'
+      responses:
+        '200':
+          description: HTML rendition
+          content:
+            text/html:
+              schema:
+                type: string
+  /cases/{caseId}/items/{itemId}/renditions/image:
+    get:
+      tags: [Items]
+      summary: Get image rendition
+      operationId: getImageRendition
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/itemId'
+      responses:
+        '200':
+          description: Image rendition
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+  /cases/{caseId}/items/{itemId}/renditions/pdf:
+    get:
+      tags: [Items]
+      summary: Get PDF rendition
+      operationId: getPdfRendition
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/itemId'
+      responses:
+        '200':
+          description: PDF rendition
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+  /cases/{caseId}/items/{itemId}/bytes:
+    get:
+      tags: [Items]
+      summary: Stream raw bytes (supports range requests)
+      operationId: getItemBytes
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/itemId'
+      responses:
+        '206':
+          description: Partial content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /cases/{caseId}/viewer/sessions:
+    post:
+      tags: [Viewer]
+      summary: Open viewer session for item
+      operationId: openViewerSession
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewerOpenRequest'
+      responses:
+        '201':
+          description: Viewer session opened
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewerOpenResponse'
+  /cases/{caseId}/viewer/sessions/{viewerSessionId}/search:
+    post:
+      tags: [Viewer]
+      summary: Search inside current viewer content
+      operationId: searchInViewerSession
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/viewerSessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewerSearchRequest'
+      responses:
+        '200':
+          description: Viewer search result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewerSearchResponse'
+  /cases/{caseId}/viewer/sessions/{viewerSessionId}/hits:navigate:
+    post:
+      tags: [Viewer]
+      summary: Navigate to next or previous hit
+      operationId: navigateViewerHit
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - $ref: '#/components/parameters/viewerSessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewerNavigateHitRequest'
+      responses:
+        '200':
+          description: Updated hit state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewerHitState'
+  /jobs/export:
+    post:
+      tags: [Jobs]
+      summary: Create export job
+      operationId: createExportJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportJobRequest'
+      responses:
+        '202':
+          description: Export job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAcceptedResponse'
+  /jobs/{jobId}:
+    get:
+      tags: [Jobs]
+      summary: Get job status
+      operationId: getJobStatus
+      parameters:
+        - $ref: '#/components/parameters/jobId'
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+
+components:
+  parameters:
+    caseId:
+      name: caseId
+      in: path
+      required: true
+      schema:
+        type: string
+    searchId:
+      name: searchId
+      in: path
+      required: true
+      schema:
+        type: string
+    itemId:
+      name: itemId
+      in: path
+      required: true
+      schema:
+        type: string
+    viewerSessionId:
+      name: viewerSessionId
+      in: path
+      required: true
+      schema:
+        type: string
+    jobId:
+      name: jobId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    CaseSessionCreateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+        clientInfo:
+          type: object
+          additionalProperties: true
+    CaseSession:
+      type: object
+      additionalProperties: false
+      required: [sessionId, caseId, createdAt]
+      properties:
+        sessionId:
+          type: string
+        caseId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        userId:
+          type: string
+    CaseMetadata:
+      type: object
+      additionalProperties: true
+      properties:
+        caseId:
+          type: string
+        name:
+          type: string
+        evidenceCount:
+          type: integer
+        indexedAt:
+          type: string
+          format: date-time
+    SearchCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [query]
+      properties:
+        query:
+          type: string
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterClause'
+        sort:
+          type: array
+          items:
+            $ref: '#/components/schemas/SortClause'
+        page:
+          $ref: '#/components/schemas/PageRequest'
+    SearchCreateResponse:
+      type: object
+      additionalProperties: false
+      required: [searchId, status]
+      properties:
+        searchId:
+          type: string
+        status:
+          type: string
+          enum: [accepted, running, ready]
+    SearchResultsPage:
+      type: object
+      additionalProperties: false
+      required: [searchId, total, page, items]
+      properties:
+        searchId:
+          type: string
+        total:
+          type: integer
+        page:
+          $ref: '#/components/schemas/PageResponse'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultItem'
+    SearchFacetsRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        fields:
+          type: array
+          items:
+            type: string
+    SearchFacetsResponse:
+      type: object
+      additionalProperties: false
+      required: [facets]
+      properties:
+        facets:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetResult'
+    SearchResultItem:
+      type: object
+      additionalProperties: true
+      required: [itemId]
+      properties:
+        itemId:
+          type: string
+        sourceId:
+          type: string
+        score:
+          type: number
+          format: float
+    ItemDetails:
+      type: object
+      additionalProperties: true
+      required: [itemId]
+      properties:
+        itemId:
+          type: string
+        path:
+          type: string
+        mediaType:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+    ItemRelationships:
+      type: object
+      additionalProperties: false
+      required: [itemId, relationships]
+      properties:
+        itemId:
+          type: string
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relationship'
+    Relationship:
+      type: object
+      additionalProperties: false
+      required: [type, targetItemId]
+      properties:
+        type:
+          type: string
+        targetItemId:
+          type: string
+        label:
+          type: string
+    ViewerOpenRequest:
+      type: object
+      additionalProperties: false
+      required: [itemId, mimeType]
+      properties:
+        itemId:
+          type: string
+        mimeType:
+          type: string
+        highlightTerms:
+          type: array
+          items:
+            type: string
+        preferredViewerId:
+          type: string
+          nullable: true
+        context:
+          type: object
+          additionalProperties: false
+          properties:
+            queryId:
+              type: string
+              nullable: true
+            selectedRow:
+              type: integer
+    ViewerOpenResponse:
+      type: object
+      additionalProperties: false
+      required: [viewerSessionId, viewerId, capabilities]
+      properties:
+        viewerSessionId:
+          type: string
+        viewerId:
+          type: string
+        capabilities:
+          $ref: '#/components/schemas/ViewerCapabilities'
+        renditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RenditionLink'
+    ViewerCapabilities:
+      type: object
+      additionalProperties: false
+      required: [search, hitsMode, toolbar]
+      properties:
+        search:
+          type: boolean
+        hitsMode:
+          type: string
+          enum: [none, external, internal]
+        toolbar:
+          $ref: '#/components/schemas/ViewerToolbarState'
+    ViewerToolbarState:
+      type: object
+      additionalProperties: false
+      required: [supported, visible]
+      properties:
+        supported:
+          type: boolean
+        visible:
+          type: boolean
+    RenditionLink:
+      type: object
+      additionalProperties: false
+      required: [kind, url]
+      properties:
+        kind:
+          type: string
+          enum: [text, html, image, pdf, bytes]
+        url:
+          type: string
+    ViewerSearchRequest:
+      type: object
+      additionalProperties: false
+      required: [term]
+      properties:
+        term:
+          type: string
+        matchMode:
+          type: string
+          enum: [contains, exact, regex]
+          default: contains
+        caseSensitive:
+          type: boolean
+          default: false
+    ViewerSearchResponse:
+      type: object
+      additionalProperties: false
+      required: [totalHits, currentHit]
+      properties:
+        totalHits:
+          type: integer
+        currentHit:
+          type: integer
+        hitRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/HitRange'
+    ViewerNavigateHitRequest:
+      type: object
+      additionalProperties: false
+      required: [direction]
+      properties:
+        direction:
+          type: string
+          enum: [next, prev]
+        wrap:
+          type: boolean
+          default: false
+    ViewerHitState:
+      type: object
+      additionalProperties: false
+      required: [totalHits, currentHit]
+      properties:
+        totalHits:
+          type: integer
+        currentHit:
+          type: integer
+    HitRange:
+      type: object
+      additionalProperties: false
+      required: [start, end]
+      properties:
+        start:
+          type: integer
+        end:
+          type: integer
+        page:
+          type: integer
+    ExportJobRequest:
+      type: object
+      additionalProperties: false
+      required: [caseId]
+      properties:
+        caseId:
+          type: string
+        itemIds:
+          type: array
+          items:
+            type: string
+        format:
+          type: string
+          enum: [zip, csv, report]
+          default: zip
+    JobAcceptedResponse:
+      type: object
+      additionalProperties: false
+      required: [jobId, status]
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+          enum: [accepted, running]
+    JobStatus:
+      type: object
+      additionalProperties: false
+      required: [jobId, status]
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+          enum: [accepted, running, completed, failed, cancelled]
+        progress:
+          type: number
+          format: float
+        message:
+          type: string
+        outputUrl:
+          type: string
+    FilterClause:
+      type: object
+      additionalProperties: false
+      required: [field, op]
+      properties:
+        field:
+          type: string
+        op:
+          type: string
+          enum: [eq, ne, in, gt, gte, lt, lte, contains]
+        value: {}
+    SortClause:
+      type: object
+      additionalProperties: false
+      required: [field, direction]
+      properties:
+        field:
+          type: string
+        direction:
+          type: string
+          enum: [asc, desc]
+    FacetResult:
+      type: object
+      additionalProperties: false
+      required: [field, buckets]
+      properties:
+        field:
+          type: string
+        buckets:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetBucket'
+    FacetBucket:
+      type: object
+      additionalProperties: false
+      required: [value, count]
+      properties:
+        value:
+          type: string
+        count:
+          type: integer
+    PageRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        offset:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+    PageResponse:
+      type: object
+      additionalProperties: false
+      required: [offset, limit]
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
