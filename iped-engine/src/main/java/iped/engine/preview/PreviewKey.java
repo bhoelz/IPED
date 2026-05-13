@@ -34,7 +34,7 @@ public class PreviewKey {
         }
 
         // use ufed ID if it is a decoded data (without hash)
-        String ufedId = item.getMetadata().get(ExtraProperties.UFED_ID);
+        String ufedId = item.getMetadataValue(ExtraProperties.UFED_ID);
         if (StringUtils.isNotBlank(ufedId)) {
             try {
                 return new PreviewKey(Hex.decodeHex(ufedId.replace("-", "")));
@@ -63,3 +63,4 @@ public class PreviewKey {
         return buffer.hashCode();
     }
 }
+

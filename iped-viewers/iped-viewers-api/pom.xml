@@ -5,9 +5,9 @@
     <artifactId>iped-viewers</artifactId>
     <version>4.4.0-SNAPSHOT</version>
   </parent>
-  
+
   <artifactId>iped-viewers-api</artifactId>
-  
+
 	<dependencies>
         <dependency>
             <groupId>org.dockingframes</groupId>
@@ -24,6 +24,12 @@
             <artifactId>RoaringBitmap</artifactId>
             <version>0.9.39</version>
         </dependency>
-	</dependencies>
-  
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>10.4.0</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
 </project>

@@ -695,8 +695,8 @@ public class MetadataUtil {
      * is executed.
      */
     public static boolean isAnimationImage(IItem item) {
-        return MetadataUtil.isImageSequence(item.getMediaType().toString()) ||
-                item.getMetadata().get(ExtraProperties.ANIMATION_FRAMES_PROP) != null;
+        return MetadataUtil.isImageSequence(item.getMediaTypeString()) ||
+                item.getMetadataValue(ExtraProperties.ANIMATION_FRAMES_PROP) != null;
     }
 
 
@@ -898,3 +898,6 @@ public class MetadataUtil {
         }
     }
 }
+
+
+

@@ -274,8 +274,8 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
             metadata.set(Metadata.CONTENT_LENGTH, len.toString());
         metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, evidence.getName());
         if (evidence.getMediaType() != null) {
-            metadata.set(Metadata.CONTENT_TYPE, evidence.getMediaType().toString());
-            metadata.set(StandardParser.INDEXER_CONTENT_TYPE, evidence.getMediaType().toString());
+            metadata.set(Metadata.CONTENT_TYPE, evidence.getMediaTypeString());
+            metadata.set(StandardParser.INDEXER_CONTENT_TYPE, evidence.getMediaTypeString());
         }
         if (evidence.isTimedOut()) {
             metadata.set(StandardParser.INDEXER_TIMEOUT, "true"); //$NON-NLS-1$
@@ -326,7 +326,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
                 if (task != null && task.extractEmbedded) {
                     containersBeingExpanded.decrementAndGet();
                 }
-                String parserName = getParserName(parser, evidence.getMetadata().get(Metadata.CONTENT_TYPE));
+                String parserName = getParserName(parser, evidence.getMetadataValue(Metadata.CONTENT_TYPE));
                 long st = task == null ? 0 : task.subitemsTime;
                 long diff = System.nanoTime() / 1000 - start;
                 if (diff < st) {
@@ -461,7 +461,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
             }
         }
 
-        String prevMediaType = evidence.getMediaType().toString();
+        String prevMediaType = evidence.getMediaTypeString();
         String parsedMediaType = metadata.get(StandardParser.INDEXER_CONTENT_TYPE);
         if (!prevMediaType.equals(parsedMediaType)) {
             MediaType mediaType = MediaType.parse(parsedMediaType);
@@ -475,7 +475,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
         }
         metadata.remove(BasicProps.HASCHILD);
 
-        String compressRatio = evidence.getMetadata().get(EntropyTask.COMPRESS_RATIO);
+        String compressRatio = evidence.getMetadataValue(EntropyTask.COMPRESS_RATIO);
         if (compressRatio != null) {
             evidence.getMetadata().remove(EntropyTask.COMPRESS_RATIO);
             evidence.setExtraAttribute(EntropyTask.COMPRESS_RATIO, Double.valueOf(compressRatio));
@@ -886,3 +886,6 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
         }
     }
 }
+
+
+

@@ -5,19 +5,15 @@
  */
 package iped.data;
 
-import java.awt.Color;
+import iped.search.SearchResult;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.KeyStroke;
-
-import iped.search.SearchResult;
 
 /**
  *
@@ -48,7 +44,7 @@ public interface IBookmarks extends Serializable {
 
     String getBookmarkName(int bookmarkId);
 
-    public List<String> getBookmarkList(int itemId);
+    List<String> getBookmarkList(int itemId);
 
     int getLastId();
 
@@ -96,17 +92,17 @@ public interface IBookmarks extends Serializable {
     void setBookmarkColor(int bookmarkId, Color color);
 
     Color getBookmarkColor(int bookmarkId);
-    
+
     Set<Color> getUsedColors();
-    
+
     void setBookmarkKeyStroke(int bookmarkId, KeyStroke key);
 
     KeyStroke getBookmarkKeyStroke(int bookmarkId);
-    
+
     void removeBookmarkKeyStroke(int bookmarkId);
-    
+
     int getBookmarkCount(int bookmarkId);
-    
+
     void setInReport(int bookmarkId, boolean inReport);
 
     boolean isInReport(int bookmarkId);

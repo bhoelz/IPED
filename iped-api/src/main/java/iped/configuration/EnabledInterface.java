@@ -2,8 +2,8 @@ package iped.configuration;
 
 public interface EnabledInterface {
 
-    public boolean isEnabled();
+    boolean isEnabled();
 
-    public void setEnabled(boolean enabled);
+    void setEnabled(boolean enabled);
 
 }

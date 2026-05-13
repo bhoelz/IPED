@@ -47,7 +47,7 @@ public class ParentTableModel extends BaseTableModel {
         if (refDoc != null) {
             IItem item = IndexItem.getItem(refDoc, App.get().appCase, false);
             if (item != null) {
-                String parentViewPosition = item.getMetadata().get(ExtraProperties.PARENT_VIEW_POSITION);
+                String parentViewPosition = item.getMetadataValue(ExtraProperties.PARENT_VIEW_POSITION);
                 if (parentViewPosition != null) {
                     App.get().getViewerController().getHtmlLinkViewer().setElementIDToScroll(parentViewPosition);
                 }
@@ -82,3 +82,4 @@ public class ParentTableModel extends BaseTableModel {
         App.get().parentDock.setTitleText(Messages.getString("ParentTableModel.ParentCount"));
     }
 }
+

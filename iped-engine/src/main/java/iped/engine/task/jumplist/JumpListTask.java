@@ -59,7 +59,7 @@ public class JumpListTask extends AbstractTask {
         if (evidence.getMediaType().equals(AUTOMATIC_DESTINATIONS_ENTRY_MIME)
                 || evidence.getMediaType().equals(CUSTOM_DESTINATIONS_ENTRY_MIME)) {
 
-            if (evidence.getMetadata().get(JUMPLIST_META_PREFIX + "appID") != null) {
+            if (evidence.getMetadataValue(JUMPLIST_META_PREFIX + "appID") != null) {
                 return;
             }
 
@@ -93,7 +93,7 @@ public class JumpListTask extends AbstractTask {
 
             List<String> appIDs = AppIDCalculator.calculateAppIDs(evidence.getPath());
 
-            if (evidence.getMetadata().get(JUMPLIST_PROGRAM_APP_IDS) == null) {
+            if (evidence.getMetadataValue(JUMPLIST_PROGRAM_APP_IDS) == null) {
                 for (String appID : appIDs) {
 
                     // add appID
@@ -106,3 +106,4 @@ public class JumpListTask extends AbstractTask {
         }
     }
 }
+

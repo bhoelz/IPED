@@ -120,7 +120,7 @@ public class TransmissionResumeParser extends AbstractParser {
             if (torrentItem != null) {
                 // Corresponding torrent was found
                 metadata.add(ExtraProperties.LINKED_ITEMS, BasicProps.HASH + ":" + torrentItem.getHash());
-                String[] values = torrentItem.getMetadata().getValues(ExtraProperties.LINKED_ITEMS);
+                String[] values = torrentItem.getMetadataValues(ExtraProperties.LINKED_ITEMS);
                 if (values != null) {
                     long uploaded = dict.getLong("uploaded");
                     boolean isShared = uploaded > 0;
@@ -135,7 +135,7 @@ public class TransmissionResumeParser extends AbstractParser {
                         }
                     }
                 }
-                String v = torrentItem.getMetadata().get(TorrentFileParser.TORRENT_FILES_FOUND_IN_CASE);
+                String v = torrentItem.getMetadataValue(TorrentFileParser.TORRENT_FILES_FOUND_IN_CASE);
                 if (v != null && !v.isBlank()) {
                     try {
                         filesFoundInCase = Integer.parseInt(v);
@@ -222,3 +222,4 @@ public class TransmissionResumeParser extends AbstractParser {
         return null;
     }
 }
+

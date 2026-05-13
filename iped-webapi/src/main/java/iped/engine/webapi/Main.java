@@ -2,16 +2,16 @@ package iped.engine.webapi;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Collections;
 
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.eclipse.jetty.server.Server;
+import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.json.simple.parser.ParseException;
 
-import io.swagger.jaxrs.config.BeanConfig;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 import iped.engine.Version;
 
 /**
@@ -20,41 +20,27 @@ import iped.engine.Version;
  */
 public class Main {
     /**
-     * Starts Grizzly HTTP server exposing JAX-RS resources defined in this
+     * Starts Jetty HTTP server exposing JAX-RS resources defined in this
      * application.
      * 
-     * @return Grizzly HTTP server.
+     * @return Jetty HTTP server.
      * @throws IOException
      * @throws ParseException
      */
-    public static HttpServer startServer(String host, int port, String urlToAskSources)
-            throws IOException, ParseException {
+    public static Server startServer(String host, int port, String urlToAskSources)
+            throws IOException {
         // create a resource config that scans for JAX-RS resources and providers
         // in gpinf.api package
         String resources = Main.class.getPackageName();
-        BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion(Version.APP_VERSION);
-        beanConfig.setSchemes(new String[] { "http" });
-        beanConfig.setBasePath("/");
-        beanConfig.setResourcePackage(resources);
-        beanConfig.setScan(true);
+        SwaggerConfiguration swaggerConfiguration = new SwaggerConfiguration()
+                .resourcePackages(Collections.singleton(resources))
+                .openAPI(new OpenAPI().info(new Info().title("IPED Web API").version(Version.APP_VERSION)));
         final ResourceConfig rc = new ResourceConfig().packages(resources)
-                .register(io.swagger.jaxrs.listing.ApiListingResource.class)
-                .register(io.swagger.jaxrs.listing.SwaggerSerializers.class);
+                .register(new OpenApiResource().openApiConfiguration(swaggerConfiguration));
 
-        Sources.init(urlToAskSources);
-
-        // https://stackoverflow.com/questions/26546373/showing-grizzly-exceptions-in-eclipse-console
-        Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
-        l.setLevel(Level.FINE);
-        l.setUseParentHandlers(false);
-        ConsoleHandler ch = new ConsoleHandler();
-        ch.setLevel(Level.ALL);
-        l.addHandler(ch);
-
-        // create and start a new instance of grizzly http server
+        // create and start a new instance of jetty http server
         // exposing the Jersey application at BASE_URI
-        return GrizzlyHttpServerFactory.createHttpServer(URI.create("http://" + host + ":" + port), rc);
+        return JettyHttpContainerFactory.createServer(URI.create("http://" + host + ":" + port), rc);
     }
 
     /**
@@ -82,11 +68,6 @@ public class Main {
                 printHelp();
                 System.exit(-1);
             }
-        }
-        if (urlToAskSources == null) {
-            System.err.println("missing --sources option");
-            printHelp();
-            System.exit(-1);
         }
         startServer(host, port, urlToAskSources);
         System.out.println(String.format("Jersey app started with WADL available at \n%sapplication.wadl\n",

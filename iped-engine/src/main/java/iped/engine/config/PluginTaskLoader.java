@@ -1,0 +1,83 @@
+package iped.engine.config;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import iped.engine.task.AbstractTask;
+import iped.tasks.spi.TaskDescriptor;
+import iped.tasks.spi.TaskProvider;
+
+class PluginTaskLoader {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginTaskLoader.class);
+
+    private static final List<String> PARENT_FIRST_PREFIXES = List.of("java.", "javax.", "jdk.", "sun.", "iped.tasks.spi.", "iped.configuration.", "iped.engine.");
+
+    TaskRegistry load(PluginConfig pluginConfig) {
+        Map<String, TaskRegistry.TaskRegistration> registrations = new HashMap<>();
+        List<String> skippedProviders = new ArrayList<>();
+        List<String> loadedProviders = new ArrayList<>();
+
+        for (File pluginCandidate : pluginConfig.getPluginJars()) {
+            if (!pluginCandidate.getName().endsWith(".jar")) {
+                continue;
+            }
+
+            try {
+                URL[] urls = new URL[] { pluginCandidate.toURI().toURL() };
+                ClassLoader parent = TaskProvider.class.getClassLoader();
+                try (ChildFirstClassLoader classLoader = new ChildFirstClassLoader(urls, parent, PARENT_FIRST_PREFIXES)) {
+                    ServiceLoader<TaskProvider> loader = ServiceLoader.load(TaskProvider.class, classLoader);
+                    for (TaskProvider provider : loader) {
+                        registerProvider(registrations, loadedProviders, provider, pluginCandidate.getName());
+                    }
+                }
+            } catch (Exception e) {
+                skippedProviders.add(pluginCandidate.getName() + ": " + e.getMessage());
+                LOGGER.warn("Failed to load task providers from plugin {}", pluginCandidate.getAbsolutePath(), e);
+            }
+        }
+
+        if (!loadedProviders.isEmpty()) {
+            LOGGER.info("Loaded {} task providers from plugins: {}", loadedProviders.size(), loadedProviders);
+        }
+        if (!skippedProviders.isEmpty()) {
+            LOGGER.warn("Skipped {} task providers/plugins: {}", skippedProviders.size(), skippedProviders);
+        }
+
+        return new TaskRegistry(registrations, loadedProviders, skippedProviders);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void registerProvider(Map<String, TaskRegistry.TaskRegistration> registrations, List<String> loadedProviders, TaskProvider provider,
+            String source) throws IOException {
+        TaskDescriptor descriptor = provider.descriptor();
+        String taskId = descriptor.id();
+
+        if (registrations.containsKey(taskId)) {
+            throw new IOException("Duplicate task id '" + taskId + "' provided by plugin " + source);
+        }
+
+        TaskRegistry.TaskFactory factory = () -> {
+            Object task = provider.createTask();
+            if (!(task instanceof AbstractTask)) {
+                throw new IllegalStateException("TaskProvider '" + provider.getClass().getName()
+                        + "' returned non-AbstractTask instance: " + task.getClass().getName());
+            }
+            return (AbstractTask) task;
+        };
+
+        TaskRegistry.TaskRegistration registration = TaskRegistry.TaskRegistration.provider(taskId, descriptor, factory, source, provider.getClass().getName());
+        registrations.put(taskId, registration);
+        loadedProviders.add(provider.getClass().getName() + "@" + source);
+    }
+}

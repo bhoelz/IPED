@@ -358,10 +358,10 @@ public class ReportGenerator {
                                     out.println("</a><br>"); //$NON-NLS-1$
                                 }
 
-                                String transcription = mediaItem.getMetadata().get(ExtraProperties.TRANSCRIPT_ATTR);
+                                String transcription = mediaItem.getMetadataValue(ExtraProperties.TRANSCRIPT_ATTR);
                                 if (transcription != null) {
                                     out.print(Messages.getString("ReportGenerator.TranscriptionTitle")); //$NON-NLS-1$
-                                    String confidence = mediaItem.getMetadata().get(ExtraProperties.CONFIDENCE_ATTR);
+                                    String confidence = mediaItem.getMetadataValue(ExtraProperties.CONFIDENCE_ATTR);
                                     if (confidence != null) {
                                         float score = Float.parseFloat(confidence) * 100;
                                         out.print(" [" + (int) score + "%]"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -508,3 +508,4 @@ public class ReportGenerator {
         out.println(interpolator.replace(template));
     }
 }
+

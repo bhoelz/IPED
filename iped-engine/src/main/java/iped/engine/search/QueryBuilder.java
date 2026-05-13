@@ -54,7 +54,7 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.IndexTaskConfig;
 import iped.engine.localization.CategoryLocalization;
 import iped.engine.lucene.PublicPointRangeQuery;
-import iped.engine.task.index.IndexItem;
+import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.localization.LocalizedProperties;
@@ -393,7 +393,7 @@ public class QueryBuilder {
             IndexTaskConfig indexConfig = ConfigurationManager.get().findObject(IndexTaskConfig.class);
             // removes diacritics, StandardQueryParser doesn't remove them from WildcardQueries
             if (analyzer != spaceAnalyzer && indexConfig.isConvertCharsToAscii()) {
-                texto = IndexItem.normalize(texto, false);
+                texto = IndexMetadata.normalize(texto, false);
             }
 
             try {
@@ -455,7 +455,7 @@ public class QueryBuilder {
         PointsConfig configDouble = new PointsConfig(nf, Double.class);
 
         for (String field : LoadIndexFields.getFields(Arrays.asList(ipedCase))) {
-            Class<?> type = IndexItem.getMetadataTypes().get(field);
+            Class<?> type = IndexMetadata.getMetadataTypes().get(field);
             if (type == null)
                 continue;
             if (type.equals(Integer.class) || type.equals(Short.class) || type.equals(Byte.class))
@@ -481,3 +481,4 @@ public class QueryBuilder {
         return pointsConfigMap;
     }
 }
+

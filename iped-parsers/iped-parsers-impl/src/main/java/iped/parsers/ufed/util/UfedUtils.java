@@ -18,6 +18,10 @@ public class UfedUtils {
         return readUfedMetadata(item.getMetadata(), property);
     }
 
+    public static String readUfedMetadata(Object metadata, String property) {
+        return readUfedMetadata((Metadata) metadata, property);
+    }
+
     public static List<String> readUfedMetadataArray(Metadata metadata, String property) {
         return Arrays.asList(metadata.getValues(ExtraProperties.UFED_META_PREFIX + property));
     }
@@ -26,11 +30,19 @@ public class UfedUtils {
         return readUfedMetadataArray(item.getMetadata(), property);
     }
 
+    public static List<String> readUfedMetadataArray(Object metadata, String property) {
+        return readUfedMetadataArray((Metadata) metadata, property);
+    }
+
     public static void removeUfedMetadata(Metadata metadata, String property) {
         metadata.remove(ExtraProperties.UFED_META_PREFIX + property);
     }
 
     public static void removeUfedMetadata(IItemReader item, String property) {
         removeUfedMetadata(item.getMetadata(), property);
+    }
+
+    public static void removeUfedMetadata(Object metadata, String property) {
+        removeUfedMetadata((Metadata) metadata, property);
     }
 }

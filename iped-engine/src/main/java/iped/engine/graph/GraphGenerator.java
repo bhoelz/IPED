@@ -63,7 +63,7 @@ public class GraphGenerator {
         try {
             LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
             GraphImportRunner runner = new GraphImportRunner(listener, input);
-            runner.run(output, GraphTask.DB_NAME, localConfig.isOutputOnSSD());
+            runner.run(output, GraphConstants.DB_NAME, localConfig.isOutputOnSSD());
             return true;
         } catch (Exception e) {
             LOGGER.error("Error generating database.", e);
@@ -214,3 +214,4 @@ public class GraphGenerator {
     }
 
 }
+

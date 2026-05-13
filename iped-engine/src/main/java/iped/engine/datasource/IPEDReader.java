@@ -69,16 +69,12 @@ import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.search.LuceneSearchResult;
 import iped.engine.search.SimilarFacesSearch;
-import iped.engine.task.EmbeddedDiskProcessTask;
-import iped.engine.task.HashDBLookupTask;
 import iped.engine.task.HashTask;
-import iped.engine.task.MinIOTask.MinIOInputInputStreamFactory;
 import iped.engine.task.ParsingTask;
-import iped.engine.task.QRCodeTask;
+import iped.engine.task.TaskRuntime;
 import iped.engine.task.carver.CarverTask;
 import iped.engine.task.carver.LedCarveTask;
-import iped.engine.task.die.DIETask;
-import iped.engine.task.index.IndexItem;
+import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
 import iped.engine.task.index.IndexItem.KnnVector;
 import iped.engine.util.Util;
 import iped.parsers.mail.OutlookPSTParser;
@@ -135,12 +131,12 @@ public class IPEDReader extends DataSourceReader {
         // Configuração para não expandir containers
         CategoryToExpandConfig expandConfig = ConfigurationManager.get().findObject(CategoryToExpandConfig.class);
         expandConfig.setEnabled(false);
-        EmbeddedDiskProcessTask.setEnabled(false);
+        TaskRuntime.setTaskEnabled("iped.engine.task.EmbeddedDiskProcessTask", false);
         CarverTask.setEnabled(false);
         LedCarveTask.setEnabled(false);
-        HashDBLookupTask.setEnabled(false);
-        DIETask.setEnabled(false);
-        QRCodeTask.setEnabled(false);
+        TaskRuntime.setTaskEnabled("iped.engine.task.HashDBLookupTask", false);
+        TaskRuntime.setTaskEnabled("iped.engine.task.die.DIETask", false);
+        TaskRuntime.setTaskEnabled("iped.engine.task.QRCodeTask", false);
 
         deviceName = getEvidenceName(file);
         if (deviceName.endsWith(Bookmarks.EXT)) {
@@ -587,7 +583,7 @@ public class IPEDReader extends DataSourceReader {
                 if (doc.get(IndexItem.SOURCE_PATH) != null && doc.get(IndexItem.SOURCE_DECODER) != null) {
                     String sourcePath = doc.get(IndexItem.SOURCE_PATH);
                     String className = doc.get(IndexItem.SOURCE_DECODER);
-                    if (!MinIOInputInputStreamFactory.class.getName().equals(className)) {
+                    if (!"iped.engine.task.MinIOTask$MinIOInputInputStreamFactory".equals(className)) {
                         sourcePath = Util.getResolvedFile(basePath, sourcePath).toString();
                     }
                     synchronized (inputStreamFactories) {
@@ -610,7 +606,7 @@ public class IPEDReader extends DataSourceReader {
                         }
                         evidence.setInputStreamFactory(sisf);
                     }
-                } else if (evidence.getMediaType().toString().contains(UfedXmlReader.UFED_MIME_PREFIX)) {
+                } else if (evidence.getMediaTypeString().contains(UfedXmlReader.UFED_MIME_PREFIX)) {
                     evidence.setInputStreamFactory(new MetadataInputStreamFactory(evidence.getMetadata()));
 
                 } else {
@@ -690,7 +686,7 @@ public class IPEDReader extends DataSourceReader {
             for (IndexableField f : doc.getFields()) {
                 if (BasicProps.SET.contains(f.name()))
                     continue;
-                Class<?> c = IndexItem.getMetadataTypes().get(f.name());
+                Class<?> c = IndexMetadata.getMetadataTypes().get(f.name());
                 if (Item.getAllExtraAttributes().contains(f.name())) {
                     if (multiValuedFields.contains(f.name()))
                         continue;
@@ -699,16 +695,16 @@ public class IPEDReader extends DataSourceReader {
                         List<Object> fieldList = new ArrayList<>();
                         IndexableField[] fields = doc.getFields(f.name());
                         for (IndexableField field : fields)
-                            fieldList.add(IndexItem.getCastedValue(c, field));
+                            fieldList.add(IndexMetadata.getCastedValue(c, field));
                         evidence.setExtraAttribute(f.name(), fieldList);
                     } else
-                        evidence.setExtraAttribute(f.name(), IndexItem.getCastedValue(c, f));
+                        evidence.setExtraAttribute(f.name(), IndexMetadata.getCastedValue(c, f));
                 } else {
                     if (Date.class.equals(c) && f.stringValue() != null) {
                         String val = f.stringValue();
                         evidence.getMetadata().add(f.name(), val);
                     } else {
-                        Object casted = IndexItem.getCastedValue(c, f);
+                        Object casted = IndexMetadata.getCastedValue(c, f);
                         if (casted != null) {
                             evidence.getMetadata().add(f.name(), casted.toString());
                         }
@@ -762,3 +758,6 @@ public class IPEDReader extends DataSourceReader {
     }
 
 }
+
+
+

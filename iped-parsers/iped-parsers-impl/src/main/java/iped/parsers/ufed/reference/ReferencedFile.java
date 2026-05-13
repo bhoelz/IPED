@@ -49,17 +49,17 @@ public class ReferencedFile extends AbstractReferencedItem {
     }
 
     public String getTranscription() {
-        return item.getMetadata().get(ExtraProperties.TRANSCRIPT_ATTR);
+        return item.getMetadataValue(ExtraProperties.TRANSCRIPT_ATTR);
     }
 
     public String getTranscriptConfidence() {
-        return item.getMetadata().get(ExtraProperties.CONFIDENCE_ATTR);
+        return item.getMetadataValue(ExtraProperties.CONFIDENCE_ATTR);
     }
 
     public Float getDuration() {
         String duration = StringUtils.firstNonBlank(
-                item.getMetadata().get(ExtraProperties.AUDIO_META_PREFIX + XMPDM.DURATION.getName()),
-                item.getMetadata().get(ExtraProperties.VIDEO_META_PREFIX + XMPDM.DURATION.getName()));
+                item.getMetadataValue(ExtraProperties.AUDIO_META_PREFIX + XMPDM.DURATION.getName()),
+                item.getMetadataValue(ExtraProperties.VIDEO_META_PREFIX + XMPDM.DURATION.getName()));
         if (duration != null) {
             try {
                 return Float.parseFloat(duration);
@@ -69,3 +69,4 @@ public class ReferencedFile extends AbstractReferencedItem {
         return null;
     }
 }
+

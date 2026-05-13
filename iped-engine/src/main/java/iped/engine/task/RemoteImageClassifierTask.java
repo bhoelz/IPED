@@ -65,7 +65,6 @@ import iped.engine.config.ImageThumbTaskConfig;
 import iped.engine.config.RemoteImageClassifierConfig;
 import iped.engine.config.VideoThumbsConfig;
 import iped.engine.preview.PreviewRepositoryManager;
-import iped.engine.task.die.DIETask;
 import iped.engine.task.index.IndexItem;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
@@ -184,7 +183,8 @@ public class RemoteImageClassifierTask extends AbstractTask {
             if (value == null) {
                 List<Double> probs = classes.get(classname);
                 if (probs != null) {
-                    value = DIETask.videoScore(probs);
+                    value = TaskRuntime.invokeVideoScoreList("iped.engine.task.die.DIETask", probs,
+                            probs.stream().mapToDouble(Double::doubleValue).max().orElse(0d));
     
                     // Scale values from [0,1] to [0, 100] and
                     // limit them to 2 decimal digits.
@@ -749,27 +749,27 @@ public class RemoteImageClassifierTask extends AbstractTask {
         if (skipDimension > 0) {
             int width = 0;
             int height = 0;
-            String mediaType = evidence.getMediaType().toString();
+            String mediaType = evidence.getMediaTypeString();
             if (mediaType.startsWith("image")) {
                 try {
-                    if (evidence.getMetadata().get("image:Width") != null)
-                        width = Integer.parseInt(evidence.getMetadata().get("image:Width"));
-                    if (evidence.getMetadata().get("image:Height") != null)
-                        height = Integer.parseInt(evidence.getMetadata().get("image:Height"));
+                    if (evidence.getMetadataValue("image:Width") != null)
+                        width = Integer.parseInt(evidence.getMetadataValue("image:Width"));
+                    if (evidence.getMetadataValue("image:Height") != null)
+                        height = Integer.parseInt(evidence.getMetadataValue("image:Height"));
                 }
                 catch (NumberFormatException e) {
-                    logger.warn("Invalid dimension for image file '{}': width:{}; height:{}", evidence.getName(), evidence.getMetadata().get("image:Width"), evidence.getMetadata().get("image:Height"));
+                    logger.warn("Invalid dimension for image file '{}': width:{}; height:{}", evidence.getName(), evidence.getMetadataValue("image:Width"), evidence.getMetadataValue("image:Height"));
                 }
             }
             else if (mediaType.startsWith("video")) {
                 try {
-                    if (evidence.getMetadata().get("video:Width") != null)
-                        width = Integer.parseInt(evidence.getMetadata().get("video:Width"));
-                    if (evidence.getMetadata().get("video:Height") != null)
-                        height = Integer.parseInt(evidence.getMetadata().get("video:Height"));
+                    if (evidence.getMetadataValue("video:Width") != null)
+                        width = Integer.parseInt(evidence.getMetadataValue("video:Width"));
+                    if (evidence.getMetadataValue("video:Height") != null)
+                        height = Integer.parseInt(evidence.getMetadataValue("video:Height"));
                 }
                 catch (NumberFormatException e) {
-                    logger.warn("Invalid dimension for video file '{}': width:{}; height:{}", evidence.getName(), evidence.getMetadata().get("video:Width"), evidence.getMetadata().get("video:Height"));
+                    logger.warn("Invalid dimension for video file '{}': width:{}; height:{}", evidence.getName(), evidence.getMetadataValue("video:Width"), evidence.getMetadataValue("video:Height"));
                 }
             }
             if ((skipDimension > width || skipDimension > height) && width > 0 && height > 0) {
@@ -903,3 +903,6 @@ public class RemoteImageClassifierTask extends AbstractTask {
         labelNames.put(className, label);
     }
 }
+
+
+

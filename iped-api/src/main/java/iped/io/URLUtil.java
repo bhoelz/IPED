@@ -1,5 +1,6 @@
 package iped.io;
 
+import java.net.URI;
 import java.net.URL;
 import java.security.ProtectionDomain;
 
@@ -20,13 +21,12 @@ public class URLUtil {
     public static URL getURL(ProtectionDomain domain) {
         URL url = domain.getCodeSource().getLocation();
         if (url != null && "file".equalsIgnoreCase(url.getProtocol()) && url.getPath() != null
-                && url.getPath().startsWith("//")) {
+            && url.getPath().startsWith("//")) {
             try {
-                URL newUrl = new URL("file://" + url.getPath());
-                if (newUrl != null) {
-                    url = newUrl;
-                }
+                String newPath = "file:///" + url.getPath().substring(1);
+                return URI.create(newPath).toURL();
             } catch (Exception e) {
+                // If the fix doesn't work, just return the original URL.
             }
         }
         return url;

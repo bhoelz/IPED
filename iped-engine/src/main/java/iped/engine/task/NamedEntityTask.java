@@ -114,7 +114,7 @@ public class NamedEntityTask extends AbstractTask {
         if (!isEnabled() || !evidence.isToAddToCase())
             return;
 
-        String mime = evidence.getMediaType().toString();
+        String mime = evidence.getMediaTypeString();
         String categories = evidence.getCategories();
 
         if (((Item) evidence).getTextCache() == null)
@@ -213,3 +213,5 @@ public class NamedEntityTask extends AbstractTask {
     }
 
 }
+
+

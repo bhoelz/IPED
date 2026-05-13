@@ -505,7 +505,7 @@ public class Extractor {
             IItemReader item = getFileFromQuery(query);
             if (item != null) {
                 if (message.getMediaMime() == null) {
-                    message.setMediaMime(item.getMediaType().toString());
+                    message.setMediaMime(item.getMediaTypeString());
                 }
                 logger.debug("Document mediaType: {}", message.getMediaMime());
                 message.setMediaHash(item.getHash());
@@ -764,3 +764,5 @@ public class Extractor {
     private static final String EXTRACT_CONTACTS_SQL = "SELECT * FROM users";
     private static final String EXTRACT_CONTACTS_SQL_IOS = "SELECT * FROM t2";
 }
+
+

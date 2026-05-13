@@ -412,7 +412,7 @@ public class ImageThumbTask extends ThumbTask {
             performanceStats[20]++;
             performanceStats[21] += System.currentTimeMillis() - t;
 
-            String type = evidence.getMediaType().toString();
+            String type = evidence.getMediaTypeString();
             synchronized (performanceStatsPerType) {
                 long[] s = performanceStatsPerType.get(type);
                 if (s == null) {
@@ -432,3 +432,5 @@ public class ImageThumbTask extends ThumbTask {
         }
     }
 }
+
+

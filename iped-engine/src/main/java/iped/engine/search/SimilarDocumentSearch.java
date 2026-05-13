@@ -57,7 +57,7 @@ public class SimilarDocumentSearch {
              * 
              * EvidenceFile ev = App.get().appCase.getItemByItemId(item); Metadata m = new
              * Metadata(); m.set(StandardParser.INDEXER_CONTENT_TYPE,
-             * ev.getMediaType().toString());
+             * ev.getMediaTypeString());
              * 
              * ParsingReader pr = new ParsingReader(autoParser, ev.getStream(), m, new
              * ParseContext()); pr.startBackgroundParsing();
@@ -111,3 +111,5 @@ public class SimilarDocumentSearch {
     }
 
 }
+
+

@@ -1,137 +1,145 @@
 package iped.data;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-
-import javax.imageio.stream.ImageInputStream;
-
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-
 import iped.datasource.IDataSource;
 import iped.io.ISeekableInputStreamFactory;
 import iped.io.IStreamSource;
 import iped.io.SeekableInputStream;
 
+import javax.imageio.stream.ImageInputStream;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.sql.SQLException;
+import java.util.*;
+
 public interface IItemReader extends IStreamSource {
     /**
      *
-     * @return o id do item
+     * @return item id
      */
-    public int getId();
+    int getId();
 
     /**
      *
-     * @return o id do item pai.
+     * @return parent item id.
      */
-    public Integer getParentId();
+    Integer getParentId();
 
     /**
      * @return the subitem order into its parent, null if this is not a subitem.
      */
-    public Integer getSubitemId();
+    Integer getSubitemId();
 
     /**
-     * @return nome do arquivo
+     * @return file name
      */
-    public String getName();
+    String getName();
 
     /**
      *
-     * @return a extensão original do item
+     * @return original item extension
      */
-    public String getExt();
+    String getExt();
 
     /**
      * @return the detected file type extension
      */
-    public String getType();
+    String getType();
 
     /**
      *
-     * @return o mediaType do arquivo, resultado da análise de assinatura
+     * @return file media type, as detected by signature analysis
      */
-    public MediaType getMediaType();
-
-    public HashSet<String> getCategorySet();
+    Object getMediaType();
 
     /**
-     * @return String com o caminho completo do item
+     * Neutral media type accessor for gradual decoupling from external libraries.
      */
-    public String getPath();
+    default MediaTypeValue getMediaTypeValue() {
+        Object mediaType = getMediaType();
+        return mediaType == null ? null : MediaTypeValue.of(mediaType.toString());
+    }
+
+    default String getMediaTypeString() {
+        MediaTypeValue mediaTypeValue = getMediaTypeValue();
+        return mediaTypeValue == null ? null : mediaTypeValue.value();
+    }
+
+    HashSet<String> getCategorySet();
 
     /**
-     * @return tamanho do arquivo em bytes
+     * @return full item path
      */
-    public Long getLength();
+    String getPath();
 
     /**
-     *
-     * @return o hash do arquivo, caso existente.
+     * @return file size in bytes
      */
-    public String getHash();
-
-    /**
-     *
-     * @return true se o item está apagado
-     */
-    public boolean isDeleted();
-
-    /**
-     *
-     * @return true se o item é proveniente de carving
-     */
-    public boolean isCarved();
-
-    /**
-     * @return true se é um subitem de um container
-     */
-    public boolean isSubItem();
+    Long getLength();
 
     /**
      *
-     * @return true se o item é um diretório
+     * @return file hash, when available.
      */
-    public boolean isDir();
-
-    /**
-     * @return true se é um item raiz
-     */
-    public boolean isRoot();
-
-    /**
-     * @return true se o parsing do item ocasionou timeout
-     */
-    public boolean isTimedOut();
+    String getHash();
 
     /**
      *
-     * @return true se o item tem filhos, como subitens ou itens carveados
+     * @return true if the item is deleted
      */
-    public boolean hasChildren();
+    boolean isDeleted();
+
+    /**
+     *
+     * @return true if the item comes from carving
+     */
+    boolean isCarved();
+
+    /**
+     * @return true if this is a subitem of a container
+     */
+    boolean isSubItem();
+
+    /**
+     *
+     * @return true if the item is a directory
+     */
+    boolean isDir();
+
+    /**
+     * @return true if this is a root item
+     */
+    boolean isRoot();
+
+    /**
+     * @return true if item parsing timed out
+     */
+    boolean isTimedOut();
+
+    /**
+     *
+     * @return true if the item has children, such as subitems or carved items
+     */
+    boolean hasChildren();
 
     /**
      * Returns a temp file with item content. This can spool data to the temp
      * directory, so avoid using this if you can work directly with item data
      * streams.
      */
-    public File getTempFile() throws IOException;
+    File getTempFile() throws IOException;
 
-    public String getIdInDataSource();
+    String getIdInDataSource();
 
-    public ISeekableInputStreamFactory getInputStreamFactory();
+    ISeekableInputStreamFactory getInputStreamFactory();
 
     /**
-     * Obtém o arquivo de visualização. Retorna nulo caso inexistente.
+     * Gets the preview file. Returns null when unavailable.
      *
-     * @return caminho relativo ao caso do arquivo de visualização
+     * @return path of the preview file relative to the case
      */
-    public File getViewFile();
+    File getViewFile();
 
     boolean hasPreview();
 
@@ -141,32 +149,87 @@ public interface IItemReader extends IStreamSource {
 
     SeekableInputStream getPreviewSeekeableInputStream() throws SQLException, IOException;
 
-    public byte[] getThumb();
+    byte[] getThumb();
 
-    public BufferedInputStream getBufferedInputStream() throws IOException;
+    BufferedInputStream getBufferedInputStream() throws IOException;
 
-    public ImageInputStream getImageInputStream() throws IOException;
+    ImageInputStream getImageInputStream() throws IOException;
 
     /**
-     * @return data da última modificação do arquivo
+     * @return file last modification date
      */
-    public Date getModDate();
+    Date getModDate();
 
-    public Date getCreationDate();
+    Date getCreationDate();
 
-    public Date getAccessDate();
+    Date getAccessDate();
 
-    public Date getChangeDate();
+    Date getChangeDate();
 
-    public Object getExtraAttribute(String key);
+    Object getExtraAttribute(String key);
 
-    public Map<String, Object> getExtraAttributeMap();
+    Map<String, Object> getExtraAttributeMap();
 
-    public IDataSource getDataSource();
+    IDataSource getDataSource();
 
     /**
      * @return Object containing the metadata of the item
      */
-    public Metadata getMetadata();
+    Object getMetadata();
+
+    /**
+     * Neutral metadata view for gradual decoupling from external libraries.
+     */
+    default Map<String, List<String>> getMetadataMap() {
+        Object metadata = getMetadata();
+        Map<String, List<String>> map = new LinkedHashMap<>();
+        if (metadata == null) {
+            return map;
+        }
+        for (String name : metadataNames(metadata)) {
+            map.put(name, List.of(metadataValues(metadata, name)));
+        }
+        return map;
+    }
+
+    default String getMetadataValue(String key) {
+        Object metadata = getMetadata();
+        if (metadata == null) {
+            return null;
+        }
+        try {
+            Method method = metadata.getClass().getMethod("get", String.class); //$NON-NLS-1$
+            Object value = method.invoke(metadata, key);
+            return value == null ? null : value.toString();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to get metadata value", e); //$NON-NLS-1$
+        }
+    }
+
+    default String[] getMetadataValues(String key) {
+        Object metadata = getMetadata();
+        if (metadata == null) {
+            return null;
+        }
+        return metadataValues(metadata, key);
+    }
+
+    private static String[] metadataNames(Object metadata) {
+        try {
+            Method namesMethod = metadata.getClass().getMethod("names"); //$NON-NLS-1$
+            return (String[]) namesMethod.invoke(metadata);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to read metadata names", e); //$NON-NLS-1$
+        }
+    }
+
+    private static String[] metadataValues(Object metadata, String key) {
+        try {
+            Method valuesMethod = metadata.getClass().getMethod("getValues", String.class); //$NON-NLS-1$
+            return (String[]) valuesMethod.invoke(metadata, key);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to read metadata values", e); //$NON-NLS-1$
+        }
+    }
 
 }

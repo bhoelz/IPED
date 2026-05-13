@@ -59,11 +59,11 @@ public class ReferencedByTableModel extends BaseTableModel {
 
         String nameToScroll = null;
         if (refDoc != null) {
-            if (KnownMetParser.EMULE_MIME_TYPE.equals(item.getMediaType().toString())) {
+            if (KnownMetParser.EMULE_MIME_TYPE.equals(item.getMediaTypeString())) {
                 nameToScroll = refDoc.get(HashTask.HASH.EDONKEY.toString());
-            } else if (AresParser.ARES_MIME_TYPE.equals(item.getMediaType().toString())) {
+            } else if (AresParser.ARES_MIME_TYPE.equals(item.getMediaTypeString())) {
                 nameToScroll = refDoc.get(HashTask.HASH.SHA1.toString());
-            } else if (ShareazaLibraryDatParser.LIBRARY_DAT_MIME_TYPE.equals(item.getMediaType().toString())) {
+            } else if (ShareazaLibraryDatParser.LIBRARY_DAT_MIME_TYPE.equals(item.getMediaTypeString())) {
                 nameToScroll = refDoc.get(HashTask.HASH.MD5.toString());
             } else {
                 nameToScroll = refDoc.get(BasicProps.HASH);
@@ -143,3 +143,5 @@ public class ReferencedByTableModel extends BaseTableModel {
         App.get().referencedByDock.setTitleText(Messages.getString("ReferencedByTab.Title") + " " + results.getLength());
     }
 }
+
+

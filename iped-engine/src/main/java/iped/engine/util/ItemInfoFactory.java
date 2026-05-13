@@ -3,7 +3,7 @@ package iped.engine.util;
 import java.util.List;
 
 import iped.data.IItem;
-import iped.engine.task.HashDBLookupTask;
+import iped.engine.task.HashDBConstants;
 import iped.parsers.util.ItemInfo;
 import iped.properties.ExtraProperties;
 
@@ -23,12 +23,12 @@ public class ItemInfoFactory {
             if (hashDbStatus instanceof List) {
                 @SuppressWarnings("unchecked")
                 List<String> status = (List<String>) hashDbStatus;
-                if (status.size() == 1 && status.get(0).equals(HashDBLookupTask.KNOWN_VALUE)) {
+                if (status.size() == 1 && status.get(0).equals(HashDBConstants.KNOWN_VALUE)) {
                     return true;
                 }
             } else if (hashDbStatus instanceof String) {
                 String status = (String) hashDbStatus;
-                if (status.equals(HashDBLookupTask.KNOWN_VALUE)) {
+                if (status.equals(HashDBConstants.KNOWN_VALUE)) {
                     return true;
                 }
             }

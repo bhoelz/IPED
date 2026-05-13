@@ -290,10 +290,10 @@ public class InstantMessageHandler extends BaseModelHandler<InstantMessage> {
 
                 // add a "fake" attachment related to file with referenceId
                 Attachment attachment = new Attachment();
-                attachment.setAttribute("file_id", result.getMetadata().get(UFED_ID));
+                attachment.setAttribute("file_id", result.getMetadataValue(UFED_ID));
                 attachment.setField("comment", "Added by IPED from source models");
                 attachment.setField("sourceModelReferenceId", referenceId);
-                attachment.setField("ContentType", result.getMediaType().toString());
+                attachment.setField("ContentType", result.getMediaTypeString());
                 attachment.setField("Filename", result.getName());
                 attachment.setReferencedFile(result);
                 model.getAttachments().add(attachment);
@@ -301,3 +301,5 @@ public class InstantMessageHandler extends BaseModelHandler<InstantMessage> {
         }
     }
 }
+
+

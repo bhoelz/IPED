@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * (INTERFACE DO IPED) Classe que define todos os dados do caso.
+ * (IPED INTERFACE) Interface that defines all case data.
  *
  * @author Wladimir Leite (GPINF/SP)
  * @author Nassif (GPINF/SP)
@@ -15,69 +15,58 @@ public interface ICaseData extends Serializable {
     public static final String TIMEZONE_INFO_KEY = "TimeZones";
 
     /**
-     * Retorna um objeto armazenado no caso.
+     * Returns an object stored in the case.
      *
-     * @param key
-     *            Nome do objeto
-     * @return O objeto armazenado no caso
+     * @param key object name
+     * @return the object stored in the case
      */
     Object getCaseObject(String key);
 
     /**
-     * Adiciona um objeto no caso.
+     * Adds an object to the case.
      *
-     * @param key
-     *            Nome do objeto
-     * @param data 
-     * 			  O objeto armazenado no caso
+     * @param key object name
+     * @param data object stored in the case
      */
     Object addCaseObject(String key, Object data);
 
     int getDiscoveredEvidences();
 
     /**
-     * @return retorna o volume de dados descobertos até o momento
+     * @return discovered data volume so far
      */
     long getDiscoveredVolume();
 
     void incDiscoveredEvidences(int inc);
 
     /**
-     * @param volume
-     *            tamanho do novo item descoberto
+     * @param volume size of the newly discovered item
      */
     void incDiscoveredVolume(Long volume);
 
     /**
-     * Armazena um objeto genérico no caso.
+     * Stores a generic object in the case.
      *
-     * @param key
-     *            Nome do objeto a armazenar
-     * @param value
-     *            Objeto a ser armazenado
+     * @param key object name to store
+     * @param value object to store
      */
     void putCaseObject(String key, Object value);
 
     /**
-     * Salva o objeto atual em arquivo. Utiliza serialização direta do objeto e
-     * compactação GZIP.
+     * Saves the current object to a file using direct serialization and GZIP compression.
      *
-     * @param file
-     *            arquivo a ser salvo
-     * @throws IOException
-     *             Erro no acesso ao arquivo.
+     * @param file file to save
+     * @throws IOException file access error
      */
     void save(File file) throws IOException;
 
     /**
-     *
-     * @param containsReport
-     *            se o caso contém um report
+     * @param containsReport whether the case contains a report
      */
     void setContainsReport(boolean containsReport);
 
     /**
-     * @return true se o caso contém um report
+     * @return true if the case contains a report
      */
     boolean containsReport();
 

@@ -466,7 +466,7 @@ public class MenuListener implements ActionListener {
             IItem item = App.get().appCase.getItemByItemId(itemId);
             int chatId = atomicSource.getParentId(itemId.getId());
             if (chatId != -1) {
-                String position = item.getMetadata().get(ExtraProperties.PARENT_VIEW_POSITION);
+                String position = item.getMetadataValue(ExtraProperties.PARENT_VIEW_POSITION);
                 // TODO change viewer api to pass this
                 App.get().getViewerController().getHtmlLinkViewer().setElementIDToScroll(position);
                 ItemId chatItemId = new ItemId(itemId.getSourceId(), chatId);

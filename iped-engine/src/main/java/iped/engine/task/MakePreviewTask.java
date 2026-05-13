@@ -105,7 +105,7 @@ public class MakePreviewTask extends AbstractTask {
     @Override
     protected void process(IItem evidence) throws Exception {
 
-        String mediaType = evidence.getMediaType().toString();
+        String mediaType = evidence.getMediaTypeString();
         if (evidence.getLength() == Long.valueOf(0) || !isSupportedType(mediaType) || !evidence.isToAddToCase()) {
             return;
         }
@@ -181,7 +181,7 @@ public class MakePreviewTask extends AbstractTask {
         // context.set(Parser.class, parser);
 
         ContentHandler handler;
-        if (!isSupportedTypeCSV(evidence.getMediaType().toString())) {
+        if (!isSupportedTypeCSV(evidence.getMediaTypeString())) {
             String comment = null;
             if (mayContainLinks(mediaType)) {
                 comment = HtmlLinkViewer.PREVIEW_WITH_LINKS_HEADER;
@@ -299,3 +299,5 @@ public class MakePreviewTask extends AbstractTask {
     }
 
 }
+
+

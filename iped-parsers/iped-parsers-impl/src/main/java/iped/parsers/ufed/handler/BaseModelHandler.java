@@ -160,7 +160,7 @@ public class BaseModelHandler<T extends BaseModel> {
 
     protected final void addLinkedItem(Set<String> linkedItems, IItemReader referencedItem, IItemSearcher searcher) {
 
-        String referencedUfedId = referencedItem.getMetadata().get(ExtraProperties.UFED_ID);
+        String referencedUfedId = referencedItem.getMetadataValue(ExtraProperties.UFED_ID);
 
         // add linked items (if referencedUfedId not present in jumpTargets)
         if (StringUtils.isNotBlank(referencedUfedId)
@@ -274,3 +274,4 @@ public class BaseModelHandler<T extends BaseModel> {
         return meta;
     }
 }
+

@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>iped-tasks.spi</module>
         <module>iped-tasks-bom</module>
         <module>iped-tasks-core</module>
         <module>iped-tasks-transcript</module>

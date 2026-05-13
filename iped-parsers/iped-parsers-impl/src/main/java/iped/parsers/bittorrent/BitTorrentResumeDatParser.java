@@ -123,7 +123,7 @@ public class BitTorrentResumeDatParser extends AbstractParser {
                 IItemReader item = P2PUtil.searchItemInCase(searcher, TorrentFileParser.TORRENT_INFO_HASH, infoHash);
                 if (item != null) {
                     metadata.add(ExtraProperties.LINKED_ITEMS, BasicProps.HASH + ":" + item.getHash());
-                    String[] values = item.getMetadata().getValues(ExtraProperties.LINKED_ITEMS);
+                    String[] values = item.getMetadataValues(ExtraProperties.LINKED_ITEMS);
                     if (values != null) {
                         Long uploaded = torrentDict.getLong("uploaded");
                         boolean isShared = uploaded != null && uploaded > 0;
@@ -138,7 +138,7 @@ public class BitTorrentResumeDatParser extends AbstractParser {
                             }
                         }
                     }
-                    String v = item.getMetadata().get(TorrentFileParser.TORRENT_FILES_FOUND_IN_CASE);
+                    String v = item.getMetadataValue(TorrentFileParser.TORRENT_FILES_FOUND_IN_CASE);
                     if (v != null && !v.isBlank()) {
                         filesFoundInCase = Integer.parseInt(v);
                     }
@@ -188,3 +188,4 @@ public class BitTorrentResumeDatParser extends AbstractParser {
         }
     }
 }
+

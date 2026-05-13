@@ -257,3 +257,6 @@ public class UfedChatParser extends AbstractParser {
         BaseModelHandler.updateLinkedItemsAndSharedHashes(chatMetadata, newLinkedItems, newSharedHashes);
     }
 }
+
+
+

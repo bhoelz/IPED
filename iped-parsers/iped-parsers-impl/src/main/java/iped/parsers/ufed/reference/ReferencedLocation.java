@@ -12,7 +12,7 @@ public class ReferencedLocation extends AbstractReferencedItem {
     }
 
     public String getLocations() {
-        return item.getMetadata().get(ExtraProperties.LOCATIONS);
+        return item.getMetadataValue(ExtraProperties.LOCATIONS);
     }
 
     public String getType() {

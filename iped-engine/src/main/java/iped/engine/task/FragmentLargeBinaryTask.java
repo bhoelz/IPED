@@ -56,7 +56,7 @@ public class FragmentLargeBinaryTask extends BaseCarveTask {
     protected void process(IItem evidence) throws Exception {
         
         boolean hasSpecificParser = ParsingTask.hasSpecificParser(autoParser, evidence);
-        boolean hadParserException = Boolean.valueOf(evidence.getMetadata().get(StandardParser.PARSER_EXCEPTION));
+        boolean hadParserException = Boolean.valueOf(evidence.getMetadataValue(StandardParser.PARSER_EXCEPTION));
 
         TextCache textCache = ((Item) evidence).getTextCache();
 
@@ -120,3 +120,4 @@ public class FragmentLargeBinaryTask extends BaseCarveTask {
     }
 
 }
+

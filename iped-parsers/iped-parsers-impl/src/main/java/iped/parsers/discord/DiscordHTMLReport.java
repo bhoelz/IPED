@@ -239,22 +239,22 @@ public class DiscordHTMLReport {
                         out.println("       <a onclick=\"app.open('hash:" + att.getMediaHash() + "')\" href=\"" + format(href) + "\">"); //$NON-NLS-1$ //$NON-NLS-2$
                         out.println("       " + format(att.getFilename()) + "<BR/>");
 
-                        if (!item.getMediaType().toString().startsWith("video/") && !item.getMediaType().toString().startsWith("audio/")) {
+                        if (!item.getMediaTypeString().startsWith("video/") && !item.getMediaTypeString().startsWith("audio/")) {
                             if (thumb != null) {
                                 out.println("       <img src=\"data:image/jpeg;base64," + Base64.getEncoder().encodeToString(thumb) + "\" title=\"" + format(att.getFilename()) + "\">");
-                            } else if (item.getMediaType().toString().startsWith("image/")) {
+                            } else if (item.getMediaTypeString().startsWith("image/")) {
                                 out.println("       <div class=\"imageImg\" title=\"" + format(att.getFilename()) + "\">");
                             } else {
                                 out.println("       <div class=\"attachImg\" title=\"" + format(att.getFilename()) + "\">");
                             }
                         }
 
-                        if (item.getMediaType().toString().startsWith("audio/")) {
+                        if (item.getMediaTypeString().startsWith("audio/")) {
                             out.println("<div class=\"audioImg iped-audio\" " //$NON-NLS-1$
                                     + " title=\"Audio\" " + "data-src1=\"" + format(exportPath) + "\" " + "data-src2=\"" //$NON-NLS-4$
                                     + format(source) + "\"></div>");
                         }
-                        if (item.getMediaType().toString().startsWith("video/")) {
+                        if (item.getMediaTypeString().startsWith("video/")) {
                             if (thumb != null) {
                                 out.println("<img class=\"thumb iped-video\" src=\"" + "data:image/jpg;base64," + iped.parsers.whatsapp.Util.encodeBase64(thumb) + "\"" + " data-src1=\"" + format(exportPath) + "\"" + " data-src2=\""
                                         + format(source) + "\"" //$NON-NLS-1$
@@ -344,3 +344,5 @@ public class DiscordHTMLReport {
     }
 
 }
+
+

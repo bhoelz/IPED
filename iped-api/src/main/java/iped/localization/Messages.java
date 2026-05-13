@@ -1,21 +1,17 @@
 package iped.localization;
 
+import iped.io.URLUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
-
-import iped.io.URLUtil;
 
 public class Messages {
 
@@ -41,7 +37,7 @@ public class Messages {
             } while (!file.exists());
         }
         try {
-            URL[] urls = { file.toURI().toURL() };
+            URL[] urls = {file.toURI().toURL()};
             ClassLoader loader = new URLClassLoader(urls);
             return ResourceBundle.getBundle(bundleName, locale, loader, new UTF8Control());
         } catch (MalformedURLException e) {
@@ -53,7 +49,7 @@ public class Messages {
 
         @Override
         public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader,
-                boolean reload) throws IllegalAccessException, InstantiationException, IOException {
+                                        boolean reload) throws IllegalAccessException, InstantiationException, IOException {
             // The below is a copy of the default implementation.
             String bundleName = toBundleName(baseName, locale);
             String resourceName = toResourceName(bundleName, "properties");

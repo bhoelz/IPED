@@ -277,7 +277,7 @@ public class MenuClass extends JPopupMenu {
         if (item != null) {
             enableGoToChat = MediaTypes.isInstanceOf(item.getMediaType(), MediaTypes.CHAT_MESSAGE_MIME)
                     || MediaTypes.UFED_MESSAGE_MIME.equals(item.getMediaType())
-                    || (VCardParser.VCARD_MIME.equals(item.getMediaType()) && item.getMetadata().get(ExtraProperties.COMMUNICATION_FROM) != null && item.getMetadata().get(ExtraProperties.COMMUNICATION_TO) != null);
+                    || (VCardParser.VCARD_MIME.equals(item.getMediaType()) && item.getMetadataValue(ExtraProperties.COMMUNICATION_FROM) != null && item.getMetadataValue(ExtraProperties.COMMUNICATION_TO) != null);
         }
         navigateToParentChat.setEnabled(enableGoToChat);
         this.add(navigateToParentChat);
@@ -327,7 +327,7 @@ public class MenuClass extends JPopupMenu {
 
         this.addSeparator();
         addToGraph = new JMenuItem(Messages.getString("MenuClass.AddToGraph")); //$NON-NLS-1$
-        addToGraph.setEnabled(App.get().appGraphAnalytics.isEnabled() && item != null && item.getMetadata().get(ExtraProperties.COMMUNICATION_FROM) != null && item.getMetadata().get(ExtraProperties.COMMUNICATION_TO) != null);
+        addToGraph.setEnabled(App.get().appGraphAnalytics.isEnabled() && item != null && item.getMetadataValue(ExtraProperties.COMMUNICATION_FROM) != null && item.getMetadataValue(ExtraProperties.COMMUNICATION_TO) != null);
         addToGraph.addActionListener(menuListener);
         this.add(addToGraph);
 

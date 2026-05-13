@@ -5,10 +5,10 @@
  */
 package iped.search;
 
+import iped.data.IItemReader;
+
 import java.io.Closeable;
 import java.util.List;
-
-import iped.data.IItemReader;
 
 /**
  *

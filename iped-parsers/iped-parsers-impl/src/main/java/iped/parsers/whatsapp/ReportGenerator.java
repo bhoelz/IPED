@@ -985,14 +985,14 @@ public class ReportGenerator {
                                     }
                                     out.println("</a><br>"); //$NON-NLS-1$
                                 }
-                                if (mediaItem.getMetadata().get(ExtraProperties.DOWNLOADED_DATA) != null) {
+                                if (mediaItem.getMetadataValue(ExtraProperties.DOWNLOADED_DATA) != null) {
                                     out.println(
                                             "<b>" + Messages.getString("ReportGenerator.DownloadedFile") + "</b><br>");
                                 }
-                                String transcription = mediaItem.getMetadata().get(ExtraProperties.TRANSCRIPT_ATTR);
+                                String transcription = mediaItem.getMetadataValue(ExtraProperties.TRANSCRIPT_ATTR);
                                 if (transcription != null) {
                                     out.print(Messages.getString("ReportGenerator.TranscriptionTitle")); //$NON-NLS-1$
-                                    String confidence = mediaItem.getMetadata().get(ExtraProperties.CONFIDENCE_ATTR);
+                                    String confidence = mediaItem.getMetadataValue(ExtraProperties.CONFIDENCE_ATTR);
                                     if (confidence != null) {
                                         float score = Float.valueOf(confidence) * 100;
                                         out.print(" [" + (int) score + "%]"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1019,7 +1019,7 @@ public class ReportGenerator {
                                     }
                                 }
                                 out.println("</a><br>"); //$NON-NLS-1$
-                                if (mediaItem.getMetadata().get(ExtraProperties.DOWNLOADED_DATA) != null) {
+                                if (mediaItem.getMetadataValue(ExtraProperties.DOWNLOADED_DATA) != null) {
                                     out.println(
                                             "<b>" + Messages.getString("ReportGenerator.DownloadedFile") + "</b><br>");
                                 }
@@ -1719,3 +1719,4 @@ public class ReportGenerator {
         return s != null && !s.isBlank();
     }
 }
+

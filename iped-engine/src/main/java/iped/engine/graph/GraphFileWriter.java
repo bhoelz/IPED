@@ -148,12 +148,12 @@ public class GraphFileWriter implements Closeable, Flushable {
         CSVWriter writer = new CSVWriter(root, REL_CSV_PREFIX, type.name(), SUFFIX);
 
         writer.fieldPositions.addAll(
-                Arrays.asList("start", "end", "type", GraphTask.RELATIONSHIP_SOURCE, GraphTask.RELATIONSHIP_ID));
+                Arrays.asList("start", "end", "type", GraphConstants.RELATIONSHIP_SOURCE, GraphConstants.RELATIONSHIP_ID));
         writer.fieldTypes.put("start", "START_ID");
         writer.fieldTypes.put("end", "END_ID");
         writer.fieldTypes.put("type", "TYPE");
-        writer.fieldTypes.put(GraphTask.RELATIONSHIP_SOURCE, "string");
-        writer.fieldTypes.put(GraphTask.RELATIONSHIP_ID, "string");
+        writer.fieldTypes.put(GraphConstants.RELATIONSHIP_SOURCE, "string");
+        writer.fieldTypes.put(GraphConstants.RELATIONSHIP_ID, "string");
         return writer;
     }
 
@@ -875,3 +875,4 @@ public class GraphFileWriter implements Closeable, Flushable {
     }
 
 }
+

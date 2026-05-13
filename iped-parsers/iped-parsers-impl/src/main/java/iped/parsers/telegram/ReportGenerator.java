@@ -25,6 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import org.apache.tika.metadata.Metadata;
+
 import iped.data.IItemReader;
 import iped.parsers.util.Messages;
 import iped.properties.ExtraProperties;
@@ -266,19 +268,20 @@ public class ReportGenerator {
             link.getInner().add(img);
             div.getInner().add(link);
 
-            if (message.getMediaItem()!= null && message.getMediaItem().getMetadata().get(ExtraProperties.TRANSCRIPT_ATTR) != null) {
+            Metadata mediaMetadata = message.getMediaItem() == null ? null : (Metadata) message.getMediaItem().getMetadata();
+            if (mediaMetadata != null && mediaMetadata.get(ExtraProperties.TRANSCRIPT_ATTR) != null) {
                 TagHtml transcription = new TagHtml("span");
                 StringBuilder transcriptionText = new StringBuilder();
                 transcriptionText.append(Messages.getString("ReportGenerator.TranscriptionTitle"));
 
-                String confidence = message.getMediaItem().getMetadata().get(ExtraProperties.CONFIDENCE_ATTR);
+                String confidence = mediaMetadata.get(ExtraProperties.CONFIDENCE_ATTR);
                 if (confidence != null) {
                     float score = Float.valueOf(confidence) * 100;
                     transcriptionText.append(" [" + (int) score + "%]");
                 }
                 transcriptionText.append(": <i>");
                 transcriptionText
-                        .append(format(message.getMediaItem().getMetadata().get(ExtraProperties.TRANSCRIPT_ATTR)));
+                        .append(format(mediaMetadata.get(ExtraProperties.TRANSCRIPT_ATTR)));
                 transcriptionText.append("</i><br>");
                 transcription.getInner().add(transcriptionText.toString());
                 div.getInner().add(transcription);

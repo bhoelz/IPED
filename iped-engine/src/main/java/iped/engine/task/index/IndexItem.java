@@ -83,7 +83,6 @@ import iped.engine.preview.PreviewConstants;
 import iped.engine.preview.PreviewInputStreamFactory;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
 import iped.engine.task.ImageThumbTask;
-import iped.engine.task.MinIOTask.MinIOInputInputStreamFactory;
 import iped.engine.task.ThumbTask;
 import iped.engine.task.similarity.ImageSimilarityTask;
 import iped.engine.task.video.VideoThumbTask;
@@ -860,7 +859,7 @@ public class IndexItem extends BasicProps {
                     if (sleuthCase != null) {
                         sourcePath = sleuthCase.getDbDirPath() + File.separatorChar + sleuthCase.getDatabaseName();
                     }
-                } else if (!MinIOInputInputStreamFactory.class.getName().equals(className)) {
+                } else if (!"iped.engine.task.MinIOTask$MinIOInputInputStreamFactory".equals(className)) {
                     sourcePath = Util.getResolvedFile(outputBase.getParent(), sourcePath).toString();
                 }
                 synchronized (inputStreamFactories) {

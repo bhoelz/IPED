@@ -41,7 +41,7 @@ public class GraphServiceImpl implements GraphService {
             LOGGER.info("Starting neo4j service at " + dbHome.getAbsolutePath());
 
             managementService = new DatabaseManagementServiceBuilder(dbHome.toPath()).build();
-            graphDB = managementService.database(GraphTask.DB_NAME);
+            graphDB = managementService.database(GraphConstants.DB_NAME);
 
             started = true;
 
@@ -605,7 +605,7 @@ public class GraphServiceImpl implements GraphService {
 
             HashMap<String, Object> parameters = new HashMap<>(1);
             parameters.put("param", evidenceUUID);
-            Result result = tx.execute("MATCH ()-[r]-() WHERE r." + GraphTask.RELATIONSHIP_SOURCE
+            Result result = tx.execute("MATCH ()-[r]-() WHERE r." + GraphConstants.RELATIONSHIP_SOURCE
                     + " = $param WITH DISTINCT r as dr DELETE dr RETURN count(dr) as size",
                     parameters);
 
@@ -621,3 +621,4 @@ public class GraphServiceImpl implements GraphService {
     }
 
 }
+

@@ -572,7 +572,7 @@ public class WhatsAppParser extends SQLite3DBParser {
     }
 
     private static boolean checkIfIsMainDBAndStore(WhatsAppContext wcontext) {
-        String type = wcontext.getItem().getMediaType().toString();
+        String type = wcontext.getItem().getMediaTypeString();
         // this is not used for IOS
         if (type.equals(CHAT_STORAGE.toString()) || type.equals(CHAT_STORAGE_2.toString())) {
             return false;
@@ -622,7 +622,7 @@ public class WhatsAppParser extends SQLite3DBParser {
     private void addBackupMessage(WhatsAppContext item, IItemReader main, XHTMLContentHandler xhtml)
             throws SAXException {
         IItem i = (IItem) item.getItem();
-        i.getMetadata().set(IS_BACKUP_FROM, main.getExtraAttribute(ExtraProperties.GLOBAL_ID).toString());
+        ((Metadata) i.getMetadata()).set(IS_BACKUP_FROM, main.getExtraAttribute(ExtraProperties.GLOBAL_ID).toString());
         xhtml.startDocument();
         xhtml.characters("Backup from " + main.getPath());
         xhtml.endDocument();
@@ -1845,3 +1845,5 @@ public class WhatsAppParser extends SQLite3DBParser {
         }
     }
 }
+
+

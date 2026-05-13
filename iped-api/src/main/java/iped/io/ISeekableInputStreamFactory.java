@@ -5,11 +5,11 @@ import java.net.URI;
 
 public interface ISeekableInputStreamFactory {
 
-    public SeekableInputStream getSeekableInputStream(String identifier) throws IOException;
+    SeekableInputStream getSeekableInputStream(String identifier) throws IOException;
 
-    public URI getDataSourceURI();
+    URI getDataSourceURI();
 
-    public default boolean returnsEmptyInputStream() {
+    default boolean returnsEmptyInputStream() {
         return false;
     }
 

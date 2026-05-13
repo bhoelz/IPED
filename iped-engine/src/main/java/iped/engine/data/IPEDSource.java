@@ -68,12 +68,12 @@ import iped.engine.localization.Messages;
 import iped.engine.lucene.ConfiguredFSDirectory;
 import iped.engine.lucene.SlowCompositeReaderWrapper;
 import iped.engine.lucene.analysis.AppAnalyzer;
+import iped.engine.index.IndexExtraAttributes;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.search.IndexerSimilarity;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
 import iped.engine.sleuthkit.TouchSleuthkitImages;
-import iped.engine.task.index.IndexItem;
-import iped.engine.task.index.IndexTask;
+import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
@@ -236,9 +236,9 @@ public class IPEDSource implements IIPEDSource {
 
             loadKeywords();
 
-            IndexItem.loadMetadataTypes(new File(moduleDir, "conf")); //$NON-NLS-1$
+            IndexMetadata.loadMetadataTypes(new File(moduleDir, "conf")); //$NON-NLS-1$
 
-            File extraAttrFile = new File(moduleDir, "data/" + IndexTask.extraAttrFilename); //$NON-NLS-1$
+            File extraAttrFile = new File(moduleDir, "data/" + IndexExtraAttributes.EXTRA_ATTRIBUTES_FILENAME); //$NON-NLS-1$
             if (extraAttrFile.exists()) {
                 extraAttributes = (Set<String>) Util.readObject(extraAttrFile.getAbsolutePath());
                 Item.getAllExtraAttributes().addAll(extraAttributes);
@@ -762,6 +762,11 @@ public class IPEDSource implements IIPEDSource {
         return analyzer;
     }
 
+    @Override
+    public Object getSearchAnalyzer() {
+        return getAnalyzer();
+    }
+
     public SleuthkitCase getSleuthCase() {
         return sleuthCase;
     }
@@ -770,16 +775,36 @@ public class IPEDSource implements IIPEDSource {
         return reader;
     }
 
+    @Override
+    public Object getIndexReaderHandle() {
+        return getReader();
+    }
+
     public LeafReader getAtomicReader() {
         return this.atomicReader;
+    }
+
+    @Override
+    public Object getAtomicIndexReader() {
+        return getAtomicReader();
     }
 
     public LeafReader getLeafReader() {
         return this.atomicReader;
     }
 
+    @Override
+    public Object getLeafIndexReader() {
+        return getLeafReader();
+    }
+
     public IndexSearcher getSearcher() {
         return searcher;
+    }
+
+    @Override
+    public Object getIndexSearcherHandle() {
+        return getSearcher();
     }
 
     public IBookmarks getBookmarks() {
@@ -803,3 +828,4 @@ public class IPEDSource implements IIPEDSource {
     }
 
 }
+

@@ -66,9 +66,10 @@ import iped.engine.data.Item;
 import iped.engine.datasource.ItemProducer;
 import iped.engine.datasource.SleuthkitReader;
 import iped.engine.graph.GraphFileWriter;
+import iped.engine.graph.GraphConstants;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
-import iped.engine.graph.GraphTask;
+import iped.engine.index.IndexExtraAttributes;
 import iped.engine.io.ParsingReader;
 import iped.engine.localization.Messages;
 import iped.engine.lucene.ConfiguredFSDirectory;
@@ -84,9 +85,8 @@ import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
 import iped.engine.task.ExportCSVTask;
 import iped.engine.task.ExportFileTask;
 import iped.engine.task.P2PBookmarker;
-import iped.engine.task.index.ElasticSearchIndexTask;
-import iped.engine.task.index.IndexItem;
-import iped.engine.task.index.IndexTask;
+import iped.engine.task.TaskRuntime;
+import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
@@ -487,9 +487,9 @@ public class Manager {
         LOGGER.log(CONSOLE, "Deleting connections from graph...");
         GraphService graphService = null;
         try {
-            if (new File(output, GraphTask.DB_DATA_PATH).exists()) {
+            if (new File(output, GraphConstants.DB_DATA_PATH).exists()) {
                 graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
-                graphService.start(new File(output, GraphTask.DB_HOME_DIR));
+                graphService.start(new File(output, GraphConstants.DB_HOME_DIR));
                 int deletions = graphService.deleteRelationshipsFromDatasource(evidenceUUID);
                 LOGGER.log(CONSOLE, "Deleted {} graph connections.", deletions);
             } else {
@@ -504,7 +504,7 @@ public class Manager {
         // Delete relations from graph source CSV
         LOGGER.log(CONSOLE, "Deleting connections from graph CSVs...");
         int deletions = GraphFileWriter.removeDeletedRelationships(evidenceUUID,
-                new File(output, GraphTask.CSVS_PATH));
+                new File(output, GraphConstants.CSVS_PATH));
         LOGGER.log(CONSOLE, "Deleted {} CSV connections.", deletions);
 
         status.removeEvidence(evidenceName);
@@ -643,18 +643,18 @@ public class Manager {
                     writer.prepareCommit();
 
                     // commit other control data
-                    IndexTask.saveExtraAttributes(output);
-                    IndexItem.saveMetadataTypes(new File(output, "conf")); //$NON-NLS-1$
+                    IndexExtraAttributes.save(output);
+                    IndexMetadata.saveMetadataTypes(new File(output, "conf")); //$NON-NLS-1$
                     stats.commit();
 
                     LOGGER.info("Commiting sqlite storages...");
                     ExportFileTask.commitStorage(output);
 
-                    GraphTask.commit();
+                    TaskRuntime.invokeStaticVoid("iped.engine.graph.GraphTask", "commit");
 
                     ExportCSVTask.commit(output);
 
-                    ElasticSearchIndexTask.commit();
+                    TaskRuntime.invokeStaticVoid("iped.engine.task.index.ElasticSearchIndexTask", "commit");
 
                     writer.commit();
 
@@ -977,3 +977,4 @@ public class Manager {
     }
 
 }
+

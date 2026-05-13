@@ -32,7 +32,8 @@ import iped.engine.data.Item;
 import iped.engine.io.CloseFilterReader;
 import iped.engine.io.FragmentingReader;
 import iped.engine.io.ParsingReader;
-import iped.engine.task.AbstractTask;
+import iped.engine.index.IndexExtraAttributes;
+import iped.engine.index.IndexMetadata;\nimport iped.engine.task.AbstractTask;
 import iped.engine.task.ParsingTask;
 import iped.engine.task.SkipCommitedTask;
 import iped.engine.task.carver.BaseCarveTask;
@@ -58,7 +59,6 @@ public class IndexTask extends AbstractTask {
     public static final String TEXT_SPLITTED = "textSplitted";
     public static final String FRAG_NUM = "fragNum";
     public static final String FRAG_PARENT_ID = "fragParentId";
-    public static final String extraAttrFilename = "extraAttributes.dat"; //$NON-NLS-1$
 
     private static final AtomicBoolean finished = new AtomicBoolean();
     private static final AtomicBoolean lastIDLoaded = new AtomicBoolean();
@@ -255,7 +255,7 @@ public class IndexTask extends AbstractTask {
             }
         }
 
-        IndexItem.loadMetadataTypes(new File(output, "conf")); //$NON-NLS-1$
+        IndexMetadata.loadMetadataTypes(new File(output, "conf")); //$NON-NLS-1$
         loadExtraAttributes();
 
         this.autoParser = new StandardParser();
@@ -267,20 +267,17 @@ public class IndexTask extends AbstractTask {
 
         if (!finished.getAndSet(true)) {
             saveExtraAttributes(output);
-            IndexItem.saveMetadataTypes(new File(output, "conf")); //$NON-NLS-1$
+            IndexMetadata.saveMetadataTypes(new File(output, "conf")); //$NON-NLS-1$
         }
     }
 
     public static void saveExtraAttributes(File output) throws IOException {
-        File extraAttributtesFile = new File(output, "data/" + extraAttrFilename); //$NON-NLS-1$
-        Set<String> extraAttr = Item.getAllExtraAttributes();
-        Util.writeObject(extraAttr, extraAttributtesFile.getAbsolutePath());
-        Util.fsync(extraAttributtesFile.toPath());
+        IndexExtraAttributes.save(output);
     }
 
     private void loadExtraAttributes() throws ClassNotFoundException, IOException {
 
-        File extraAttributtesFile = new File(output, "data/" + extraAttrFilename); //$NON-NLS-1$
+        File extraAttributtesFile = new File(output, "data/" + IndexExtraAttributes.EXTRA_ATTRIBUTES_FILENAME); //$NON-NLS-1$
         if (extraAttributtesFile.exists()) {
             Set<String> extraAttributes = (Set<String>) Util.readObject(extraAttributtesFile.getAbsolutePath());
             Item.getAllExtraAttributes().addAll(extraAttributes);
@@ -288,3 +285,4 @@ public class IndexTask extends AbstractTask {
     }
 
 }
+

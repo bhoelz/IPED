@@ -8,15 +8,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -30,44 +32,57 @@ import iped.exception.IPEDException;
 
 public class TaskInstallerConfig implements Configurable<String> {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskInstallerConfig.class);
     private static final String CONFIG_XML = "TaskInstaller.xml"; //$NON-NLS-1$
     public static final String SCRIPT_BASE = "scripts/tasks"; //$NON-NLS-1$
 
-    private String xml;
+    private final List<String> xmlContents = new ArrayList<>();
 
     public List<AbstractTask> getNewTaskInstances() {
-        Map<String, AbstractTask> tasks = new LinkedHashMap<>();
+        Map<String, TaskRegistry.TaskRegistration> xmlTasks = new LinkedHashMap<>();
         try {
-            loadTasks(xml, tasks);
+            loadXmlTasks(xmlTasks);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error loading tasks from XML descriptors", e);
         }
-        return tasks.values().stream().collect(Collectors.toList());
+
+        PluginConfig pluginConfig = ConfigurationManager.get().findObject(PluginConfig.class);
+        TaskRegistry pluginRegistry = pluginConfig == null ? new TaskRegistry(Map.of(), List.of(), List.of()) : new PluginTaskLoader().load(pluginConfig);
+        TaskRegistry registry = TaskRegistry.merge(xmlTasks.values(), pluginRegistry);
+
+        if (!pluginRegistry.loadedProviders().isEmpty()) {
+            LOGGER.info("Resolving task graph with {} XML tasks and {} plugin tasks", xmlTasks.size(),
+                    pluginRegistry.registrations().size());
+        }
+
+        List<AbstractTask> tasks = registry.instantiateResolvedTasks();
+        LOGGER.info("Resolved {} total tasks for execution pipeline", tasks.size());
+        return tasks;
     }
 
     @Override
     public Filter<Path> getResourceLookupFilter() {
-        return new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.endsWith(CONFIG_XML);
-            }
-        };
+        return entry -> entry.endsWith(CONFIG_XML);
     }
 
     @Override
     public void processConfig(Path resource) throws IOException {
         byte[] bytes = Files.readAllBytes(resource);
-        this.xml = new String(bytes, StandardCharsets.UTF_8);
+        xmlContents.add(new String(bytes, StandardCharsets.UTF_8));
     }
 
-	private void loadTasks(String xml, Map<String, AbstractTask> tasks) throws InstantiationException,
-			IllegalAccessException, IOException, ClassNotFoundException, ParserConfigurationException, SAXException,
-			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    private void loadXmlTasks(Map<String, TaskRegistry.TaskRegistration> tasks)
+            throws InstantiationException, IllegalAccessException, IOException, ClassNotFoundException, ParserConfigurationException,
+            SAXException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        for (String xml : xmlContents) {
+            loadTasks(xml, tasks);
+        }
+    }
+
+    private void loadTasks(String xml, Map<String, TaskRegistry.TaskRegistration> tasks)
+            throws InstantiationException, IllegalAccessException, IOException, ClassNotFoundException, ParserConfigurationException,
+            SAXException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
         DocumentBuilder dombuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document dom = dombuilder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
@@ -77,40 +92,55 @@ public class TaskInstallerConfig implements Configurable<String> {
             Node attr = node.getAttributes().getNamedItem("class"); //$NON-NLS-1$
             if (attr != null) {
                 String className = attr.getNodeValue();
-                tasks.putIfAbsent(className, (AbstractTask) Class.forName(className).getDeclaredConstructor().newInstance());
+                tasks.putIfAbsent(className, TaskRegistry.TaskRegistration.xmlTask(className, () -> instantiateClassTask(className), "TaskInstaller.xml"));
             }
             attr = node.getAttributes().getNamedItem("script"); //$NON-NLS-1$
             if (attr != null) {
                 String scriptName = attr.getNodeValue();
-                File scriptDir = new File(Configuration.getInstance().configPath, SCRIPT_BASE);
-                File script = new File(scriptDir, scriptName);
-                if (!script.exists()) {
-                    scriptDir = new File(Configuration.getInstance().appRoot, SCRIPT_BASE);
-                    script = new File(scriptDir, scriptName);
-                    if (!script.exists()) {
-                        throw new IPEDException("Script File not found: " + script.getAbsolutePath()); //$NON-NLS-1$
-                    }
-                }
-                tasks.putIfAbsent(scriptName, getScriptTask(script));
+                File script = locateScript(scriptName);
+                tasks.putIfAbsent(scriptName, TaskRegistry.TaskRegistration.xmlTask(scriptName, () -> getScriptTask(script), "TaskInstaller.xml"));
             }
         }
     }
 
+    private AbstractTask instantiateClassTask(String className) {
+        try {
+            return (AbstractTask) Class.forName(className).getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not instantiate XML task class " + className, e);
+        }
+    }
+
+    private File locateScript(String scriptName) {
+        File scriptDir = new File(Configuration.getInstance().configPath, SCRIPT_BASE);
+        File script = new File(scriptDir, scriptName);
+        if (!script.exists()) {
+            scriptDir = new File(Configuration.getInstance().appRoot, SCRIPT_BASE);
+            script = new File(scriptDir, scriptName);
+            if (!script.exists()) {
+                throw new IPEDException("Script File not found: " + script.getAbsolutePath()); //$NON-NLS-1$
+            }
+        }
+        return script;
+    }
+
     private AbstractTask getScriptTask(File script) {
-        if (script.getName().endsWith(".py"))
+        if (script.getName().endsWith(".py")) {
             return new PythonTask(script);
-        else
-            return new ScriptTask(script);
+        }
+        return new ScriptTask(script);
     }
 
     @Override
     public String getConfiguration() {
-        return xml;
+        return String.join(System.lineSeparator(), xmlContents);
     }
 
     @Override
     public void setConfiguration(String config) {
-        this.xml = config;
+        xmlContents.clear();
+        if (config != null && !config.isBlank()) {
+            xmlContents.add(config);
+        }
     }
-
 }

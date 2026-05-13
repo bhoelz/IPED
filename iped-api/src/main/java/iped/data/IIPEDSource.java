@@ -10,11 +10,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.search.IndexSearcher;
-
 /**
  *
  * @author WERNECK
@@ -28,11 +23,11 @@ public interface IIPEDSource extends Closeable {
     @Override
     void close();
 
-    Analyzer getAnalyzer();
+    Object getSearchAnalyzer();
 
-    LeafReader getLeafReader();
+    Object getLeafIndexReader();
 
-    LeafReader getAtomicReader();
+    Object getAtomicIndexReader();
 
     File getCaseDir();
 
@@ -66,9 +61,9 @@ public interface IIPEDSource extends Closeable {
 
     IMultiBookmarks getMultiBookmarks();
 
-    IndexReader getReader();
+    Object getIndexReaderHandle();
 
-    IndexSearcher getSearcher();
+    Object getIndexSearcherHandle();
 
     int getSourceId();
 

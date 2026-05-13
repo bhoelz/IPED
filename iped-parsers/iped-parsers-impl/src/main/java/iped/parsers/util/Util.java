@@ -14,6 +14,7 @@ import java.util.Optional;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.AutoDetectReader;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.mime.MediaType;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -284,7 +285,7 @@ public class Util {
         String originalPath = getSourceFileIfExists(item).orElse("");
         StringBuilder sb = new StringBuilder();
         sb.append("javascript:open");
-        String type = item.getMediaType().getType();
+        String type = ((MediaType) item.getMediaType()).getType();
         if (type.equals("image")) {
             sb.append("Image");
         } else if (type.equals("audio")) {

@@ -11,8 +11,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
-import org.apache.tika.utils.DateUtils;
-
 public class DateUtil {
 
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
@@ -60,8 +58,7 @@ public class DateUtil {
     /**
      * Tries to parse the date string; returns null if no parse was possible.
      *
-     * This is not thread safe! Wrap in synchronized or create new {@link DateUtils}
-     * for each class.
+     * This is not thread safe! Wrap in synchronized when sharing parser instances.
      *
      * @param dateString
      * @return

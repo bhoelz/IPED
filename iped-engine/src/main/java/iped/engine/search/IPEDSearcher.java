@@ -38,6 +38,7 @@ import iped.engine.task.index.IndexItem;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.search.IIPEDSearcher;
+import iped.search.SearchQueryDefinition;
 import iped.search.SearchResult;
 
 public class IPEDSearcher implements IIPEDSearcher {
@@ -99,6 +100,11 @@ public class IPEDSearcher implements IIPEDSearcher {
         this.query = query;
     }
 
+    @Override
+    public void setQueryObject(Object queryObject) {
+        this.query = (Query) queryObject;
+    }
+
     public void setQuery(String queryText) {
         try {
             query = new QueryBuilder(ipedCase).getQuery(queryText);
@@ -114,6 +120,25 @@ public class IPEDSearcher implements IIPEDSearcher {
 
     public Query getQuery() {
         return query;
+    }
+
+    @Override
+    public Object getQueryObject() {
+        return query;
+    }
+
+    @Override
+    public SearchQueryDefinition getQueryDefinition() {
+        return query == null ? null : SearchQueryDefinition.of(query.toString());
+    }
+
+    @Override
+    public void setQueryDefinition(SearchQueryDefinition queryDefinition) {
+        if (queryDefinition == null) {
+            query = null;
+            return;
+        }
+        setQuery(queryDefinition.expression());
     }
 
     public void cancel() {

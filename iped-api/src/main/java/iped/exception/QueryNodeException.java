@@ -5,15 +5,18 @@
  */
 package iped.exception;
 
+import java.io.Serial;
+
 /**
  *
  * @author WERNECK
  */
 public class QueryNodeException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
-	public QueryNodeException(Exception cause) {
+    public QueryNodeException(Exception cause) {
         super(cause);
     }
 

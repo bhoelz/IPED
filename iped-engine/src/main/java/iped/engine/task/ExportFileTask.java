@@ -676,7 +676,7 @@ public class ExportFileTask extends AbstractTask {
                             // catch exceptions here to extract some content, even runtime exceptions
                             exception = e;
                         }
-                        if ((i == -1 || exception != null) && storeInSQLite() && total == 0 && evidence.getMetadata().get(ExtraProperties.EXTRACTED_FILE) == null) {
+                        if ((i == -1 || exception != null) && storeInSQLite() && total == 0 && evidence.getMetadataValue(ExtraProperties.EXTRACTED_FILE) == null) {
                             if (baos.size() == 0) {
                                 evidence.setLength(0L);
                             } else {
@@ -1004,3 +1004,4 @@ public class ExportFileTask extends AbstractTask {
     }
 
 }
+

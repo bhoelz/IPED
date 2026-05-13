@@ -5,7 +5,10 @@
  */
 package iped.data;
 
-import java.awt.Color;
+import iped.search.IMultiSearchResult;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -13,10 +16,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.KeyStroke;
-
-import iped.search.IMultiSearchResult;
 
 /**
  *
@@ -86,23 +85,23 @@ public interface IMultiBookmarks extends Serializable {
     void setBookmarkKeyStroke(String bookmarkName, KeyStroke key);
 
     KeyStroke getBookmarkKeyStroke(String bookmarkName);
-    
+
     void removeBookmarkKeyStroke(String bookmarkName);
-    
+
     void checkAll();
 
     void setChecked(boolean value, IItemId item);
 
-    public String getBookmarkComment(String bookmarkName);
+    String getBookmarkComment(String bookmarkName);
 
-    public int getBookmarkCount(String bookmarkName);
+    int getBookmarkCount(String bookmarkName);
 
     void setBookmarkComment(String texto, String comment);
 
     Color getBookmarkColor(String bookmarkName);
 
     void setBookmarkColor(String bookmarkName, Color color);
-    
+
     Set<Color> getUsedColors();
 
     boolean isInReport(String bookmark);

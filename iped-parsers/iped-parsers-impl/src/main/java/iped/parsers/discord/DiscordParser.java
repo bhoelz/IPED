@@ -265,7 +265,7 @@ public class DiscordParser extends AbstractParser {
                             for (IItemReader attsItem : atts) {
                                 if (da.getSize() > greater) {
                                     da.setMediaHash(attsItem.getHash());
-                                    da.setContent_type(attsItem.getMediaType().toString());
+                                    da.setContent_type(attsItem.getMediaTypeString());
                                     greater = da.getSize();
                                 }
                             }
@@ -413,3 +413,5 @@ public class DiscordParser extends AbstractParser {
         return pb; // Returns as plain text if not compressed.
     }
 }
+
+

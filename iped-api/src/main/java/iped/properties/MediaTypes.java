@@ -1,12 +1,13 @@
 package iped.properties;
 
+import iped.data.IItemReader;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MediaTypeRegistry;
 
-import iped.data.IItemReader;
-
 public class MediaTypes {
+
+    private static final MediaTypeRegistry MEDIA_TYPE_REGISTRY = TikaConfig.getDefaultConfig().getMediaTypeRegistry();
 
     public static final MediaType METADATA_ENTRY = MediaType.application("x-metadata-entry"); //$NON-NLS-1$
     public static final MediaType CHAT_MESSAGE_MIME = MediaType.parse("message/x-chat-message"); //$NON-NLS-1$
@@ -38,51 +39,56 @@ public class MediaTypes {
 
     public static final String UFED_MIME_PREFIX = "x-ufed-"; //$NON-NLS-1$
 
-    private static MediaTypeRegistry mediaTypeRegistry;
-
     public static MediaTypeRegistry getMediaTypeRegistry() {
-        if (mediaTypeRegistry == null) {
-            synchronized (MediaTypes.class) {
-                if (mediaTypeRegistry == null) {
-                    mediaTypeRegistry = TikaConfig.getDefaultConfig().getMediaTypeRegistry();
-                }
-            }
-        }
-        return mediaTypeRegistry;
+        return MEDIA_TYPE_REGISTRY;
     }
 
     public static MediaType normalize(MediaType type) {
-        return getMediaTypeRegistry().normalize(type);
+        return MEDIA_TYPE_REGISTRY.normalize(type);
     }
 
     public static MediaType getParentType(MediaType type) {
-        MediaType parent = getMediaTypeRegistry().getSupertype(type);
-        if (type != null && type.toString().contains(UFED_MIME_PREFIX) && MediaType.OCTET_STREAM.equals(parent)) {
-            parent = MediaTypes.METADATA_ENTRY;
-            getMediaTypeRegistry().addSuperType(type, parent);
+        MediaType parent = MEDIA_TYPE_REGISTRY.getSupertype(type);
+        while (MediaType.OCTET_STREAM.equals(parent)) {
+            MediaType oldParent = parent;
+            parent = MEDIA_TYPE_REGISTRY.getSupertype(parent);
+            if (oldParent.equals(parent)) {
+                break;
+            }
+        }
+        if (type != null && type.toString().contains(UFED_MIME_PREFIX)) {
+            parent = METADATA_ENTRY;
         }
         return parent;
     }
 
     public static boolean isInstanceOf(MediaType instance, MediaType parent) {
-        return instance != null && (instance.equals(parent) || isInstanceOf(getParentType(instance), parent));
+        return MEDIA_TYPE_REGISTRY.isSpecializationOf(instance, parent);
+    }
+
+    public static boolean isInstanceOf(Object instance, MediaType parent) {
+        if (instance == null) {
+            return false;
+        }
+        if (instance instanceof MediaType mediaType) {
+            return isInstanceOf(mediaType, parent);
+        }
+        return isInstanceOf(MediaType.parse(instance.toString()), parent);
     }
 
     public static boolean isMetadataEntryType(MediaType type) {
-        while (type != null && !type.equals(MediaType.OCTET_STREAM)) {
-            if (MediaTypes.METADATA_ENTRY.equals(type)) {
-                return true;
-            }
-            type = getParentType(type);
-        }
-        return false;
+        return isInstanceOf(type, METADATA_ENTRY);
+    }
+
+    public static boolean isMetadataEntryType(Object type) {
+        return isInstanceOf(type, METADATA_ENTRY);
     }
 
     public static String getMimeTypeString(IItemReader item) {
-        if (item.getMediaType() != null) {
-            return item.getMediaType().toString();
+        Object mediaType = item.getMediaType();
+        if (mediaType == null) {
+            return null;
         }
-        return null;
+        return mediaType.toString();
     }
-
 }

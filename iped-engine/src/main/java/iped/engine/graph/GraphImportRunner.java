@@ -102,7 +102,7 @@ public class GraphImportRunner {
 
         processBuilder.environment().put("NEO4J_HOME", neo4jHome.getAbsolutePath());
         processBuilder.environment().put("NEO4J_CONF", emptyConf.getParent());
-        processBuilder.directory(new File(neo4jHome, GraphTask.CSVS_DIR));
+        processBuilder.directory(new File(neo4jHome, GraphConstants.CSVS_DIR));
         Process process = processBuilder.start();
         try {
             executorService = Executors.newFixedThreadPool(1);
@@ -185,3 +185,4 @@ public class GraphImportRunner {
     }
 
 }
+

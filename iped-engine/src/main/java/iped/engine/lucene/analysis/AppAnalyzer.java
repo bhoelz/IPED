@@ -28,8 +28,8 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.IndexTaskConfig;
 import iped.engine.task.HashTask;
-import iped.engine.task.PhotoDNATask;
-import iped.engine.task.index.IndexItem;
+import iped.engine.task.PhotoDNAConstants;
+import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
 import iped.localization.LocalizedProperties;
 import iped.properties.ExtraProperties;
 
@@ -66,7 +66,7 @@ public class AppAnalyzer {
         analyzerPerField.put(HashTask.HASH.SHA1.toString(), hashAnalyzer);
         analyzerPerField.put(HashTask.HASH.SHA256.toString(), hashAnalyzer);
         analyzerPerField.put(HashTask.HASH.SHA512.toString(), hashAnalyzer);
-        analyzerPerField.put(PhotoDNATask.PHOTO_DNA, hashAnalyzer);
+        analyzerPerField.put(PhotoDNAConstants.PHOTO_DNA, hashAnalyzer);
 
         StandardASCIIAnalyzer defaultAnalyzer = new StandardASCIIAnalyzer();
         defaultAnalyzer.setMaxTokenLength(indexConfig.getMaxTokenLength());
@@ -80,7 +80,7 @@ public class AppAnalyzer {
                 if (fieldName != null) {
                     // Use actual (non localized) field names to check if it is a date (See #2175).
                     fieldName = LocalizedProperties.getNonLocalizedField(fieldName);
-                    if (Date.class.equals(IndexItem.getMetadataTypes().get(fieldName))) {
+                    if (Date.class.equals(IndexMetadata.getMetadataTypes().get(fieldName))) {
                         return new KeywordAnalyzer();
                     }
                 }
@@ -90,3 +90,4 @@ public class AppAnalyzer {
     }
 
 }
+

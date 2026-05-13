@@ -67,9 +67,9 @@ import iped.engine.task.ExportFileTask;
 import iped.engine.task.HashDBLookupTask;
 import iped.engine.task.HashTask;
 import iped.engine.task.ImageThumbTask;
-import iped.engine.task.PhotoDNATask;
+import iped.engine.task.PhotoDNAConstants;
 import iped.engine.task.ThumbTask;
-import iped.engine.task.die.DIETask;
+import iped.engine.task.die.DIEConstants;
 import iped.parsers.util.ISO6709Converter;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
@@ -390,9 +390,9 @@ public class VideoThumbTask extends ThumbTask {
 
                 //Check if it is an animated image
                 int numFrames = 0;
-                boolean isAnimated = MetadataUtil.isImageSequence(evidence.getMediaType().toString());
+                boolean isAnimated = MetadataUtil.isImageSequence(evidence.getMediaTypeString());
                 if (!isAnimated) {
-                    String strFrames = evidence.getMetadata().get(ExtraProperties.ANIMATION_FRAMES_PROP);
+                    String strFrames = evidence.getMetadataValue(ExtraProperties.ANIMATION_FRAMES_PROP);
                     if (strFrames != null) {
                         numFrames = Integer.parseInt(strFrames);
                         if (numFrames > 0)
@@ -625,12 +625,12 @@ public class VideoThumbTask extends ThumbTask {
             // add new item to processing queue
             worker.processNewItem(newItem, ProcessTime.NOW);
 
-            Double nudityScore = (Double) newItem.getTempAttribute(DIETask.DIE_RAW_SCORE);
+            Double nudityScore = (Double) newItem.getTempAttribute(DIEConstants.DIE_RAW_SCORE);
             if (nudityScore != null) {
                 framesNudityScore.add(nudityScore);
             }
 
-            String photoDNA = (String)newItem.getExtraAttribute(PhotoDNATask.PHOTO_DNA);
+            String photoDNA = (String)newItem.getExtraAttribute(PhotoDNAConstants.PHOTO_DNA);
             if (photoDNA != null) {
                 framesPhotoDNA.add(photoDNA);
             }
@@ -638,11 +638,11 @@ public class VideoThumbTask extends ThumbTask {
         }
 
         if (!framesNudityScore.isEmpty()) {
-            item.setTempAttribute(DIETask.DIE_RAW_SCORE, framesNudityScore);
+            item.setTempAttribute(DIEConstants.DIE_RAW_SCORE, framesNudityScore);
         }
 
         if (!framesPhotoDNA.isEmpty()) {
-            item.setTempAttribute(PhotoDNATask.PHOTO_DNA_FRAMES_TEMP, framesPhotoDNA);
+            item.setTempAttribute(PhotoDNAConstants.PHOTO_DNA_FRAMES_TEMP, framesPhotoDNA);
         }
     }
 
@@ -664,7 +664,7 @@ public class VideoThumbTask extends ThumbTask {
      */
     private static boolean checkAnimatedImage(IItem evidence) {
         int numImages = -1;
-        String mediaType = evidence.getMediaType().toString();
+        String mediaType = evidence.getMediaTypeString();
 
         if (MetadataUtil.isImageSequence(mediaType)) {
             return true;
@@ -703,3 +703,7 @@ public class VideoThumbTask extends ThumbTask {
         return false;
     }
 }
+
+
+
+

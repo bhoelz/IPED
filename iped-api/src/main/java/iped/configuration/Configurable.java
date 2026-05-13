@@ -11,10 +11,7 @@ import java.util.List;
  * This interface is used to indicate a configurable object that holds
  * configuration for some module.
  *
- * @param <AppConfig>
- *            the type used for the application configuration
- * @param <UserConfig>
- *            the type used for the user configuration
+ * @param <T> the type of used for configuration
  * @author Bruno W. P. Hoelz
  * @author Luis Nassif
  */
@@ -23,19 +20,18 @@ public interface Configurable<T> extends Serializable {
     /**
      * Returns a filter to be used for resource lookup on the configuration
      * directory system
-     * 
+     *
      * @return the filter to be used
      */
     public DirectoryStream.Filter<Path> getResourceLookupFilter();
 
     /**
      * Process the configuration resources found after applying the lookup filter.
-     * 
-     * @param resources
-     *            the filtered configuration resources.
+     *
+     * @param resources the filtered configuration resources.
      */
     default public void processConfigs(List<Path> resources) throws IOException {
-        for (Iterator<Path> iterator = resources.iterator(); iterator.hasNext();) {
+        for (Iterator<Path> iterator = resources.iterator(); iterator.hasNext(); ) {
             Path path = iterator.next();
             processConfig(path);
         }
@@ -43,11 +39,10 @@ public interface Configurable<T> extends Serializable {
 
     /**
      * Process a configuration resource found after applying the lookup filter.
-     * 
-     * @param resource
-     *            a configuration resource.
+     *
+     * @param resource a configuration resource.
      */
-    public void processConfig(Path resource) throws IOException;
+    void processConfig(Path resource) throws IOException;
 
     /**
      * Gets the configuration object.
@@ -59,8 +54,7 @@ public interface Configurable<T> extends Serializable {
     /**
      * Sets the configuration object.
      *
-     * @param config
-     *            the configuration object.
+     * @param config the configuration object.
      */
     void setConfiguration(T config);
 

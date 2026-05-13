@@ -5,8 +5,6 @@
  */
 package iped.search;
 
-import org.apache.lucene.search.Query;
-
 /**
  *
  * @author WERNECK
@@ -17,13 +15,17 @@ public interface IIPEDSearcher {
 
     void cancel();
 
-    Query getQuery();
+    Object getQueryObject();
+
+    SearchQueryDefinition getQueryDefinition();
 
     IMultiSearchResult multiSearch() throws Exception;
 
     SearchResult search() throws Exception;
 
-    void setQuery(Query query);
+    void setQueryObject(Object queryObject);
+
+    void setQueryDefinition(SearchQueryDefinition queryDefinition);
 
     void setTreeQuery(boolean treeQuery);
 

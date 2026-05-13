@@ -155,7 +155,7 @@ public class FileProcessor extends CancelableWorker<Void, Void> implements IFile
         lastItem = item;
         String contentType = null;
         if (item.getMediaType() != null) {
-            contentType = item.getMediaType().toString();
+            contentType = item.getMediaTypeString();
         }
 
         boolean imgSimEnabled = item.getExtraAttribute(ImageSimilarityTask.IMAGE_FEATURES) != null;
@@ -260,3 +260,5 @@ public class FileProcessor extends CancelableWorker<Void, Void> implements IFile
     }
 
 }
+
+

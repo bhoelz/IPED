@@ -1,30 +1,23 @@
 package iped.data;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
+import iped.datasource.IDataSource;
+import iped.io.ISeekableInputStreamFactory;
+import iped.io.SeekableInputStream;
+
+import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-
-import iped.datasource.IDataSource;
-import iped.io.ISeekableInputStreamFactory;
-import iped.io.SeekableInputStream;
-
 /**
- * Classe que define um arquivo de evidência, que é um arquivo do caso,
- * acompanhado de todas sua propriedades disponíveis. Algumas propriedades,
- * consideradas essenciais, tais como nome, tipo do arquivo e o link para onde
- * foi exportado, são consideradas atributos da classe. As outras "básicas" (que
- * já vem prontas para o pré-processamento) são guardades em uma lista de
- * propriedades.
+ * Interface that defines an evidence file, which is a case file accompanied by
+ * all available properties. Some properties considered essential, such as file
+ * name, file type, and exported link, are represented as class attributes.
+ * Other "basic" properties (precomputed for preprocessing) are stored in a
+ * property list.
  *
  * @author Wladimir Leite (GPINF/SP)
  * @author Nassif (GPINF/SP)
@@ -32,64 +25,58 @@ import iped.io.SeekableInputStream;
 public interface IItem extends IItemReader {
 
     /**
-     * Adiciona o item a uma categoria.
+     * Adds the item to a category.
      *
-     * @param category
-     *            categoria a qual o item será adicionado
+     * @param category category the item will be added to
      */
     void addCategory(String category);
 
     /**
-     * Adiciona o id de um dos pais do item numa estrutura hierárquica
+     * Adds one parent id of the item in a hierarchical structure.
      *
-     * @param parentId
-     *            id de um dos pais
+     * @param parentId one parent id
      */
     void addParentId(int parentId);
 
     /**
-     * Adiciona uma lista de ids dos pais do item numa estrutura hierárquica
+     * Adds a list of parent item ids in a hierarchical structure.
      *
-     * @param parentIds
-     *            lista de ids dos pais do item
+     * @param parentIds list of parent item ids
      */
     void addParentIds(List<Integer> parentIds);
 
     /**
-     * Libera recursos utilizados, como arquivos temporários e handles
+     * Releases used resources such as temporary files and handles.
      *
-     * @throws IOException
-     *             caso ocorra erro de IO
+     * @throws IOException if an I/O error occurs
      */
     void dispose();
 
     /**
-     * @return data do último acesso
+     * @return last access date
      */
     @Override
     Date getAccessDate();
 
     /**
-     * @return um BufferedInputStream com o conteúdo do item
-     * @throws IOException
+     * @return a BufferedInputStream with item content
+     * @throws IOException if an I/O error occurs
      */
     @Override
     BufferedInputStream getBufferedInputStream() throws IOException;
 
     /**
-     *
-     * @return o nome das categorias do item concatenadas
+     * @return concatenated item category names
      */
     String getCategories();
 
     /**
-     *
-     * @return o conjunto de categorias do item
+     * @return item category set
      */
     HashSet<String> getCategorySet();
 
     /**
-     * @return data de criação do arquivo
+     * @return file creation date
      */
     @Override
     Date getCreationDate();
@@ -99,56 +86,47 @@ public interface IItem extends IItemReader {
     ISeekableInputStreamFactory getInputStreamFactory();
 
     /**
-     * Módulos de processamento podem setar atributos extras no item para armazenar
-     * o resultado do processamento
+     * Processing modules can set extra attributes on the item to store processing output.
      *
-     * @param key
-     *            o nome do atributo extra
-     * @return o valor do atributo extra
+     * @param key extra attribute name
+     * @return extra attribute value
      */
     Object getExtraAttribute(String key);
 
     Object getTempAttribute(String key);
 
     /**
-     *
-     * @return o mapa de atributos extras do item. Módulos de processamento podem
-     *         setar atributos extras no item para armazenar o resultado do
-     *         processamento
+     * @return map of extra item attributes. Processing modules can store
+     * processing output in extra attributes.
      */
     Map<String, Object> getExtraAttributeMap();
 
     /**
-     *
-     * @return o offset no item pai da onde o item foi recuperado (carving). Retorna
-     *         -1 se o item não é proveniente de carving.
+     * @return offset in the parent item where this item was recovered by carving.
+     * Returns -1 if the item does not come from carving.
      */
     long getFileOffset();
 
     IHashValue getHashValue();
 
     /**
-     *
-     * @return os marcadores do item concatenados
+     * @return concatenated item labels
      */
     List<String> getLabels();
 
     /**
-     *
-     * @return lista contendo os ids dos itens pai
+     * @return list containing parent item ids
      */
     List<Integer> getParentIds();
 
     /**
-     *
-     * @return ids dos itens pai concatenados com espaço
+     * @return parent item ids concatenated with spaces
      */
     String getParentIdsString();
 
     /**
-     *
-     * @return o texto extraído do item armazenado pela tarefa de expansão para
-     *         alguns containers com texto (eml, ppt, etc)
+     * @return extracted item text cached by expansion tasks for text-based
+     * containers (eml, ppt, etc.)
      */
     @Deprecated
     String getParsedTextCache();
@@ -161,291 +139,340 @@ public interface IItem extends IItemReader {
     SeekableByteChannel getSeekableByteChannel() throws IOException;
 
     /**
-     * @return InputStream com o conteúdo do arquivo.
+     * @return InputStream with file content.
      */
     @Override
     SeekableInputStream getSeekableInputStream() throws IOException;
 
     /**
-     * Usado em módulos que só possam processar um File e não um InputStream. Pode
-     * impactar performance pois gera arquivo temporário.
+     * Used by modules that can process only a File and not an InputStream.
+     * May impact performance because it creates a temporary file.
      *
-     * @return um arquivo temporário com o conteúdo do item.
-     * @throws IOException
+     * @return temporary file with item content
+     * @throws IOException if an I/O error occurs
      */
     @Override
     File getTempFile() throws IOException;
 
     /**
-     *
-     * @return um TikaInputStream com o conteúdo do arquivo
-     * @throws IOException
+     * @return Tika-compatible InputStream with file content
+     * @throws IOException if an I/O error occurs
      */
-    TikaInputStream getTikaStream() throws IOException;
+    InputStream getTikaStream() throws IOException;
+
+    /**
+     * Neutral stream accessor for gradual decoupling from external libraries.
+     */
+    default SeekableInputStream getItemInputStream() throws IOException {
+        return getSeekableInputStream();
+    }
 
     boolean hasTmpFile();
 
     /**
-     * @return true se o item foi submetido a parsing
+     * @return true if the item was parsed
      */
     boolean isParsed();
 
     /**
-     * @return true se é um item de fim de fila de processamento
+     * @return true if this is a processing queue-end item
      */
     boolean isQueueEnd();
 
     /**
-     *
-     * @return true se o item deve ser adicionado ao caso
+     * @return true if the item must be added to the case
      */
     boolean isToAddToCase();
 
     /**
-     *
-     * @return true se o item deve ser exportado
+     * @return true if the item must be exported
      */
     boolean isToExtract();
 
     /**
-     *
-     * @return true se o item deve ser ignorado pelas próximas tarefas de
-     *         processamento e excluído do caso
+     * @return true if the item must be ignored by subsequent processing tasks
+     * and removed from the case
      */
     boolean isToIgnore();
 
     boolean isToSumVolume();
 
     /**
-     * Remove o item da categoria
+     * Removes the item from a category.
      *
-     * @param category
-     *            categoria a ser removida
+     * @param category category to remove
      */
     void removeCategory(String category);
 
     /**
-     * @param accessDate
-     *            nova data de último acesso
+     * @param accessDate new last access date
      */
     void setAccessDate(Date accessDate);
 
     /**
-     * @param addToCase
-     *            se o item deve ser adicionado ao caso
+     * @param addToCase whether the item must be added to the case
      */
     void setAddToCase(boolean addToCase);
 
     /**
-     * Define se é um item de carving
+     * Sets whether this is a carved item.
      *
-     * @param carved
-     *            se é item de carving
+     * @param carved whether this is a carved item
      */
     void setCarved(boolean carved);
 
     /**
-     * Redefine a categoria do item
+     * Replaces the item category.
      *
-     * @param category
-     *            nova categoria
+     * @param category new category
      */
     void setCategory(String category);
 
     /**
-     * @param creationDate
-     *            nova data de criação do arquivo
+     * @param creationDate new file creation date
      */
     void setCreationDate(Date creationDate);
 
     void setDataSource(IDataSource evidence);
 
     /**
-     * Define se o item é apagado
+     * Sets whether the item is deleted.
      *
-     * @param deleted
-     *            se é apagado
+     * @param deleted whether it is deleted
      */
     void setDeleted(boolean deleted);
 
     /**
-     * Define a extensão do item.
+     * Sets the item extension.
      *
-     * @param ext
-     *            extensão
+     * @param ext extension
      */
     void setExtension(String ext);
 
     /**
-     * Define um atributo extra para o item
+     * Sets an extra attribute on the item.
      *
-     * @param key
-     *            nome do atributo
-     * @param value
-     *            valor do atributo
+     * @param key attribute name
+     * @param value attribute value
      */
     void setExtraAttribute(String key, Object value);
 
     void setTempAttribute(String key, Object value);
 
     /**
-     * Define o offset onde itens de carving são encontrados no item pai
+     * Sets the offset where carved items are found in the parent item.
      *
-     * @param fileOffset
-     *            offset do item
+     * @param fileOffset item offset
      */
     void setFileOffset(long fileOffset);
 
     /**
-     * Define se o item tem filhos, como subitens ou itens de carving
+     * Sets whether the item has children, such as subitems or carved items.
      *
-     * @param hasChildren
-     *            se tem filhos
+     * @param hasChildren whether it has children
      */
     void setHasChildren(boolean hasChildren);
 
     /**
-     * Define o hash do item
+     * Sets the item hash.
      *
-     * @param hash
-     *            hash do item
+     * @param hash item hash
      */
     void setHash(String hash);
 
     /**
-     * @param id
-     *            identificador do item
+     * @param id item identifier
      */
     void setId(int id);
 
     /**
-     * Define se o item é um diretório.
+     * Sets whether the item is a directory.
      *
-     * @param isDir
-     *            se é diretório
+     * @param isDir whether it is a directory
      */
     void setIsDir(boolean isDir);
 
     /**
-     * Define os marcadores do item
+     * Sets item labels.
      *
-     * @param labels
-     *            marcadores concatenados
+     * @param labels concatenated labels
      */
     void setLabels(List<String> labels);
 
     /**
-     * @param length
-     *            tamanho do arquivo
+     * @param length file size
      */
     void setLength(Long length);
 
     /**
-     * Define o mediaType do item baseado na assinatura
+     * Sets the item media type based on signature detection.
      *
-     * @param mediaType
-     *            internet mediaType
+     * @param mediaType internet media type
      */
-    void setMediaType(MediaType mediaType);
-
-    void setMetadata(Metadata metadata);
+    default void setMediaType(Object mediaType) {
+        try {
+            Method method = getClass().getMethod("setMediaType", mediaType == null ? Object.class : mediaType.getClass()); //$NON-NLS-1$
+            method.invoke(this, mediaType);
+        } catch (NoSuchMethodException e) {
+            throw new UnsupportedOperationException("setMediaType(Object) is not implemented", e); //$NON-NLS-1$
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to set media type", e); //$NON-NLS-1$
+        }
+    }
 
     /**
-     * @param modificationDate
-     *            data da última modificação do arquivo
+     * Neutral media type mutator for gradual decoupling from external libraries.
+     */
+    default void setMediaTypeValue(MediaTypeValue mediaTypeValue) {
+        setMediaType(mediaTypeValue == null ? null : mediaTypeValue.value());
+    }
+
+    default void setMetadata(Object metadata) {
+        try {
+            Method method = getClass().getMethod("setMetadata", metadata == null ? Object.class : metadata.getClass()); //$NON-NLS-1$
+            method.invoke(this, metadata);
+        } catch (NoSuchMethodException e) {
+            throw new UnsupportedOperationException("setMetadata(Object) is not implemented", e); //$NON-NLS-1$
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to set metadata", e); //$NON-NLS-1$
+        }
+    }
+
+    /**
+     * Neutral metadata mutator for gradual decoupling from external libraries.
+     */
+    default void setMetadataMap(Map<String, List<String>> metadataMap) {
+        for (Map.Entry<String, List<String>> entry : metadataMap.entrySet()) {
+            if (entry.getValue() == null || entry.getValue().isEmpty()) {
+                setMetadataValue(entry.getKey(), ""); //$NON-NLS-1$
+                continue;
+            }
+            setMetadataValue(entry.getKey(), entry.getValue().get(0));
+            for (int i = 1; i < entry.getValue().size(); i++) {
+                addMetadataValue(entry.getKey(), entry.getValue().get(i));
+            }
+        }
+    }
+
+    default void setMetadataValue(String key, String value) {
+        Object metadata = getMetadata();
+        if (metadata == null) {
+            throw new UnsupportedOperationException("Cannot set metadata value on null metadata object"); //$NON-NLS-1$
+        }
+        try {
+            Method method = metadata.getClass().getMethod("set", String.class, String.class); //$NON-NLS-1$
+            method.invoke(metadata, key, value);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to set metadata value", e); //$NON-NLS-1$
+        }
+    }
+
+    default void addMetadataValue(String key, String value) {
+        Object metadata = getMetadata();
+        if (metadata == null) {
+            throw new UnsupportedOperationException("Cannot add metadata value on null metadata object"); //$NON-NLS-1$
+        }
+        try {
+            Method method = metadata.getClass().getMethod("add", String.class, String.class); //$NON-NLS-1$
+            method.invoke(metadata, key, value);
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to add metadata value", e); //$NON-NLS-1$
+        }
+    }
+
+    default void removeMetadataValue(String key) {
+        Object metadata = getMetadata();
+        if (metadata != null) {
+            try {
+                Method method = metadata.getClass().getMethod("remove", String.class); //$NON-NLS-1$
+                method.invoke(metadata, key);
+            } catch (Exception e) {
+                throw new IllegalStateException("Unable to remove metadata value", e); //$NON-NLS-1$
+            }
+        }
+    }
+
+    /**
+     * @param modificationDate file last modification date
      */
     void setModificationDate(Date modificationDate);
 
     /**
-     * @param name
-     *            nome do arquivo
+     * @param name file name
      */
     void setName(String name);
 
     void setParent(IItem parent);
 
     /**
-     * @param parentId
-     *            identificador do item pai
+     * @param parentId parent item identifier
      */
     void setParentId(Integer parentId);
 
     /**
-     * @param parsed
-     *            se foi realizado parsing do item
+     * @param parsed whether the item was parsed
      */
     void setParsed(boolean parsed);
 
     /**
-     * @param parsedTextCache
-     *            texto extraído após o parsing
+     * @param parsedTextCache text extracted after parsing
      */
     @Deprecated
     void setParsedTextCache(String parsedTextCache);
 
     /**
-     * @param path
-     *            caminho do item
+     * @param path item path
      */
     void setPath(String path);
 
     /**
-     * @param isQueueEnd
-     *            se é um item especial de fim de fila
+     * @param isQueueEnd whether this is a special queue-end item
      */
     void setQueueEnd(boolean isQueueEnd);
 
     void setChangeDate(Date changeDate);
 
     /**
-     * @param isRoot
-     *            se o item é raiz
+     * @param isRoot whether the item is root
      */
     void setRoot(boolean isRoot);
 
     /**
-     * @param isSubItem
-     *            se o item é um subitem
+     * @param isSubItem whether the item is a subitem
      */
     void setSubItem(boolean isSubItem);
 
     void setSumVolume(boolean sumVolume);
 
     /**
-     * @param timeOut
-     *            se o parsing do item ocasionou timeout
+     * @param timeOut whether item parsing timed out
      */
     void setTimeOut(boolean timeOut);
 
     /**
-     * @param isToExtract
-     *            se o item deve ser extraído
+     * @param isToExtract whether the item must be extracted
      */
     void setToExtract(boolean isToExtract);
 
     /**
-     * @param toIgnore
-     *            se o item deve ser ignorado pela tarefas de processamento
-     *            seguintes e excluído do caso
+     * @param toIgnore whether the item must be ignored by subsequent processing
+     *                 tasks and removed from the case
      */
     void setToIgnore(boolean toIgnore);
 
     /**
-     * @param toIgnore
-     *            se o item deve ser ignorado pela tarefas de processamento
-     *            seguintes e excluído do caso
+     * @param toIgnore whether the item must be ignored by subsequent processing
+     *                 tasks and removed from the case
      */
     void setToIgnore(boolean toIgnore, boolean updateStats);
 
     /**
-     * @param type
-     *            the detected file type extension
+     * @param type the detected file type extension
      */
     void setType(String type);
 
     /**
-     * @param viewFile
-     *            caminho do arquivo para visualização.
+     * @param viewFile file path for preview.
      */
     void setViewFile(File viewFile);
 
@@ -465,9 +492,9 @@ public interface IItem extends IItemReader {
     IItem createChildItem();
 
     /**
-     * Retorna String com os dados contidos no objeto.
+     * Returns a String with data contained in this object.
      *
-     * @return String listando as propriedades do arquivo.
+     * @return String listing file properties.
      */
     @Override
     String toString();

@@ -5,6 +5,7 @@
  */
 package iped.data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -13,9 +14,7 @@ import java.io.Serializable;
  */
 public abstract class IHashValue implements Comparable<IHashValue>, Serializable {
 
-    /**
-     * 
-     */
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public abstract byte[] getBytes();
@@ -41,10 +40,15 @@ public abstract class IHashValue implements Comparable<IHashValue>, Serializable
     }
 
     @Override
-    public boolean equals(Object hash) {
-        if (hash == this) return true;
-        if (hash == null) return false;
-        return compareTo((IHashValue) hash) == 0;
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        IHashValue other = (IHashValue) obj;
+        return compareTo(other) == 0;
     }
 
     @Override

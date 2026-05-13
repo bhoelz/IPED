@@ -159,7 +159,7 @@ public class SimilarFacesOptionsDialog extends JDialog {
         }
         if (img == null) {
             img = ImageUtil.getSubSampledImage(item, 1024, mimeStr);
-            String str = item.getMetadata().get("image:tiff:Orientation");
+            String str = item.getMetadataValue("image:tiff:Orientation");
             if (str != null) {
                 try {
                     int rot = Integer.parseInt(str);
@@ -453,3 +453,4 @@ public class SimilarFacesOptionsDialog extends JDialog {
         return new Rectangle2D.Double(left, top, right - left, bottom - top);
     }
 }
+

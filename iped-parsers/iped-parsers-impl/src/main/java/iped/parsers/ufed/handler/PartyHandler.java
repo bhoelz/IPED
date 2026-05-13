@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.metadata.Metadata;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.tika.metadata.Metadata;
 import org.slf4j.Logger;
@@ -84,13 +85,14 @@ public class PartyHandler extends BaseModelHandler<Party> {
             query = AccountableHandler.createAccountableQuery(identifier, source, MediaTypes.UFED_CONTACT_MIME, model, item, searcher);
         }
         List<IItemReader> results = searcher.search(query).stream()
-                .filter(item -> source.equals(item.getMetadata().get(ExtraProperties.UFED_META_PREFIX + "Source"))) // filter for exact source
+                .filter(item -> source.equals(item.getMetadataValue(ExtraProperties.UFED_META_PREFIX + "Source"))) // filter for exact source
                 .collect(Collectors.toList());
         if (!results.isEmpty()) {
             if (results.size() > 1) {
                 // sort getting by items with more metadata
                 Collections.sort(results, (item1, item2) -> {
-                    return Integer.compare(item2.getMetadata().names().length, item1.getMetadata().names().length);
+                    return Integer.compare(((Metadata) item2.getMetadata()).names().length,
+                            ((Metadata) item1.getMetadata()).names().length);
                 });
                 logger.warn("Found more than 1 party reference: size=[{}] \t query=[{}] \t items=[{}]", results.size(), query, StringUtils.truncate(results.toString(), 0, 1000));
             }
@@ -133,3 +135,4 @@ public class PartyHandler extends BaseModelHandler<Party> {
                 .build();
     }
 }
+
