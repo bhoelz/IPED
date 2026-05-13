@@ -183,3 +183,17 @@ JUnRAR
 Lottie-player
 - Site: https://github.com/LottieFiles/lottie-player/blob/master/LICENSE
 - License: licenses/LOTTIE-PLAYER.txt
+
+--------------------------------------------
+
+CaffViewer
+- Site: https://caff.de/projects/caffviewer/
+- License: licenses/CaffViewer.txt
+
+Leaflet
+- Site: https://leafletjs.com/
+- License: licenses/Leaflet1.7.txt
+
+Leaflet.markercluster
+- Site: https://github.com/Leaflet/Leaflet.markercluster
+- License: licenses/Leaflet.markercluster.txt
