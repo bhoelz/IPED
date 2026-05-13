@@ -1,0 +1,3 @@
+ArtifactType,ArtifactID,Description,LegacyEvidencePath,LegacyEvidenceLine,Confidence,Notes
+Rule,BR-001,TBD,src/path/file.ext,1,medium,TBD
+

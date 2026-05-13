@@ -1,0 +1,4 @@
+interface:
+  display_name: "Java Unit Test Writer"
+  short_description: "Generate JUnit 6 unit tests for IPED Java modules"
+

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spec to Implementation Playbook"
+  short_description: "Turn specs into roadmap and PR-sized backlog"
+

@@ -1,0 +1,44 @@
+{
+  "project": "ace-monorepo",
+  "updated_at": "2026-01-01T00:00:00+00:00",
+  "epics": [
+    {
+      "id": "EP-001",
+      "title": "Example epic",
+      "status": "todo",
+      "legacy_scope": "ace-login, ace-auth-java",
+      "module_refs": [
+        "ace-login",
+        "ace-auth-java"
+      ],
+      "acceptance_summary": "",
+      "items_total": 0,
+      "items_done": 0,
+      "progress_pct": 0.0
+    }
+  ],
+  "module_backlogs": {
+    "ace-login": [
+      {
+        "id": "MB-ace-login-001",
+        "epic_id": "EP-001",
+        "title": "Example backlog item",
+        "status": "todo",
+        "legacy_refs": [
+          "BR-001"
+        ],
+        "acceptance_refs": [
+          "AC-001"
+        ],
+        "test_refs": [
+          "TC-001"
+        ],
+        "pr_url": "",
+        "notes": "",
+        "last_update": "2026-01-01T00:00:00+00:00"
+      }
+    ]
+  },
+  "events": []
+}
+

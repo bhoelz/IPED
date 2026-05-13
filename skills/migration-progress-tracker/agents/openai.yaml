@@ -1,0 +1,4 @@
+interface:
+  display_name: "Migration Progress Tracker"
+  short_description: "Track rewrite parity and generate HTML progress"
+

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reverse Spec Extractor"
+  short_description: "Extract specs from legacy code with traceability"
+

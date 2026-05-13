@@ -1,0 +1,3 @@
+interface:
+  display_name: "Task Plugin Authoring"
+  short_description: "Create IPED tasks as SPI plugins, with in-repo tasks as iped-tasks submodules"

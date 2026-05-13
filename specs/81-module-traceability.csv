@@ -1,0 +1,24 @@
+SpecModuleID,SpecModuleName,LegacyModule,LegacyEvidencePath,Type,Confidence,Notes
+M01,API de dominio e contratos,iped-api,iped-api/src/main/java/iped,namespace,high,Contratos base de configuracao dados busca propriedades
+M01,API de dominio e contratos,iped-api,iped-api/pom.xml,pom,high,Modulo jar sem dependencia interna iped
+M02,Utilitarios transversais,iped-utils,iped-utils/pom.xml,pom,high,Depende de iped-api e serve camada compartilhada
+M02,Utilitarios transversais,iped-utils,iped-utils/src/main/java/iped,namespace,medium,Funcoes comuns reutilizadas
+M03,Parsing forense,iped-parsers-impl,iped-parsers/iped-parsers-impl/src/main/java/iped/parsers,namespace,high,Cobertura ampla de formatos e aplicativos
+M03,Parsing forense,iped-parsers-impl,iped-parsers/iped-parsers-impl/src/main/java/iped/parsers/fork/ForkServer.java,class,high,Isolamento out-of-process de parsing
+M03,Parsing forense,java-dbf,iped-parsers/java-dbf/src/main/java/com/linuxense/javadbf,module,high,Suporte DBF dedicado
+M04,Visualizacao,iped-viewers-api,iped-viewers/iped-viewers-api/src/main/java/iped/viewers,namespace,high,Contratos de visualizacao
+M04,Visualizacao,iped-viewers-impl,iped-viewers/iped-viewers-impl/src/main/java/iped/viewers,namespace,high,Implementacoes de viewers e busca
+M05,Carving,iped-carvers-api,iped-carvers/iped-carvers-api/pom.xml,pom,high,API de carving
+M05,Carving,iped-carvers-impl,iped-carvers/iped-carvers-impl/src/main/java/iped/carvers,namespace,high,Implementacoes de carving
+M05,Carving,iped-ahocorasick,iped-carvers/iped-ahocorasick/src/main/java/org/arabidopsis/ahocorasick,module,high,Matching multipadrao de alta performance
+M06,Nucleo de processamento e busca,iped-engine,iped-engine/src/main/java/iped/engine/core/Manager.java,class,high,Orquestracao de processamento
+M06,Nucleo de processamento e busca,iped-engine,iped-engine/src/main/java/iped/engine/config,namespace,high,Configuracao de tarefas e pipeline
+M06,Nucleo de processamento e busca,iped-engine,iped-engine/src/main/java/iped/engine/datasource,namespace,high,Leitura de fontes e imagens forenses
+M06,Nucleo de processamento e busca,iped-engine,iped-engine/src/main/java/iped/engine/webapi/Main.java,class,high,Entrada de Web API
+M07,Geolocalizacao e mapa,iped-geo,iped-geo/src/main/java/iped/geo,namespace,high,Camadas geo parsers openstreet webkit
+M07,Geolocalizacao e mapa,iped-geo,iped-geo/pom.xml,pom,high,Integracao com engine parsers viewers api
+M08,Aplicacao e UX investigativa,iped-app,iped-app/src/main/java/iped/app/bootstrap/Bootstrap.java,class,high,Bootstrap de inicializacao
+M08,Aplicacao e UX investigativa,iped-app,iped-app/src/main/java/iped/app/processing/Main.java,class,high,Entrada de processamento de caso
+M08,Aplicacao e UX investigativa,iped-app,iped-app/src/main/java/iped/app/ui/AppMain.java,class,high,Entrada de UI de analise
+M08,Aplicacao e UX investigativa,iped-app,iped-app/src/main/java/iped/app/graph,namespace,high,Analise de vinculos em grafo
+M08,Aplicacao e UX investigativa,iped-app,iped-app/resources/scripts/tasks,module,high,Extensibilidade via scripts python/js
