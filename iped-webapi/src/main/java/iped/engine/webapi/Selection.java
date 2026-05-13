@@ -14,14 +14,9 @@ import jakarta.ws.rs.core.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import iped.data.IItemId;
-import iped.data.IMultiBookmarks;
-import iped.engine.data.ItemId;
-import iped.engine.search.IPEDSearcher;
 import iped.engine.webapi.json.DocIDJSON;
 import iped.engine.webapi.json.SourceToIDsJSON;
-import iped.search.IIPEDSearcher;
-import iped.search.IMultiSearchResult;
+import iped.engine.webapi.spi.DocRef;
 
 @Api(value = "Selection")
 @Path("selection")
@@ -31,16 +26,10 @@ public class Selection {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public SourceToIDsJSON get() throws Exception {
-
-        IIPEDSearcher searcher = new IPEDSearcher(Sources.multiSource, "");
-        IMultiSearchResult result = searcher.multiSearch();
-        result = Sources.multiSource.getMultiBookmarks().filterChecked(result);
-
         List<DocIDJSON> docs = new ArrayList<DocIDJSON>();
-        for (IItemId id : result.getIterator()) {
-            docs.add(new DocIDJSON(Sources.sourceIntToString.get(id.getSourceId()), id.getId()));
+        for (DocRef doc : Sources.services().selection().getSelected()) {
+            docs.add(new DocIDJSON(doc.getSource(), doc.getId()));
         }
-
         return new SourceToIDsJSON(docs);
     }
 
@@ -49,11 +38,11 @@ public class Selection {
     @Path("add")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response add(@ApiParam(required = true) DocIDJSON[] docs) {
-        IMultiBookmarks mm = Sources.multiSource.getMultiBookmarks();
+        List<DocRef> refs = new ArrayList<>();
         for (DocIDJSON d : docs) {
-            mm.setChecked(true, new ItemId(Sources.sourceStringToInt.get(d.getSource()), d.getId()));
+            refs.add(new DocRef(d.getSource(), d.getId()));
         }
-        mm.saveState();
+        Sources.services().selection().add(refs);
         return Response.ok().build();
     }
 
@@ -62,11 +51,11 @@ public class Selection {
     @Path("remove")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response remove(@ApiParam(required = true) DocIDJSON[] docs) {
-        IMultiBookmarks mm = Sources.multiSource.getMultiBookmarks();
+        List<DocRef> refs = new ArrayList<>();
         for (DocIDJSON d : docs) {
-            mm.setChecked(false, new ItemId(Sources.sourceStringToInt.get(d.getSource()), d.getId()));
+            refs.add(new DocRef(d.getSource(), d.getId()));
         }
-        mm.saveState();
+        Sources.services().selection().remove(refs);
         return Response.ok().build();
     }
 

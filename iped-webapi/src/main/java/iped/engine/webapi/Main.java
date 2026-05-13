@@ -38,6 +38,12 @@ public class Main {
         final ResourceConfig rc = new ResourceConfig().packages(resources)
                 .register(new OpenApiResource().openApiConfiguration(swaggerConfiguration));
 
+        try {
+            Sources.init(urlToAskSources);
+        } catch (Exception e) {
+            throw new IOException("Failed to initialize sources", e);
+        }
+
         // create and start a new instance of jetty http server
         // exposing the Jersey application at BASE_URI
         return JettyHttpContainerFactory.createServer(URI.create("http://" + host + ":" + port), rc);
@@ -68,6 +74,11 @@ public class Main {
                 printHelp();
                 System.exit(-1);
             }
+        }
+        if (urlToAskSources == null) {
+            System.err.println("missing --sources option");
+            printHelp();
+            System.exit(-1);
         }
         startServer(host, port, urlToAskSources);
         System.out.println(String.format("Jersey app started with WADL available at \n%sapplication.wadl\n",

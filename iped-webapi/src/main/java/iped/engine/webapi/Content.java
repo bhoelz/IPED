@@ -15,7 +15,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
-import org.sleuthkit.datamodel.TskCoreException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,7 +29,7 @@ public class Content {
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response content(@PathParam("sourceID") String sourceID, @PathParam("id") int id)
-            throws TskCoreException, IOException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         IIPEDSource source = Sources.getSource(sourceID);
         final IItem item = source.getItemByID(id);

@@ -11,6 +11,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 
 import io.swagger.annotations.Api;
@@ -30,7 +31,8 @@ public class Docs {
             throws IOException {
         IIPEDSource source = Sources.getSource(sourceID);
         int luceneID = source.getLuceneId(id);
-        Document doc = source.getReader().document(luceneID);
+        IndexReader reader = (IndexReader) source.getIndexReaderHandle();
+        Document doc = reader.storedFields().document(luceneID);
 
         DocPropsJSON result = new DocPropsJSON();
         result.setSource(sourceID);

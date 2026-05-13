@@ -12,14 +12,9 @@ import jakarta.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import iped.data.IItemId;
-import iped.engine.data.IPEDSource;
-import iped.engine.search.IPEDSearcher;
 import iped.engine.webapi.json.DocIDJSON;
 import iped.engine.webapi.json.SourceToIDsJSON;
-import iped.search.IIPEDSearcher;
-import iped.search.IMultiSearchResult;
-import iped.search.SearchResult;
+import iped.engine.webapi.spi.DocRef;
 
 @Api(value = "Search")
 @Path("search")
@@ -36,23 +31,10 @@ public class Search {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public SourceToIDsJSON doSearch() throws Exception {
-        String escapeq = q.replaceAll("/", "\\\\/");
         List<DocIDJSON> docs = new ArrayList<DocIDJSON>();
-        if (sourceID.equals("")) {
-            IPEDSearcher searcher = new IPEDSearcher(Sources.multiSource, escapeq);
-            IMultiSearchResult result = searcher.multiSearch();
-            for (IItemId id : result.getIterator()) {
-                docs.add(new DocIDJSON(Sources.sourceIntToString.get(id.getSourceId()), id.getId()));
-            }
-        } else {
-            IPEDSource source = (IPEDSource) Sources.getSource(sourceID);
-            IIPEDSearcher searcher = new IPEDSearcher(source, escapeq);
-            SearchResult result = searcher.search();
-            for (int id : result.getIds()) {
-                docs.add(new DocIDJSON(sourceID, id));
-            }
+        for (DocRef doc : Sources.services().search().search(q, sourceID)) {
+            docs.add(new DocIDJSON(doc.getSource(), doc.getId()));
         }
-
         return new SourceToIDsJSON(docs);
     }
 }

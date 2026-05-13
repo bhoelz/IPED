@@ -19,15 +19,10 @@ import jakarta.ws.rs.core.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import iped.data.IItemId;
-import iped.data.IMultiBookmarks;
-import iped.engine.data.ItemId;
-import iped.engine.data.ItemIdSet;
-import iped.engine.search.IPEDSearcher;
 import iped.engine.webapi.json.DataListJSON;
 import iped.engine.webapi.json.DocIDJSON;
 import iped.engine.webapi.json.SourceToIDsJSON;
-import iped.search.IMultiSearchResult;
+import iped.engine.webapi.spi.DocRef;
 
 @Api(value = "Bookmarks")
 @Path("bookmarks")
@@ -37,7 +32,7 @@ public class Bookmarks {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public DataListJSON<String> getAll() {
-        Set<String> bookmarks = Sources.multiSource.getMultiBookmarks().getBookmarkSet();
+        Set<String> bookmarks = Sources.services().bookmarks().listBookmarks();
         String[] IDs = bookmarks.toArray(new String[0]);
         return new DataListJSON<String>(IDs);
     }
@@ -47,14 +42,9 @@ public class Bookmarks {
     @Path("{bookmark}")
     @Produces(MediaType.APPLICATION_JSON)
     public SourceToIDsJSON get(@PathParam("bookmark") String bookmark) throws Exception {
-
-        IPEDSearcher searcher = new IPEDSearcher(Sources.multiSource, "");
-        IMultiSearchResult result = searcher.multiSearch();
-        result = Sources.multiSource.getMultiBookmarks().filterBookmarks(result, Collections.singleton(bookmark));
-
         List<DocIDJSON> docs = new ArrayList<DocIDJSON>();
-        for (IItemId id : result.getIterator()) {
-            docs.add(new DocIDJSON(Sources.sourceIntToString.get(id.getSourceId()), id.getId()));
+        for (DocRef doc : Sources.services().bookmarks().listBookmarkDocs(bookmark)) {
+            docs.add(new DocIDJSON(doc.getSource(), doc.getId()));
         }
 
         return new SourceToIDsJSON(docs);
@@ -65,13 +55,11 @@ public class Bookmarks {
     @Path("{bookmark}/add")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response insertLabel(@PathParam("bookmark") String bookmark, @ApiParam(required = true) DocIDJSON[] docs) {
-        IMultiBookmarks mm = Sources.multiSource.getMultiBookmarks();
-        ItemIdSet itemIds = new ItemIdSet();
+        List<DocRef> refs = new ArrayList<>();
         for (DocIDJSON d : docs) {
-            itemIds.add(new ItemId(Sources.sourceStringToInt.get(d.getSource()), d.getId()));
+            refs.add(new DocRef(d.getSource(), d.getId()));
         }
-        mm.addBookmark(itemIds, bookmark);
-        mm.saveState();
+        Sources.services().bookmarks().add(bookmark, refs);
         return Response.ok().build();
     }
 
@@ -80,13 +68,11 @@ public class Bookmarks {
     @Path("{bookmark}/remove")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response removeLabel(@PathParam("bookmark") String bookmark, @ApiParam(required = true) DocIDJSON[] docs) {
-        IMultiBookmarks mm = Sources.multiSource.getMultiBookmarks();
-        ItemIdSet itemIds = new ItemIdSet();
+        List<DocRef> refs = new ArrayList<>();
         for (DocIDJSON d : docs) {
-            itemIds.add(new ItemId(Sources.sourceStringToInt.get(d.getSource()), d.getId()));
+            refs.add(new DocRef(d.getSource(), d.getId()));
         }
-        mm.removeBookmark(itemIds, bookmark);
-        mm.saveState();
+        Sources.services().bookmarks().remove(bookmark, refs);
         return Response.ok().build();
     }
 
@@ -94,9 +80,7 @@ public class Bookmarks {
     @POST
     @Path("{bookmark}")
     public Response addLabel(@PathParam("bookmark") String bookmark) {
-        IMultiBookmarks mm = Sources.multiSource.getMultiBookmarks();
-        mm.newBookmark(bookmark);
-        mm.saveState();
+        Sources.services().bookmarks().create(bookmark);
         return Response.ok().build();
     }
 
@@ -104,9 +88,7 @@ public class Bookmarks {
     @DELETE
     @Path("{bookmark}")
     public Response delLabel(@PathParam("bookmark") String bookmark) {
-        IMultiBookmarks mm = Sources.multiSource.getMultiBookmarks();
-        mm.delBookmark(bookmark);
-        mm.saveState();
+        Sources.services().bookmarks().delete(bookmark);
         return Response.ok().build();
     }
 
@@ -114,9 +96,7 @@ public class Bookmarks {
     @PUT
     @Path("{old}/rename/{new}")
     public Response changeLabel(@PathParam("old") String oldLabel, @PathParam("new") String newLabel) {
-        IMultiBookmarks mm = Sources.multiSource.getMultiBookmarks();
-        mm.renameBookmark(oldLabel, newLabel);
-        mm.saveState();
+        Sources.services().bookmarks().rename(oldLabel, newLabel);
         return Response.ok().build();
     }
 

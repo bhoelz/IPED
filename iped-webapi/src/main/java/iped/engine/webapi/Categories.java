@@ -1,6 +1,8 @@
 package iped.engine.webapi;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -19,8 +21,11 @@ public class Categories {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public DataListJSON<String> get() throws Exception {
-
-        List<String> categories = Sources.multiSource.getLeafCategories();
+        Set<String> categoriesSet = new TreeSet<>();
+        for (var source : Sources.services().sources().listSources()) {
+            categoriesSet.addAll(Sources.getSource(source.getId()).getLeafCategories());
+        }
+        List<String> categories = categoriesSet.stream().toList();
         DataListJSON<String> result = new DataListJSON<String>(categories);
 
         return result;

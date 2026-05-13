@@ -13,7 +13,6 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
-import org.sleuthkit.datamodel.TskCoreException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,7 +27,7 @@ public class Thumbnail {
     @GET
     @Produces("image/jpg")
     public StreamingOutput content(@PathParam("sourceID") String sourceID, @PathParam("id") int id)
-            throws TskCoreException, IOException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         IIPEDSource source = Sources.getSource(sourceID);
         IItem item = source.getItemByID(id);
