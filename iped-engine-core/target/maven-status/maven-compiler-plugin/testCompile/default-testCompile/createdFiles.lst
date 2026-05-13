@@ -1,0 +1,9 @@
+iped\engine\search\ImageSimilarityLowScoreFilterTest.class
+iped\engine\io\FastPipedReaderWriterTest.class
+iped\engine\io\BasicIOClassesTest$InMemorySeekableByteChannel.class
+iped\engine\MiscCoreClassesTest.class
+iped\engine\search\ImageSimilarityLowScoreFilterTest$SimpleResult.class
+iped\engine\data\CaseDataTest.class
+iped\engine\datasource\ad1\FileHeaderTest.class
+iped\engine\io\BasicIOClassesTest.class
+iped\engine\data\DataSourceItemIdTest.class
