@@ -6,11 +6,12 @@ IPED 5.0 focuses on platform modernization: a browser-first experience, a compan
 ## Milestone Scope
 Major goals for 5.0:
 - Browser-based main UI
-- Companion desktop app
+- Companion desktop app for native capabilities (like LibreOffice)
 - MCP server for AI interaction with cases
 - Backend decoupling and distributed processing with Apache Kafka
 - Support additional data stores for complementary analysis data (graph, vector, time series)
 - Fully documented JavaScript and Python scripting APIs
+- Updated web APIs for case management/search/navigation
 
 ## Guiding Principles
 - Preserve forensic reliability and reproducibility.
