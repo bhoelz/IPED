@@ -6,7 +6,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 
 import iped.data.IItemReader;
-import iped.engine.task.HashTask;
+import iped.engine.hash.HashAlgorithm;
 import iped.properties.ExtraProperties;
 import iped.utils.HashValue;
 
@@ -28,7 +28,7 @@ public class PreviewKey {
 
     public static PreviewKey create(IItemReader item) {
 
-        String hashString = (String) item.getExtraAttribute(HashTask.HASH.MD5.toString());
+        String hashString = (String) item.getExtraAttribute(HashAlgorithm.MD5.toString());
         if (hashString != null) {
             return new PreviewKey(new HashValue(hashString).getBytes());
         }

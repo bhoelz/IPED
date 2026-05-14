@@ -86,6 +86,7 @@ import iped.engine.config.HashTaskConfig;
 import iped.engine.config.HtmlReportTaskConfig;
 import iped.engine.data.Category;
 import iped.engine.data.IPEDSource;
+import iped.engine.hash.HashAlgorithm;
 import iped.engine.localization.Messages;
 import iped.engine.preview.PreviewConstants;
 import iped.engine.preview.PreviewRepository;
@@ -740,7 +741,7 @@ public class ExportFileTask extends AbstractTask {
     public void insertIntoStorage(IItem evidence, byte[] buf, int len)
             throws InterruptedException, IOException, SQLException, CompressorException {
         byte[] hash = null;
-        String hashString = (String) evidence.getExtraAttribute(HashTask.HASH.MD5.toString());
+        String hashString = (String) evidence.getExtraAttribute(HashAlgorithm.MD5.toString());
         if (hashString != null) {
             hash = new HashValue(hashString).getBytes();
         } else {
@@ -873,7 +874,7 @@ public class ExportFileTask extends AbstractTask {
         itensExtracted = 0;
         subDirCounter = 0;
 
-        hashMap = (HashMap<IHashValue, IHashValue>) caseData.getCaseObject(DuplicateTask.HASH_MAP);
+        hashMap = (HashMap<IHashValue, IHashValue>) caseData.getCaseObject("HashTaskHashMap");
 
         initLockManager();
     }
@@ -1004,4 +1005,5 @@ public class ExportFileTask extends AbstractTask {
     }
 
 }
+
 

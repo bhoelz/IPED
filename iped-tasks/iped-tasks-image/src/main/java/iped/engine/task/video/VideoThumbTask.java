@@ -61,13 +61,11 @@ import iped.engine.config.VideoThumbsConfig;
 import iped.engine.core.Statistics;
 import iped.engine.core.Worker.ProcessTime;
 import iped.engine.data.Item;
+import iped.engine.hash.PhotoDNAConstants;
 import iped.engine.preview.PreviewRepository;
 import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.task.ExportFileTask;
-import iped.engine.task.HashDBLookupTask;
-import iped.engine.task.HashTask;
 import iped.engine.task.ImageThumbTask;
-import iped.engine.task.PhotoDNAConstants;
 import iped.engine.task.ThumbTask;
 import iped.engine.task.die.DIEConstants;
 import iped.parsers.util.ISO6709Converter;
@@ -248,7 +246,7 @@ public class VideoThumbTask extends ThumbTask {
                     logger.info("Task enabled."); //$NON-NLS-1$
                     logger.info("MPLAYER version: " + vmp); //$NON-NLS-1$
                 }
-                checkDependency(HashTask.class);
+                checkDependency("iped.engine.task.HashTask");
                 init.set(true);
             }
         }

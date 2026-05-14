@@ -135,7 +135,7 @@ public class ImageThumbTask extends ThumbTask {
         ImageUtil.updateImageIOPluginsPriority();
 
         if (isEnabled()) {
-            checkDependency(HashTask.class);
+            checkDependency("iped.engine.task.HashTask");
         }
     }
 

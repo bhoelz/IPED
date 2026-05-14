@@ -26,7 +26,7 @@ import iped.utils.HashValue;
  */
 public class DuplicateTask extends AbstractTask {
 
-    public static String HASH_MAP = HashTask.class.getSimpleName() + "HashMap"; //$NON-NLS-1$
+    public static String HASH_MAP = "HashTaskHashMap"; //$NON-NLS-1$
 
     private static final String ENABLE_PARAM = "ignoreDuplicates"; //$NON-NLS-1$
 

@@ -1,4 +1,4 @@
-package iped.engine.task;
+package iped.engine.hash;
 
 public final class PhotoDNAConstants {
 

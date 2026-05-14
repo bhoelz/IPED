@@ -17,8 +17,6 @@ import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
 import iped.engine.task.AbstractTask;
-import iped.engine.task.HashTask;
-import iped.engine.task.ImageThumbTask;
 import iped.parsers.util.MetadataUtil;
 
 /**
@@ -68,8 +66,8 @@ public class ImageSimilarityTask extends AbstractTask {
                     return;
                 }
 
-                checkDependency(HashTask.class);
-                checkDependency(ImageThumbTask.class);
+                checkDependency("iped.engine.task.HashTask");
+                checkDependency("iped.engine.task.ImageThumbTask");
                 
                 logger.info("Task enabled."); //$NON-NLS-1$
                 init.set(true);

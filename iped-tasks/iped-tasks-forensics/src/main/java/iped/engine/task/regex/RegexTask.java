@@ -40,11 +40,10 @@ import iped.engine.config.ExportByKeywordsConfig;
 import iped.engine.config.RegexTaskConfig;
 import iped.engine.config.RegexTaskConfig.RegexEntry;
 import iped.engine.data.Item;
+import iped.engine.hash.HashAlgorithm;
 import iped.engine.hashdb.HashDBDataSource;
 import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
 import iped.engine.task.AbstractTask;
-import iped.engine.task.HashDBLookupTask;
-import iped.engine.task.HashTask;
 import iped.engine.task.PhotoDNALookup;
 import iped.engine.task.index.IndexItem;
 import iped.properties.ExtraProperties;
@@ -70,11 +69,11 @@ public class RegexTask extends AbstractTask {
     private static final Set<String> ignoredKeys = new HashSet<String>();
     static {
         // Ignore these keys when reading item's properties to be searched (issue #1988)
-        ignoredKeys.add(HashTask.HASH.EDONKEY.toString());
-        ignoredKeys.add(HashTask.HASH.MD5.toString());
-        ignoredKeys.add(HashTask.HASH.SHA1.toString());
-        ignoredKeys.add(HashTask.HASH.SHA256.toString());
-        ignoredKeys.add(HashTask.HASH.SHA512.toString());
+        ignoredKeys.add(HashAlgorithm.EDONKEY.toString());
+        ignoredKeys.add(HashAlgorithm.MD5.toString());
+        ignoredKeys.add(HashAlgorithm.SHA1.toString());
+        ignoredKeys.add(HashAlgorithm.SHA256.toString());
+        ignoredKeys.add(HashAlgorithm.SHA512.toString());
         ignoredKeys.add(IndexItem.TRACK_ID);
         ignoredKeys.add(IndexItem.PARENT_TRACK_ID);
         ignoredKeys.add(IndexItem.CONTAINER_TRACK_ID);
@@ -83,7 +82,7 @@ public class RegexTask extends AbstractTask {
         ignoredKeys.add(ExtraProperties.HASHDB_PREFIX + HashDBDataSource.ledMd5_512);
         ignoredKeys.add(ExtraProperties.HASHDB_PREFIX + HashDBDataSource.ledMd5_64k);
         ignoredKeys.add(ExtraProperties.HASHDB_PREFIX + HashDBDataSource.photoDna);
-        ignoredKeys.add(PhotoDNALookup.PHOTO_DNA_HIT_PREFIX + HashTask.HASH.MD5.name());
+        ignoredKeys.add(PhotoDNALookup.PHOTO_DNA_HIT_PREFIX + HashAlgorithm.MD5.name());
         ignoredKeys.add(PhotoDNALookup.PHOTO_DNA_NEAREAST_HASH);
     }
 

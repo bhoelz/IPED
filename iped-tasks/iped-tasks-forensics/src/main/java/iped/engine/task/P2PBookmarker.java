@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import iped.data.ICaseData;
 import iped.engine.data.IPEDSource;
+import iped.engine.hash.HashAlgorithm;
 import iped.engine.localization.Messages;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.task.index.IndexItem;
@@ -83,14 +84,14 @@ public class P2PBookmarker {
 
         HashMap<String, P2PProgram> p2pPrograms = new HashMap<String, P2PProgram>();
 
-        P2PProgram progEMule = new P2PProgram(HashTask.HASH.EDONKEY.toString(), "Emule", new Color(140, 75, 30));
+        P2PProgram progEMule = new P2PProgram(HashAlgorithm.EDONKEY.toString(), "Emule", new Color(140, 75, 30));
         p2pPrograms.put(KnownMetParser.EMULE_MIME_TYPE, progEMule);
         p2pPrograms.put(PartMetParser.EMULE_PART_MET_MIME_TYPE, progEMule);
 
         p2pPrograms.put(AresParser.ARES_MIME_TYPE,
-                new P2PProgram(HashTask.HASH.SHA1.toString(), "Ares", new Color(238, 173, 0)));
+                new P2PProgram(HashAlgorithm.SHA1.toString(), "Ares", new Color(238, 173, 0)));
 
-        List<String> shareazaHashes = Arrays.asList(HashTask.HASH.MD5.toString(), HashTask.HASH.SHA1.toString(), HashTask.HASH.EDONKEY.toString());
+        List<String> shareazaHashes = Arrays.asList(HashAlgorithm.MD5.toString(), HashAlgorithm.SHA1.toString(), HashAlgorithm.EDONKEY.toString());
         p2pPrograms.put(ShareazaLibraryDatParser.LIBRARY_DAT_MIME_TYPE,
                 new P2PProgram(shareazaHashes, "Shareaza", new Color(170, 20, 20)));
        
@@ -98,7 +99,7 @@ public class P2PBookmarker {
                 new P2PProgram(shareazaHashes, "Shareaza SD", new Color(170, 20, 20)));
 
         p2pPrograms.put(WhatsAppParser.WHATSAPP_CHAT.toString(),
-                new P2PProgram(HashTask.HASH.SHA256.toString(), "WhatsApp", new Color(32, 146, 90)));
+                new P2PProgram(HashAlgorithm.SHA256.toString(), "WhatsApp", new Color(32, 146, 90)));
 
         p2pPrograms.put(UfedChatParser.UFED_CHAT_PREVIEW_MIME.toString(),
                 new P2PProgram(IndexItem.HASH.toString(), "UFED_Chats", new Color(0, 160, 160)));
@@ -112,8 +113,8 @@ public class P2PBookmarker {
 
         p2pPrograms.put(ThreemaParser.THREEMA_CHAT.toString(), new P2PProgram(IndexItem.HASH, "Threema")); // $NON-NLS-1$
 
-        List<String> torrentHashes = Arrays.asList(IndexItem.HASH, HashTask.HASH.MD5.toString(),
-                HashTask.HASH.SHA1.toString(), HashTask.HASH.EDONKEY.toString());
+        List<String> torrentHashes = Arrays.asList(IndexItem.HASH, HashAlgorithm.MD5.toString(),
+                HashAlgorithm.SHA1.toString(), HashAlgorithm.EDONKEY.toString());
         p2pPrograms.put(BitTorrentResumeDatParser.RESUME_DAT_MIME_TYPE,
                 new P2PProgram(torrentHashes, "Torrent", new Color(0, 160, 60)));
         p2pPrograms.put(BitTorrentResumeDatEntryParser.RESUME_DAT_ENTRY_MIME_TYPE,
@@ -121,7 +122,7 @@ public class P2PBookmarker {
         p2pPrograms.put(TransmissionResumeParser.TRANSMISSION_RESUME_MIME_TYPE,
                 new P2PProgram(torrentHashes, "Transmission", new Color(0, 180, 0)));
 
-        P2PProgram progGDrive = new P2PProgram(HashTask.HASH.MD5.toString(), "GoogleDrive");
+        P2PProgram progGDrive = new P2PProgram(HashAlgorithm.MD5.toString(), "GoogleDrive");
         p2pPrograms.put(GDriveCloudGraphParser.GDRIVE_CLOUD_GRAPH_REG.toString(), progGDrive);
         p2pPrograms.put(GDriveSnapshotParser.GDRIVE_SNAPSHOT_REG.toString(), progGDrive);
 

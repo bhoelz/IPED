@@ -28,8 +28,6 @@ import iped.engine.config.EnableTaskProperty;
 import iped.engine.config.ImageThumbTaskConfig;
 import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.task.AbstractTask;
-import iped.engine.task.HashTask;
-import iped.engine.task.ImageThumbTask;
 import iped.exception.IPEDException;
 import iped.parsers.util.MetadataUtil;
 import iped.utils.ExternalImageConverter;
@@ -102,6 +100,7 @@ public class DIETask extends AbstractTask {
     private static final AtomicLong totalVideosTime = new AtomicLong();
 
     private static final String ENABLE_PARAM = "enableLedDie"; //$NON-NLS-1$
+    private static final String THUMB_TIMEOUT = "thumbTimeout"; //$NON-NLS-1$
 
     // do not instantiate here, makes external command adjustment fail, see #740
     private static ExternalImageConverter externalImageConverter;
@@ -160,7 +159,7 @@ public class DIETask extends AbstractTask {
 
                 externalImageConverter = new ExternalImageConverter();
 
-                checkDependency(HashTask.class);                
+                checkDependency("iped.engine.task.HashTask");
 
                 init.set(true);
             }
@@ -213,7 +212,7 @@ public class DIETask extends AbstractTask {
             long t = System.currentTimeMillis();
             boolean isAnimationImage = MetadataUtil.isAnimationImage(evidence);
             if (isImage && !isAnimationImage) {
-                if (evidence.getExtraAttribute(ImageThumbTask.THUMB_TIMEOUT) != null) return;
+                if (evidence.getExtraAttribute(THUMB_TIMEOUT) != null) return;
 
                 //For images call the detection method passing the thumb image
                 BufferedImage img = null;
@@ -345,7 +344,7 @@ public class DIETask extends AbstractTask {
     private BufferedImage getBufferedImage(IItem evidence) {
         BufferedImage img = null;
         try {
-            if (extractThumb && ImageThumbTask.isJpeg(evidence)) { // $NON-NLS-1$
+            if (extractThumb && isJpeg(evidence)) { // $NON-NLS-1$
                 BufferedInputStream stream = evidence.getBufferedInputStream();
                 try {
                     img = ImageMetadataUtil.getThumb(stream);
@@ -369,5 +368,9 @@ public class DIETask extends AbstractTask {
             e.printStackTrace();
         }
         return img;
+    }
+
+    private static boolean isJpeg(IItem item) {
+        return item.getMediaType().getSubtype().startsWith("jpeg");
     }
 }

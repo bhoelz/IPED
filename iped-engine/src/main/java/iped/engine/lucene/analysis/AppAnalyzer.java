@@ -27,9 +27,10 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.IndexTaskConfig;
-import iped.engine.task.HashTask;
-import iped.engine.task.PhotoDNAConstants;
-import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
+import iped.engine.hash.HashAlgorithm;
+import iped.engine.hash.PhotoDNAConstants;
+import iped.engine.index.IndexMetadata;
+import iped.engine.task.index.IndexItem;
 import iped.localization.LocalizedProperties;
 import iped.properties.ExtraProperties;
 
@@ -61,11 +62,11 @@ public class AppAnalyzer {
         StandardASCIIAnalyzer hashAnalyzer = new StandardASCIIAnalyzer();
         hashAnalyzer.setMaxTokenLength(Integer.MAX_VALUE);
         hashAnalyzer.setConvertCharsToLower(true);
-        analyzerPerField.put(HashTask.HASH.MD5.toString(), hashAnalyzer);
-        analyzerPerField.put(HashTask.HASH.EDONKEY.toString(), hashAnalyzer);
-        analyzerPerField.put(HashTask.HASH.SHA1.toString(), hashAnalyzer);
-        analyzerPerField.put(HashTask.HASH.SHA256.toString(), hashAnalyzer);
-        analyzerPerField.put(HashTask.HASH.SHA512.toString(), hashAnalyzer);
+        analyzerPerField.put(HashAlgorithm.MD5.toString(), hashAnalyzer);
+        analyzerPerField.put(HashAlgorithm.EDONKEY.toString(), hashAnalyzer);
+        analyzerPerField.put(HashAlgorithm.SHA1.toString(), hashAnalyzer);
+        analyzerPerField.put(HashAlgorithm.SHA256.toString(), hashAnalyzer);
+        analyzerPerField.put(HashAlgorithm.SHA512.toString(), hashAnalyzer);
         analyzerPerField.put(PhotoDNAConstants.PHOTO_DNA, hashAnalyzer);
 
         StandardASCIIAnalyzer defaultAnalyzer = new StandardASCIIAnalyzer();

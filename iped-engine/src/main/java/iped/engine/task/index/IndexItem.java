@@ -82,10 +82,8 @@ import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
 import iped.engine.preview.PreviewConstants;
 import iped.engine.preview.PreviewInputStreamFactory;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
-import iped.engine.task.ImageThumbTask;
 import iped.engine.task.ThumbTask;
 import iped.engine.task.similarity.ImageSimilarityTask;
-import iped.engine.task.video.VideoThumbTask;
 import iped.engine.util.Util;
 import iped.parsers.ocr.OCRParser;
 import iped.parsers.standard.StandardParser;
@@ -104,6 +102,7 @@ import iped.utils.UTF8Properties;
  * itens que será adicionado ao índice.
  */
 public class IndexItem extends BasicProps {
+    private static final String VIDEO_PREVIEW_EXT = "jpg"; //$NON-NLS-1$
 
     public static final String GEO_SSDV_PREFIX = "geo_ssdv_";
 
@@ -918,7 +917,7 @@ public class IndexItem extends BasicProps {
                         boolean isVideo = MetadataUtil.isVideoType(evidence.getMediaType());
                         if (isImage || isVideo) {
                             String thumbFolder = isImage ? ThumbTask.THUMBS_FOLDER_NAME : PreviewConstants.VIEW_FOLDER_NAME;
-                            String thumbExt = isImage ? ThumbTask.THUMB_EXT : VideoThumbTask.PREVIEW_EXT;
+                            String thumbExt = isImage ? ThumbTask.THUMB_EXT : VIDEO_PREVIEW_EXT;
                             File thumbFile = Util.getFileFromHash(new File(outputBase, thumbFolder), evidence.getHash(), thumbExt);
                             try {
                                 if (thumbFile.exists()) {

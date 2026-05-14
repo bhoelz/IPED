@@ -39,6 +39,7 @@ import iped.data.IItem;
 import iped.engine.CmdLineArgs;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
+import iped.engine.hash.HashAlgorithm;
 import iped.engine.localization.Messages;
 import iped.engine.lucene.analysis.CategoryTokenizer;
 import iped.engine.util.Util;
@@ -144,14 +145,14 @@ public class ExportCSVTask extends AbstractTask {
         list.append("\"" + escape(value) + "\""); //$NON-NLS-1$ //$NON-NLS-2$
         list.append(SEPARATOR);
 
-        value = (String) evidence.getExtraAttribute(HashTask.HASH.MD5.toString());
+        value = (String) evidence.getExtraAttribute(HashAlgorithm.MD5.toString());
         if (value == null) {
             value = ""; //$NON-NLS-1$
         }
         list.append("\"" + escape(value) + "\""); //$NON-NLS-1$ //$NON-NLS-2$
         list.append(SEPARATOR);
 
-        value = (String) evidence.getExtraAttribute(HashTask.HASH.SHA1.toString());
+        value = (String) evidence.getExtraAttribute(HashAlgorithm.SHA1.toString());
         if (value == null) {
             value = ""; //$NON-NLS-1$
         }

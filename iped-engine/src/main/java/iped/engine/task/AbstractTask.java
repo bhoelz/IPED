@@ -339,13 +339,17 @@ public abstract class AbstractTask {
     }
 
     protected void checkDependency(Class<? extends AbstractTask> requiredTask) throws IPEDException {
+        checkDependency(requiredTask.getName());
+    }
+
+    protected void checkDependency(String requiredTaskClassName) throws IPEDException {
         if (Manager.getInstance() != null) {
             Worker[] workers = Manager.getInstance().getWorkers();
-            String requiredName = requiredTask.getName();
+            String requiredName = requiredTaskClassName;
             if (workers != null) {
                 List<AbstractTask> tasks = workers[0].tasks;
                 for (AbstractTask task : tasks) {
-                    if (task.getClass().equals(requiredTask)) {
+                    if (task.getClass().getName().equals(requiredTaskClassName)) {
                         requiredName = task.getName();
                         if (task.isEnabled()) {
                             return;

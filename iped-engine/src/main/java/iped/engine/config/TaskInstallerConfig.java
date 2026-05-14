@@ -26,8 +26,6 @@ import org.xml.sax.SAXException;
 
 import iped.configuration.Configurable;
 import iped.engine.task.AbstractTask;
-import iped.engine.task.PythonTask;
-import iped.engine.task.ScriptTask;
 import iped.exception.IPEDException;
 
 public class TaskInstallerConfig implements Configurable<String> {
@@ -125,10 +123,12 @@ public class TaskInstallerConfig implements Configurable<String> {
     }
 
     private AbstractTask getScriptTask(File script) {
-        if (script.getName().endsWith(".py")) {
-            return new PythonTask(script);
+        String className = script.getName().endsWith(".py") ? "iped.engine.task.PythonTask" : "iped.engine.task.ScriptTask";
+        try {
+            return (AbstractTask) Class.forName(className).getDeclaredConstructor(File.class).newInstance(script);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not instantiate script task class " + className, e);
         }
-        return new ScriptTask(script);
     }
 
     @Override

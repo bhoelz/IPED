@@ -63,18 +63,19 @@ import iped.engine.data.Bookmarks;
 import iped.engine.data.DataSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.data.Item;
+import iped.engine.hash.HashAlgorithm;
 import iped.engine.io.MetadataInputStreamFactory;
 import iped.engine.preview.PreviewConstants;
 import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.search.LuceneSearchResult;
 import iped.engine.search.SimilarFacesSearch;
-import iped.engine.task.HashTask;
 import iped.engine.task.ParsingTask;
 import iped.engine.task.TaskRuntime;
 import iped.engine.task.carver.CarverTask;
 import iped.engine.task.carver.LedCarveTask;
-import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
+import iped.engine.index.IndexMetadata;
+import iped.engine.task.index.IndexItem;
 import iped.engine.task.index.IndexItem.KnnVector;
 import iped.engine.util.Util;
 import iped.parsers.mail.OutlookPSTParser;
@@ -644,7 +645,7 @@ public class IPEDReader extends DataSourceReader {
                 evidence.setThumb(doc.getBinaryValue(BasicProps.THUMB).bytes);
             }
 
-            for (HashTask.HASH hash : HashTask.HASH.values()) {
+            for (HashAlgorithm hash : HashAlgorithm.values()) {
                 value = doc.get(hash.toString());
                 if (value != null)
                     evidence.setExtraAttribute(hash.toString(), value);

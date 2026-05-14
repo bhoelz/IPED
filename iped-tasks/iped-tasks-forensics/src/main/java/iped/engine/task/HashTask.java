@@ -38,6 +38,7 @@ import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.HashTaskConfig;
+import iped.engine.hash.HashAlgorithm;
 import iped.parsers.whatsapp.WhatsAppParser;
 
 /**
@@ -50,25 +51,6 @@ public class HashTask extends AbstractTask {
     private static final int HASH_BUFFER_LEN = 1024 * 1024;
 
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
-
-    public enum HASH {
-        MD5("md5"), //$NON-NLS-1$
-        SHA1("sha-1"), //$NON-NLS-1$
-        SHA256("sha-256"), //$NON-NLS-1$
-        SHA512("sha-512"), //$NON-NLS-1$
-        EDONKEY("edonkey"); //$NON-NLS-1$
-
-        private String name;
-
-        HASH(String val) {
-            this.name = val;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
 
     private HashMap<String, MessageDigest> digestMap = new LinkedHashMap<String, MessageDigest>();
 
@@ -90,13 +72,13 @@ public class HashTask extends AbstractTask {
 
         for (String algorithm : hashConfig.getAlgorithms()) {
             MessageDigest digest = null;
-            if (!algorithm.equalsIgnoreCase(HASH.EDONKEY.toString())) {
+            if (!algorithm.equalsIgnoreCase(HashAlgorithm.EDONKEY.toString())) {
                 digest = MessageDigest.getInstance(algorithm.toUpperCase());
             } else {
                 digest = MessageDigest.getInstance("MD4"); //$NON-NLS-1$
             }
             digestMap.put(algorithm, digest);
-            if (HASH.SHA256.toString().equals(algorithm)) {
+            if (HashAlgorithm.SHA256.toString().equals(algorithm)) {
                 System.setProperty(WhatsAppParser.SHA256_ENABLED_SYSPROP, Boolean.TRUE.toString());
             }
         }
@@ -156,7 +138,7 @@ public class HashTask extends AbstractTask {
                 for (String algo : digestMap.keySet()) {
                     executorService.execute(() -> {
                         try {
-                            if (!algo.equals(HASH.EDONKEY.toString())) {
+                            if (!algo.equals(HashAlgorithm.EDONKEY.toString())) {
                                 digestMap.get(algo).update(currHashBuf, 0, currLen);
                             } else {
                                 updateEd2k(currHashBuf, currLen);
@@ -181,7 +163,7 @@ public class HashTask extends AbstractTask {
             boolean defaultHash = true;
             for (String algo : digestMap.keySet()) {
                 byte[] hash;
-                if (!algo.equals(HASH.EDONKEY.toString())) {
+                if (!algo.equals(HashAlgorithm.EDONKEY.toString())) {
                     hash = digestMap.get(algo).digest();
                 } else {
                     hash = digestEd2k();
@@ -215,7 +197,7 @@ public class HashTask extends AbstractTask {
 
     private void updateEd2k(byte[] buffer, int len) throws IOException {
 
-        MessageDigest md4 = digestMap.get(HASH.EDONKEY.toString());
+        MessageDigest md4 = digestMap.get(HashAlgorithm.EDONKEY.toString());
         if (chunk + len >= CHUNK_SIZE) {
             int offset = CHUNK_SIZE - chunk;
             md4.update(buffer, 0, offset);
@@ -231,7 +213,7 @@ public class HashTask extends AbstractTask {
 
     private byte[] digestEd2k() throws IOException {
 
-        MessageDigest md4 = digestMap.get(HASH.EDONKEY.toString());
+        MessageDigest md4 = digestMap.get(HashAlgorithm.EDONKEY.toString());
         if (total == 0 || total % CHUNK_SIZE != 0) {
             out.write(md4.digest());
         }

@@ -49,7 +49,7 @@ import iped.viewers.util.LibreOfficeFinder;
 
 public class DocThumbTask extends ThumbTask {
 
-    private static final String thumbTimeout = ImageThumbTask.THUMB_TIMEOUT;
+    private static final String thumbTimeout = "thumbTimeout"; //$NON-NLS-1$
 
     private static DocThumbTaskConfig docThumbsConfig;
     private static boolean externalParsingEnabled = false;
@@ -88,7 +88,7 @@ public class DocThumbTask extends ThumbTask {
             if (!init.get()) {
                 docThumbsConfig = configurationManager.findObject(DocThumbTaskConfig.class);
                 if (docThumbsConfig.isEnabled()) {
-                    checkDependency(HashTask.class);
+                    checkDependency("iped.engine.task.HashTask");
                     logger.info("Thumb Size: " + docThumbsConfig.getThumbSize());
                     logger.info("LibreOffice Conversion: " + (docThumbsConfig.isLoEnabled() ? "enabled" : "disabled"));
                     if (docThumbsConfig.isLoEnabled()) {

@@ -40,13 +40,12 @@ import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.io.TimeoutException;
 import iped.engine.task.AbstractTask;
-import iped.engine.task.HashTask;
-import iped.engine.task.video.VideoThumbTask;
 import iped.exception.IPEDException;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
 
 public abstract class AbstractTranscriptTask extends AbstractTask {
+    private static final String MPLAYER_WIN_PATH = "tools/mplayer/mplayer.exe"; //$NON-NLS-1$
 
     private static Logger LOGGER = LoggerFactory.getLogger(AbstractTranscriptTask.class);
 
@@ -190,7 +189,7 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
         }
 
         if (transcriptConfig.isEnabled()) {
-            checkDependency(HashTask.class);
+            checkDependency("iped.engine.task.HashTask");
         }
     }
 
@@ -259,7 +258,7 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
         ProcessBuilder pb = new ProcessBuilder();
         String[] cmd = transcriptConfig.getConvertCmd().split(" ");
         if (SystemUtils.IS_OS_WINDOWS) {
-            String mplayerWin = VideoThumbTask.MPLAYER_WIN_PATH;
+            String mplayerWin = MPLAYER_WIN_PATH;
             String ipedRoot = System.getProperty(IConfigurationDirectory.IPED_ROOT);
             if (ipedRoot == null) {
                 ipedRoot = Configuration.getInstance().appRoot;

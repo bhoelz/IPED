@@ -23,16 +23,6 @@
             <version>4.5.14</version>
         </dependency>
         <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>core</artifactId>
-            <version>3.5.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>javase</artifactId>
-            <version>3.5.4</version>
-        </dependency>
-        <dependency>
             <groupId>br.dpf</groupId>
             <artifactId>photodna-api</artifactId>
             <version>1.0</version>
@@ -44,7 +34,7 @@
         </dependency>
         <dependency>
             <groupId>iped</groupId>
-            <artifactId>iped-parsers-impl</artifactId>
+            <artifactId>iped-parsers-main</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -87,11 +77,6 @@
             <artifactId>iped-tasks.spi</artifactId>
             <version>${project.version}</version>
         </dependency>
-    	<dependency>
-    		<groupId>dk.brics.automaton</groupId>
-    		<artifactId>automaton</artifactId>
-    		<version>1.11-8</version>
-		</dependency>
         <dependency>
             <groupId>org.sleuthkit</groupId>
             <artifactId>sleuthkit</artifactId>
@@ -216,11 +201,6 @@
    			<version>1.1</version>
        	</dependency>
         <dependency>
-            <groupId>com.googlecode.libphonenumber</groupId>
-            <artifactId>libphonenumber</artifactId>
-            <version>8.9.14</version>
-        </dependency>
-        <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
             <version>4.4.4</version>
@@ -260,22 +240,6 @@
             <artifactId>commons-compress</artifactId>
             <!-- check https://github.com/sepinf-inc/IPED/issues/1068 when upgrading this -->
             <version>1.27.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-langdetect-optimaize</artifactId>
-            <version>${tika.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parser-nlp-module</artifactId>
-            <version>${tika.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.openjdk.nashorn</groupId>

@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.HtmlReportTaskConfig;
+import iped.engine.localization.Messages;
 import iped.engine.util.Util;
 
 public abstract class ThumbTask extends AbstractTask {
@@ -25,7 +26,8 @@ public abstract class ThumbTask extends AbstractTask {
         HtmlReportTaskConfig htmlReportConfig = ConfigurationManager.get().findObject(HtmlReportTaskConfig.class);
         boolean storeThumbsInDisk = caseData.containsReport() && htmlReportConfig.isEnabled();
         if (storeThumbsInDisk) {
-            File reportSubFolder = HTMLReportTask.getReportSubFolder();
+            String reportSubFolderName = Messages.getString("HTMLReportTask.ReportSubFolder"); //$NON-NLS-1$
+            File reportSubFolder = new File(output.getParentFile(), reportSubFolderName);
             return Util.getFileFromHash(new File(reportSubFolder, THUMBS_FOLDER_NAME), evidence.getHash(), THUMB_EXT);
         }
         return null; // it will be stored in DB

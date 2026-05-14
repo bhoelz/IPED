@@ -82,11 +82,10 @@ import iped.engine.search.ItemSearcher;
 import iped.engine.search.LuceneSearchResult;
 import iped.engine.sleuthkit.SleuthkitClient;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
-import iped.engine.task.ExportCSVTask;
 import iped.engine.task.ExportFileTask;
-import iped.engine.task.P2PBookmarker;
 import iped.engine.task.TaskRuntime;
-import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
+import iped.engine.index.IndexMetadata;
+import iped.engine.task.index.IndexItem;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
@@ -312,7 +311,8 @@ public class Manager {
 
         ExportFileTask.deleteIgnoredItemData(caseData, output);
 
-        new P2PBookmarker(caseData).createBookmarksForSharedFiles(output.getParentFile());
+        TaskRuntime.invokeConstructedVoid("iped.engine.task.P2PBookmarker", ICaseData.class, caseData,
+                "createBookmarksForSharedFiles", File.class, output.getParentFile());
 
         updateImagePaths();
 
@@ -652,7 +652,7 @@ public class Manager {
 
                     TaskRuntime.invokeStaticVoid("iped.engine.graph.GraphTask", "commit");
 
-                    ExportCSVTask.commit(output);
+                    TaskRuntime.invokeStaticVoid("iped.engine.task.ExportCSVTask", "commit", File.class, output);
 
                     TaskRuntime.invokeStaticVoid("iped.engine.task.index.ElasticSearchIndexTask", "commit");
 

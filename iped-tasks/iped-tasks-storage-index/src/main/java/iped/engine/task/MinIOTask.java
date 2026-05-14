@@ -156,7 +156,7 @@ public class MinIOTask extends AbstractTask {
         minioClient.setTimeout(timeout, timeout, timeout);
         inputStreamFactory = new MinIOInputInputStreamFactory(URI.create(server));
 
-        checkDependency(HashTask.class);
+        checkDependency("iped.engine.task.HashTask");
     }
 
     private static void parseFields(String cmdFields) {

@@ -1,6 +1,7 @@
 package iped.engine.task;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,29 @@ public final class TaskRuntime {
             Class<?> cls = Class.forName(fqcn);
             Method m = cls.getMethod(methodName);
             m.invoke(null);
+        } catch (Throwable t) {
+            // optional runtime integration
+        }
+    }
+
+    public static void invokeStaticVoid(String fqcn, String methodName, Class<?> paramType, Object param) {
+        try {
+            Class<?> cls = Class.forName(fqcn);
+            Method m = cls.getMethod(methodName, paramType);
+            m.invoke(null, param);
+        } catch (Throwable t) {
+            // optional runtime integration
+        }
+    }
+
+    public static void invokeConstructedVoid(String fqcn, Class<?> constructorParamType, Object constructorParam,
+            String methodName, Class<?> methodParamType, Object methodParam) {
+        try {
+            Class<?> cls = Class.forName(fqcn);
+            Constructor<?> c = cls.getConstructor(constructorParamType);
+            Object instance = c.newInstance(constructorParam);
+            Method m = cls.getMethod(methodName, methodParamType);
+            m.invoke(instance, methodParam);
         } catch (Throwable t) {
             // optional runtime integration
         }

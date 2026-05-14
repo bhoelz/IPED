@@ -76,7 +76,6 @@ import iped.engine.localization.CategoryLocalization;
 import iped.engine.localization.Messages;
 import iped.engine.preview.PreviewConstants;
 import iped.engine.task.index.IndexItem;
-import iped.engine.task.video.VideoThumbTask;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
 import iped.parsers.util.MetadataUtil;
@@ -96,6 +95,7 @@ import iped.viewers.util.ImageMetadataUtil;
 public class HTMLReportTask extends AbstractTask {
 
     private static Logger logger = LoggerFactory.getLogger(HTMLReportTask.class);
+    private static final String VIDEO_PREVIEW_EXT = "jpg"; //$NON-NLS-1$
 
     private IPEDSource ipedCase;
 
@@ -867,7 +867,7 @@ public class HTMLReportTask extends AbstractTask {
     }
 
     private File getVideoThumbsFile(String hash) {
-        File file = Util.getFileFromHash(new File(this.output, PreviewConstants.VIEW_FOLDER_NAME), hash, VideoThumbTask.PREVIEW_EXT);
+        File file = Util.getFileFromHash(new File(this.output, PreviewConstants.VIEW_FOLDER_NAME), hash, VIDEO_PREVIEW_EXT);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
@@ -890,7 +890,7 @@ public class HTMLReportTask extends AbstractTask {
                 return;
             }
             BufferedImage img = null;
-            if (extractThumb && ImageThumbTask.isJpeg(evidence)) { // $NON-NLS-1$
+            if (extractThumb && isJpeg(evidence)) { // $NON-NLS-1$
                 BufferedInputStream stream = evidence.getBufferedInputStream();
                 try {
                     img = ImageMetadataUtil.getThumb(stream);
@@ -999,6 +999,10 @@ public class HTMLReportTask extends AbstractTask {
             height = thumbSize;
         }
         return ImageUtil.resizeImage(img, width, height);
+    }
+
+    private static boolean isJpeg(IItem item) {
+        return item.getMediaType().getSubtype().startsWith("jpeg");
     }
 
     private static void replace(StringBuilder sb, String a, String b) {
