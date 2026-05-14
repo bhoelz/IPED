@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/iped-plugin-registry-index.schema.json",
+  "title": "IPED Plugin Registry Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "registryId", "generatedAt", "signature", "plugins"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "registryId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signature": { "$ref": "#/$defs/signatureInline" },
+    "plugins": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/plugin" }
+    }
+  },
+  "$defs": {
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$"
+    },
+    "versionRange": {
+      "type": "string",
+      "minLength": 1
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    },
+    "signatureInline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "keyId", "sig"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "keyId": { "type": "string", "minLength": 1 },
+        "sig": { "type": "string", "minLength": 1 }
+      }
+    },
+    "signatureExternal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "keyId", "sigUrl"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "keyId": { "type": "string", "minLength": 1 },
+        "sigUrl": { "$ref": "#/$defs/url" }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ipedVersionRange", "spiVersionRange", "javaVersionRange"],
+      "properties": {
+        "ipedVersionRange": { "$ref": "#/$defs/versionRange" },
+        "spiVersionRange": { "$ref": "#/$defs/versionRange" },
+        "javaVersionRange": { "$ref": "#/$defs/versionRange" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "size", "sha256"],
+      "properties": {
+        "url": { "$ref": "#/$defs/url" },
+        "size": { "type": "integer", "minimum": 0 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taskId", "providerClass"],
+      "properties": {
+        "taskId": { "type": "string", "minLength": 1 },
+        "providerClass": {
+          "type": "string",
+          "pattern": "^[A-Za-z_$][A-Za-z\\d_$]*(\\.[A-Za-z_$][A-Za-z\\d_$]*)+$"
+        }
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "versionRange", "optional"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "versionRange": { "$ref": "#/$defs/versionRange" },
+        "optional": { "type": "boolean" }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["permissions"],
+      "properties": {
+        "permissions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "sbomUrl": { "$ref": "#/$defs/url" }
+      }
+    },
+    "pluginVersion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "releasedAt",
+        "compatibility",
+        "artifact",
+        "provider",
+        "dependencies",
+        "security",
+        "deprecated"
+      ],
+      "properties": {
+        "version": { "$ref": "#/$defs/semver" },
+        "releasedAt": { "type": "string", "format": "date-time" },
+        "compatibility": { "$ref": "#/$defs/compatibility" },
+        "artifact": { "$ref": "#/$defs/artifact" },
+        "signature": { "$ref": "#/$defs/signatureExternal" },
+        "provider": { "$ref": "#/$defs/provider" },
+        "dependencies": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dependency" }
+        },
+        "security": { "$ref": "#/$defs/security" },
+        "deprecated": { "type": "boolean" }
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "description",
+        "owner",
+        "repo",
+        "homepage",
+        "license",
+        "tags",
+        "latestVersion",
+        "versions"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "owner": { "type": "string", "minLength": 1 },
+        "repo": { "$ref": "#/$defs/url" },
+        "homepage": { "$ref": "#/$defs/url" },
+        "license": { "type": "string", "minLength": 1 },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "latestVersion": { "$ref": "#/$defs/semver" },
+        "versions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/pluginVersion" }
+        }
+      }
+    }
+  }
+}
