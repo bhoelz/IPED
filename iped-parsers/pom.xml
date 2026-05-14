@@ -12,6 +12,19 @@
 
     <modules>
         <module>java-dbf</module>
+        <module>iped-parsers-common</module>
+        <module>iped-parser-apk</module>
+        <module>iped-parser-vcard</module>
+        <module>iped-parser-plist-detector</module>
+        <module>iped-parser-mp4-detector</module>
+        <module>iped-parser-video</module>
+        <module>iped-parser-tor</module>
+        <module>iped-parser-sqlite-detector</module>
+        <module>iped-parser-browsers</module>
+        <module>iped-parser-discord-cache</module>
+        <module>iped-parser-db-base</module>
+        <module>iped-parser-sqlite-core</module>
+        <module>iped-parsers-main</module>
         <module>iped-parsers-impl</module>
     </modules>
 

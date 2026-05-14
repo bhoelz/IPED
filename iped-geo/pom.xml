@@ -48,7 +48,7 @@
         </dependency>
         <dependency>
             <groupId>iped</groupId>
-            <artifactId>iped-parsers-impl</artifactId>
+            <artifactId>iped-parsers-main</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
