@@ -69,7 +69,7 @@ import iped.data.IItem;
 import iped.engine.data.CaseData;
 import iped.engine.data.Item;
 import iped.engine.localization.Messages;
-import iped.engine.task.SkipCommitedTask;
+import iped.engine.task.SkipCommitDataKeys;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
@@ -162,7 +162,7 @@ public class Util {
      */
     public static void calctrackIDAndUpdateID(CaseData caseData, IItem item) {
         HashValue trackID = new HashValue(Util.getTrackID(item));
-        Map<HashValue, Integer> globalToIdMap = (Map<HashValue, Integer>) caseData.getCaseObject(SkipCommitedTask.trackID_ID_MAP);
+        Map<HashValue, Integer> globalToIdMap = (Map<HashValue, Integer>) caseData.getCaseObject(SkipCommitDataKeys.TRACK_ID_ID_MAP);
         // changes id to previous processing id if using --continue
         if (globalToIdMap != null) {
             Integer previousId = globalToIdMap.get(trackID);

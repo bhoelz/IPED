@@ -41,6 +41,7 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
 import iped.engine.hash.HashAlgorithm;
 import iped.engine.localization.Messages;
+import iped.engine.task.SkipCommitDataKeys;
 import iped.engine.lucene.analysis.CategoryTokenizer;
 import iped.engine.util.Util;
 import iped.utils.HashValue;
@@ -91,7 +92,7 @@ public class ExportCSVTask extends AbstractTask {
             return;
         }
 
-        if (Boolean.valueOf((String) evidence.getTempAttribute(SkipCommitedTask.IS_COMMITTED))) {
+        if (Boolean.valueOf((String) evidence.getTempAttribute(SkipCommitDataKeys.IS_COMMITTED))) {
             return;
         }
 

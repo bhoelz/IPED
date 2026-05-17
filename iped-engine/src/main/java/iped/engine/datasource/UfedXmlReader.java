@@ -75,7 +75,7 @@ import iped.engine.io.MetadataInputStreamFactory;
 import iped.engine.io.UFDRInputStreamFactory;
 import iped.engine.io.UFEDXMLWrapper;
 import iped.engine.localization.Messages;
-import iped.engine.task.ExportFileTask;
+import iped.engine.task.ExportFileTaskRuntime;
 import iped.engine.task.TaskRuntime;
 import iped.engine.util.Util;
 import iped.parsers.telegram.TelegramParser;
@@ -1449,7 +1449,7 @@ public class UfedXmlReader extends DataSourceReader {
                 bw.flush();
                 bw.close();
 
-                ExportFileTask.getLastInstance().insertIntoStorage(deviceInfo, baos.toByteArray(), baos.size());
+                ExportFileTaskRuntime.insertIntoStorage(deviceInfo, baos.toByteArray(), baos.size());
                 deviceInfo.setHash(null);
 
             } catch (Exception e) {

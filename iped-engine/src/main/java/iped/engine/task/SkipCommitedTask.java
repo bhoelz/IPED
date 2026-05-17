@@ -48,13 +48,13 @@ import iped.utils.HashValue;
  */
 public class SkipCommitedTask extends AbstractTask {
 
-    public static final String PARENTS_WITH_LOST_SUBITEMS = "PARENTS_WITH_LOST_SUBITEMS";
+    public static final String PARENTS_WITH_LOST_SUBITEMS = SkipCommitDataKeys.PARENTS_WITH_LOST_SUBITEMS;
 
-    public static final String DATASOURCE_NAMES = "CMD_LINE_DATASOURCE_NAMES";
+    public static final String DATASOURCE_NAMES = SkipCommitDataKeys.DATASOURCE_NAMES;
 
-    public static final String trackID_ID_MAP = "trackID_ID_MAP";
+    public static final String trackID_ID_MAP = SkipCommitDataKeys.TRACK_ID_ID_MAP;
 
-    public static final String IS_COMMITTED = "IS_COMMITTED";
+    public static final String IS_COMMITTED = SkipCommitDataKeys.IS_COMMITTED;
 
     private static Logger logger = LogManager.getLogger(SkipCommitedTask.class);
 

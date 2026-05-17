@@ -80,9 +80,9 @@ import iped.engine.data.IPEDSource;
 import iped.engine.data.Item;
 import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
 import iped.engine.preview.PreviewConstants;
+import iped.engine.preview.ThumbConstants;
 import iped.engine.preview.PreviewInputStreamFactory;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
-import iped.engine.task.ThumbTask;
 import iped.engine.task.similarity.ImageSimilarityTask;
 import iped.engine.util.Util;
 import iped.parsers.ocr.OCRParser;
@@ -908,7 +908,7 @@ public class IndexItem extends BasicProps {
             File viewFile = null;
             if (StringUtils.isNotBlank(evidence.getHash())) {
 
-                if (Boolean.parseBoolean(doc.get(ThumbTask.HAS_THUMB))) {
+                if (Boolean.parseBoolean(doc.get(ThumbConstants.HAS_THUMB))) {
                     BytesRef thumb = doc.getBinaryValue(THUMB);
                     if (thumb != null) {
                         evidence.setThumb(thumb.bytes);
@@ -916,8 +916,8 @@ public class IndexItem extends BasicProps {
                         boolean isImage = MetadataUtil.isImageType(evidence.getMediaType());
                         boolean isVideo = MetadataUtil.isVideoType(evidence.getMediaType());
                         if (isImage || isVideo) {
-                            String thumbFolder = isImage ? ThumbTask.THUMBS_FOLDER_NAME : PreviewConstants.VIEW_FOLDER_NAME;
-                            String thumbExt = isImage ? ThumbTask.THUMB_EXT : VIDEO_PREVIEW_EXT;
+                            String thumbFolder = isImage ? ThumbConstants.THUMBS_FOLDER_NAME : PreviewConstants.VIEW_FOLDER_NAME;
+                            String thumbExt = isImage ? ThumbConstants.THUMB_EXT : VIDEO_PREVIEW_EXT;
                             File thumbFile = Util.getFileFromHash(new File(outputBase, thumbFolder), evidence.getHash(), thumbExt);
                             try {
                                 if (thumbFile.exists()) {

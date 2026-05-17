@@ -75,6 +75,7 @@ import iped.engine.data.ReportInfo;
 import iped.engine.localization.CategoryLocalization;
 import iped.engine.localization.Messages;
 import iped.engine.preview.PreviewConstants;
+import iped.engine.preview.ThumbConstants;
 import iped.engine.task.index.IndexItem;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
@@ -851,7 +852,7 @@ public class HTMLReportTask extends AbstractTask {
     }
 
     private File getVideoStripeFile(String hash) {
-        File file = Util.getFileFromHash(new File(reportSubFolder, ThumbTask.THUMBS_FOLDER_NAME), hash, ThumbTask.THUMB_EXT);
+        File file = Util.getFileFromHash(new File(reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME), hash, ThumbConstants.THUMB_EXT);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
@@ -859,7 +860,7 @@ public class HTMLReportTask extends AbstractTask {
     }
 
     private File getImageThumbFile(String hash) {
-        File file = Util.getFileFromHash(new File(reportSubFolder, ThumbTask.THUMBS_FOLDER_NAME), hash, ThumbTask.THUMB_EXT);
+        File file = Util.getFileFromHash(new File(reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME), hash, ThumbConstants.THUMB_EXT);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }

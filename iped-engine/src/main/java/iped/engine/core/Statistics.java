@@ -34,7 +34,7 @@ import iped.engine.config.LocaleConfig;
 import iped.engine.config.PluginConfig;
 import iped.engine.localization.Messages;
 import iped.engine.lucene.ConfiguredFSDirectory;
-import iped.engine.task.ExportFileTask;
+import iped.engine.task.ExportFileTaskRuntime;
 import iped.engine.task.ParsingTask;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.task.index.IndexItem;
@@ -230,7 +230,7 @@ public class Statistics {
     public void logStatistics(Manager manager) throws Exception {
 
         int processed = getProcessed();
-        int extracted = ExportFileTask.getItensExtracted();
+        int extracted = ExportFileTaskRuntime.getItemsExtracted();
         int activeFiles = getActiveProcessed();
         int carvedIgnored = getCorruptCarveIgnored();
         int ignored = getIgnored();

@@ -33,7 +33,7 @@ import iped.data.ICaseData;
 import iped.engine.core.Manager;
 import iped.engine.data.Item;
 import iped.engine.localization.Messages;
-import iped.engine.task.SkipCommitedTask;
+import iped.engine.task.SkipCommitDataKeys;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.utils.HashValue;
 
@@ -128,7 +128,7 @@ public class ItemProducer extends Thread implements Closeable {
 
                 // executed only when restarting interrupted processing
                 Set<HashValue> parentsWithLostSubitems = (Set<HashValue>) caseData
-                        .getCaseObject(SkipCommitedTask.PARENTS_WITH_LOST_SUBITEMS);
+                        .getCaseObject(SkipCommitDataKeys.PARENTS_WITH_LOST_SUBITEMS);
                 if (parentsWithLostSubitems != null && parentsWithLostSubitems.size() > 0) {
                     try (IPEDReader reader = new IPEDReader(caseData, output, listOnly)) {
                     	reader.read(parentsWithLostSubitems, manager);	

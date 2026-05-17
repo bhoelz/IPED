@@ -10,14 +10,14 @@ import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.HtmlReportTaskConfig;
 import iped.engine.localization.Messages;
+import iped.engine.preview.ThumbConstants;
 import iped.engine.util.Util;
 
 public abstract class ThumbTask extends AbstractTask {
 
-    public static final String THUMBS_FOLDER_NAME = "thumbs";
-    public static final String HAS_THUMB = "hasThumb";
-
-    public static final String THUMB_EXT = "jpg";
+    public static final String THUMBS_FOLDER_NAME = ThumbConstants.THUMBS_FOLDER_NAME;
+    public static final String HAS_THUMB = ThumbConstants.HAS_THUMB;
+    public static final String THUMB_EXT = ThumbConstants.THUMB_EXT;
 
     private static final String SELECT_THUMB = "SELECT thumb FROM thumbs WHERE id=?;"; //$NON-NLS-1$
     private static final String INSERT_THUMB = "INSERT INTO thumbs(id, thumb) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET thumb=? WHERE thumb IS NULL;"; //$NON-NLS-1$

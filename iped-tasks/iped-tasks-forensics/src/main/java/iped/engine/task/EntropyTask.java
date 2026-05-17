@@ -7,6 +7,7 @@ import java.util.List;
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
+import iped.engine.preview.ThumbConstants;
 import iped.engine.config.EnableTaskProperty;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.parsers.standard.RawStringParser;
@@ -49,7 +50,7 @@ public class EntropyTask extends AbstractTask {
             return;
 
         if (evidence.getMediaType().equals(BaseCarveTask.UNALLOCATED_MIMETYPE)
-                || Boolean.TRUE.equals(evidence.getExtraAttribute(ThumbTask.HAS_THUMB)))
+                || Boolean.TRUE.equals(evidence.getExtraAttribute(ThumbConstants.HAS_THUMB)))
             return;
 
         try (RandomFilterInputStream rfis = new RandomFilterInputStream(evidence.getBufferedInputStream())) {

@@ -82,7 +82,7 @@ import iped.engine.search.ItemSearcher;
 import iped.engine.search.LuceneSearchResult;
 import iped.engine.sleuthkit.SleuthkitClient;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
-import iped.engine.task.ExportFileTask;
+import iped.engine.task.ExportFileTaskRuntime;
 import iped.engine.task.TaskRuntime;
 import iped.engine.index.IndexMetadata;
 import iped.engine.task.index.IndexItem;
@@ -309,7 +309,7 @@ public class Manager {
 
         removeEmptyTreeNodes();
 
-        ExportFileTask.deleteIgnoredItemData(caseData, output);
+        ExportFileTaskRuntime.deleteIgnoredItemData(caseData, output);
 
         TaskRuntime.invokeConstructedVoid("iped.engine.task.P2PBookmarker", ICaseData.class, caseData,
                 "createBookmarksForSharedFiles", File.class, output.getParentFile());
@@ -474,7 +474,7 @@ public class Manager {
         }
 
         // remove item data from storage or file system
-        ExportFileTask.deleteIgnoredItemData(caseData, output, true, writer);
+        ExportFileTaskRuntime.deleteIgnoredItemData(caseData, output, true, writer);
 
         // clear bookmarks pointing to deleted items
         try (IPEDSource ipedCase = new IPEDSource(output.getParentFile(), writer)) {
@@ -648,7 +648,7 @@ public class Manager {
                     stats.commit();
 
                     LOGGER.info("Commiting sqlite storages...");
-                    ExportFileTask.commitStorage(output);
+                    ExportFileTaskRuntime.commitStorage(output);
 
                     TaskRuntime.invokeStaticVoid("iped.engine.graph.GraphTask", "commit");
 
@@ -849,7 +849,7 @@ public class Manager {
             throw new IPEDException("Directory already exists: " + output.getAbsolutePath()); //$NON-NLS-1$
         }
 
-        File export = new File(output.getParentFile(), ExportFileTask.EXTRACT_DIR);
+        File export = new File(output.getParentFile(), ExportFileTaskRuntime.getExtractDirName());
         if (export.exists() && !args.isAppendIndex() && !args.isContinue() && !args.isRestart()
                 && args.getEvidenceToRemove() == null) {
             throw new IPEDException("Directory already exists: " + export.getAbsolutePath()); //$NON-NLS-1$
