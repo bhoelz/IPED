@@ -36,7 +36,6 @@ import iped.parsers.browsers.Download;
 import iped.parsers.browsers.ResumedVisit;
 import iped.parsers.browsers.Visit;
 import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.standard.StandardParser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.EmptyInputStream;
@@ -55,6 +54,7 @@ public class FirefoxSqliteParser extends AbstractSqliteBrowserParser {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";
 
     public static final MediaType MOZ_PLACES = MediaType.application("x-firefox-places"); //$NON-NLS-1$
 
@@ -106,7 +106,7 @@ public class FirefoxSqliteParser extends AbstractSqliteBrowserParser {
 
                     ToXMLContentHandler bookmarksHandler = new ToXMLContentHandler(tmpBookmarksFile, "UTF-8"); //$NON-NLS-1$
                     Metadata bookmarksMetadata = new Metadata();
-                    bookmarksMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, MOZ_BOOKMARKS.toString());
+                    bookmarksMetadata.add(INDEXER_CONTENT_TYPE, MOZ_BOOKMARKS.toString());
                     bookmarksMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Firefox Bookmarks"); //$NON-NLS-1$
                     bookmarksMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(0));
                     bookmarksMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -128,7 +128,7 @@ public class FirefoxSqliteParser extends AbstractSqliteBrowserParser {
                     i++;
                     Metadata metadataBookmark = new Metadata();
 
-                    metadataBookmark.add(StandardParser.INDEXER_CONTENT_TYPE, MOZ_BOOKMARKS_REG.toString());
+                    metadataBookmark.add(INDEXER_CONTENT_TYPE, MOZ_BOOKMARKS_REG.toString());
                     metadataBookmark.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Firefox Bookmark Entry " + i); //$NON-NLS-1$
                     metadataBookmark.add(TikaCoreProperties.TITLE, b.getTitle());
                     metadataBookmark.set(TikaCoreProperties.CREATED, b.getDateAdded());
@@ -146,7 +146,7 @@ public class FirefoxSqliteParser extends AbstractSqliteBrowserParser {
 
                     ToXMLContentHandler historyHandler = new ToXMLContentHandler(tmpHistoryFile, "UTF-8"); //$NON-NLS-1$
                     Metadata historyMetadata = new Metadata();
-                    historyMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, MOZ_HISTORY.toString());
+                    historyMetadata.add(INDEXER_CONTENT_TYPE, MOZ_HISTORY.toString());
                     historyMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Firefox History"); //$NON-NLS-1$
                     historyMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(1));
                     historyMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -168,7 +168,7 @@ public class FirefoxSqliteParser extends AbstractSqliteBrowserParser {
                     i++;
                     Metadata metadataHistory = new Metadata();
 
-                    metadataHistory.add(StandardParser.INDEXER_CONTENT_TYPE, MOZ_HISTORY_REG.toString());
+                    metadataHistory.add(INDEXER_CONTENT_TYPE, MOZ_HISTORY_REG.toString());
                     metadataHistory.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Firefox History Entry " + i); //$NON-NLS-1$
                     metadataHistory.add(TikaCoreProperties.TITLE, h.getTitle());
                     metadataHistory.set(ExtraProperties.ACCESSED, h.getVisitDate());
@@ -186,7 +186,7 @@ public class FirefoxSqliteParser extends AbstractSqliteBrowserParser {
 
                     ToXMLContentHandler downloadsHandler = new ToXMLContentHandler(tmpDownloadFile, "UTF-8"); //$NON-NLS-1$
                     Metadata downloadsMetadata = new Metadata();
-                    downloadsMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, MOZ_DOWNLOADS.toString());
+                    downloadsMetadata.add(INDEXER_CONTENT_TYPE, MOZ_DOWNLOADS.toString());
                     downloadsMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Firefox Downloads"); //$NON-NLS-1$
                     downloadsMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(2));
                     downloadsMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -208,7 +208,7 @@ public class FirefoxSqliteParser extends AbstractSqliteBrowserParser {
                     i++;
                     Metadata metadataDownload = new Metadata();
 
-                    metadataDownload.add(StandardParser.INDEXER_CONTENT_TYPE, MOZ_DOWNLOADS_REG.toString());
+                    metadataDownload.add(INDEXER_CONTENT_TYPE, MOZ_DOWNLOADS_REG.toString());
                     metadataDownload.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Firefox Download Entry " + i); //$NON-NLS-1$
                     metadataDownload.add(ExtraProperties.URL, d.getUrlFromDownload());
                     metadataDownload.add(ExtraProperties.LOCAL_PATH, d.getDownloadedLocalPath());

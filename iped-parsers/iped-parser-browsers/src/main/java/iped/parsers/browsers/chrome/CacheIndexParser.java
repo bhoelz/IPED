@@ -25,7 +25,6 @@ import iped.data.IItemReader;
 import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
 import iped.parsers.discord.cache.CacheEntry;
 import iped.parsers.discord.cache.Index;
-import iped.parsers.util.MetadataUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
@@ -51,15 +50,31 @@ public class CacheIndexParser extends AbstractParser {
     public static final String CACHE_ENTRY_COUNT = METADATA_PREFIX + "numEntries";
 
     static {
-        MetadataUtil.addCustomMetadataPrefix(METADATA_PREFIX);
-        MetadataUtil.addCustomMetadataPrefix(HTTP_META_PREFIX);
-        MetadataUtil.setMetadataType(CACHE_ENTRY_COUNT, Integer.class);
-        MetadataUtil.setMetadataType(HTTP_META_PREFIX + "flags", Integer.class);
-        MetadataUtil.setMetadataType(HTTP_META_PREFIX + "status", Integer.class);
-        MetadataUtil.setMetadataType(HTTP_META_PREFIX + "payload_size", Integer.class);
-        MetadataUtil.setMetadataType(HTTP_META_PREFIX + "content-length", Integer.class);
-        MetadataUtil.setMetadataType(HTTP_META_PREFIX + "request_time", Long.class);
-        MetadataUtil.setMetadataType(HTTP_META_PREFIX + "response_time", Long.class);
+        addCustomMetadataPrefix(METADATA_PREFIX);
+        addCustomMetadataPrefix(HTTP_META_PREFIX);
+        setMetadataType(CACHE_ENTRY_COUNT, Integer.class);
+        setMetadataType(HTTP_META_PREFIX + "flags", Integer.class);
+        setMetadataType(HTTP_META_PREFIX + "status", Integer.class);
+        setMetadataType(HTTP_META_PREFIX + "payload_size", Integer.class);
+        setMetadataType(HTTP_META_PREFIX + "content-length", Integer.class);
+        setMetadataType(HTTP_META_PREFIX + "request_time", Long.class);
+        setMetadataType(HTTP_META_PREFIX + "response_time", Long.class);
+    }
+
+    private static void addCustomMetadataPrefix(String prefix) {
+        try {
+            Class<?> clazz = Class.forName("iped.parsers.util.MetadataUtil");
+            clazz.getMethod("addCustomMetadataPrefix", String.class).invoke(null, prefix);
+        } catch (ReflectiveOperationException ignored) {
+        }
+    }
+
+    private static void setMetadataType(String name, Class<?> type) {
+        try {
+            Class<?> clazz = Class.forName("iped.parsers.util.MetadataUtil");
+            clazz.getMethod("setMetadataType", String.class, Class.class).invoke(null, name, type);
+        } catch (ReflectiveOperationException ignored) {
+        }
     }
 
     @Override

@@ -35,7 +35,6 @@ import com.dd.plist.NSString;
 import com.dd.plist.PropertyListParser;
 
 import iped.parsers.browsers.Download;
-import iped.parsers.standard.StandardParser;
 import iped.parsers.util.ItemInfo;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
@@ -55,6 +54,7 @@ public class SafariPlistParser extends AbstractParser {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";
 
     public static final MediaType SAFARI_PLIST = MediaType.application("x-safari-plist"); //$NON-NLS-1$
 
@@ -109,7 +109,7 @@ public class SafariPlistParser extends AbstractParser {
 
                         ToXMLContentHandler historyHandler = new ToXMLContentHandler(tmpHistoryFile, "UTF-8"); //$NON-NLS-1$
                         Metadata historyMetadata = new Metadata();
-                        historyMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, SAFARI_HISTORY.toString());
+                        historyMetadata.add(INDEXER_CONTENT_TYPE, SAFARI_HISTORY.toString());
                         historyMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Safari Plist History"); //$NON-NLS-1$
                         historyMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(0));
                         historyMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -132,7 +132,7 @@ public class SafariPlistParser extends AbstractParser {
                         i++;
                         Metadata metadataHistory = new Metadata();
 
-                        metadataHistory.add(StandardParser.INDEXER_CONTENT_TYPE, SAFARI_HISTORY_REG.toString());
+                        metadataHistory.add(INDEXER_CONTENT_TYPE, SAFARI_HISTORY_REG.toString());
                         metadataHistory.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Safari Plist History Entry " + i); //$NON-NLS-1$
                         metadataHistory.add(TikaCoreProperties.TITLE, v.getTitle());
                         metadataHistory.set(ExtraProperties.ACCESSED, v.getLastVisitDate());
@@ -155,7 +155,7 @@ public class SafariPlistParser extends AbstractParser {
 
                         ToXMLContentHandler downloadHandler = new ToXMLContentHandler(tmpDownloadFile, "UTF-8"); //$NON-NLS-1$
                         Metadata downloadMetadata = new Metadata();
-                        downloadMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, SAFARI_DOWNLOADS.toString());
+                        downloadMetadata.add(INDEXER_CONTENT_TYPE, SAFARI_DOWNLOADS.toString());
                         downloadMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Safari Plist Downloads"); //$NON-NLS-1$
                         downloadMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(1));
                         downloadMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -178,7 +178,7 @@ public class SafariPlistParser extends AbstractParser {
                         i++;
                         Metadata metadataDownload = new Metadata();
 
-                        metadataDownload.add(StandardParser.INDEXER_CONTENT_TYPE,
+                        metadataDownload.add(INDEXER_CONTENT_TYPE,
                                 SAFARI_DOWNLOADS_REG.toString());
                         metadataDownload.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Safari Plist Download Entry " + i); //$NON-NLS-1$
                         metadataDownload.add(ExtraProperties.URL, d.getUrlFromDownload());
@@ -207,7 +207,7 @@ public class SafariPlistParser extends AbstractParser {
 
                         ToXMLContentHandler bookmarkHandler = new ToXMLContentHandler(tmpBookmarkFile, "UTF-8"); //$NON-NLS-1$
                         Metadata bookmarkMetadata = new Metadata();
-                        bookmarkMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, SAFARI_DOWNLOADS.toString());
+                        bookmarkMetadata.add(INDEXER_CONTENT_TYPE, SAFARI_DOWNLOADS.toString());
                         bookmarkMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Safari Plist Bookmarks"); //$NON-NLS-1$
                         bookmarkMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(2));
                         bookmarkMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -230,7 +230,7 @@ public class SafariPlistParser extends AbstractParser {
                         i++;
                         Metadata metadataBookmark = new Metadata();
 
-                        metadataBookmark.add(StandardParser.INDEXER_CONTENT_TYPE,
+                        metadataBookmark.add(INDEXER_CONTENT_TYPE,
                                 SAFARI_DOWNLOADS_REG.toString());
                         metadataBookmark.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Safari Plist Bookmark Entry " + i); //$NON-NLS-1$
                         metadataBookmark.add(TikaCoreProperties.TITLE, b.getTitle());

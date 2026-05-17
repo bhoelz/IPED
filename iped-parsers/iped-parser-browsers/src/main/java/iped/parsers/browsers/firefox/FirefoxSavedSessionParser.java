@@ -21,7 +21,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import iped.parsers.util.Messages;
 import net.jpountz.lz4.LZ4Exception;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4SafeDecompressor;
@@ -36,14 +35,14 @@ public class FirefoxSavedSessionParser extends AbstractParser {
 
     private final int BLOCK_SIZE = 4096;
     private final short HEADER_OFFSET = 12;
-    private final String HEADER_TABS_TABLE = Messages.getString("FirefoxSessions.TabsHeader");
-    private final String HEADER_TABS_TABLE_URL = Messages.getString("FirefoxSessions.TabsURL");
-    private final String HEADER_TABS_TABLE_TITLE = Messages.getString("FirefoxSessions.TabsTitle");
-    private final String HEADER_COOKIES_TABLE = Messages.getString("FirefoxSessions.CookiesHeader");
-    private final String HEADER_COOKIES_TABLE_HOST = Messages.getString("FirefoxSessions.CookiesHost");
-    private final String HEADER_COOKIES_TABLE_PATH = Messages.getString("FirefoxSessions.CookiesPath");
-    private final String HEADER_COOKIES_TABLE_NAME = Messages.getString("FirefoxSessions.CookiesName");
-    private final String HEADER_COOKIES_TABLE_COOKIE = Messages.getString("FirefoxSessions.CookiesCookie");
+    private final String HEADER_TABS_TABLE = "Firefox Tabs";
+    private final String HEADER_TABS_TABLE_URL = "URL";
+    private final String HEADER_TABS_TABLE_TITLE = "Title";
+    private final String HEADER_COOKIES_TABLE = "Firefox Cookies";
+    private final String HEADER_COOKIES_TABLE_HOST = "Host";
+    private final String HEADER_COOKIES_TABLE_PATH = "Path";
+    private final String HEADER_COOKIES_TABLE_NAME = "Name";
+    private final String HEADER_COOKIES_TABLE_COOKIE = "Cookie";
     private static ObjectMapper mapper;
 
     static {

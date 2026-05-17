@@ -33,7 +33,6 @@ import iped.parsers.browsers.ResumedVisit;
 import iped.parsers.browsers.Search;
 import iped.parsers.browsers.Visit;
 import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.standard.StandardParser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.EmptyInputStream;
@@ -66,6 +65,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";
 
     public static final MediaType CHROME_SQLITE = MediaType.application("x-chrome-sqlite"); //$NON-NLS-1$
 
@@ -114,7 +114,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
 
                     ToXMLContentHandler downloadsHandler = new ToXMLContentHandler(tmpDownloadsFile, "UTF-8"); //$NON-NLS-1$
                     Metadata downloadsMetadata = new Metadata();
-                    downloadsMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, CHROME_DOWNLOADS.toString());
+                    downloadsMetadata.add(INDEXER_CONTENT_TYPE, CHROME_DOWNLOADS.toString());
                     downloadsMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Chrome Downloads"); //$NON-NLS-1$
                     downloadsMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(0));
                     downloadsMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -137,7 +137,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
                     i++;
                     Metadata metadataDownload = new Metadata();
 
-                    metadataDownload.add(StandardParser.INDEXER_CONTENT_TYPE, CHROME_DOWNLOADS_REG.toString());
+                    metadataDownload.add(INDEXER_CONTENT_TYPE, CHROME_DOWNLOADS_REG.toString());
                     metadataDownload.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Chrome Download Entry " + i); //$NON-NLS-1$
                     metadataDownload.add(ExtraProperties.URL, d.getUrlFromDownload());
                     metadataDownload.add(ExtraProperties.LOCAL_PATH, d.getDownloadedLocalPath());
@@ -158,7 +158,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
 
                     ToXMLContentHandler historyHandler = new ToXMLContentHandler(tmpHistoryFile, "UTF-8"); //$NON-NLS-1$
                     Metadata historyMetadata = new Metadata();
-                    historyMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, CHROME_HISTORY.toString());
+                    historyMetadata.add(INDEXER_CONTENT_TYPE, CHROME_HISTORY.toString());
                     historyMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Chrome History"); //$NON-NLS-1$
                     historyMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(1));
                     historyMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -181,7 +181,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
                     i++;
                     Metadata metadataHistory = new Metadata();
 
-                    metadataHistory.add(StandardParser.INDEXER_CONTENT_TYPE, CHROME_HISTORY_REG.toString());
+                    metadataHistory.add(INDEXER_CONTENT_TYPE, CHROME_HISTORY_REG.toString());
                     metadataHistory.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Chrome History Entry " + i); //$NON-NLS-1$
                     metadataHistory.add(TikaCoreProperties.TITLE, h.getTitle());
                     metadataHistory.set(ExtraProperties.ACCESSED, h.getVisitDate());
@@ -198,7 +198,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
 
                     ToXMLContentHandler searchesHandler = new ToXMLContentHandler(tmpSearchesFile, "UTF-8"); //$NON-NLS-1$
                     Metadata searchesMetadata = new Metadata();
-                    searchesMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, CHROME_SEARCHES.toString());
+                    searchesMetadata.add(INDEXER_CONTENT_TYPE, CHROME_SEARCHES.toString());
                     searchesMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Chrome Searches"); //$NON-NLS-1$
                     searchesMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(0));
                     searchesMetadata.set(BasicProps.HASCHILD, "false"); //$NON-NLS-1$

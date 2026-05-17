@@ -31,7 +31,6 @@ import org.xml.sax.SAXException;
 
 import iped.parsers.browsers.AbstractSqliteBrowserParser;
 import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.standard.StandardParser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.EmptyInputStream;
@@ -51,6 +50,7 @@ public class SafariSqliteParser extends AbstractSqliteBrowserParser {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";
 
     public static final MediaType SAFARI_SQLITE = MediaType.application("x-safari-sqlite"); //$NON-NLS-1$
 
@@ -93,7 +93,7 @@ public class SafariSqliteParser extends AbstractSqliteBrowserParser {
 
                     ToXMLContentHandler historyHandler = new ToXMLContentHandler(tmpHistoryFile, "UTF-8"); //$NON-NLS-1$
                     Metadata historyMetadata = new Metadata();
-                    historyMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, SAFARI_HISTORY.toString());
+                    historyMetadata.add(INDEXER_CONTENT_TYPE, SAFARI_HISTORY.toString());
                     historyMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Safari History"); //$NON-NLS-1$
                     historyMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(1));
                     historyMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -116,7 +116,7 @@ public class SafariSqliteParser extends AbstractSqliteBrowserParser {
                     i++;
                     Metadata metadataHistory = new Metadata();
 
-                    metadataHistory.add(StandardParser.INDEXER_CONTENT_TYPE, SAFARI_HISTORY_REG.toString());
+                    metadataHistory.add(INDEXER_CONTENT_TYPE, SAFARI_HISTORY_REG.toString());
                     metadataHistory.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Safari History Entry " + i); //$NON-NLS-1$
                     metadataHistory.add(TikaCoreProperties.TITLE, h.getTitle());
                     metadataHistory.set(ExtraProperties.ACCESSED, h.getVisitDate());

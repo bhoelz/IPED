@@ -39,7 +39,6 @@ import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.ptr.PointerByReference;
 
 import iped.parsers.database.EDBParser;
-import iped.parsers.standard.StandardParser;
 import iped.parsers.util.ItemInfo;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
@@ -52,6 +51,7 @@ public class EdgeWebCacheParser extends AbstractParser {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";
 
     public static final MediaType EDGE_WEB_CACHE = MediaType.application("x-edge-web-cache"); //$NON-NLS-1$
 
@@ -153,7 +153,7 @@ public class EdgeWebCacheParser extends AbstractParser {
 
                         ToXMLContentHandler historyHandler = new ToXMLContentHandler(tmpHistoryFile, "UTF-8"); //$NON-NLS-1$
                         Metadata historyMetadata = new Metadata();
-                        historyMetadata.add(StandardParser.INDEXER_CONTENT_TYPE, EDGE_HISTORY.toString());
+                        historyMetadata.add(INDEXER_CONTENT_TYPE, EDGE_HISTORY.toString());
                         historyMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Edge History " + ec.getTableName()); // $NON-NLS-1$
                         historyMetadata.add(ExtraProperties.ITEM_VIRTUAL_ID, String.valueOf(virtualId));
                         historyMetadata.set(BasicProps.HASCHILD, "true"); //$NON-NLS-1$
@@ -174,7 +174,7 @@ public class EdgeWebCacheParser extends AbstractParser {
                         i++;
                         Metadata metadataHistory = new Metadata();
 
-                        metadataHistory.add(StandardParser.INDEXER_CONTENT_TYPE, EDGE_HISTORY_REG.toString());
+                        metadataHistory.add(INDEXER_CONTENT_TYPE, EDGE_HISTORY_REG.toString());
                         metadataHistory.add(TikaCoreProperties.RESOURCE_NAME_KEY, "Edge History Entry " + i); //$NON-NLS-1$
                         metadataHistory.set(TikaCoreProperties.CREATED, ev.getCreationDate());
                         metadataHistory.set(TikaCoreProperties.MODIFIED, ev.getModifiedDate());

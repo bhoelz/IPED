@@ -24,6 +24,11 @@
         <module>iped-parser-discord-cache</module>
         <module>iped-parser-db-base</module>
         <module>iped-parser-sqlite-core</module>
+        <module>iped-parser-database-edb</module>
+        <module>iped-parser-vlc</module>
+        <module>iped-parser-ares</module>
+        <module>iped-parser-emule</module>
+        <module>iped-parser-shareaza</module>
         <module>iped-parsers-main</module>
         <module>iped-parsers-impl</module>
     </modules>

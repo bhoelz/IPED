@@ -21,6 +21,8 @@ package iped.parsers.browsers.ie;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Set;
 
@@ -37,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.Util;
 import iped.utils.IOUtil;
 
 /**
@@ -129,7 +130,7 @@ public class IndexDatParser extends AbstractParser {
                     read.value = null;
                     read.notify();
                 }
-                String str = Util.decodeUnknownCharset(out);
+                String str = decodeUnknownCharset(out);
                 xhtml.characters(str);
 
                 if (Thread.currentThread().isInterrupted())
@@ -184,6 +185,41 @@ public class IndexDatParser extends AbstractParser {
 
     class BytesRead {
         Integer value = null;
+    }
+
+    private static String decodeUnknownCharset(byte[] data) {
+        try {
+            return decodeUTF16OrUTF8(data);
+        } catch (UnsupportedEncodingException e) {
+            return decodeWindows1252(data);
+        }
+    }
+
+    private static String decodeUTF16OrUTF8(byte[] data) throws UnsupportedEncodingException {
+        int count0 = 0;
+        int max = Math.min(data.length, 1 << 14);
+        for (int i = 0; i < max; i++) {
+            if (data[i] == 0) {
+                count0++;
+            }
+        }
+        int count = 2 * count0;
+        if (count > 0 && count >= 0.9 * (float) max && count <= 1.1 * (float) max) {
+            return new String(data, StandardCharsets.UTF_16LE);
+        }
+        String result = new String(data, StandardCharsets.UTF_8);
+        if (result.contains("�")) {
+            throw new UnsupportedEncodingException("Data is not UTF8 nor UTF16");
+        }
+        return result;
+    }
+
+    private static String decodeWindows1252(byte[] data) {
+        try {
+            return new String(data, "windows-1252");
+        } catch (UnsupportedEncodingException e1) {
+            return new String(data, StandardCharsets.ISO_8859_1);
+        }
     }
 
 }

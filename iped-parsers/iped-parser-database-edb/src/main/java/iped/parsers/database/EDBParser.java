@@ -33,9 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.standard.RawStringParser;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.Util;
 import iped.properties.ExtraProperties;
 import iped.utils.SimpleHTMLEncoder;
 
@@ -54,8 +51,7 @@ public class EDBParser extends AbstractParser {
     private static String OUT_SUFFIX = ".export"; //$NON-NLS-1$
     private static boolean tested = false;
     private static String TABLE_PREFIX = "Table"; //$NON-NLS-1$
-
-    private RawStringParser rawParser = new RawStringParser();
+    private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";
 
     public static final String TOOL_PATH_PROP = TOOL_NAME + ".path"; //$NON-NLS-1$
     private String TOOL_PATH = System.getProperty(TOOL_PATH_PROP, ""); //$NON-NLS-1$
@@ -98,9 +94,6 @@ public class EDBParser extends AbstractParser {
             TikaInputStream tis = TikaInputStream.get(stream, tmp);
             file = tis.getFile();
 
-            // indexa strings brutas como garantia, caso expansão seja incompleta
-            rawParser.parse(tis, handler, metadata, context);
-
             File tmpFile = tmp.createTemporaryFile();
 
             String[] cmd = { TOOL_PATH + TOOL_NAME, "-t", tmpFile.getAbsolutePath(), file.getAbsolutePath() }; //$NON-NLS-1$
@@ -110,7 +103,7 @@ public class EDBParser extends AbstractParser {
 
             try {
                 // p.waitFor();
-                Util.waitFor(p, xhtml);
+                waitFor(p, xhtml);
 
             } catch (InterruptedException e) {
                 p.destroyForcibly();
@@ -127,7 +120,7 @@ public class EDBParser extends AbstractParser {
                     tableMetadata.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
 
                     if (metadata.get(Metadata.CONTENT_TYPE).endsWith("x-webcache")) //$NON-NLS-1$
-                        tableMetadata.set(StandardParser.INDEXER_CONTENT_TYPE, "application/x-webcache-table"); //$NON-NLS-1$
+                        tableMetadata.set(INDEXER_CONTENT_TYPE, "application/x-webcache-table"); //$NON-NLS-1$
 
                     if (extractor.shouldParseEmbedded(tableMetadata)) {
                         File htmlTable = processTable(table, tmp, extractor, xhtml);
@@ -234,6 +227,48 @@ public class EDBParser extends AbstractParser {
                 return false;
         }
         return true;
+    }
+
+    private static void waitFor(Process p, ContentHandler handler) throws InterruptedException {
+        ProgressMarker marker = new ProgressMarker();
+        ignoreStream(p.getInputStream(), marker);
+        while (true) {
+            try {
+                p.exitValue();
+                break;
+            } catch (Exception ignored) {
+            }
+            if (marker.progress && handler != null) {
+                try {
+                    handler.characters(" ".toCharArray(), 0, 1);
+                } catch (SAXException ignored) {
+                }
+            }
+            marker.progress = false;
+            Thread.sleep(1000);
+        }
+    }
+
+    private static void ignoreStream(final InputStream stream, final ProgressMarker marker) {
+        Thread t = new Thread(() -> {
+            byte[] out = new byte[1024];
+            int read = 0;
+            try {
+                while (read != -1) {
+                    read = stream.read(out);
+                    if (marker != null) {
+                        marker.progress = true;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private static final class ProgressMarker {
+        volatile boolean progress;
     }
 
 }

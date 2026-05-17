@@ -196,6 +196,11 @@
             <artifactId>iped-parser-sqlite-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parser-database-edb</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>net.sf.sevenzipjbinding</groupId>
 			<artifactId>sevenzipjbinding</artifactId>

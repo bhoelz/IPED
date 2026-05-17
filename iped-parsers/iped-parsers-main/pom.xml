@@ -70,5 +70,30 @@
             <artifactId>iped-parser-sqlite-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parser-database-edb</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parser-vlc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parser-ares</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parser-emule</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parser-shareaza</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
