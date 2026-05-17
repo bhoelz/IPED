@@ -28,7 +28,6 @@ import org.xml.sax.SAXException;
 
 import iped.data.IItemReader;
 import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.standard.StandardParser;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.Messages;
@@ -49,6 +48,7 @@ public class SkypeParser extends AbstractParser {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";
 
     public static final String SKYPE = "Skype"; //$NON-NLS-1$
     public static final MediaType SKYPE_MIME = MediaType.application("sqlite-skype"); //$NON-NLS-1$
@@ -122,7 +122,7 @@ public class SkypeParser extends AbstractParser {
                     contactMap.put(c.getSkypeName(), c);
 
                     Metadata cMetadata = new Metadata();
-                    cMetadata.set(StandardParser.INDEXER_CONTENT_TYPE, CONTACT_MIME_TYPE);
+                    cMetadata.set(INDEXER_CONTENT_TYPE, CONTACT_MIME_TYPE);
                     cMetadata.set(HttpHeaders.CONTENT_TYPE, CONTACT_MIME_TYPE);
                     String name = c.getBestName();
                     cMetadata.set(TikaCoreProperties.TITLE, name);
@@ -175,7 +175,7 @@ public class SkypeParser extends AbstractParser {
 
                     /* adiciona a conversação */
                     Metadata chatMetadata = new Metadata();
-                    chatMetadata.set(StandardParser.INDEXER_CONTENT_TYPE, CONVERSATION_MIME_TYPE);
+                    chatMetadata.set(INDEXER_CONTENT_TYPE, CONVERSATION_MIME_TYPE);
                     chatMetadata.set(HttpHeaders.CONTENT_TYPE, CONVERSATION_MIME_TYPE);
                     chatMetadata.set(TikaCoreProperties.TITLE, conv.getTitle());
                     chatMetadata.set(TikaCoreProperties.CREATED, conv.getCreationDate());
@@ -197,7 +197,7 @@ public class SkypeParser extends AbstractParser {
                     if (extractMessages)
                         for (SkypeMessage sm : conv.getMessages()) {
                             Metadata meta = new Metadata();
-                            meta.set(StandardParser.INDEXER_CONTENT_TYPE, MESSAGE_MIME_TYPE);
+                            meta.set(INDEXER_CONTENT_TYPE, MESSAGE_MIME_TYPE);
                             meta.set(TikaCoreProperties.TITLE, conv.getTitle() + "_msg_" + msgNum++);
                             meta.set(TikaCoreProperties.CREATED, sm.getData());
                             meta.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
@@ -219,7 +219,7 @@ public class SkypeParser extends AbstractParser {
                                 IItemReader item = sm.getAnexoUri().getCacheFile();
                                 String referenceQuery = BasicProps.HASH + ":" + item.getHash();
                                 meta.set(ExtraProperties.LINKED_ITEMS, referenceQuery); // $NON-NLS-1$
-                                meta.set(StandardParser.INDEXER_CONTENT_TYPE, ATTACHMENT_MIME_TYPE);
+                                meta.set(INDEXER_CONTENT_TYPE, ATTACHMENT_MIME_TYPE);
                                 List<String> hashSets = ChildPornHashLookup.lookupHash(item.getHash());
                                 if (!hashSets.isEmpty()) {
                                     meta.set(ExtraProperties.HASHDB_STATUS, "pedo");
@@ -238,7 +238,7 @@ public class SkypeParser extends AbstractParser {
                 for (SkypeFileTransfer t : transfers) {
                     /* add file transfers */
                     Metadata tMetadata = new Metadata();
-                    tMetadata.set(StandardParser.INDEXER_CONTENT_TYPE, FILETRANSFER_MIME_TYPE);
+                    tMetadata.set(INDEXER_CONTENT_TYPE, FILETRANSFER_MIME_TYPE);
                     String name = Messages.getString("SkypeParser.SkypeTransfer") + t.getFilename(); //$NON-NLS-1$
                     tMetadata.set(TikaCoreProperties.TITLE, name);
                     tMetadata.set(ExtraProperties.PARENT_VIRTUAL_ID, t.getConversation().getId());
@@ -289,7 +289,7 @@ public class SkypeParser extends AbstractParser {
                 // cria o item que representa a conta do usuário (Account)
                 Metadata meta = new Metadata();
                 meta.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
-                meta.set(StandardParser.INDEXER_CONTENT_TYPE, ACCOUNT_MIME_TYPE);
+                meta.set(INDEXER_CONTENT_TYPE, ACCOUNT_MIME_TYPE);
                 meta.set(HttpHeaders.CONTENT_TYPE, ACCOUNT_MIME_TYPE);
                 String name = account.getBestName();
                 meta.set(TikaCoreProperties.TITLE, name);

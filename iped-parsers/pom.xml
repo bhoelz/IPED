@@ -29,6 +29,7 @@
         <module>iped-parser-ares</module>
         <module>iped-parser-emule</module>
         <module>iped-parser-shareaza</module>
+        <module>iped-parser-skype</module>
         <module>iped-parsers-main</module>
         <module>iped-parsers-impl</module>
     </modules>

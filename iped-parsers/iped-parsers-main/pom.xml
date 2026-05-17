@@ -95,5 +95,10 @@
             <artifactId>iped-parser-shareaza</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parser-skype</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
