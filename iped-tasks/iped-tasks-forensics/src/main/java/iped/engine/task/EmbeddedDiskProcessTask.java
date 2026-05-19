@@ -215,8 +215,8 @@ public class EmbeddedDiskProcessTask extends AbstractTask {
             int numSubitems = reader.getItemCount();
             if (numSubitems > 0) {
                 item.setHasChildren(true);
-                item.setExtraAttribute(ParsingTask.HAS_SUBITEM, Boolean.TRUE.toString());
-                item.setExtraAttribute(ParsingTask.NUM_SUBITEMS, numSubitems);
+                item.setExtraAttribute(ParsingTaskSupport.HAS_SUBITEM, Boolean.TRUE.toString());
+                item.setExtraAttribute(ParsingTaskSupport.NUM_SUBITEMS, numSubitems);
             }
             if (reader.hasDecodingError()) {
                 item.getMetadata().set(StandardParser.PARSER_EXCEPTION, Boolean.TRUE.toString());

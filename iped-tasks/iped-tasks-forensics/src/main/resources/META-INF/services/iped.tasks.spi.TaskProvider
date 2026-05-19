@@ -1,0 +1,4 @@
+iped.engine.task.provider.EmbeddedDiskProcessTaskProvider
+iped.engine.task.provider.FragmentLargeBinaryTaskProvider
+iped.engine.task.provider.ExportFileTaskProvider
+iped.engine.task.provider.SkipCommitedTaskProvider
