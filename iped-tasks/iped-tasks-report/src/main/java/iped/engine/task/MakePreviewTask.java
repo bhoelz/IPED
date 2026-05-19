@@ -154,7 +154,7 @@ public class MakePreviewTask extends AbstractTask {
         PipedOutputStream outputStream = new PipedOutputStream(inputStream);
 
         final Metadata metadata = new Metadata();
-        ParsingTask.fillMetadata(evidence, metadata);
+        ParsingTaskSupport.fillMetadata(evidence, metadata);
 
         // Não é necessário fechar tis pois será fechado em evidence.dispose()
         final TikaInputStream tis = evidence.getTikaStream();

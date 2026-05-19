@@ -35,7 +35,7 @@ import iped.engine.config.PluginConfig;
 import iped.engine.localization.Messages;
 import iped.engine.lucene.ConfiguredFSDirectory;
 import iped.engine.task.ExportFileTaskRuntime;
-import iped.engine.task.ParsingTask;
+import iped.engine.task.ParsingTaskSupport;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
@@ -271,7 +271,7 @@ public class Statistics {
 
         // Processing times per parser
         TreeMap<String, Long> timesPerParser = new TreeMap<String, Long>();
-        ParsingTask.copyTimesPerParser(timesPerParser);
+        ParsingTaskSupport.copyTimesPerParser(timesPerParser);
         if (!timesPerParser.isEmpty()) {
             totalTime = 0;
             for (long parserTime : timesPerParser.values()) {

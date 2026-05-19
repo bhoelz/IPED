@@ -29,13 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
@@ -48,7 +46,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.html.HtmlMapper;
 import org.apache.tika.parser.html.IdentityHtmlMapper;
-import org.apache.tika.utils.XMLReaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
@@ -59,14 +56,8 @@ import iped.data.ICaseData;
 import iped.data.IItem;
 import iped.data.IItemReader;
 import iped.engine.config.CategoryToExpandConfig;
-import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
-import iped.engine.config.ExternalParsersConfig;
-import iped.engine.config.LocalConfig;
-import iped.engine.config.OCRConfig;
-import iped.engine.config.ParsersConfig;
 import iped.engine.config.ParsingTaskConfig;
-import iped.engine.config.PluginConfig;
 import iped.engine.config.SplitLargeBinaryConfig;
 import iped.engine.core.Manager;
 import iped.engine.core.Statistics;
@@ -84,25 +75,16 @@ import iped.engine.util.ItemInfoFactory;
 import iped.engine.util.ParentInfo;
 import iped.engine.util.TextCache;
 import iped.engine.util.Util;
-import iped.exception.IPEDException;
 import iped.exception.ZipBombException;
 import iped.io.IStreamSource;
-import iped.parsers.browsers.ie.IndexDatParser;
 import iped.parsers.compress.PackageParser;
 import iped.parsers.compress.SevenZipParser;
-import iped.parsers.database.EDBParser;
 import iped.parsers.external.ExternalParser;
-import iped.parsers.external.ExternalParsersFactory;
 import iped.parsers.fork.EmbeddedDocumentParser;
 import iped.parsers.fork.EmbeddedDocumentParser.NameTitle;
-import iped.parsers.fork.ForkParser;
-import iped.parsers.mail.LibpffPSTParser;
 import iped.parsers.misc.MultipleParser;
-import iped.parsers.misc.PDFTextParser;
 import iped.parsers.ocr.OCRParser;
 import iped.parsers.python.PythonParser;
-import iped.parsers.registry.RegRipperParser;
-import iped.parsers.standard.RawStringParser;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.telegram.TelegramParser;
 import iped.parsers.util.ComputeThumb;
@@ -112,7 +94,6 @@ import iped.parsers.util.IgnoreCorruptedCarved;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.MetadataUtil;
 import iped.parsers.util.OCROutputFolder;
-import iped.parsers.util.PDFToImage;
 import iped.parsers.whatsapp.WhatsAppParser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
@@ -140,9 +121,9 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
 
     private static Logger LOGGER = LoggerFactory.getLogger(ParsingTask.class);
 
-    public static final String ENCRYPTED = "encrypted"; //$NON-NLS-1$
-    public static final String HAS_SUBITEM = "hasSubitem"; //$NON-NLS-1$
-    public static final String NUM_SUBITEMS = "numSubItems"; //$NON-NLS-1$
+    public static final String ENCRYPTED = ParsingTaskSupport.ENCRYPTED;
+    public static final String HAS_SUBITEM = ParsingTaskSupport.HAS_SUBITEM;
+    public static final String NUM_SUBITEMS = ParsingTaskSupport.NUM_SUBITEMS;
 
     private static final int MAX_SUBITEM_DEPTH = 100;
     private static final String SUBITEM_DEPTH = "subitemDepth"; //$NON-NLS-1$
@@ -163,7 +144,6 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
     private static final Set<MediaType> typesToCheckZipBomb = getTypesToCheckZipbomb();
 
     private static AtomicInteger containersBeingExpanded = new AtomicInteger();
-    private static AtomicBoolean tikaSAXPoolSizeSet = new AtomicBoolean(false);
 
     private CategoryToExpandConfig expandConfig;
     private ParsingTaskConfig parsingConfig;
@@ -269,17 +249,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
     }
 
     public static void fillMetadata(IItem evidence, Metadata metadata) {
-        Long len = evidence.getLength();
-        if (len != null)
-            metadata.set(Metadata.CONTENT_LENGTH, len.toString());
-        metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, evidence.getName());
-        if (evidence.getMediaType() != null) {
-            metadata.set(Metadata.CONTENT_TYPE, evidence.getMediaTypeString());
-            metadata.set(StandardParser.INDEXER_CONTENT_TYPE, evidence.getMediaTypeString());
-        }
-        if (evidence.isTimedOut()) {
-            metadata.set(StandardParser.INDEXER_TIMEOUT, "true"); //$NON-NLS-1$
-        }
+        ParsingTaskSupport.fillMetadata(evidence, metadata);
     }
 
     private static boolean isToAlwaysExpand(CaseData caseData, IItem item) {
@@ -776,98 +746,14 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
         SplitLargeBinaryConfig splitConfig = configurationManager.findObject(SplitLargeBinaryConfig.class);
         minItemSizeToFragment = splitConfig.getMinItemSizeToFragment();
 
-        setupParsingOptions(configurationManager);
+        max_expanding_containers = ParsingTaskBootstrap.configure(configurationManager);
 
         this.autoParser = new StandardParser();
 
     }
 
     public static void setupParsingOptions(ConfigurationManager configurationManager) {
-
-        ParsingTaskConfig parsingConfig = configurationManager.findObject(ParsingTaskConfig.class);
-        ParsersConfig parserConfig = configurationManager.findObject(ParsersConfig.class);
-        System.setProperty("tika.config", parserConfig.getTmpConfigFile().getAbsolutePath());
-
-        // we have seen very large records in valid docs
-        org.apache.poi.hpsf.CodePageString.setMaxRecordLength(512_000);
-
-        // heavy Tika configuration
-        if (!tikaSAXPoolSizeSet.getAndSet(true)) {
-            try {
-                XMLReaderUtils.setPoolSize(Runtime.getRuntime().availableProcessors());
-            } catch (TikaException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // most options below are set using sys props because they are also used by
-        // child external processes
-
-        if (parsingConfig.isEnableExternalParsing()) {
-            ForkParser.setEnabled(true);
-            PluginConfig pluginConfig = configurationManager.findObject(PluginConfig.class);
-            ForkParser.setPluginDir(pluginConfig.getPluginFolder().getAbsolutePath());
-            ForkParser.setPoolSize(parsingConfig.getNumExternalParsers());
-            max_expanding_containers = parsingConfig.getNumExternalParsers() / 2;
-            if (max_expanding_containers == 0) {
-                // Abort. We must have at least 2 external parsing processes, 1 causes deadlock.
-                throw new IPEDException("You must have a minimum of 2 external parsing processes! Adjust the '" + ParsingTaskConfig.NUM_EXTERNAL_PARSERS + "' option.");
-            }
-            ForkParser.setServerMaxHeap(parsingConfig.getExternalParsingMaxMem());
-        } else {
-            LocalConfig localConfig = configurationManager.findObject(LocalConfig.class);
-            if (localConfig.getNumThreads() < 2) {
-                // Just 1 worker can cause a deadlock if a big container is being expanded due to max queue size
-                throw new IPEDException("You should have at least 2 processing workers! Please adjust '" + LocalConfig.NUM_THREADS + "' option.");
-            }
-            max_expanding_containers = localConfig.getNumThreads() / 2;
-        }
-
-        String appRoot = Configuration.getInstance().appRoot;
-        ExternalParsersConfig extParsersConfig = configurationManager.findObject(ExternalParsersConfig.class);
-        System.setProperty(ExternalParser.EXTERNAL_PARSERS_ROOT, appRoot);
-        System.setProperty(ExternalParsersFactory.EXTERNAL_PARSER_PROP, extParsersConfig.getTmpConfigFilePath());
-        System.setProperty(StandardParser.FALLBACK_PARSER_PROP, String.valueOf(parsingConfig.isParseUnknownFiles()));
-        System.setProperty(StandardParser.ERROR_PARSER_PROP, String.valueOf(parsingConfig.isParseCorruptedFiles()));
-        System.setProperty(StandardParser.ENTROPY_TEST_PROP,
-                String.valueOf(configurationManager.getEnableTaskProperty(EntropyTask.ENABLE_PARAM)));
-        System.setProperty(PDFTextParser.SORT_PDF_CHARS, String.valueOf(parsingConfig.isSortPDFChars()));
-        System.setProperty(PDFTextParser.PROCESS_INLINE_IMAGES, String.valueOf(parsingConfig.isProcessImagesInPDFs()));
-        System.setProperty(RawStringParser.MIN_STRING_SIZE, String.valueOf(parsingConfig.getMinRawStringSize()));
-        System.setProperty(PythonParser.PYTHON_PARSERS_FOLDER, appRoot + "/scripts/parsers");
-
-        if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-            System.setProperty(OCRParser.TOOL_PATH_PROP, appRoot + "/tools/tesseract"); //$NON-NLS-1$
-            System.setProperty(EDBParser.TOOL_PATH_PROP, appRoot + "/tools/esedbexport/"); //$NON-NLS-1$
-            System.setProperty(LibpffPSTParser.TOOL_PATH_PROP, appRoot + "/tools/pffexport/"); //$NON-NLS-1$
-            System.setProperty(IndexDatParser.TOOL_PATH_PROP, appRoot + "/tools/msiecfexport/"); //$NON-NLS-1$
-        }
-
-        System.setProperty(RegRipperParser.TOOL_PATH_PROP, appRoot + "/tools/regripper/"); //$NON-NLS-1$
-
-        OCRConfig ocrConfig = configurationManager.findObject(OCRConfig.class);
-        setupOCROptions(ocrConfig);
-
-        // do not open extra processes for OCR if ForkParser is enabled
-        String value = parsingConfig.isEnableExternalParsing() ? Boolean.FALSE.toString() : ocrConfig.getExternalPdfToImgConv();
-        System.setProperty(PDFToImage.EXTERNAL_CONV_PROP, value);
-    }
-
-    private static void setupOCROptions(OCRConfig ocrConfig) {
-        if (ocrConfig.isOCREnabled()) {
-            System.setProperty(OCRParser.ENABLE_PROP, "true");
-            System.setProperty(OCRParser.LANGUAGE_PROP, ocrConfig.getOcrLanguage());
-            System.setProperty(OCRParser.SKIP_KNOWN_FILES_PROP, String.valueOf(ocrConfig.isSkipKnownFiles()));
-            System.setProperty(OCRParser.MIN_SIZE_PROP, ocrConfig.getMinFileSize2OCR());
-            System.setProperty(OCRParser.MAX_SIZE_PROP, ocrConfig.getMaxFileSize2OCR());
-            System.setProperty(OCRParser.PAGE_SEGMODE_PROP, ocrConfig.getPageSegMode());
-            System.setProperty(PDFToImage.RESOLUTION_PROP, ocrConfig.getPdfToImgResolution());
-            System.setProperty(PDFToImage.PDFLIB_PROP, ocrConfig.getPdfToImgLib());
-            System.setProperty(PDFToImage.EXTERNAL_CONV_MAXMEM_PROP, ocrConfig.getExternalConvMaxMem());
-            System.setProperty(PDFTextParser.MAX_CHARS_TO_OCR, ocrConfig.getMaxPdfTextSize2OCR());
-            System.setProperty(OCRParser.PROCESS_NON_STANDARD_FORMATS_PROP, ocrConfig.getProcessNonStandard());
-            System.setProperty(OCRParser.MAX_CONV_IMAGE_SIZE_PROP, ocrConfig.getMaxConvImageSize());
-        }
+        max_expanding_containers = ParsingTaskBootstrap.configure(configurationManager);
     }
 
     @Override

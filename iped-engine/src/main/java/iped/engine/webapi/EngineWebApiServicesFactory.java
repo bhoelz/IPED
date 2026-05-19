@@ -33,7 +33,8 @@ import iped.engine.data.IPEDSource;
 import iped.engine.data.ItemId;
 import iped.engine.data.ItemIdSet;
 import iped.engine.search.IPEDSearcher;
-import iped.engine.task.ParsingTask;
+import iped.engine.task.ParsingTaskContextFactory;
+import iped.engine.task.ParsingTaskSupport;
 import iped.engine.webapi.spi.BookmarkService;
 import iped.engine.webapi.spi.DocRef;
 import iped.engine.webapi.spi.SearchService;
@@ -351,7 +352,7 @@ public class EngineWebApiServicesFactory implements WebApiServicesFactory {
             StandardParser parser = new StandardParser();
             ParseContext context = getTikaContext(item, parser, (IPEDSource) source);
             Metadata metadata = new Metadata();
-            ParsingTask.fillMetadata(item, metadata);
+            ParsingTaskSupport.fillMetadata(item, metadata);
             parser.setPrintMetadata(false);
 
             ContentHandler handler = new ToTextContentHandler(output, "UTF-8");
@@ -361,11 +362,7 @@ public class EngineWebApiServicesFactory implements WebApiServicesFactory {
         }
 
         private ParseContext getTikaContext(IItem item, StandardParser parser, IPEDSource source) throws Exception {
-            ParsingTask expander = new ParsingTask(item, parser);
-            expander.init(ConfigurationManager.get());
-            ParseContext context = expander.getTikaContext(source);
-            expander.setExtractEmbedded(false);
-            return context;
+            return ParsingTaskContextFactory.create(item, parser, ConfigurationManager.get(), source, false);
         }
     }
 }

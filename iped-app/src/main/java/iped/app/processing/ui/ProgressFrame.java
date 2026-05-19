@@ -62,7 +62,7 @@ import iped.engine.core.Worker.STATE;
 import iped.engine.localization.Messages;
 import iped.engine.task.AbstractTask;
 import iped.engine.task.ExportFileTask;
-import iped.engine.task.ParsingTask;
+import iped.engine.task.ParsingTaskSupport;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
@@ -393,7 +393,7 @@ public class ProgressFrame extends JFrame implements PropertyChangeListener, Act
     }
 
     private String getParserTimes() {
-        ParsingTask.copyTimesPerParser(timesPerParser);
+        ParsingTaskSupport.copyTimesPerParser(timesPerParser);
         if (timesPerParser.isEmpty())
             return "";
         StringBuilder msg = new StringBuilder();

@@ -33,8 +33,10 @@ import iped.engine.io.CloseFilterReader;
 import iped.engine.io.FragmentingReader;
 import iped.engine.io.ParsingReader;
 import iped.engine.index.IndexExtraAttributes;
-import iped.engine.index.IndexMetadata;\nimport iped.engine.task.AbstractTask;
-import iped.engine.task.ParsingTask;
+import iped.engine.index.IndexMetadata;
+import iped.engine.task.AbstractTask;
+import iped.engine.task.ParsingTaskContextFactory;
+import iped.engine.task.ParsingTaskSupport;
 import iped.engine.task.SkipCommitedTask;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.util.Util;
@@ -223,18 +225,16 @@ public class IndexTask extends AbstractTask {
     private Metadata getMetadata(IItem evidence) {
         // new metadata to prevent ConcurrentModificationException while indexing
         Metadata metadata = new Metadata();
-        ParsingTask.fillMetadata(evidence, metadata);
+        ParsingTaskSupport.fillMetadata(evidence, metadata);
         return metadata;
     }
 
     private ParseContext getTikaContext(IItem evidence) {
-        ParsingTask pt = new ParsingTask(evidence, this.autoParser);
-        pt.setWorker(worker);
-        pt.init(ConfigurationManager.get());
-        ParseContext context = pt.getTikaContext();
-        // this is to not create new items while indexing
-        pt.setExtractEmbedded(false);
-        return context;
+        try {
+            return ParsingTaskContextFactory.create(evidence, this.autoParser, ConfigurationManager.get(), worker, false);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating parsing context", e);
+        }
     }
 
     @Override

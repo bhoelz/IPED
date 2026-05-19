@@ -156,7 +156,7 @@ public class SkipCommitedTask extends AbstractTask {
 
             caseData.putCaseObject(trackID_ID_MAP, globalToIdMap);
 
-            collectParentsWithoutAllSubitems(aReader, IndexItem.CONTAINER_TRACK_ID, ParsingTask.NUM_SUBITEMS);
+            collectParentsWithoutAllSubitems(aReader, IndexItem.CONTAINER_TRACK_ID, ParsingTaskSupport.NUM_SUBITEMS);
             collectParentsWithoutAllSubitems(aReader, IndexItem.PARENT_TRACK_ID, BaseCarveTask.NUM_CARVED_AND_FRAGS);
 
             caseData.putCaseObject(PARENTS_WITH_LOST_SUBITEMS, parentsWithLostSubitems);

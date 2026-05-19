@@ -40,7 +40,8 @@ import org.apache.tika.parser.Parser;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.io.ParsingReader;
-import iped.engine.task.ParsingTask;
+import iped.engine.task.ParsingTaskContextFactory;
+import iped.engine.task.ParsingTaskSupport;
 import iped.engine.task.index.IndexItem;
 import iped.engine.task.index.IndexTask;
 import iped.io.IStreamSource;
@@ -194,11 +195,8 @@ public class TextParser extends CancelableWorker implements ITextParser {
     }
 
     private ParseContext getTikaContext(IItem item) throws Exception {
-        ParsingTask expander = new ParsingTask(item, App.get().getAutoParser());
-        expander.init(ConfigurationManager.get());
-        ParseContext context = expander.getTikaContext(App.get().getLastSelectedSource());
-        expander.setExtractEmbedded(false);
-        return context;
+        return ParsingTaskContextFactory.create(item, App.get().getAutoParser(), ConfigurationManager.get(),
+                App.get().getLastSelectedSource(), false);
     }
 
     private class CountInputStream extends CountingInputStream {
@@ -228,7 +226,7 @@ public class TextParser extends CancelableWorker implements ITextParser {
             // Metadata metadata = item.getMetadata();
             Metadata metadata = MetadataUtil.clone(item.getMetadata());
 
-            ParsingTask.fillMetadata(item, metadata);
+            ParsingTaskSupport.fillMetadata(item, metadata);
 
             ParseContext context = getTikaContext(item);
             InputStream is = item.getTikaStream();

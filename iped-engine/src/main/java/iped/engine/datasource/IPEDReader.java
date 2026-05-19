@@ -70,7 +70,7 @@ import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.search.LuceneSearchResult;
 import iped.engine.search.SimilarFacesSearch;
-import iped.engine.task.ParsingTask;
+import iped.engine.task.ParsingTaskSupport;
 import iped.engine.task.TaskRuntime;
 import iped.engine.task.carver.CarverTask;
 import iped.engine.task.carver.LedCarveTask;
@@ -666,9 +666,9 @@ public class IPEDReader extends DataSourceReader {
             value = doc.get(IndexItem.HASCHILD);
             evidence.setHasChildren(Boolean.parseBoolean(value));
 
-            value = doc.get(ParsingTask.HAS_SUBITEM);
+            value = doc.get(ParsingTaskSupport.HAS_SUBITEM);
             if (value != null)
-                evidence.setExtraAttribute(ParsingTask.HAS_SUBITEM, "true"); //$NON-NLS-1$
+                evidence.setExtraAttribute(ParsingTaskSupport.HAS_SUBITEM, "true"); //$NON-NLS-1$
 
             value = doc.get(IndexItem.OFFSET);
             if (value != null) {
