@@ -23,7 +23,7 @@ import iped.data.ICaseData;
 import iped.engine.CmdLineArgs;
 import iped.engine.Version;
 import iped.engine.config.LocalConfig;
-import iped.engine.task.SkipCommitedTask;
+import iped.engine.task.SkipCommitedTaskSupport;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.parsers.ocr.OCRParser;
@@ -329,7 +329,7 @@ public class CmdLineArgsImpl implements CmdLineArgs {
      */
     public void saveIntoCaseData(ICaseData caseData) {
         caseData.putCaseObject(CmdLineArgs.class.getName(), this);
-        caseData.putCaseObject(SkipCommitedTask.DATASOURCE_NAMES, evidenceNames);
+        caseData.putCaseObject(SkipCommitedTaskSupport.DATASOURCE_NAMES, evidenceNames);
     }
 
     /**

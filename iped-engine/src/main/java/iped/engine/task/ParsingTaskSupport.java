@@ -17,6 +17,8 @@ public final class ParsingTaskSupport {
     private ParsingTaskSupport() {
     }
 
+    private static final String TASK_CLASS = "iped.engine.task.ParsingTask";
+
     public static void fillMetadata(IItem evidence, Metadata metadata) {
         Long len = evidence.getLength();
         if (len != null) {
@@ -33,6 +35,11 @@ public final class ParsingTaskSupport {
     }
 
     public static void copyTimesPerParser(Map<String, Long> dest) {
-        ParsingTask.copyTimesPerParser(dest);
+        try {
+            Class<?> cls = Class.forName(TASK_CLASS);
+            cls.getMethod("copyTimesPerParser", Map.class).invoke(null, dest);
+        } catch (Throwable t) {
+            dest.clear();
+        }
     }
 }

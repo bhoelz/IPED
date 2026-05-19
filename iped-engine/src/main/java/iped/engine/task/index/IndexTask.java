@@ -37,7 +37,7 @@ import iped.engine.index.IndexMetadata;
 import iped.engine.task.AbstractTask;
 import iped.engine.task.ParsingTaskContextFactory;
 import iped.engine.task.ParsingTaskSupport;
-import iped.engine.task.SkipCommitedTask;
+import iped.engine.task.SkipCommitedTaskSupport;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
@@ -104,7 +104,7 @@ public class IndexTask extends AbstractTask {
             return;
         }
 
-        if (SkipCommitedTask.isAlreadyCommited(evidence)) {
+        if (SkipCommitedTaskSupport.isAlreadyCommited(evidence)) {
             evidence.setToIgnore(true);
             return;
         }

@@ -260,7 +260,7 @@ public abstract class AbstractTask {
 
     private void reEnqueueItem(IItem item, int queue) throws InterruptedException {
         item.dispose();
-        SkipCommitedTask.checkAgainLaterProcessedParents(item);
+        SkipCommitedTaskSupport.checkAgainLaterProcessedParents(item);
         worker.manager.getProcessingQueues().addItemToQueue(item, queue);
         if (!item.isQueueEnd()) {
             worker.decItemsBeingProcessed();
