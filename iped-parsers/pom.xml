@@ -30,6 +30,16 @@
         <module>iped-parser-emule</module>
         <module>iped-parser-shareaza</module>
         <module>iped-parser-skype</module>
+        <module>iped-parser-lnk</module>
+        <module>iped-parser-usnjrnl</module>
+        <module>iped-parser-eventtranscript</module>
+        <module>iped-parser-bittorrent</module>
+        <module>iped-parser-winx</module>
+        <module>iped-parser-security</module>
+        <module>iped-parser-gdrive</module>
+        <module>iped-parser-external</module>
+        <module>iped-parser-registry</module>
+        <module>iped-parser-mail</module>
         <module>iped-parsers-main</module>
         <module>iped-parsers-impl</module>
     </modules>
