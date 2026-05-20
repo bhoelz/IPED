@@ -13,6 +13,11 @@
     <dependencies>
         <dependency>
             <groupId>iped</groupId>
+            <artifactId>iped-tasks-image</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
             <artifactId>iped-engine</artifactId>
             <version>${project.version}</version>
         </dependency>
