@@ -7,7 +7,6 @@
 <tasks>
     <!--<task script="ExampleScriptTask.js"></task>-->
     <task script="IgnoreFilesByPathTask.js"></task>
-    <task class="iped.engine.task.SkipCommitedTask"></task>
     <task class="iped.engine.task.IgnoreHardLinkTask"></task>
     <task class="iped.engine.task.TempFileTask"></task>
     <task class="iped.engine.task.HashTask"></task>
@@ -23,14 +22,11 @@
     
     <task class="iped.engine.task.transcript.AudioTranscriptTask"></task>
     <task class="iped.engine.task.video.VideoThumbTask"></task> <!--see issue #100-->
-    <task class="iped.engine.task.ParsingTask"></task>
     
     <task class="iped.engine.task.QRCodeTask"></task>
     <task class="iped.engine.task.regex.RegexTask"></task>
     <task class="iped.engine.task.LanguageDetectTask"></task>
     <task class="iped.engine.task.NamedEntityTask"></task>
-    <task class="iped.engine.task.ExportFileTask"></task>
-    <task class="iped.engine.task.EmbeddedDiskProcessTask"></task>
     <task class="iped.engine.task.MakePreviewTask"></task>
     <task class="iped.engine.task.jumplist.JumpListTask"></task>
     
@@ -48,7 +44,6 @@
     <task class="iped.engine.task.carver.CarverTask"></task>
     <task class="iped.engine.task.carver.KnownMetCarveTask"></task>
     
-    <task class="iped.engine.task.FragmentLargeBinaryTask"></task>
     <task class="iped.engine.task.EntropyTask"></task>
     <task class="iped.engine.task.MinIOTask"></task>
     <task class="iped.engine.task.index.ElasticSearchIndexTask"></task>
