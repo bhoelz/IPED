@@ -28,7 +28,6 @@
     <task class="iped.engine.task.LanguageDetectTask"></task>
     <task class="iped.engine.task.NamedEntityTask"></task>
     <task class="iped.engine.task.MakePreviewTask"></task>
-    <task class="iped.engine.task.jumplist.JumpListTask"></task>
     
     <task class="iped.engine.task.DocThumbTask"></task>
     <task class="iped.engine.task.ImageThumbTask"></task>
