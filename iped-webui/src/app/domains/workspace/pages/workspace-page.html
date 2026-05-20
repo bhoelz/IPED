@@ -1,0 +1,522 @@
+<main class="workspace-shell">
+  <header class="workspace-header">
+    <div>
+      <p class="eyebrow">IPED 5.0</p>
+      <h1>Nova Interface Web</h1>
+      <p class="summary">
+        Base funcional do fluxo inicial: configuração da API, bootstrap de sessão, busca
+        paginada, viewer inicial, filtros centrais e acompanhamento de exportações
+        sobre o client OpenAPI gerado.
+      </p>
+    </div>
+    <div class="status-card">
+      <span class="status-label">Estado atual</span>
+      <strong>EPIC-WEB-07/09 em andamento</strong>
+      <span class="status-note">
+        Base URL ativa: {{ runtimeConfig.basePath() }}
+      </span>
+    </div>
+  </header>
+
+  <section class="workspace-grid">
+    <article class="panel panel-primary">
+      <span class="panel-tag">Session</span>
+      <h2>Bootstrap de caso</h2>
+
+      <form class="stack-form" [formGroup]="sessionForm" (ngSubmit)="openCase()">
+        <label class="field">
+          <span>Base URL da API</span>
+          <input type="url" formControlName="apiBasePath" placeholder="http://localhost:8080" />
+        </label>
+
+        <label class="field">
+          <span>Case ID</span>
+          <input type="text" formControlName="caseId" placeholder="demo-case" />
+        </label>
+
+        <label class="field">
+          <span>User ID</span>
+          <input type="text" formControlName="userId" placeholder="web-analyst" />
+        </label>
+
+        <button type="submit" [disabled]="sessionFacade.loading()">Abrir sessão</button>
+      </form>
+
+      @if (sessionFacade.error()) {
+        <p class="feedback feedback-error">{{ sessionFacade.error() }}</p>
+      }
+
+      @if (sessionFacade.session(); as session) {
+        <dl class="detail-list">
+          <div>
+            <dt>Session ID</dt>
+            <dd>{{ session.sessionId }}</dd>
+          </div>
+          <div>
+            <dt>Criada em</dt>
+            <dd>{{ session.createdAt }}</dd>
+          </div>
+        </dl>
+      }
+    </article>
+
+    <article class="panel">
+      <span class="panel-tag">Metadata</span>
+      <h2>Contexto do caso</h2>
+
+      @if (sessionFacade.metadata(); as metadata) {
+        <dl class="detail-list">
+          <div>
+            <dt>Nome</dt>
+            <dd>{{ metadata.name || 'n/d' }}</dd>
+          </div>
+          <div>
+            <dt>Case ID</dt>
+            <dd>{{ metadata.caseId || sessionFacade.caseId() }}</dd>
+          </div>
+          <div>
+            <dt>Evidências</dt>
+            <dd>{{ metadata.evidenceCount ?? 'n/d' }}</dd>
+          </div>
+          <div>
+            <dt>Indexado em</dt>
+            <dd>{{ metadata.indexedAt || 'n/d' }}</dd>
+          </div>
+        </dl>
+      } @else {
+        <p class="placeholder-text">
+          Abra uma sessão para carregar a identidade e os metadados iniciais do caso.
+        </p>
+      }
+    </article>
+
+    <article class="panel">
+      <span class="panel-tag">Search</span>
+      <h2>Busca inicial</h2>
+
+      <form class="stack-form" [formGroup]="searchForm" (ngSubmit)="executeSearch()">
+        <label class="field">
+          <span>Consulta</span>
+          <input
+            type="text"
+            formControlName="query"
+            placeholder="termo, frase ou filtro simples"
+          />
+        </label>
+
+        <button type="submit" [disabled]="!canSearch()">Executar busca</button>
+      </form>
+
+      @if (searchFacade.error()) {
+        <p class="feedback feedback-error">{{ searchFacade.error() }}</p>
+      }
+
+      @if (searchFacade.searchId()) {
+        <dl class="detail-list compact">
+          <div>
+            <dt>Search ID</dt>
+            <dd>{{ searchFacade.searchId() }}</dd>
+          </div>
+          <div>
+            <dt>Total</dt>
+            <dd>{{ searchFacade.total() }}</dd>
+          </div>
+        </dl>
+      }
+    </article>
+
+    <article class="panel">
+      <span class="panel-tag">Facets</span>
+      <h2>Filtros centrais</h2>
+
+      @if (searchFacade.hasActiveFilters()) {
+        <div class="chip-list">
+          @for (filter of searchFacade.activeFiltersSummary(); track filter.field + filter.value) {
+            <button
+              type="button"
+              class="chip"
+              (click)="toggleFacet(filter.field, filter.value)"
+            >
+              {{ filter.field }}: {{ filter.value }}
+            </button>
+          }
+        </div>
+
+        <button type="button" class="secondary" (click)="clearAllFacets()">
+          Limpar filtros
+        </button>
+      }
+
+      @if (searchFacade.facetsLoading()) {
+        <p class="placeholder-text">Atualizando facets...</p>
+      } @else if (searchFacade.facets().length > 0) {
+        <div class="facet-groups">
+          @for (facet of searchFacade.facets(); track facet.field) {
+            <section class="facet-group">
+              <h3>{{ facet.field }}</h3>
+              <ul class="facet-list">
+                @for (bucket of facet.buckets; track bucket.value) {
+                  <li>
+                    <button
+                      type="button"
+                      class="facet-option"
+                      [class.facet-option-active]="searchFacade.isFacetSelected(facet.field, bucket.value)"
+                      (click)="toggleFacet(facet.field, bucket.value)"
+                    >
+                      <span>{{ bucket.value }}</span>
+                      <strong>{{ bucket.count }}</strong>
+                    </button>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+        </div>
+      } @else {
+        <p class="placeholder-text">
+          Execute uma busca para carregar os primeiros grupos de facets do caso.
+        </p>
+      }
+    </article>
+
+    <article class="panel panel-wide">
+      <span class="panel-tag">Results</span>
+      <h2>Resultados paginados</h2>
+
+      @if (searchFacade.loading()) {
+        <p class="placeholder-text">Carregando resultados...</p>
+      } @else if (searchFacade.hasResults()) {
+        <div class="results-toolbar">
+          <div class="results-toolbar-copy">
+            <p>Mostrando {{ visibleResultsLabel() }} de {{ searchFacade.total() }}</p>
+            <p>{{ checkedResultsLabel() }}</p>
+          </div>
+
+          <div class="pager">
+            <button
+              type="button"
+              class="secondary"
+              [disabled]="currentPageAllChecked()"
+              (click)="checkVisibleItems()"
+            >
+              Marcar pagina
+            </button>
+            <button
+              type="button"
+              class="secondary"
+              [disabled]="currentPageCheckedCount() === 0"
+              (click)="clearVisibleCheckedItems()"
+            >
+              Limpar pagina
+            </button>
+            <button
+              type="button"
+              class="secondary"
+              [disabled]="checkedItemCount() === 0"
+              (click)="clearAllCheckedItems()"
+            >
+              Limpar marcados
+            </button>
+            <button
+              type="button"
+              class="secondary"
+              [disabled]="!searchFacade.hasPreviousPage()"
+              (click)="previousPage()"
+            >
+              Página anterior
+            </button>
+            <button
+              type="button"
+              class="secondary"
+              [disabled]="!searchFacade.hasNextPage()"
+              (click)="nextPage()"
+            >
+              Próxima página
+            </button>
+          </div>
+        </div>
+
+        <ul class="results-list">
+          @for (item of searchFacade.items(); track item.itemId) {
+            <li
+              class="result-card"
+              [class.result-card-active]="isSelected(item)"
+              [class.result-card-checked]="isChecked(item)"
+              (click)="selectResult(item)"
+            >
+              <div class="result-card-main">
+                <button
+                  type="button"
+                  class="check-toggle"
+                  [class.check-toggle-active]="isChecked(item)"
+                  (click)="$event.stopPropagation(); toggleChecked(item)"
+                >
+                  {{ isChecked(item) ? 'Checked' : 'Check' }}
+                </button>
+
+                <div class="result-card-copy">
+                  <strong>{{ itemLabel(item) }}</strong>
+                  <span>{{ itemSecondary(item) }}</span>
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="placeholder-text">
+          Depois de abrir um caso, execute uma consulta para validar o fluxo de busca.
+        </p>
+      }
+    </article>
+
+    <article class="panel panel-wide">
+      <span class="panel-tag">Jobs</span>
+      <h2>Export e acompanhamento</h2>
+
+      <form class="stack-form export-form" [formGroup]="exportForm" (ngSubmit)="startExport()">
+        <label class="field">
+          <span>Escopo</span>
+          <select formControlName="scope">
+            <option value="selected-item">Item selecionado</option>
+            <option value="checked-items">Itens marcados</option>
+            <option value="current-page">Pagina atual</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Formato</span>
+          <select formControlName="format">
+            @for (format of exportFormats; track format) {
+              <option [value]="format">{{ format }}</option>
+            }
+          </select>
+        </label>
+
+        <button type="submit" [disabled]="!canExport()">Iniciar export</button>
+      </form>
+
+      <p class="placeholder-text">{{ exportScopeHint() }}</p>
+
+      @if (jobFacade.error()) {
+        <p class="feedback feedback-error">{{ jobFacade.error() }}</p>
+      }
+
+      @if (jobFacade.hasJobs()) {
+        <div class="results-toolbar">
+          <p>Jobs recentes: {{ jobFacade.jobs().length }}</p>
+
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="!jobFacade.hasFinishedJobs()"
+            (click)="clearFinishedJobs()"
+          >
+            Limpar concluídos
+          </button>
+        </div>
+
+        <ul class="job-list">
+          @for (job of jobFacade.jobs(); track job.jobId) {
+            <li class="job-card">
+              <div class="job-card-header">
+                <div>
+                  <strong>{{ job.scopeLabel }}</strong>
+                  <span>{{ job.itemCount }} item(ns) · {{ job.format }}</span>
+                </div>
+                <span class="job-state" [class]="jobStatusClass(job)">
+                  {{ jobProgressLabel(job) }}
+                </span>
+              </div>
+
+              <dl class="detail-list compact">
+                <div>
+                  <dt>Job ID</dt>
+                  <dd>{{ job.jobId }}</dd>
+                </div>
+                <div>
+                  <dt>Criado em</dt>
+                  <dd>{{ job.createdAt }}</dd>
+                </div>
+              </dl>
+
+              @if (job.message) {
+                <p class="job-message">{{ job.message }}</p>
+              }
+
+              @if (job.outputUrl) {
+                <a class="job-output" [href]="job.outputUrl" target="_blank" rel="noreferrer">
+                  Abrir artefato gerado
+                </a>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="placeholder-text">
+          Inicie um export do item selecionado ou da pagina atual para acompanhar o job aqui.
+        </p>
+      }
+    </article>
+
+    <article class="panel">
+      <span class="panel-tag">Item</span>
+      <h2>Metadados do item</h2>
+
+      @if (itemFacade.loading()) {
+        <p class="placeholder-text">Carregando detalhes do item...</p>
+      } @else if (itemFacade.error()) {
+        <p class="feedback feedback-error">{{ itemFacade.error() }}</p>
+      } @else if (itemFacade.details(); as details) {
+        <dl class="detail-list">
+          <div>
+            <dt>Item ID</dt>
+            <dd>{{ details.itemId }}</dd>
+          </div>
+          <div>
+            <dt>Path</dt>
+            <dd>{{ details.path || 'n/d' }}</dd>
+          </div>
+          <div>
+            <dt>Media Type</dt>
+            <dd>{{ details.mediaType || 'n/d' }}</dd>
+          </div>
+        </dl>
+
+        @if (metadataEntries().length > 0) {
+          <div class="metadata-block">
+            <h3>Metadata</h3>
+            <ul class="metadata-list">
+              @for (entry of metadataEntries(); track entry[0]) {
+                <li>
+                  <strong>{{ entry[0] }}</strong>
+                  <span>{{ entry[1] }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      } @else {
+        <p class="placeholder-text">
+          Selecione um resultado para carregar metadados e contexto do item.
+        </p>
+      }
+    </article>
+
+    <article class="panel">
+      <span class="panel-tag">Relationships</span>
+      <h2>Relacionamentos</h2>
+
+      @if (itemFacade.relationships(); as relationships) {
+        @if (relationships.relationships.length > 0) {
+          <ul class="metadata-list relationship-list">
+            @for (relationship of relationships.relationships; track relationship.type + relationship.targetItemId) {
+              <li>
+                <strong>{{ relationship.type }}</strong>
+                <span>{{ relationship.label || relationship.targetItemId }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="placeholder-text">O item selecionado não possui relacionamentos mapeados.</p>
+        }
+      } @else {
+        <p class="placeholder-text">
+          O painel exibirá parent, subitems, duplicados e referências do item selecionado.
+        </p>
+      }
+    </article>
+
+    <article class="panel panel-wide">
+      <span class="panel-tag">Viewer</span>
+      <h2>Host de visualização</h2>
+
+      @if (viewerFacade.loading()) {
+        <p class="placeholder-text">Abrindo viewer do item selecionado...</p>
+      } @else if (viewerFacade.error()) {
+        <p class="feedback feedback-error">{{ viewerFacade.error() }}</p>
+      } @else if (viewerFacade.session(); as viewerSession) {
+        <dl class="detail-list compact viewer-summary">
+          <div>
+            <dt>Viewer ID</dt>
+            <dd>{{ viewerSession.viewerId }}</dd>
+          </div>
+          <div>
+            <dt>Viewer Session</dt>
+            <dd>{{ viewerSession.viewerSessionId }}</dd>
+          </div>
+          <div>
+            <dt>Busca interna</dt>
+            <dd>{{ viewerSession.capabilities.search ? 'suportada' : 'não suportada' }}</dd>
+          </div>
+        </dl>
+
+        @if (viewerCanSearch()) {
+          <form class="viewer-search-bar" [formGroup]="viewerSearchForm" (ngSubmit)="searchInViewer()">
+            <label class="field">
+              <span>Busca no viewer</span>
+              <input type="text" formControlName="term" placeholder="termo dentro da rendition" />
+            </label>
+
+            <div class="viewer-search-actions">
+              <button type="submit" [disabled]="viewerFacade.searching()">Buscar</button>
+              <button
+                type="button"
+                class="secondary"
+                [disabled]="viewerFacade.searching() || !viewerFacade.hitState()"
+                (click)="previousViewerHit()"
+              >
+                Hit anterior
+              </button>
+              <button
+                type="button"
+                class="secondary"
+                [disabled]="viewerFacade.searching() || !viewerFacade.hitState()"
+                (click)="nextViewerHit()"
+              >
+                Próximo hit
+              </button>
+            </div>
+          </form>
+
+          <p class="viewer-hit-state">
+            @if (viewerFacade.hitState(); as hitState) {
+              {{ hitState.currentHit }} / {{ hitState.totalHits }} hits
+            } @else {
+              Nenhuma busca executada nesta sessão de viewer.
+            }
+          </p>
+        }
+
+        <div class="viewer-frame">
+          @switch (viewerFacade.kind()) {
+            @case ('text') {
+              <pre>{{ viewerFacade.textContent() }}</pre>
+            }
+            @case ('html') {
+              <div class="viewer-html" [innerHTML]="viewerFacade.htmlContent()"></div>
+            }
+            @case ('image') {
+              <img class="viewer-image" [src]="viewerFacade.resourceUrl()" alt="Rendition da evidência" />
+            }
+            @case ('pdf') {
+              <iframe
+                class="viewer-pdf"
+                [src]="viewerFacade.resourceUrl()"
+                title="PDF rendition"
+              ></iframe>
+            }
+            @default {
+              <p class="placeholder-text">
+                O viewer abriu a sessão, mas não há rendition suportada nesta primeira iteração.
+              </p>
+            }
+          }
+        </div>
+      } @else {
+        <p class="placeholder-text">
+          A seleção de um resultado abrirá automaticamente a primeira rendition suportada.
+        </p>
+      }
+    </article>
+  </section>
+</main>
