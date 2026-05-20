@@ -149,7 +149,8 @@ class TaskRegistry {
         }
         for (TaskRegistration pluginRegistration : pluginRegistry.registrations.values()) {
             if (all.containsKey(pluginRegistration.id)) {
-                throw new IllegalStateException("Duplicate task id '" + pluginRegistration.id + "' in XML and plugin provider");
+                all.put(pluginRegistration.id, pluginRegistration);
+                continue;
             }
             all.put(pluginRegistration.id, pluginRegistration);
         }

@@ -27,6 +27,8 @@ class PluginTaskLoader {
         List<String> skippedProviders = new ArrayList<>();
         List<String> loadedProviders = new ArrayList<>();
 
+        loadClasspathProviders(registrations, loadedProviders, skippedProviders);
+
         for (File pluginCandidate : pluginConfig.getPluginJars()) {
             if (!pluginCandidate.getName().endsWith(".jar")) {
                 continue;
@@ -55,6 +57,19 @@ class PluginTaskLoader {
         }
 
         return new TaskRegistry(registrations, loadedProviders, skippedProviders);
+    }
+
+    private void loadClasspathProviders(Map<String, TaskRegistry.TaskRegistration> registrations, List<String> loadedProviders,
+            List<String> skippedProviders) {
+        try {
+            ServiceLoader<TaskProvider> loader = ServiceLoader.load(TaskProvider.class);
+            for (TaskProvider provider : loader) {
+                registerProvider(registrations, loadedProviders, provider, "classpath");
+            }
+        } catch (Exception e) {
+            skippedProviders.add("classpath: " + e.getMessage());
+            LOGGER.warn("Failed to load task providers from classpath", e);
+        }
     }
 
     @SuppressWarnings("unchecked")
