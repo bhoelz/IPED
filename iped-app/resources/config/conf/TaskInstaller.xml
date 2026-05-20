@@ -41,10 +41,6 @@
 	<task script="CSAMDetectorTask.py"></task>	
     
     <!--Carving must be installed before IndexTask because it sets hasChildren property in parent items-->
-    <task class="iped.engine.task.carver.LedCarveTask"></task>
-    <task class="iped.engine.task.carver.CarverTask"></task>
-    <task class="iped.engine.task.carver.KnownMetCarveTask"></task>
-    
     <task class="iped.engine.task.EntropyTask"></task>
     <task class="iped.engine.task.MinIOTask"></task>
     <task class="iped.engine.task.index.ElasticSearchIndexTask"></task>

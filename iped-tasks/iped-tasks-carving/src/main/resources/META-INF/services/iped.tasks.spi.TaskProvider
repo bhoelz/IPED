@@ -1,0 +1,3 @@
+iped.engine.task.provider.LedCarveTaskProvider
+iped.engine.task.provider.CarverTaskProvider
+iped.engine.task.provider.KnownMetCarveTaskProvider
