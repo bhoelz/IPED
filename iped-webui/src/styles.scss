@@ -1,32 +1,60 @@
-:root {
-  --iped-bg: #f4f1ea;
-  --iped-surface: rgba(255, 255, 255, 0.84);
-  --iped-surface-strong: #ffffff;
-  --iped-border: rgba(33, 40, 51, 0.12);
-  --iped-text: #18212b;
-  --iped-text-muted: #60707f;
-  --iped-accent: #0e5a8a;
-  --iped-accent-strong: #073b5a;
-  --iped-highlight: #d8e7f1;
-  --iped-shadow: 0 18px 50px rgba(24, 33, 43, 0.12);
-  --iped-radius: 18px;
-  color: var(--iped-text);
-  font-family: 'Segoe UI', 'Noto Sans', sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(14, 90, 138, 0.16), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(161, 119, 52, 0.14), transparent 28%),
-    linear-gradient(180deg, #faf8f4 0%, #f1ece3 100%);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html,
 body {
-  min-height: 100%;
-}
-
-body {
+  height: 100%;
   margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
-* {
-  box-sizing: border-box;
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  outline: 0;
+}
+
+input::placeholder {
+  color: var(--text-dim, #888);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-hi, #444);
+  border: 2px solid var(--bg, #222);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hi, #555);
 }
