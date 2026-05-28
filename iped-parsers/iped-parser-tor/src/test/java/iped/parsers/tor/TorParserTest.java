@@ -7,13 +7,14 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public class TorParserTest extends TestCase {
+public class TorParserTest {
 
     private static InputStream getStream(String name) {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
@@ -21,12 +22,14 @@ public class TorParserTest extends TestCase {
 
     @Test
     public void testTorParser1() throws IOException, SAXException, TikaException {
+        InputStream stream = getStream("test-files/testTor1");
+        assumeTrue(stream != null, "Test resource test-files/testTor1 not available");
         TorTcParser parser = new TorTcParser();
         Metadata metadata = new Metadata();
         ContentHandler handler = new BodyContentHandler();
         ParseContext context = new ParseContext();
         parser.getSupportedTypes(context);
-        try (InputStream stream = getStream("test-files/testTor1")) {
+        try (stream) {
             parser.parse(stream, handler, metadata, context);
             assertEquals("IS_INTERNAL,NEED_CAPACITY", metadata.get(TorTcParser.TORTC_BUILD_FLAGS));
             assertEquals("HS_CLIENT_REND", metadata.get(TorTcParser.TORTC_PURPOSE));
@@ -39,12 +42,14 @@ public class TorParserTest extends TestCase {
 
     @Test
     public void testTorParser2() throws IOException, SAXException, TikaException {
+        InputStream stream = getStream("test-files/testTor2");
+        assumeTrue(stream != null, "Test resource test-files/testTor2 not available");
         TorTcParser parser = new TorTcParser();
         Metadata metadata = new Metadata();
         ContentHandler handler = new BodyContentHandler();
         ParseContext context = new ParseContext();
         parser.getSupportedTypes(context);
-        try (InputStream stream = getStream("test-files/testTor2")) {
+        try (stream) {
             parser.parse(stream, handler, metadata, context);
             assertEquals("IS_INTERNAL,NEED_CAPACITY", metadata.get(TorTcParser.TORTC_BUILD_FLAGS));
             assertEquals("HS_CLIENT_REND", metadata.get(TorTcParser.TORTC_PURPOSE));

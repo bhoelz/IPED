@@ -249,7 +249,8 @@ public class WhatsAppParser extends SQLite3DBParser {
             mimetype = metadata.get(Metadata.CONTENT_TYPE);
         }
         try (TemporaryResources tmp = new TemporaryResources()) {
-            stream = TikaInputStream.get(stream, tmp);
+            final InputStream sourceStream = stream;
+            stream = TikaInputStream.get(() -> sourceStream, tmp);
 
             if (mimetype.equals(WA_USER_PLIST.toString())) {
                 parseWhatsAppAccount(stream, context, handler, false);
@@ -400,7 +401,7 @@ public class WhatsAppParser extends SQLite3DBParser {
         TemporaryResources tmp = new TemporaryResources();
 
         if (extractor.shouldParseEmbedded(metadata)) {
-            TikaInputStream tis = TikaInputStream.get(stream, tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
             try {
                 ItemInfo itemInfo = context.get(ItemInfo.class);
                 String filePath = null;
@@ -590,7 +591,7 @@ public class WhatsAppParser extends SQLite3DBParser {
             ParseContext context, WAContactsDirectory contacts, WAAccount account)
             throws WAExtractorException, IOException, SQLException {
         try (TemporaryResources tmp = new TemporaryResources()) {
-            TikaInputStream tis = TikaInputStream.get(wcontext.getItem().getSeekableInputStream(), tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> wcontext.getItem().getSeekableInputStream(), tmp);
             File tempFile = tis.getFile();
 
             String filePath = null;
@@ -701,7 +702,7 @@ public class WhatsAppParser extends SQLite3DBParser {
             boolean isAndroid = extFactory instanceof ExtractorAndroidFactory;
             WAAccount account = getUserAccount(searcher, DB.getPath(), isAndroid);
 
-            File tmpDB = TikaInputStream.get(stream, tmp).getFile();
+            File tmpDB = TikaInputStream.get(() -> stream, tmp).getFile();
 
             stream.skip(wcontext.getItem().getLength());
 
@@ -1283,7 +1284,7 @@ public class WhatsAppParser extends SQLite3DBParser {
         TemporaryResources tmp = new TemporaryResources();
 
         if (extractor.shouldParseEmbedded(metadata)) {
-            TikaInputStream tis = TikaInputStream.get(stream, tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
             File contactDbFile = tis.getFile();
             try {
                 WAContactsExtractor waExtractor = extFactory.createContactsExtractor(contactDbFile,
@@ -1845,5 +1846,7 @@ public class WhatsAppParser extends SQLite3DBParser {
         }
     }
 }
+
+
 
 

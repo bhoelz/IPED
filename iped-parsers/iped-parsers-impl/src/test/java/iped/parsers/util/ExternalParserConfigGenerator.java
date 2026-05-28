@@ -23,9 +23,21 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import iped.parsers.external.ExternalParsersConfigReaderMetKeys;
+public class ExternalParserConfigGenerator {
 
-public class ExternalParserConfigGenerator implements ExternalParsersConfigReaderMetKeys {
+    private static final String EXTERNAL_PARSERS_TAG = "external-parsers";
+    private static final String PARSER_TAG = "parser";
+    private static final String COMMAND_TAG = "command";
+    private static final String CHECK_TAG = "check";
+    private static final String ERROR_CODES_TAG = "error-codes";
+    private static final String MIMETYPES_TAG = "mime-types";
+    private static final String MIMETYPE_TAG = "mime-type";
+    private static final String METADATA_TAG = "metadata";
+    private static final String METADATA_MATCH_TAG = "match";
+    private static final String PARSER_NAME_TAG = "name";
+    private static final String WIN_TOOL_PATH = "win-tool-path";
+    private static final String OUTPUT_CHARSET = "output-charset";
+    private static final String LINES_TO_IGNORE = "firstLinesToIgnore";
     private Document document;
     private Element root, winToolPath, parser, name, check, checkCommand,
         errorCodes, command, mimeTypes, metadata, outputCharset, firstLinesToIgnore;

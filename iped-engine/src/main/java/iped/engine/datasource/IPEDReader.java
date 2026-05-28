@@ -287,14 +287,14 @@ public class IPEDReader extends DataSourceReader {
     private void insertParentTreeNodes(LuceneSearchResult result) throws Exception {
         boolean[] isParentToAdd = new boolean[ipedCase.getLastId() + 1];
         for (int docID : result.getLuceneIds()) {
-            String parentIds = ipedCase.getReader().document(docID).get(IndexItem.PARENTIDs);
+            String parentIds = ipedCase.getReader().storedFields().document(docID).get(IndexItem.PARENTIDs);
             if (!parentIds.trim().isEmpty())
                 for (String parentId : parentIds.trim().split(" ")) { //$NON-NLS-1$
                     isParentToAdd[Integer.parseInt(parentId)] = true;
                 }
         }
         for (int docID : result.getLuceneIds()) {
-            String id = ipedCase.getReader().document(docID).get(IndexItem.ID);
+            String id = ipedCase.getReader().storedFields().document(docID).get(IndexItem.ID);
             isParentToAdd[Integer.parseInt(id)] = false;
         }
         int num = 0;
@@ -321,12 +321,12 @@ public class IPEDReader extends DataSourceReader {
             boolean[] isSelectedEmail = new boolean[ipedCase.getLastId() + 1];
             boolean hasEmail = false;
             for (int docID : result.getLuceneIds()) {
-                String mimetype = ipedCase.getReader().document(docID).get(IndexItem.CONTENTTYPE);
+                String mimetype = ipedCase.getReader().storedFields().document(docID).get(IndexItem.CONTENTTYPE);
                 if (OutlookPSTParser.OUTLOOK_MSG_MIME.equals(mimetype)
                         || UfedXmlReader.UFED_EMAIL_MIME.equals(mimetype)
                         || Win10MailParser.WIN10_MAIL_MSG.toString().equals(mimetype)) {
                     hasEmail = true;
-                    isSelectedEmail[Integer.parseInt(ipedCase.getReader().document(docID).get(IndexItem.ID))] = true;
+                    isSelectedEmail[Integer.parseInt(ipedCase.getReader().storedFields().document(docID).get(IndexItem.ID))] = true;
                 }
             }
             if (!hasEmail)
@@ -353,7 +353,7 @@ public class IPEDReader extends DataSourceReader {
 
             // remove duplicate attachs
             for (int docID : result.getLuceneIds()) {
-                String id = ipedCase.getReader().document(docID).get(IndexItem.ID);
+                String id = ipedCase.getReader().storedFields().document(docID).get(IndexItem.ID);
                 isAttachToAdd[Integer.parseInt(id)] = false;
             }
 
@@ -391,7 +391,7 @@ public class IPEDReader extends DataSourceReader {
                 if (Arrays.binarySearch(luceneIds, luceneId) < 0)
                     continue;
 
-                Document doc = ipedCase.getReader().document(luceneId);
+                Document doc = ipedCase.getReader().storedFields().document(luceneId);
                 String[] items = doc.getValues(ExtraProperties.LINKED_ITEMS);
                 if (items.length > 0) {
                     LOGGER.debug("Linked items to '" + doc.get(IndexItem.NAME) + "' found: " + items.length); //$NON-NLS-1$
@@ -453,7 +453,7 @@ public class IPEDReader extends DataSourceReader {
     private void insertIntoProcessQueue(LuceneSearchResult result, boolean treeNode, boolean countVolume) throws Exception {
 
         for (int docID : result.getLuceneIds()) {
-            Document doc = ipedCase.getReader().document(docID);
+            Document doc = ipedCase.getReader().storedFields().document(docID);
 
             Item evidence = new Item();
 

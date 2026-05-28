@@ -805,7 +805,7 @@ public class Manager {
 
             boolean[] doNotDelete = new boolean[stats.getLastId() + 1];
             for (int docID : result.getLuceneIds()) {
-                String parentIds = ipedCase.getReader().document(docID).get(IndexItem.PARENTIDs);
+                String parentIds = ipedCase.getReader().storedFields().document(docID).get(IndexItem.PARENTIDs);
                 if (!parentIds.trim().isEmpty()) {
                     for (String parentId : parentIds.trim().split(" ")) { //$NON-NLS-1$
                         doNotDelete[Integer.parseInt(parentId)] = true;

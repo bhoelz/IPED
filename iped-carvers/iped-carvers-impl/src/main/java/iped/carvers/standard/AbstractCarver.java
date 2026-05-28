@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.apache.tika.metadata.Metadata;
+
 import iped.carvers.api.CarvedItemListener;
 import iped.carvers.api.Carver;
 import iped.carvers.api.CarverType;
@@ -110,9 +112,11 @@ public abstract class AbstractCarver implements Carver {
             long prevOff = parentEvidence.getFileOffset();
             offsetFile.setFileOffset(prevOff == -1 ? header.getOffset() : prevOff + header.getOffset());
 
-            offsetFile.getMetadata().add(ExtraProperties.CARVEDBY_METADATA_NAME, this.getClass().getName());
-            offsetFile.getMetadata().add(ExtraProperties.CARVEDOFFSET_METADATA_NAME,
-                    Long.toString(offsetFile.getFileOffset()));
+            Object metadataObj = offsetFile.getMetadata();
+            if (metadataObj instanceof Metadata metadata) {
+                metadata.add(ExtraProperties.CARVEDBY_METADATA_NAME, this.getClass().getName());
+                metadata.add(ExtraProperties.CARVEDOFFSET_METADATA_NAME, Long.toString(offsetFile.getFileOffset()));
+            }
 
             for (Iterator<CarvedItemListener> iterator = carvedItemListeners.iterator(); iterator.hasNext();) {
                 CarvedItemListener carvedItemListener = iterator.next();

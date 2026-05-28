@@ -73,7 +73,8 @@ import iped.engine.search.IPEDSearcher;
 import iped.engine.search.IndexerSimilarity;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
 import iped.engine.sleuthkit.TouchSleuthkitImages;
-import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
+import iped.engine.index.IndexMetadata;
+import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
@@ -526,7 +527,7 @@ public class IPEDSource implements IIPEDSource {
 
     public IItem getItemByLuceneID(int docID) {
         try {
-            Document doc = searcher.doc(docID);
+            Document doc = searcher.storedFields().document(docID);
             IItem item = IndexItem.getItem(doc, this, false);
             return item;
 
@@ -684,7 +685,7 @@ public class IPEDSource implements IIPEDSource {
     public String getItemProperty(int id, String propertyName) {
         String propertyValue = null;
         try {
-            Document doc = searcher.doc(getLuceneId(id));
+            Document doc = searcher.storedFields().document(getLuceneId(id));
             propertyValue = doc.get(propertyName);
         } catch (IOException e) {
             e.printStackTrace();
@@ -727,7 +728,7 @@ public class IPEDSource implements IIPEDSource {
     public int getParentId(int id) {
         try {
             Set<String> field = Collections.singleton(BasicProps.PARENTID);
-            Document doc = searcher.doc(getLuceneId(id), field);
+            Document doc = searcher.storedFields().document(getLuceneId(id), field);
             String parent = doc.get(BasicProps.PARENTID);
             if (parent != null && !parent.isEmpty()) {
                 return Integer.valueOf(parent);

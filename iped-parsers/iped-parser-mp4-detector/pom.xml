@@ -17,7 +17,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parser-video-module</artifactId>
+            <artifactId>tika-parser-audiovideo-module</artifactId>
             <version>${tika.version}</version>
         </dependency>
         <dependency>

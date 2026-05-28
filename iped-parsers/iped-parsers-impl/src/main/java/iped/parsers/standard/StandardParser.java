@@ -189,7 +189,7 @@ public class StandardParser extends CompositeParser {
         NoEndBodyContentHandler noEndHandler = new NoEndBodyContentHandler(handler);
 
         TemporaryResources tmp = new TemporaryResources();
-        TikaInputStream tis = TikaInputStream.get(stream, tmp);
+        TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
 
         if (context.get(Parser.class) == null)
             context.set(Parser.class, this);
@@ -442,3 +442,4 @@ public class StandardParser extends CompositeParser {
     }
 
 }
+

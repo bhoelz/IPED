@@ -3,11 +3,8 @@ package iped.engine.task;
 import java.io.File;
 import java.lang.reflect.Method;
 
-import org.apache.lucene.index.IndexWriter;
-
 import iped.data.ICaseData;
 import iped.data.IItem;
-import iped.engine.localization.Messages;
 
 public final class ExportFileTaskRuntime {
 
@@ -17,7 +14,14 @@ public final class ExportFileTaskRuntime {
     }
 
     public static String getExtractDirName() {
-        return Messages.getString("ExportFileTask.ExportFolder");
+        try {
+            Class<?> cls = Class.forName("iped.engine.localization.Messages");
+            Method m = cls.getMethod("getString", String.class);
+            Object out = m.invoke(null, "ExportFileTask.ExportFolder");
+            return out instanceof String ? (String) out : "Extracted";
+        } catch (Throwable t) {
+            return "Extracted";
+        }
     }
 
     public static int getItemsExtracted() {
@@ -52,11 +56,11 @@ public final class ExportFileTaskRuntime {
     }
 
     public static void deleteIgnoredItemData(ICaseData caseData, File output, boolean removingEvidence,
-            IndexWriter writer) {
+            Object writer) {
         try {
             Class<?> cls = Class.forName(TASK_CLASS);
-            Method m = cls.getMethod("deleteIgnoredItemData", ICaseData.class, File.class, boolean.class,
-                    IndexWriter.class);
+            Class<?> writerClass = Class.forName("org.apache.lucene.index.IndexWriter");
+            Method m = cls.getMethod("deleteIgnoredItemData", ICaseData.class, File.class, boolean.class, writerClass);
             m.invoke(null, caseData, output, removingEvidence, writer);
         } catch (Throwable t) {
             // optional runtime integration

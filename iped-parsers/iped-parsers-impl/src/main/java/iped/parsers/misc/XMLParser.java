@@ -58,7 +58,7 @@ public class XMLParser extends DcXMLParser {
         IStreamSource streamSource = context.get(IStreamSource.class);
         TemporaryResources tmp = new TemporaryResources();
         try {
-            TikaInputStream tis = TikaInputStream.get(stream, tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
             Path path = null;
             if (tis.hasFile() || streamSource == null) {
                 path = tis.getPath();
@@ -85,3 +85,4 @@ public class XMLParser extends DcXMLParser {
     }
 
 }
+

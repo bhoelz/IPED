@@ -321,7 +321,8 @@ public class EmailViewer extends HtmlLinkViewer {
             List<IItem> items = Collections.emptyList();
             boolean isPartialEmlx = lastItem.getName().matches("\\d+\\.partial\\.emlx(\\:DECOMP)?");
             if (isPartialEmlx) {
-                String[] refs = lastItem.getMetadata().getValues(ExtraProperties.LINKED_ITEMS);
+                Metadata itemMetadata = (Metadata) lastItem.getMetadata();
+                String[] refs = itemMetadata.getValues(ExtraProperties.LINKED_ITEMS);
                 if (refs.length > 0) {
                     items = attachSearcher.getItems("(" + String.join(") OR (", refs) + ")");
                 }

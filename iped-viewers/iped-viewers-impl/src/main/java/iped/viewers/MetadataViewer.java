@@ -232,8 +232,8 @@ public abstract class MetadataViewer extends AbstractViewer {
             fillBasicProps(sb, item);
         if (tabIndex == 1)
             fillAdvancedProps(sb, item);
-        if (tabIndex == 2)
-            fillMetadata(sb, item.getMetadata());
+        if (tabIndex == 2 && item.getMetadata() instanceof Metadata metadata)
+            fillMetadata(sb, metadata);
 
         sb.append("</body>"); //$NON-NLS-1$
         sb.append("</html>"); //$NON-NLS-1$
@@ -338,7 +338,9 @@ public abstract class MetadataViewer extends AbstractViewer {
         for (String key : keys) {
             fillProp(sb, key, item.getExtraAttributeMap().get(key));
         }
-        fillProp(sb, ExtraProperties.TIKA_PARSER_USED, item.getMetadata().get(ExtraProperties.TIKA_PARSER_USED));
+        if (item.getMetadata() instanceof Metadata metadata) {
+            fillProp(sb, ExtraProperties.TIKA_PARSER_USED, metadata.get(ExtraProperties.TIKA_PARSER_USED));
+        }
         sb.append("</table>"); //$NON-NLS-1$
     }
 

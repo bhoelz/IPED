@@ -20,6 +20,7 @@ import iped.engine.data.CaseData;
 import iped.engine.io.TimeoutException;
 import iped.exception.IPEDException;
 import iped.parsers.util.CorruptedCarvedException;
+import org.apache.tika.mime.MediaType;
 
 /**
  * Classe que representa uma tarefa de procesamento (assinatura, hash, carving,
@@ -225,7 +226,7 @@ public abstract class AbstractTask {
      */
     protected void sendToNextTask(IItem evidence) throws Exception {
         if (nextTask != null) {
-            int priority = QueuesProcessingOrder.getProcessingQueue(evidence.getMediaType());
+            int priority = QueuesProcessingOrder.getProcessingQueue((MediaType) evidence.getMediaType());
             if (evidence.isRoot() || priority <= worker.manager.getProcessingQueues().getCurrentQueuePriority())
                 nextTask.processAndSendToNextTask(evidence);
             else {

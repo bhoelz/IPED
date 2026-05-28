@@ -20,44 +20,51 @@ package iped.parsers.shareaza;
 
 import java.io.IOException;
 import java.io.InputStream;
-
-import org.apache.poi.util.LittleEndianInputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * @author Fabio Melo Pfeifer <pfeifer.fmp@pf.gov.br>
  */
 class MFCParser {
 
-    private final LittleEndianInputStream is;
+    private final InputStream is;
 
     public MFCParser(InputStream is) {
-        this.is = new LittleEndianInputStream(is);
+        this.is = is;
     }
 
     public byte[] readBytes(int n) throws IOException {
         byte[] buff = new byte[n];
-        is.readFully(buff);
+        int off = 0;
+        while (off < n) {
+            int r = is.read(buff, off, n - off);
+            if (r < 0) {
+                throw new IOException("Unexpected EOF");
+            }
+            off += r;
+        }
         return buff;
     }
 
     public int readInt() throws IOException {
-        return is.readInt();
+        return ByteBuffer.wrap(readBytes(4)).order(ByteOrder.LITTLE_ENDIAN).getInt();
     }
 
     public long readUInt() throws IOException {
-        return is.readUInt();
+        return Integer.toUnsignedLong(readInt());
     }
 
     public long readLong() throws IOException {
-        return is.readLong();
+        return ByteBuffer.wrap(readBytes(8)).order(ByteOrder.LITTLE_ENDIAN).getLong();
     }
 
     public short readShort() throws IOException {
-        return is.readShort();
+        return ByteBuffer.wrap(readBytes(2)).order(ByteOrder.LITTLE_ENDIAN).getShort();
     }
 
     public int readUShort() throws IOException {
-        return is.readUShort();
+        return Short.toUnsignedInt(readShort());
     }
 
     public boolean readBool() throws IOException {
@@ -66,15 +73,19 @@ class MFCParser {
     }
 
     public byte readByte() throws IOException {
-        return is.readByte();
+        int v = is.read();
+        if (v < 0) {
+            throw new IOException("Unexpected EOF");
+        }
+        return (byte) v;
     }
 
     public int readUByte() throws IOException {
-        return is.readUByte();
+        return Byte.toUnsignedInt(readByte());
     }
 
     public long readFileTime() throws IOException {
-        return is.readLong();
+        return readLong();
     }
 
     public String readHash(int n) throws IOException {

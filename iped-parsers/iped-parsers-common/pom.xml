@@ -21,6 +21,11 @@
             <version>${tika.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.ccil.cowan.tagsoup</groupId>
+            <artifactId>tagsoup</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+        <dependency>
             <groupId>iped</groupId>
             <artifactId>iped-utils</artifactId>
             <version>${project.version}</version>

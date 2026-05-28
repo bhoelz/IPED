@@ -19,10 +19,12 @@ import iped.data.IItemId;
 import iped.engine.data.IPEDSource;
 import iped.engine.lucene.DocValuesUtil;
 import iped.engine.task.similarity.ImageSimilarity;
-import iped.engine.task.similarity.ImageSimilarityTask;
 import iped.properties.BasicProps;
 
 public class ImageSimilarityScorer {
+
+    private static final String IMAGE_FEATURES = "imageFeatures"; //$NON-NLS-1$
+
     /**
      * Constant used in the conversion from the raw squared distance (>=0, in an
      * arbitrary scale) of the reference image to the actual score (used to sort the
@@ -73,7 +75,7 @@ public class ImageSimilarityScorer {
         this.result = result;
         this.len = result.getLength();
         this.refItem = refItem;
-        this.refSimilarityFeatures = (byte[]) refItem.getExtraAttribute(ImageSimilarityTask.IMAGE_FEATURES);
+        this.refSimilarityFeatures = (byte[]) refItem.getExtraAttribute(IMAGE_FEATURES);
     }
 
     public void score() throws IOException {
@@ -92,7 +94,7 @@ public class ImageSimilarityScorer {
                     BinaryDocValues similarityFeaturesValues = null;
                     try {
                         similarityFeaturesValues = leafReader
-                                .getBinaryDocValues(ImageSimilarityTask.IMAGE_FEATURES);
+                                .getBinaryDocValues(IMAGE_FEATURES);
                     } catch (IOException e) {
                         e.printStackTrace();
                         return;
@@ -114,7 +116,7 @@ public class ImageSimilarityScorer {
                                 String refHash = refItem.getHash();
                                 if (refHash != null) {
                                     try {
-                                        Document doc = leafReader.document(luceneId);
+                                        Document doc = leafReader.storedFields().document(luceneId);
                                         String currHash = doc.get(BasicProps.HASH);
                                         if (refHash.equals(currHash)) {
                                             score = identicalScore;
@@ -155,7 +157,7 @@ public class ImageSimilarityScorer {
         BinaryDocValues similarityFeaturesValues = null;
         try {
             similarityFeaturesValues = ipedCase.getLeafReader()
-                    .getBinaryDocValues(ImageSimilarityTask.IMAGE_FEATURES);
+                    .getBinaryDocValues(IMAGE_FEATURES);
         } catch (IOException e) {
             e.printStackTrace();
             return;

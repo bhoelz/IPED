@@ -10,15 +10,15 @@
     <modules>
         <module>iped-api</module>
         <module>iped-engine-core</module>
-        <!--        <module>iped-utils</module>-->
-<!--        <module>iped-parsers</module>-->
-<!--        <module>iped-viewers</module>-->
-<!--        <module>iped-carvers</module>-->
-<!--        <module>iped-tasks</module>-->
-<!--        <module>iped-geo</module>-->
-<!--        <module>iped-engine</module>-->
+        <module>iped-utils</module>
+        <module>iped-parsers</module>
+        <module>iped-viewers</module>
+        <module>iped-carvers</module>
+        <module>iped-tasks</module>
+        <module>iped-geo</module>
+        <module>iped-engine</module>
         <module>iped-webapi</module>
-<!--        <module>iped-app</module>-->
+        <module>iped-app</module>
     </modules>
 
     <properties>
@@ -39,42 +39,42 @@
 <!--        <pdfbox.version>3.0.7</pdfbox.version>-->
         <lucene.version>10.4.0</lucene.version>
         <sleuthkit.version>4.12.0.p1</sleuthkit.version>
-<!--        <libreoffice.version>7.2.2</libreoffice.version>-->
+        <libreoffice.version>7.2.2</libreoffice.version>
         <slf4j.version>2.0.18</slf4j.version>
 <!--        <log4j.version>2.26.0</log4j.version>-->
         <junit.version>6.0.3</junit.version>
-<!--        <icepdf.version>7.4.1</icepdf.version>-->
+        <icepdf.version>7.4.1</icepdf.version>
 
 <!--        <xerial.sqlite.version>3.41.2.2</xerial.sqlite.version>-->
-<!--        <dockingframes.version>1.1.2</dockingframes.version>-->
-<!--        <telegram.version>1.0.14</telegram.version>-->
-<!--        <twelvemonkeys.version>3.10.1</twelvemonkeys.version>-->
-<!--        <bencode.version>1.4.1</bencode.version>-->
-<!--        <java.dbx.version>1.1-p6</java.dbx.version>-->
+        <dockingframes.version>1.1.2</dockingframes.version>
+        <telegram.version>1.0.14</telegram.version>
+        <twelvemonkeys.version>3.10.1</twelvemonkeys.version>
+        <bencode.version>1.4.1</bencode.version>
+        <java.dbx.version>1.1-p6</java.dbx.version>
     </properties>
 
-<!--    <repositories>-->
-<!--        <repository>-->
-<!--            <id>central</id>-->
-<!--            <name>Maven Repository Switchboard</name>-->
-<!--            <layout>default</layout>-->
-<!--            <url>https://repo1.maven.org/maven2</url>-->
-<!--        </repository>-->
-<!--        <repository>-->
-<!--        	<id>mvn-repo</id>-->
-<!--        	<url>https://gitlab.com/iped-project/iped-maven/raw/master</url>-->
-<!--        	<releases>-->
-<!--            	<enabled>true</enabled>-->
-<!--        	</releases>-->
-<!--        	<snapshots>-->
-<!--            	<enabled>true</enabled>-->
-<!--        	</snapshots>-->
-<!--    	</repository>-->
-<!--        <repository>-->
-<!--            <id>jitpack.io</id>-->
-<!--            <url>https://jitpack.io</url>-->
-<!--        </repository>-->
-<!--    </repositories>-->
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <layout>default</layout>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+            <id>mvn-repo</id>
+            <url>https://gitlab.com/iped-project/iped-maven/raw/master</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <dependencies>
 <!--        <dependency>-->
@@ -110,7 +110,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.0.3</version>
+            <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

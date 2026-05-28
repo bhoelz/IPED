@@ -61,7 +61,7 @@ public class EmuleCollectionParser extends AbstractParser {
 
         TemporaryResources tmp = new TemporaryResources();
         try {
-            TikaInputStream tikaStream = TikaInputStream.get(stream, tmp);
+            TikaInputStream tikaStream = TikaInputStream.get(() -> stream, tmp);
             long size = tikaStream.getLength();
             if (size > MAX_FILE_SIZE)
                 throw new TikaException("EmuleCollection is too big (" + size + " bytes): maximum supported size to parse is " + MAX_FILE_SIZE + " bytes");
@@ -235,3 +235,4 @@ public class EmuleCollectionParser extends AbstractParser {
         xhtml.endDocument();
     }
 }
+

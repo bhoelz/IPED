@@ -125,9 +125,9 @@ public class VCardParser extends AbstractParser {
             metadata.add(ExtraProperties.USER_NAME, name.trim());
 
         if (vcard.getBirthday() != null) {
-            metadata.set(ExtraProperties.USER_BIRTH, vcard.getBirthday().getDate());
+            metadata.set(ExtraProperties.USER_BIRTH, String.valueOf(vcard.getBirthday().getDate()));
         } else if (vcard.getAnniversary() != null) {
-            metadata.set(ExtraProperties.USER_BIRTH, vcard.getAnniversary().getDate());
+            metadata.set(ExtraProperties.USER_BIRTH, String.valueOf(vcard.getAnniversary().getDate()));
         }
 
         for (Telephone t : vcard.getTelephoneNumbers()) {

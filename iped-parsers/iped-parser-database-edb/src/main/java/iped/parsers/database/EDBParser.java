@@ -91,7 +91,7 @@ public class EDBParser extends AbstractParser {
         TemporaryResources tmp = new TemporaryResources();
         File file = null;
         try {
-            TikaInputStream tis = TikaInputStream.get(stream, tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
             file = tis.getFile();
 
             File tmpFile = tmp.createTemporaryFile();
@@ -272,3 +272,4 @@ public class EDBParser extends AbstractParser {
     }
 
 }
+

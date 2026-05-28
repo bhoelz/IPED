@@ -28,7 +28,6 @@ import org.apache.lucene.index.DocValues;
 import org.apache.lucene.index.DocValuesType;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.FieldInfos;
-import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.LeafMetaData;
 import org.apache.lucene.index.LeafReader;
@@ -43,16 +42,17 @@ import org.apache.lucene.index.OrdinalMap;
 import org.apache.lucene.index.PointValues;
 import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedNumericDocValues;
+import org.apache.lucene.index.DocValuesSkipper;
 import org.apache.lucene.index.SortedSetDocValues;
-import org.apache.lucene.index.StoredFieldVisitor;
+import org.apache.lucene.index.StoredFields;
+import org.apache.lucene.index.TermVectors;
 import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.VectorValues;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHits;
-import org.apache.lucene.search.TotalHits.Relation;
+import org.apache.lucene.index.ByteVectorValues;
+import org.apache.lucene.index.FloatVectorValues;
+import org.apache.lucene.search.AcceptDocs;
+import org.apache.lucene.search.KnnCollector;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.util.Bits;
-import org.apache.lucene.util.FixedBitSet;
 import org.apache.lucene.util.Version;
 
 /**
@@ -105,11 +105,11 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
     in = reader;
     in.registerParentReader(this);
     if (reader.leaves().isEmpty()) {
-      metaData = new LeafMetaData(Version.LATEST.major, Version.LATEST, null);
+      metaData = new LeafMetaData(Version.LATEST.major, Version.LATEST, null, false);
     } else {
       Version minVersion = Version.LATEST;
       for (LeafReaderContext leafReaderContext : reader.leaves()) {
-        Version leafVersion = leafReaderContext.reader().getMetaData().getMinVersion();
+        Version leafVersion = leafReaderContext.reader().getMetaData().minVersion();
         if (leafVersion == null) {
           minVersion = null;
           break;
@@ -117,7 +117,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
           minVersion = leafVersion;
         }
       }
-      metaData = new LeafMetaData(reader.leaves().get(0).reader().getMetaData().getCreatedVersionMajor(), minVersion, null);
+      metaData = new LeafMetaData(reader.leaves().get(0).reader().getMetaData().createdVersionMajor(), minVersion, null, false);
     }
     try {
         fieldInfos = FieldInfos.getMergedFieldInfos(in);
@@ -281,9 +281,9 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
   }
   
   @Override
-  public Fields getTermVectors(int docID) throws IOException {
+  public TermVectors termVectors() throws IOException {
     ensureOpen();
-    return in.getTermVectors(docID);
+    return in.termVectors();
   }
 
   @Override
@@ -299,9 +299,9 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
   }
 
   @Override
-  public void document(int docID, StoredFieldVisitor visitor) throws IOException {
+  public StoredFields storedFields() throws IOException {
     ensureOpen();
-    in.document(docID, visitor);
+    return in.storedFields();
   }
 
   @Override
@@ -341,41 +341,27 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
   }
 
     @Override
-    public VectorValues getVectorValues(String field) throws IOException {
-        // TODO implement this method properly when we start to index feature vectors
-        // using Lucene
+    public FloatVectorValues getFloatVectorValues(String field) throws IOException {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override
-    public TopDocs searchNearestVectors(String field, float[] target, int k, Bits acceptDocs, int visitedLimit) throws IOException {
-        ensureOpen();
-        int size = in.leaves().size();
-        TopDocs[] docsPerLeaf = new TopDocs[size];
-        for (int i = 0; i < size; i++) {
-            LeafReaderContext context = in.leaves().get(i);
-            final LeafReader reader = context.reader();
-            final FieldInfo fieldInfo = reader.getFieldInfos().fieldInfo(field);
-            if (fieldInfo == null || !fieldInfo.hasVectorValues()) {
-                docsPerLeaf[i] = new TopDocs(new TotalHits(0, Relation.EQUAL_TO), new ScoreDoc[0]);
-                continue;
-            }
+    public ByteVectorValues getByteVectorValues(String field) throws IOException {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
 
-            FixedBitSet leafBits = null;
-            if (acceptDocs != null) {
-                leafBits = new FixedBitSet(reader.maxDoc());
-                for (int j = 0; j < leafBits.length(); j++) {
-                    if (acceptDocs.get(context.docBase + j)) {
-                        leafBits.set(j);
-                    }
-                }
-            }
+    @Override
+    public void searchNearestVectors(String field, float[] target, KnnCollector knnCollector, AcceptDocs acceptDocs) throws IOException {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
 
-            docsPerLeaf[i] = reader.searchNearestVectors(field, target, k, leafBits, visitedLimit);
-            for (ScoreDoc doc : docsPerLeaf[i].scoreDocs) {
-                doc.doc += context.docBase;
-            }
-        }
-        return TopDocs.merge(k, docsPerLeaf);
+    @Override
+    public void searchNearestVectors(String field, byte[] target, KnnCollector knnCollector, AcceptDocs acceptDocs) throws IOException {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    @Override
+    public DocValuesSkipper getDocValuesSkipper(String field) {
+        return null;
     }
 }

@@ -23,11 +23,6 @@
         </dependency>
         <dependency>
             <groupId>iped</groupId>
-            <artifactId>iped-tasks-storage-index</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>iped</groupId>
             <artifactId>iped-tasks-carving</artifactId>
             <version>${project.version}</version>
         </dependency>

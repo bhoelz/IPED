@@ -18,6 +18,7 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.flexible.standard.QueryParserUtil;
@@ -50,11 +51,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import iped.data.IIPEDSource;
+import iped.engine.data.IPEDSource;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.IndexTaskConfig;
 import iped.engine.localization.CategoryLocalization;
 import iped.engine.lucene.PublicPointRangeQuery;
-import iped.engine.index.IndexMetadata;\nimport iped.engine.task.index.IndexItem;
+import iped.engine.index.IndexMetadata;
+import iped.engine.task.index.IndexItem;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.localization.LocalizedProperties;
@@ -110,8 +113,8 @@ public class QueryBuilder {
         if (query != null) {
             if (query instanceof BooleanQuery) {
                 for (BooleanClause clause : ((BooleanQuery) query).clauses()) {
-                    if (!clause.isProhibited()) {
-                        result.addAll(getQueryStrings(clause.getQuery()));
+                    if (clause.occur() != Occur.MUST_NOT) {
+                        result.addAll(getQueryStrings(clause.query()));
                     }
                 }
             } else if (query instanceof BoostQuery) {
@@ -139,7 +142,7 @@ public class QueryBuilder {
                 if (query instanceof MultiTermQuery) {
                     MultiTermQuery mtq = (MultiTermQuery) query;
                     try {
-                        TermsEnum terms = mtq.getTermsEnum(ipedCase.getLeafReader().terms(mtq.getField()));
+TermsEnum terms = mtq.getTermsEnum(((IPEDSource) ipedCase).getLeafReader().terms(mtq.getField()));
                         int maxTerms = IndexSearcher.getMaxClauseCount();
                         BytesRef br;
                         while (termSet.size() < maxTerms && (br = terms.next()) != null) {
@@ -191,7 +194,7 @@ public class QueryBuilder {
                 return parentsFilter;
             }
             parentsFilter = new QueryBitSetProducer(new FieldExistsQuery(BasicProps.ID));
-            ipedCase.getReader().leaves().forEach(context -> {
+((IPEDSource) ipedCase).getReader().leaves().forEach(context -> {
                 try {
                     parentsFilter.getBitSet(context);
                 } catch (IOException e) {
@@ -227,7 +230,7 @@ public class QueryBuilder {
         } else if (query instanceof BooleanQuery) {
             BooleanQuery.Builder builder = new BooleanQuery.Builder();
             for (BooleanClause clause : ((BooleanQuery) query).clauses()) {
-                builder.add(rewriteQuery(clause.getQuery(), expandCategories), clause.getOccur());
+                builder.add(rewriteQuery(clause.query(), expandCategories), clause.occur());
             }
             builder.setMinimumNumberShouldMatch(((BooleanQuery) query).getMinimumNumberShouldMatch());
             return builder.build();
@@ -344,7 +347,7 @@ public class QueryBuilder {
             }
 
             try {
-                query = getQuery(queryText, ipedCase.getAnalyzer());
+query = getQuery(queryText, ((IPEDSource) ipedCase).getAnalyzer());
                 result.addAll(getQueryStrings(query));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -364,7 +367,7 @@ public class QueryBuilder {
     }
 
     public Query getQuery(String texto) throws ParseException, QueryNodeException {
-        return getQuery(texto, ipedCase.getAnalyzer());
+return getQuery(texto, ((IPEDSource) ipedCase).getAnalyzer());
     }
 
     public Query getQuery(String texto, Analyzer analyzer) throws ParseException, QueryNodeException {
@@ -422,9 +425,9 @@ public class QueryBuilder {
             BooleanQuery.Builder builder = new BooleanQuery.Builder();
             boolean allNegative = true;
             for (BooleanClause clause : ((BooleanQuery) q).clauses()) {
-                Query subQ = handleNegativeQueries(clause.getQuery(), analyzer);
-                builder.add(subQ, clause.getOccur());
-                if(clause.getOccur() != Occur.MUST_NOT) {
+                Query subQ = handleNegativeQueries(clause.query(), analyzer);
+                builder.add(subQ, clause.occur());
+                if(clause.occur() != Occur.MUST_NOT) {
                     allNegative = false;
                 }
             }

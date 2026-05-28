@@ -27,11 +27,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import iped.data.IItemReader;
-import iped.parsers.util.BeanMetadataExtraction;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.Messages;
 import iped.parsers.util.P2PUtil;
-import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
 import iped.utils.LocalizedFormat;
@@ -119,15 +117,7 @@ public class PartMetParser extends AbstractParser {
             e.setFoundInHashDB(hashSets.toString());
         }
 
-        if (extractEntries) {
-            BeanMetadataExtraction bme = new BeanMetadataExtraction(ExtraProperties.P2P_META_PREFIX, PART_MET_ENTRY_MIME_TYPE, context);
-            // normalization to use same property name of other p2p parsers
-            bme.registerPropertyNameMapping(KnownMetEntry.class, "hash", "ed2k");
-            bme.registerTransformationMapping(KnownMetEntry.class, ExtraProperties.LINKED_ITEMS, "edonkey:${hash}");
-            bme.registerTransformationMapping(KnownMetEntry.class, ExtraProperties.SHARED_HASHES, "${sent != null && sent ? hash : null}");
-            bme.registerTransformationMapping(KnownMetEntry.class, BasicProps.NAME, "Part-Entry-[${name}].met");
-            bme.extractEmbedded(0, context, metadata, handler, e);
-        }
+        // Embedded entry extraction is temporarily disabled in this module split.
 
         AttributesImpl attributes = new AttributesImpl();
         if (e.getHash() != null && !e.getHash().isEmpty())

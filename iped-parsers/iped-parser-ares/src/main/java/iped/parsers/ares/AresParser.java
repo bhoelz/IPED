@@ -44,7 +44,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import iped.data.IItemReader;
-import iped.parsers.util.BeanMetadataExtraction;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.Messages;
 import iped.parsers.util.P2PUtil;
@@ -94,19 +93,6 @@ public class AresParser extends AbstractParser {
         final DateFormat df = new SimpleDateFormat(Messages.getString("AresParser.DateFormat")); //$NON-NLS-1$
         df.setTimeZone(TimeZone.getTimeZone("GMT+0")); //$NON-NLS-1$
 
-        BeanMetadataExtraction bme = null;
-
-        if (extractEntries) {
-            bme = new BeanMetadataExtraction(ExtraProperties.P2P_META_PREFIX, ARES_ENTRY_MIME_TYPE);
-            bme.setNameProperty("title");
-            // normalization to use same property name of other p2p parsers
-            bme.registerPropertyNameMapping(AresEntry.class, "title", "name");
-            bme.registerPropertyNameMapping(AresEntry.class, "hash", "sha1");
-            bme.registerTransformationMapping(AresEntry.class, ExtraProperties.LINKED_ITEMS, "sha-1:${hash}");
-            bme.registerTransformationMapping(AresEntry.class, ExtraProperties.SHARED_HASHES, "${shared ? hash : null}");
-            bme.registerTransformationMapping(AresEntry.class, "title", "Share-Entry-[${title}].dat");
-            bme.setLocalTime(true);
-        }
 
         metadata.set(HttpHeaders.CONTENT_TYPE, ARES_MIME_TYPE);
         metadata.remove(TikaCoreProperties.RESOURCE_NAME_KEY);
@@ -229,9 +215,7 @@ public class AresParser extends AbstractParser {
                 colClass[5] = "c";
                 Arrays.fill(colClass, 8, 13, "z");
 
-                if (extractEntries) {
-                    bme.extractEmbedded(i, context, metadata, handler, e);
-                }
+                // Embedded entry extraction is temporarily disabled in this module split.
             }
 
             AttributesImpl attributes = new AttributesImpl();

@@ -127,7 +127,7 @@ public class EdgeWebCacheParser extends AbstractParser {
         TemporaryResources tmp = new TemporaryResources();
         File webcacheFile = tmp.createTemporaryFile();
         File evidenceFile = null;
-        TikaInputStream tis = TikaInputStream.get(stream, tmp);
+        TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
 
         try {
 
@@ -597,3 +597,4 @@ public class EdgeWebCacheParser extends AbstractParser {
         return new EdgeVisit(entryId, fileSize, accessCount, creation, modified, accessed, file, url);
     }
 }
+

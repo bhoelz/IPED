@@ -31,7 +31,6 @@ import iped.engine.lucene.DocValuesUtil;
 import iped.engine.lucene.SlowCompositeReaderWrapper;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.task.index.IndexItem;
-import iped.engine.task.index.IndexTask;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
@@ -47,6 +46,7 @@ import iped.utils.HashValue;
  *
  */
 public class SkipCommitedTask extends AbstractTask {
+    private static final String TEXT_SPLITTED = "textSplitted";
 
     public static final String PARENTS_WITH_LOST_SUBITEMS = SkipCommitDataKeys.PARENTS_WITH_LOST_SUBITEMS;
 
@@ -133,7 +133,7 @@ public class SkipCommitedTask extends AbstractTask {
             SortedDocValues hasChildValues = aReader.getSortedDocValues(IndexItem.HASCHILD);
             SortedDocValues isDirValues = aReader.getSortedDocValues(IndexItem.ISDIR);
             SortedDocValues isRootValues = aReader.getSortedDocValues(IndexItem.ISROOT);
-            SortedDocValues hasSplittedText = aReader.getSortedDocValues(IndexTask.TEXT_SPLITTED);
+            SortedDocValues hasSplittedText = aReader.getSortedDocValues(TEXT_SPLITTED);
             NumericDocValues prevParentIds = aReader.getNumericDocValues(IndexItem.PARENTID);
             NumericDocValues prevIds = aReader.getNumericDocValues(IndexItem.ID);
             for (int doc = 0; doc < aReader.maxDoc(); doc++) {

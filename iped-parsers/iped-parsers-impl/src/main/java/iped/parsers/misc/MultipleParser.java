@@ -97,7 +97,7 @@ public class MultipleParser extends AbstractParser {
         EmbeddedContentHandler embeddedHandler = new EmbeddedContentHandler(handler);
         embeddedHandler.startDocument();
         try {
-            TikaInputStream tis = TikaInputStream.get(stream, tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
             boolean firstTis = true;
             Path tempPath = null;
             for (Parser parser : parsers) {
@@ -174,3 +174,4 @@ public class MultipleParser extends AbstractParser {
     }
 
 }
+

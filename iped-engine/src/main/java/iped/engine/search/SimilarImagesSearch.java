@@ -6,9 +6,10 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
 import iped.data.IItem;
-import iped.engine.task.similarity.ImageSimilarityTask;
 
 public class SimilarImagesSearch {
+
+    private static final String IMAGE_FEATURES = "imageFeatures"; //$NON-NLS-1$
     /**
      * This range is used in the query to filter images, based only in 4 features
      * (RGB and gray channels median values of the whole image). Higher values will
@@ -20,7 +21,7 @@ public class SimilarImagesSearch {
     private static final int range = 64;
 
     public Query getQueryForSimilarImages(IItem item) {
-        byte[] similarityFeatures = (byte[]) item.getExtraAttribute(ImageSimilarityTask.IMAGE_FEATURES);
+        byte[] similarityFeatures = (byte[]) item.getExtraAttribute(IMAGE_FEATURES);
         if (similarityFeatures == null) {
             return null;
         }
@@ -33,7 +34,7 @@ public class SimilarImagesSearch {
             upper[i] = refVal + range;
         }
         BooleanQuery.Builder similarImagesQuery = new BooleanQuery.Builder();
-        similarImagesQuery.add(IntPoint.newRangeQuery(ImageSimilarityTask.IMAGE_FEATURES, lower, upper),
+        similarImagesQuery.add(IntPoint.newRangeQuery(IMAGE_FEATURES, lower, upper),
                 Occur.MUST);
 
         return similarImagesQuery.build();

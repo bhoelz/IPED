@@ -93,7 +93,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
             throws IOException, SAXException, TikaException {
 
         TemporaryResources tmp = new TemporaryResources();
-        TikaInputStream tis = TikaInputStream.get(stream, tmp);
+        TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
         File downloadsFile = tmp.createTemporaryFile();
         File historyFile = tmp.createTemporaryFile();
         File searchFile = tmp.createTemporaryFile();
@@ -628,3 +628,4 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
 //
 //    }
 }
+

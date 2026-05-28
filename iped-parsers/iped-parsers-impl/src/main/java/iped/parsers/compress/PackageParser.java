@@ -137,6 +137,7 @@ public class PackageParser extends AbstractParser {
             stream = new BufferedInputStream(stream);
         }
         stream.mark(1 << 24);
+        final InputStream streamRef = stream;
 
         TemporaryResources tmp = new TemporaryResources();
         ArchiveInputStream ais = null;
@@ -154,7 +155,7 @@ public class PackageParser extends AbstractParser {
             if (sne.getFormat().equals(ArchiveStreamFactory.SEVEN_Z)) {
                 // Rework as a file, and wrap
                 stream.reset();
-                TikaInputStream tstream = TikaInputStream.get(stream, tmp);
+                TikaInputStream tstream = TikaInputStream.get(() -> streamRef, tmp);
 
                 // Pending a fix for COMPRESS-269, this bit is a little nasty
                 try {
@@ -255,7 +256,7 @@ public class PackageParser extends AbstractParser {
             BooleanWrapper encrypted, String encoding) throws IOException, SAXException, TikaException {
 
         try (InputStream is = getNewInputStream(new CloseShieldInputStream(stream), context);
-                ZipFile zipFile = new ZipFile(TikaInputStream.get(is, tmp).getFile(), encoding)) {
+                ZipFile zipFile = new ZipFile(TikaInputStream.get(() -> is, tmp).getFile(), encoding)) {
 
             EmbeddedDocumentExtractor extractor = context.get(EmbeddedDocumentExtractor.class);
             Enumeration<ZipArchiveEntry> entries = zipFile.getEntries();
@@ -427,7 +428,7 @@ public class PackageParser extends AbstractParser {
             // InputStream, so wrap with a TikaInputStream
             TemporaryResources tmp = new TemporaryResources();
             try (InputStream is = factory.getInputStream()) {
-                TikaInputStream tis = TikaInputStream.get(is, tmp);
+                TikaInputStream tis = TikaInputStream.get(() -> is, tmp);
                 extractor.parseEmbedded(tis, xhtml, entrydata, true);
             } finally {
                 tmp.dispose();
@@ -470,3 +471,5 @@ public class PackageParser extends AbstractParser {
     }
 
 }
+
+

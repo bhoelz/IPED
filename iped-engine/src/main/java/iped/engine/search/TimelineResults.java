@@ -64,7 +64,7 @@ public class TimelineResults {
             long ord;
             short pos = 0;
             System.arraycopy(blankEventOrd, 0, eventOrd, 0, eventOrd.length);
-            while (tegvAdv && (ord = timeEventGroupValues.nextOrd()) != SortedSetDocValues.NO_MORE_ORDS) {
+while (tegvAdv && (ord = timeEventGroupValues.nextOrd()) != -1) {
                 for (int k : eventsInDocOrds[pos++]) {
                     if (k == -1) {
                         break;
@@ -73,7 +73,7 @@ public class TimelineResults {
                 }
             }
             pos = 0;
-            while (tsvAdv && (ord = timeStampValues.nextOrd()) != SortedSetDocValues.NO_MORE_ORDS) {
+while (tsvAdv && (ord = timeStampValues.nextOrd()) != -1) {
                 if (ord > Integer.MAX_VALUE) {
                     throw new RuntimeException("Integer overflow when converting timestamp ord to int");
                 }

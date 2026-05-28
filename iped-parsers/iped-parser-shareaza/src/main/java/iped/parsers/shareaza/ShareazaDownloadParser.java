@@ -35,7 +35,6 @@ import org.xml.sax.helpers.AttributesImpl;
 import iped.data.IItemReader;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.Messages;
-import iped.parsers.util.MetadataUtil;
 import iped.parsers.util.P2PUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
@@ -63,14 +62,6 @@ public class ShareazaDownloadParser extends AbstractParser {
     private static final String ERROR_READING_CONTROL_BYTES = "Error reading control bytes, data is possibly corrupted";
 
     private static final int MAX_BUF_SIZE = 1 << 23;
-
-    static {
-        MetadataUtil.setMetadataType(META_PREFIX + "fileSize", Long.class);
-        MetadataUtil.setMetadataType(META_PREFIX + "totalDownloaded", Long.class);
-        // Commented out because these values are always 0 in the samples tested
-        // MetadataUtil.setMetadataType(META_PREFIX + "torrentTotalDownload", Long.class);
-        // MetadataUtil.setMetadataType(META_PREFIX + "torrentTotalUpload", Long.class);
-    }
 
     @Override
     public Set<MediaType> getSupportedTypes(ParseContext context) {

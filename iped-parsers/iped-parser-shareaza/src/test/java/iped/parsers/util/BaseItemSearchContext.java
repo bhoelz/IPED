@@ -353,13 +353,11 @@ public abstract class BaseItemSearchContext extends TestCase {
 
             }
 
-            @Override
             public void setMetadata(Metadata metadata) {
                 // TODO Auto-generated method stub
 
             }
 
-            @Override
             public void setMediaType(MediaType mediaType) {
                 // TODO Auto-generated method stub
 

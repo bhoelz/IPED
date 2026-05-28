@@ -134,7 +134,7 @@ public class SevenZipParser extends AbstractParser {
         RandomAccessFile randomAccessFile = null;
         IInArchive inArchive = null;
         try {
-            File file = TikaInputStream.get(stream, tmp).getFile();
+            File file = TikaInputStream.get(() -> stream, tmp).getFile();
 
             String mimetype = metadata.get(Metadata.CONTENT_TYPE);
             if (mimetype.contains(ISO9660) || mimetype.contains(UDF))
@@ -398,3 +398,4 @@ public class SevenZipParser extends AbstractParser {
     }
 
 }
+

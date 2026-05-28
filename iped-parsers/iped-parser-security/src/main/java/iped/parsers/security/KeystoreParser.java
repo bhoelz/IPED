@@ -73,7 +73,7 @@ public class KeystoreParser extends AbstractParser {
     public void parse(InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
             throws IOException, SAXException, TikaException {
         TemporaryResources tmp = new TemporaryResources();
-        TikaInputStream tis = TikaInputStream.get(stream, tmp);
+        TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
         File file = tis.getFile();
 
         try {
@@ -188,3 +188,4 @@ public class KeystoreParser extends AbstractParser {
     }
 
 }
+

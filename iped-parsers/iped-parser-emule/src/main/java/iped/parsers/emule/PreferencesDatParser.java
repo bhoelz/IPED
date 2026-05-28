@@ -14,7 +14,6 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.usnjrnl.Util;
 import iped.parsers.util.Messages;
 
 public class PreferencesDatParser extends AbstractParser {
@@ -72,7 +71,7 @@ public class PreferencesDatParser extends AbstractParser {
         xhtml.endElement("td");
         xhtml.startElement("td");
 
-        xhtml.characters(Util.byteArrayToHex(b));
+        xhtml.characters(byteArrayToHex(b));
 
         xhtml.endElement("td");
 
@@ -82,6 +81,14 @@ public class PreferencesDatParser extends AbstractParser {
 
         xhtml.endDocument();
 
+    }
+
+    private static String byteArrayToHex(byte[] a) {
+        StringBuilder sb = new StringBuilder(a.length * 2);
+        for (byte b : a) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
 }

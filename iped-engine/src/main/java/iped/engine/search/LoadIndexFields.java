@@ -14,7 +14,7 @@ public class LoadIndexFields {
 
         HashSet<String> names = new HashSet<String>();
         for (IIPEDSource source : sources) {
-            IndexReader leafReader = source.getReader();
+            IndexReader leafReader = (IndexReader) source.getIndexReaderHandle();
             leafReader.leaves().forEach(ctx -> ctx.reader().getFieldInfos().forEach(info -> {
                 if (!IndexItem.CONTENT.equals(info.name) && !info.name.startsWith(IndexItem.GEO_SSDV_PREFIX)
                         && (!info.name.startsWith(SimilarFacesSearch.FACE_FEATURES)

@@ -39,7 +39,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import iped.data.IItemReader;
-import iped.parsers.util.BeanMetadataExtraction;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
@@ -126,36 +125,7 @@ public class ShareazaLibraryDatParser extends AbstractParser {
         metadata.set(BasicProps.HASCHILD, "true");
         metadata.set(ExtraProperties.EMBEDDED_FOLDER, "true");
 
-        if (extractEntries) {
-            BeanMetadataExtraction bme = new BeanMetadataExtraction(ExtraProperties.P2P_META_PREFIX, LIBRARY_DAT_ENTRY_MIME_TYPE);
-            bme.addPropertyExclusion(LibraryFolders.class, "indexToFile");
-            bme.addPropertyExclusion(LibraryFolder.class, "indexToFile");
-            bme.addPropertyExclusion(LibraryFolder.class, "parentFolder");
-            bme.addPropertyExclusion(LibraryFile.class, "parentFolder");
-            bme.addPropertyExclusion(LibraryFile.class, "hashDBHit");
-            bme.addPropertyExclusion(LibraryFile.class, "hashSetHits");
-            bme.addPropertyExclusion(LibraryFile.class, "sharedSources");
-            bme.addPropertyExclusion(LibraryFolder.class, "shared");
-            bme.registerCollectionPropertyToMerge(LibraryFolder.class, "libraryFiles");
-            bme.registerCollectionPropertyToMerge(LibraryFolder.class, "libraryFolders");
-            bme.registerCollectionPropertyToMerge(AlbumFolder.class, "albumFolders");
-            bme.registerCollectionPropertyToMerge(AlbumFolder.class, "albumFileIndexes");
-            bme.registerClassNameProperty(LibraryFolder.class, "path");
-            bme.registerClassNameProperty(AlbumFolder.class, "name");
-            bme.registerTransformationMapping(AlbumFolder.class, ExtraProperties.EMBEDDED_FOLDER, Boolean.toString(true));
-            bme.registerTransformationMapping(LibraryFolders.class, ExtraProperties.EMBEDDED_FOLDER, Boolean.toString(true));
-            bme.registerTransformationMapping(LibraryFolder.class, ExtraProperties.EMBEDDED_FOLDER, Boolean.toString(true));
-            bme.registerTransformationMapping(LibraryFile.class, ExtraProperties.LINKED_ITEMS, "${sha1 != null ? \"sha-1:\" + sha1 : null}");
-            bme.registerTransformationMapping(LibraryFile.class, ExtraProperties.SHARED_HASHES, "${shared != null && shared ? (md5 != null ? md5 : sha1) : null}");
-            bme.registerTransformationMapping(LibraryFile.class, BasicProps.NAME, "Library-Entry-[${name}].dat");
-
-            String albumLibraryFilesQuery = String.format(
-                    "path:\"%s\" && p2p\\:index:(${T(org.apache.commons.lang3.StringUtils).join(albumFileIndexes, ',')})",
-                    searcher.escapeQuery(item.getPath()));
-            bme.registerTransformationMapping(AlbumFolder.class, ExtraProperties.LINKED_ITEMS, albumLibraryFilesQuery);
-
-            bme.extractEmbedded(0, context, metadata, handler, library.getLibraryFolders());
-        }
+        // Embedded entry extraction is temporarily disabled in this module split.
 
         xhtml.endElement("table"); //$NON-NLS-1$
         /*

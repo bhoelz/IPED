@@ -51,7 +51,7 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.FloatPoint;
 import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.document.KnnVectorField;
+import org.apache.lucene.document.KnnFloatVectorField;
 import org.apache.lucene.document.LatLonDocValuesField;
 import org.apache.lucene.document.LatLonPoint;
 import org.apache.lucene.document.LongPoint;
@@ -83,7 +83,6 @@ import iped.engine.preview.PreviewConstants;
 import iped.engine.preview.ThumbConstants;
 import iped.engine.preview.PreviewInputStreamFactory;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
-import iped.engine.task.similarity.ImageSimilarityTask;
 import iped.engine.util.Util;
 import iped.parsers.ocr.OCRParser;
 import iped.parsers.standard.StandardParser;
@@ -103,6 +102,8 @@ import iped.utils.UTF8Properties;
  */
 public class IndexItem extends BasicProps {
     private static final String VIDEO_PREVIEW_EXT = "jpg"; //$NON-NLS-1$
+
+    private static final String IMAGE_FEATURES = "imageFeatures"; //$NON-NLS-1$
 
     public static final String GEO_SSDV_PREFIX = "geo_ssdv_";
 
@@ -394,7 +395,7 @@ public class IndexItem extends BasicProps {
             doc.add(new SortedSetDocValuesField(CATEGORY, new BytesRef(normalize(val, false))));
         }
 
-        MediaType type = evidence.getMediaType();
+        MediaType type = (MediaType) evidence.getMediaType();
         if (type != null) {
             value = type.toString();
         } else {
@@ -454,13 +455,13 @@ public class IndexItem extends BasicProps {
             doc.add(new SortedDocValuesField(PREVIEW_EXT, new BytesRef(value)));
         }
 
-        byte[] similarityFeatures = (byte[]) evidence.getExtraAttribute(ImageSimilarityTask.IMAGE_FEATURES);
+        byte[] similarityFeatures = (byte[]) evidence.getExtraAttribute(IMAGE_FEATURES);
         // clear extra property to don't add it again later when iterating over extra props
-        evidence.getExtraAttributeMap().remove(ImageSimilarityTask.IMAGE_FEATURES);
+        evidence.getExtraAttributeMap().remove(IMAGE_FEATURES);
         if (similarityFeatures != null) {
-            doc.add(new BinaryDocValuesField(ImageSimilarityTask.IMAGE_FEATURES, new BytesRef(similarityFeatures)));
-            doc.add(new StoredField(ImageSimilarityTask.IMAGE_FEATURES, similarityFeatures));
-            doc.add(new IntPoint(ImageSimilarityTask.IMAGE_FEATURES, similarityFeatures[0], similarityFeatures[1],
+            doc.add(new BinaryDocValuesField(IMAGE_FEATURES, new BytesRef(similarityFeatures)));
+            doc.add(new StoredField(IMAGE_FEATURES, similarityFeatures));
+            doc.add(new IntPoint(IMAGE_FEATURES, similarityFeatures[0], similarityFeatures[1],
                     similarityFeatures[2], similarityFeatures[3]));
         }
 
@@ -485,9 +486,9 @@ public class IndexItem extends BasicProps {
             }
         }
 
-        Metadata metadata = evidence.getMetadata();
+        Metadata metadata = (Metadata) evidence.getMetadata();
         if (metadata != null) {
-            addMetadataToDoc(doc, evidence.getMetadata(), timeEventSet);
+            addMetadataToDoc(doc, (Metadata) evidence.getMetadata(), timeEventSet);
         }
 
         storeTimeStamps(doc, timeEventSet);
@@ -659,7 +660,7 @@ public class IndexItem extends BasicProps {
             }
             doc.add(new SortedSetDocValuesField(key, new BytesRef(byteArray)));
             doc.add(new StoredField(key, byteArray));
-            doc.add(new KnnVectorField(knnKey, floatArray));
+            doc.add(new KnnFloatVectorField(knnKey, floatArray));
 
         } else {
             // value is typed as string
@@ -930,9 +931,9 @@ public class IndexItem extends BasicProps {
                     }
                 }
 
-                BytesRef bytesRef = doc.getBinaryValue(ImageSimilarityTask.IMAGE_FEATURES);
+                BytesRef bytesRef = doc.getBinaryValue(IMAGE_FEATURES);
                 if (bytesRef != null) {
-                    evidence.setExtraAttribute(ImageSimilarityTask.IMAGE_FEATURES, bytesRef.bytes);
+                    evidence.setExtraAttribute(IMAGE_FEATURES, bytesRef.bytes);
                 }
 
                 viewFile = Util.findFileFromHash(new File(outputBase, PreviewConstants.VIEW_FOLDER_NAME), evidence.getHash());

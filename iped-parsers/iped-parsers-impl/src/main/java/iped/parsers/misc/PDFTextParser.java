@@ -143,7 +143,7 @@ public class PDFTextParser extends PDFParser {
 
         TemporaryResources tmp = new TemporaryResources();
         try {
-            TikaInputStream tis = TikaInputStream.get(stream, tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
 
             File file = null;
             Exception exception = null;
@@ -322,3 +322,4 @@ public class PDFTextParser extends PDFParser {
     }
 
 }
+

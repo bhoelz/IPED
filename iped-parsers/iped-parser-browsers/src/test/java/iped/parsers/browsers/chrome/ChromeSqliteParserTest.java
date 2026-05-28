@@ -13,7 +13,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import iped.parsers.browsers.AbstractPkgTest;
-import iped.parsers.standard.StandardParser;
 
 public class ChromeSqliteParserTest extends AbstractPkgTest {
 
@@ -26,7 +25,7 @@ public class ChromeSqliteParserTest extends AbstractPkgTest {
 
         ChromeSqliteParser parser = new ChromeSqliteParser();
         Metadata metadata = new Metadata();
-        metadata.add(StandardParser.INDEXER_CONTENT_TYPE, MediaType.application("x-chrome-places").toString());
+        metadata.add("Indexer-Content-Type", MediaType.application("x-chrome-places").toString());
         ContentHandler handler = new BodyContentHandler();
         ParseContext context = new ParseContext();
         parser.getSupportedTypes(context);

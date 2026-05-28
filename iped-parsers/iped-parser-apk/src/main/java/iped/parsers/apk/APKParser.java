@@ -69,7 +69,7 @@ public class APKParser extends AbstractParser {
                 new ParsingEmbeddedDocumentExtractor(context));
 
         try {
-            TikaInputStream tis = TikaInputStream.get(stream, tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
             tmpFile = tis.getFile();
 
             apkFile = new CustomApkFile(tmpFile);

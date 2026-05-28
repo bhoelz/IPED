@@ -85,7 +85,7 @@ public class MSAccessParser extends AbstractParser {
         builder.setReadOnly(true);
 
         try {
-            TikaInputStream tis = TikaInputStream.get(stream, tmp);
+            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
             File file = tis.getFile();
             builder.setFile(file);
             database = builder.open();
@@ -201,3 +201,4 @@ public class MSAccessParser extends AbstractParser {
         }
     }
 }
+

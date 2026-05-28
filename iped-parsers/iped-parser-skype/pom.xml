@@ -44,7 +44,11 @@
             <groupId>iped</groupId>
             <artifactId>iped-parser-db-base</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parsers-impl</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

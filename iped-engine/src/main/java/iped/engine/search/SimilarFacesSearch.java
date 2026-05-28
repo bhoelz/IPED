@@ -47,7 +47,7 @@ public class SimilarFacesSearch {
 
     public MultiSearchResult filter(MultiSearchResult result) throws IOException {
         score(result);
-        return ImageSimilarityLowScoreFilter.filter(result, squaredDistToScore(minDistSquared));
+return (MultiSearchResult) ImageSimilarityLowScoreFilter.filter(result, squaredDistToScore(minDistSquared));
     }
 
     public static final int getMinScore() {
@@ -105,7 +105,7 @@ public class SimilarFacesSearch {
                         try {
                             boolean hasVal = similarityFeaturesValues.advanceExact(luceneId);
                             while (hasVal && (ordinal = similarityFeaturesValues
-                                    .nextOrd()) != SortedSetDocValues.NO_MORE_ORDS) {
+                                    .nextOrd()) != -1) {
                                 BytesRef bytesRef = similarityFeaturesValues.lookupOrd(ordinal);
                                 float[] currentFeatures = convToFloatVec(bytesRef.bytes);
                                 int faceIdx = -1;

@@ -8,6 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import org.apache.tika.Tika;
+import org.apache.tika.metadata.Metadata;
 
 import iped.data.IItem;
 import iped.io.IStreamSource;
@@ -97,7 +98,10 @@ public class ReferencedFileViewer extends AbstractViewer {
 
         if (content instanceof IItem) {
             IItem item = (IItem) content;
-            String query = item.getMetadata().get(ExtraProperties.LINKED_ITEMS);
+            String query = null;
+            if (item.getMetadata() instanceof Metadata metadata) {
+                query = metadata.get(ExtraProperties.LINKED_ITEMS);
+            }
             query = appendUfedFileId(item, query);
             if (query == null) {
                 SwingUtilities.invokeLater(actionIfNotLoaded);
@@ -123,7 +127,10 @@ public class ReferencedFileViewer extends AbstractViewer {
     }
 
     private String appendUfedFileId(IItem item, String query) {
-        String ufedFileId = item.getMetadata().get(ExtraProperties.UFED_FILE_ID);
+        String ufedFileId = null;
+        if (item.getMetadata() instanceof Metadata metadata) {
+            ufedFileId = metadata.get(ExtraProperties.UFED_FILE_ID);
+        }
         if (ufedFileId != null) {
             String ufedQuery = attachSearcher.escapeQuery(ExtraProperties.UFED_ID) + ":\"" + ufedFileId + "\"";
             if (query != null) {

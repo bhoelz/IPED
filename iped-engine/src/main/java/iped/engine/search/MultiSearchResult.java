@@ -3,6 +3,8 @@ package iped.engine.search;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.lucene.index.IndexReader;
+
 import org.roaringbitmap.RoaringBitmap;
 
 import iped.data.IIPEDSource;
@@ -120,7 +122,7 @@ public class MultiSearchResult implements IMultiSearchResult {
                     atomicSource = iSource.getAtomicSource(docs[i]);
                     sourceId = atomicSource.getSourceId();
                     baseDoc = iSource.getBaseLuceneId(atomicSource);
-                    maxdoc = atomicSource.getReader().maxDoc();
+                    maxdoc = ((IndexReader) atomicSource.getIndexReaderHandle()).maxDoc();
                 }
                 result.ids[i] = new ItemId(sourceId, atomicSource.getId(docs[i] - baseDoc));
             }

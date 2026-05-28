@@ -10,7 +10,6 @@ import java.util.Set;
 import javax.xml.XMLConstants;
 
 import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.html.HtmlParser;
 import org.apache.tika.sax.ContentHandlerDecorator;
 import org.ccil.cowan.tagsoup.HTMLSchema;
 import org.ccil.cowan.tagsoup.Schema;
@@ -55,8 +54,7 @@ public class IndentityHtmlParser {
      * Content handler decorator that downgrades XHTML elements to old-style HTML
      * elements before passing them on to the decorated content handler. This
      * downgrading consists of dropping all namespaces (and namespaced attributes)
-     * and uppercasing all element names. Used by the {@link HtmlParser} to make all
-     * incoming HTML look the same.
+     * and uppercasing all element names.
      * 
      * Copied from org.apache.tika.parser.html.XHTMLDowngradeHandler with some
      * adjusts: - drop HTML elements - drop BODY elements - drop HEAD elements

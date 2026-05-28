@@ -119,11 +119,15 @@ public class AudioViewer extends AbstractViewer {
     }
 
     private String generatePreview(IItemReader item) {
-        String transcription = item.getMetadata().get(transcriptionAttr);
+        Object metadataObj = item.getMetadata();
+        if (!(metadataObj instanceof org.apache.tika.metadata.Metadata metadata)) {
+            return "";
+        }
+        String transcription = metadata.get(transcriptionAttr);
 
         String strConfidence = null;
         if (transcription != null) {
-            String conf = item.getMetadata().get(transcriptionConfidenceAttr);
+            String conf = metadata.get(transcriptionConfidenceAttr);
             if (conf != null && !conf.isBlank()) {
                 try {
                     double c = Double.parseDouble(conf);
@@ -135,7 +139,7 @@ public class AudioViewer extends AbstractViewer {
         }
 
         String strDuration = null;
-        String duration = item.getMetadata().get(audioDurationAttr);
+        String duration = metadata.get(audioDurationAttr);
         if (duration != null && !duration.isBlank()) {
             try {
                 double d = Double.parseDouble(duration);

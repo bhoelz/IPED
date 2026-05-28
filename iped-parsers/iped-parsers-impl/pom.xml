@@ -201,6 +201,11 @@
             <artifactId>iped-parser-database-edb</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-parser-browsers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>net.sf.sevenzipjbinding</groupId>
 			<artifactId>sevenzipjbinding</artifactId>
@@ -304,6 +309,18 @@
 
     <build>
     	<plugins>
+    		<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
     		<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>

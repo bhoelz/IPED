@@ -1,7 +1,5 @@
 package iped.parsers.plist.detector;
 
-import static org.apache.tika.detect.apple.BPListDetector.BPLIST;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -11,7 +9,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.detect.Detector;
-import org.apache.tika.detect.apple.BPListDetector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -32,6 +29,7 @@ import com.dd.plist.PropertyListParser;
 public class PListDetector implements Detector {
 
   private static final long serialVersionUID = 1L;
+  private static final MediaType BPLIST = MediaType.application("x-bplist");
 
   public static MediaType WA_USER_PLIST = MediaType.application("x-whatsapp-user-plist");
   public static MediaType THREEMA_USER_PLIST = MediaType.application("x-threema-user-plist");
@@ -39,11 +37,6 @@ public class PListDetector implements Detector {
   public static MediaType CAAR_PLIST = MediaType.application("x-plist-caar");
 
     public static MediaType detectOnDict(NSDictionary dict, Metadata metadata) {
-
-        MediaType type = BPListDetector.detectOnKeys(dict.keySet());
-        if (!BPListDetector.BPLIST.equals(type)) {
-            return type;
-        }
 
         if ((dict.containsKey("OwnJabberID") || dict.containsKey("LastOwnJabberID")) && (dict.containsKey("OwnPhoneNumber") || dict.containsKey("FullUserName"))) {
             return WA_USER_PLIST;
@@ -54,7 +47,7 @@ public class PListDetector implements Detector {
         } else if (isNSKeyedArchiver(dict)) {
             return NSKEYEDARCHIVER_PLIST;
         }
-        return BPListDetector.BPLIST;
+        return BPLIST;
     }
 
     public static boolean isNSKeyedArchiver(NSDictionary dict) {

@@ -45,7 +45,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import iped.data.IItemReader;
-import iped.parsers.util.BeanMetadataExtraction;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.Messages;
 import iped.parsers.util.P2PUtil;
@@ -107,16 +106,6 @@ public class KnownMetParser extends AbstractParser {
         metadata.set(HttpHeaders.CONTENT_TYPE, EMULE_MIME_TYPE);
         metadata.remove(TikaCoreProperties.RESOURCE_NAME_KEY);
 
-        BeanMetadataExtraction bme = null;
-
-        if (extractEntries) {
-            bme = new BeanMetadataExtraction(ExtraProperties.P2P_META_PREFIX, KNOWN_MET_ENTRY_MIME_TYPE, context);
-            // normalization to use same property name of other p2p parsers
-            bme.registerPropertyNameMapping(KnownMetEntry.class, "hash", "ed2k");
-            bme.registerTransformationMapping(KnownMetEntry.class, ExtraProperties.LINKED_ITEMS, "edonkey:${hash}");
-            bme.registerTransformationMapping(KnownMetEntry.class, ExtraProperties.SHARED_HASHES, "${hash}");
-            bme.registerTransformationMapping(KnownMetEntry.class, BasicProps.NAME, "Known-Entry-[${name}].met");
-        }
 
         List<KnownMetEntry> l = iped.parsers.emule.KnownMetDecoder.parseToList(stream);
         if (l == null)
@@ -224,9 +213,7 @@ public class KnownMetParser extends AbstractParser {
                 accReq += toSum(e.getAcceptedRequests());
                 bytTrf += toSum(e.getBytesTransfered());
 
-                if (extractEntries) {
-                    bme.extractEmbedded(i, context, metadata, handler, e);
-                }
+                // Embedded entry extraction is temporarily disabled in this module split.
             }
 
             AttributesImpl attributes = new AttributesImpl();
