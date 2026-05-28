@@ -49,7 +49,7 @@ public class SetTypeTask extends AbstractTask {
         if (!origExt.isEmpty()) {
             origExt = "." + origExt;
         }
-        MediaType mediaType = evidence.getMediaType();
+        MediaType mediaType = (MediaType) evidence.getMediaType();
         String ext = Util.getTrueExtension(origExt, mediaType);
         return ext;
 

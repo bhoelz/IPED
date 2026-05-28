@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.input.TaggedInputStream;
+import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,7 +220,7 @@ public class EmbeddedDiskProcessTask extends AbstractTask {
                 item.setExtraAttribute(ParsingTaskSupport.NUM_SUBITEMS, numSubitems);
             }
             if (reader.hasDecodingError()) {
-                item.getMetadata().set(StandardParser.PARSER_EXCEPTION, Boolean.TRUE.toString());
+                ((Metadata) item.getMetadata()).set(StandardParser.PARSER_EXCEPTION, Boolean.TRUE.toString());
                 StandardParser.incParsingErrors();
             } else {
                 ((Item) item).setParsedTextCache(new TextCache());

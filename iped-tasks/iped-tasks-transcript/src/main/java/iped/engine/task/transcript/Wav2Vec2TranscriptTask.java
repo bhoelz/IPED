@@ -13,7 +13,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.grizzly.utils.Charsets;
+import java.nio.charset.StandardCharsets;
 
 import iped.configuration.IConfigurationDirectory;
 import iped.engine.config.AudioTranscriptConfig;
@@ -220,7 +220,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
     protected void terminateServer(Server server) throws InterruptedException {
         Process process = server.process;
         try {
-            process.getOutputStream().write(TERMINATE.getBytes(Charsets.UTF8_CHARSET));
+            process.getOutputStream().write(TERMINATE.getBytes(StandardCharsets.UTF_8));
             process.getOutputStream().write(NEW_LINE);
             process.getOutputStream().flush();
         } catch (IOException e) {
@@ -236,7 +236,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
 
     protected boolean ping(Server server) {
         try {
-            server.process.getOutputStream().write(PING.getBytes(Charsets.UTF8_CHARSET));
+            server.process.getOutputStream().write(PING.getBytes(StandardCharsets.UTF_8));
             server.process.getOutputStream().write(NEW_LINE);
             server.process.getOutputStream().flush();
             if (PING.equals(server.reader.readLine())) {

@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.mime.MediaType;
 
+import org.apache.tika.metadata.Metadata;
+
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -74,15 +76,15 @@ public class JumpListTask extends AbstractTask {
                 String appID = StringUtils.removeEnd(parentName, AUTOMATIC_DESTINATIONS_SUFIX);
                 appID = StringUtils.removeEnd(appID, CUSTOM_DESTINATIONS_SUFIX);
                 appID = appID.toLowerCase();
-                evidence.getMetadata().set(JUMPLIST_META_PREFIX + "appID", appID);
+                ((Metadata) evidence.getMetadata()).set(JUMPLIST_META_PREFIX + "appID", appID);
 
                 String appName = jumpListAppIDsConfig.getConfiguration().get(appID);
                 if (appName != null) {
-                    evidence.getMetadata().set(JUMPLIST_META_PREFIX + "appName", appName);
+                    ((Metadata) evidence.getMetadata()).set(JUMPLIST_META_PREFIX + "appName", appName);
                 }
 
                 String linkQuery = QueryBuilder.escape(JUMPLIST_PROGRAM_APP_IDS) + ":" + appID;
-                evidence.getMetadata().add(ExtraProperties.LINKED_ITEMS, linkQuery);
+                ((Metadata) evidence.getMetadata()).add(ExtraProperties.LINKED_ITEMS, linkQuery);
             }
         }
     }
@@ -97,7 +99,7 @@ public class JumpListTask extends AbstractTask {
                 for (String appID : appIDs) {
 
                     // add appID
-                    evidence.getMetadata().add(JUMPLIST_PROGRAM_APP_IDS, appID);
+                    ((Metadata) evidence.getMetadata()).add(JUMPLIST_PROGRAM_APP_IDS, appID);
 
                     // increment the known appIDs map
                     jumpListAppIDsConfig.getConfiguration().putIfAbsent(appID, evidence.getName());

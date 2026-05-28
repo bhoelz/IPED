@@ -170,7 +170,7 @@ public class LedCarveTask extends BaseCarveTask {
 
     protected void process(IItem evidence) throws Exception {
         // Verifica se está desabilitado e se o tipo de arquivo é tratado
-        if (!taskEnabled || caseData.isIpedReport() || !isAcceptedType(evidence.getMediaType()) || !isToProcess(evidence)) return;
+        if (!taskEnabled || caseData.isIpedReport() || !isAcceptedType((MediaType) evidence.getMediaType()) || !isToProcess(evidence)) return;
 
         byte[] buf512 = new byte[512];
         byte[] buf64K = new byte[65536 - buf512.length];

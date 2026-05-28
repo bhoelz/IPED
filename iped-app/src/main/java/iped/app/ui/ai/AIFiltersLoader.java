@@ -86,7 +86,7 @@ public class AIFiltersLoader {
                 IndexSearcher indexSearcher = source.getSearcher();
                 String property = node.getProperty().replaceAll("\\\\", "");
                 for (int id : ids) {
-                    Document doc = indexSearcher.doc(id);
+                    Document doc = indexSearcher.storedFields().document(id);
                     String[] val = doc.getValues(property);
                     for (String v : val) {
                         Integer cnt = values.get(v);

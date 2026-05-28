@@ -13,6 +13,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SortOrder;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.tika.metadata.Metadata;
 
 import iped.data.IItemId;
@@ -117,7 +118,7 @@ public class GetResultsKMLWorker extends iped.viewers.api.CancelableWorker<KMLRe
                 }
 
                 int luceneId = app.getIPEDSource().getLuceneId(item);
-                doc = app.getIPEDSource().getSearcher().doc(luceneId);
+                doc = ((IndexSearcher) app.getIPEDSource().getIndexSearcherHandle()).storedFields().document(luceneId);
 
                 String lat;
                 String longit;

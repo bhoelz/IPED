@@ -18,6 +18,7 @@ import javax.swing.SortOrder;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.tika.metadata.Metadata;
 import org.roaringbitmap.RoaringBitmap;
 
@@ -186,7 +187,7 @@ public class GetResultsJSWorker extends iped.viewers.api.CancelableWorker<KMLRes
                         try {
 
                             int luceneId = app.getIPEDSource().getLuceneId(item);
-                            Document doc = app.getIPEDSource().getSearcher().doc(luceneId);
+                            Document doc = ((IndexSearcher) app.getIPEDSource().getIndexSearcherHandle()).storedFields().document(luceneId);
 
                             String[] locations = doc.getValues(ExtraProperties.LOCATIONS);
 
@@ -396,7 +397,7 @@ public class GetResultsJSWorker extends iped.viewers.api.CancelableWorker<KMLRes
                             lastResultBitmap[item.getSourceId()].add(item.getId());
 
                             int luceneId = app.getIPEDSource().getLuceneId(item);
-                            Document doc = app.getIPEDSource().getSearcher().doc(luceneId);
+                            Document doc = ((IndexSearcher) app.getIPEDSource().getIndexSearcherHandle()).storedFields().document(luceneId);
 
                             String lat;
                             String longit;

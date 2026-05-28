@@ -60,7 +60,7 @@ public class SignatureTask extends AbstractTask {
             evidence.setMediaType(MediaType.OCTET_STREAM);
         }
 
-        MediaType type = evidence.getMediaType();
+        MediaType type = (MediaType) evidence.getMediaType();
         if (type == null) {
             Metadata metadata = new Metadata();
             metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, evidence.getName());
@@ -68,7 +68,7 @@ public class SignatureTask extends AbstractTask {
                 if (processFileSignatures) {
                     TikaInputStream tis = null;
                     try {
-                        tis = evidence.getTikaStream();
+                        tis = (TikaInputStream) evidence.getTikaStream();
                         // See https://github.com/sepinf-inc/IPED/issues/2356
                         setInputStreamFactory(tis, evidence);
 

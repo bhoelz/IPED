@@ -52,7 +52,7 @@ public class StartsWithFilter extends ValueFilter {
         } else if (docValuesSet != null) {
             if (docValuesSet.advanceExact(doc)) {
                 long ord;
-                while ((ord = docValuesSet.nextOrd()) != SortedSetDocValues.NO_MORE_ORDS) {
+                while ((ord = docValuesSet.nextOrd()) != -1L) {
                     if (ord >= refOrd && ord < stopOrd) {
                         return true;
                     }

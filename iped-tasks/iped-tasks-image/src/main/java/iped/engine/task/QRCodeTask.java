@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
 
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +122,7 @@ public class QRCodeTask extends AbstractTask {
     @Override
     protected void process(IItem evidence) throws Exception {
         if (!taskEnabled || !evidence.isToAddToCase() || evidence.getHash() == null
-                || !MetadataUtil.isImageType(evidence.getMediaType())) {
+                || !MetadataUtil.isImageType((MediaType) evidence.getMediaType())) {
             return;
         }
         BufferedImage img = null;

@@ -224,7 +224,7 @@ public class TextParser extends CancelableWorker implements ITextParser {
             // this can cause ConcurrentModificationException if another viewer access
             // metadata at same time
             // Metadata metadata = item.getMetadata();
-            Metadata metadata = MetadataUtil.clone(item.getMetadata());
+            Metadata metadata = MetadataUtil.clone((Metadata) item.getMetadata());
 
             ParsingTaskSupport.fillMetadata(item, metadata);
 

@@ -3,6 +3,8 @@ package iped.engine.task;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.tika.mime.MediaType;
+
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -99,7 +101,7 @@ public class FragmentLargeBinaryTask extends BaseCarveTask {
 
     private void addFragmentFile(IItem parentEvidence, long off, long len, int fragNum, TextCache textCache) {
         String name = parentEvidence.getName() + "_" + fragNum; //$NON-NLS-1$
-        Item fragFile = getOffsetFile(parentEvidence, off, len, name, parentEvidence.getMediaType());
+        Item fragFile = getOffsetFile(parentEvidence, off, len, name, (MediaType) parentEvidence.getMediaType());
         configureOffsetItem(parentEvidence, fragFile, off);
         fragFile.setExtension(parentEvidence.getExt());
         fragFile.setAccessDate(parentEvidence.getAccessDate());

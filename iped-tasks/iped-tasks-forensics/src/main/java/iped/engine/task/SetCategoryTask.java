@@ -21,6 +21,8 @@ package iped.engine.task;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.tika.mime.MediaType;
+
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.CategoryConfig;
@@ -59,7 +61,7 @@ public class SetCategoryTask extends AbstractTask {
         if (e.isDir()) {
             e.setCategory(FOLDER_CATEGORY);
         } else {
-            String category = categoryConfig.getCategory(e.getMediaType());
+            String category = categoryConfig.getCategory((MediaType) e.getMediaType());
             e.setCategory(category);
         }
 

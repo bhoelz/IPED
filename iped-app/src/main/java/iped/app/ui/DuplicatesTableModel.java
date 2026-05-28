@@ -47,7 +47,7 @@ public class DuplicatesTableModel extends BaseTableModel {
     public Object getValueAt(int row, int col) {
         if (col == 3) {
             try {
-                Document doc = App.get().appCase.getSearcher().doc(results.getLuceneIds()[row]);
+                Document doc = App.get().appCase.getSearcher().storedFields().document(results.getLuceneIds()[row]);
                 return doc.get(IndexItem.PATH);
             } catch (Exception e) {
             }

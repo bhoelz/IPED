@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
+import org.apache.pdfbox.io.RandomAccessInputStream;
+import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
 
 import iped.app.timelinegraph.cache.persistance.CachePersistance;
 
@@ -40,7 +41,7 @@ public class TimeIndexedMap extends HashMap<String, Set<CacheTimePeriodEntry>> {
         this.monthIndexCacheFiles.put(string, new File(new File(f, string), "1"));
 
         int committed = 0;
-        try (RandomAccessBufferedFileInputStream lcacheSfis = new RandomAccessBufferedFileInputStream(cacheFile); DataInputStream lcacheDis = new DataInputStream(lcacheSfis)) {
+        try (RandomAccessReadBufferedFile lcacheSfis = new RandomAccessReadBufferedFile(cacheFile); DataInputStream lcacheDis = new DataInputStream(new RandomAccessInputStream(lcacheSfis))) {
             committed = lcacheDis.readShort();
         }
         if (committed != 1) {
@@ -52,18 +53,18 @@ public class TimeIndexedMap extends HashMap<String, Set<CacheTimePeriodEntry>> {
     Date lastStartDate = null;
     Date lastEndDate = null;
 
-    public RandomAccessBufferedFileInputStream getTmpCacheSfis(String className) throws IOException {
+    public RandomAccessReadBufferedFile getTmpCacheSfis(String className) throws IOException {
         File f = cacheFiles.get(className);
         if (f != null) {
-            return new RandomAccessBufferedFileInputStream(f);
+            return new RandomAccessReadBufferedFile(f);
         } else {
             return null;
         }
     }
 
-    public ResultIterator iterator(String className, RandomAccessBufferedFileInputStream lcacheSfis, Date startDate, Date endDate) {
+    public ResultIterator iterator(String className, RandomAccessReadBufferedFile lcacheSfis, Date startDate, Date endDate) {
         try {
-            DataInputStream lcacheDis = new DataInputStream(lcacheSfis);
+            DataInputStream lcacheDis = new DataInputStream(new RandomAccessInputStream(lcacheSfis));
 
             // skips header
             lcacheSfis.seek(2l);
@@ -133,7 +134,7 @@ public class TimeIndexedMap extends HashMap<String, Set<CacheTimePeriodEntry>> {
         int cacheCurrentIndex = 0;// current index being iterated (sum with startIndex to identify correspondent
                                   // cache array index)
         private CacheTimePeriodEntry[] lcache;// cache array to iterate
-        private RandomAccessBufferedFileInputStream lcacheSfis;// seekable stream to index file (to read from when entry not in cache)
+        private RandomAccessReadBufferedFile lcacheSfis;// seekable stream to index file (to read from when entry not in cache)
         private DataInputStream lcacheDis;// data parser stream to same above index file
         private TreeMap<Long, Integer> lcacheIndexes;
         private long startDate = 0;
@@ -151,7 +152,7 @@ public class TimeIndexedMap extends HashMap<String, Set<CacheTimePeriodEntry>> {
                                    // from position in file)
         private long startPos;// start position in file to iterate
 
-        public ResultIterator(long pos, Integer startIndex, TimelineCache timelineCache, RandomAccessBufferedFileInputStream lcacheSfis, DataInputStream lcacheDis, long endDate, String className) {
+        public ResultIterator(long pos, Integer startIndex, TimelineCache timelineCache, RandomAccessReadBufferedFile lcacheSfis, DataInputStream lcacheDis, long endDate, String className) {
             this.startPos = pos;
             this.startIndex = startIndex;
             this.lcache = timelineCache.caches.get(className);

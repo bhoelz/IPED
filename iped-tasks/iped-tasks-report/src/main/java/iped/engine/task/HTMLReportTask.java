@@ -22,6 +22,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import org.apache.tika.mime.MediaType;
+
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
@@ -384,8 +386,8 @@ public class HTMLReportTask extends AbstractTask {
                 reg.export = null;
             }
         }
-        reg.isImage = MetadataUtil.isImageType(evidence.getMediaType());
-        reg.isVideo = MetadataUtil.isVideoType(evidence.getMediaType());
+        reg.isImage = MetadataUtil.isImageType((MediaType) evidence.getMediaType());
+        reg.isVideo = MetadataUtil.isVideoType((MediaType) evidence.getMediaType());
         reg.length = evidence.getLength();
         reg.ext = evidence.getExt();
         reg.hash = evidence.getHash();
@@ -1003,7 +1005,7 @@ public class HTMLReportTask extends AbstractTask {
     }
 
     private static boolean isJpeg(IItem item) {
-        return item.getMediaType().getSubtype().startsWith("jpeg");
+        return ((MediaType) item.getMediaType()).getSubtype().startsWith("jpeg");
     }
 
     private static void replace(StringBuilder sb, String a, String b) {

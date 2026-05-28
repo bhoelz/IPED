@@ -23,7 +23,7 @@ import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
+import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
 import org.jfree.chart.event.PlotChangeEvent;
 import org.jfree.chart.util.Args;
 import org.jfree.chart.util.PublicCloneable;
@@ -380,7 +380,7 @@ public class IpedTimelineDataset extends AbstractIntervalXYDataset implements Cl
                     cacheWindowEndDate = new Date(ipedChartsPanel.getChartPanel().removeNextFromDatePart(endDate).getTime() - 1);
                 }
 
-                try (RandomAccessBufferedFileInputStream sfis = a.getTmpCacheSfis(className)) {
+                try (RandomAccessReadBufferedFile sfis = a.getTmpCacheSfis(className)) {
                     if (sfis != null) {
                         Iterator<CacheTimePeriodEntry> it = a.iterator(className, sfis, startDate, endDate);
                         while (it != null && it.hasNext()) {
@@ -1046,7 +1046,7 @@ public class IpedTimelineDataset extends AbstractIntervalXYDataset implements Cl
         try {
             MultiSearchResult resultSet = (MultiSearchResult) csf.get();
             List<IItemId> result = new ArrayList<IItemId>();
-            LeafReader reader = resultsProvider.getIPEDSource().getLeafReader();
+            LeafReader reader = (LeafReader) resultsProvider.getIPEDSource().getLeafIndexReader();
             String eventField = ipedChartsPanel.getTimeEventColumnName(eventType);
             SortedSetDocValues values = reader.getSortedSetDocValues(eventField);
             if (values != null) {
@@ -1064,7 +1064,7 @@ public class IpedTimelineDataset extends AbstractIntervalXYDataset implements Cl
                     boolean found = false;
                     if (doc != DocIdSetIterator.NO_MORE_DOCS) {
                         int ord = (int) values.nextOrd();
-                        while (ord != SortedSetDocValues.NO_MORE_ORDS) {
+                        while (ord != -1) {
                             String timeStr = EventTimestampCache.cloneBr(values.lookupOrd(ord));
                             if (timeStr.isEmpty()) {
                                 continue;
@@ -1096,7 +1096,7 @@ public class IpedTimelineDataset extends AbstractIntervalXYDataset implements Cl
                     boolean found = false;
                     if (doc != DocIdSetIterator.NO_MORE_DOCS) {
                         int ord = (int) svalues.ordValue();
-                        if (ord != SortedSetDocValues.NO_MORE_ORDS) {
+                        if (ord != -1) {
                             String timeStr = EventTimestampCache.cloneBr(svalues.lookupOrd(ord));
                             if (timeStr.isEmpty()) {
                                 continue;

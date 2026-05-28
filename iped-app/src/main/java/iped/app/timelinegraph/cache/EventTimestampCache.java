@@ -47,7 +47,7 @@ public class EventTimestampCache implements Runnable {
     }
 
     public void run() {
-        LeafReader reader = resultsProvider.getIPEDSource().getLeafReader();
+        LeafReader reader = (LeafReader) resultsProvider.getIPEDSource().getLeafIndexReader();
 
         IndexTimeStampCache timeStampCache = (IndexTimeStampCache) this.timeStampCache;
 
@@ -68,7 +68,7 @@ public class EventTimestampCache implements Runnable {
                     int doc = values.nextDoc();
                     while (doc != DocIdSetIterator.NO_MORE_DOCS) {
                         int ord = (int) values.nextOrd();
-                        while (ord != SortedSetDocValues.NO_MORE_ORDS) {
+                        while (ord != -1) {
                             if (emptyValueOrd == null || ord != emptyValueOrd) {
                                 for (Class<? extends TimePeriod> timePeriodClass : timeStampCache.getPeriodClassesToCache()) {
                                     Date date = null;

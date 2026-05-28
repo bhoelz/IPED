@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteConfig.SynchronousMode;
 
+import org.apache.tika.metadata.Metadata;
+
 import iped.configuration.Configurable;
 import iped.configuration.IConfigurationDirectory;
 import iped.data.IItem;
@@ -381,8 +383,8 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
 
         TextAndScore prevResult = getTextFromDb(hash);
         if (prevResult != null) {
-            evidence.getMetadata().set(ExtraProperties.CONFIDENCE_ATTR, Double.toString(prevResult.score));
-            evidence.getMetadata().set(ExtraProperties.TRANSCRIPT_ATTR, prevResult.text);
+            ((Metadata) evidence.getMetadata()).set(ExtraProperties.CONFIDENCE_ATTR, Double.toString(prevResult.score));
+            ((Metadata) evidence.getMetadata()).set(ExtraProperties.TRANSCRIPT_ATTR, prevResult.text);
             return;
         }
 
@@ -405,8 +407,8 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
             TextAndScore result = transcribeAudio(tmpFile);
             transcriptionTime.addAndGet(System.currentTimeMillis() - t);
             if (result != null) {
-                evidence.getMetadata().set(ExtraProperties.CONFIDENCE_ATTR, Double.toString(result.score));
-                evidence.getMetadata().set(ExtraProperties.TRANSCRIPT_ATTR, result.text);
+                ((Metadata) evidence.getMetadata()).set(ExtraProperties.CONFIDENCE_ATTR, Double.toString(result.score));
+                ((Metadata) evidence.getMetadata()).set(ExtraProperties.TRANSCRIPT_ATTR, result.text);
                 storeTextInDb(evidence.getHash(), result.text, result.score);
                 transcriptionSuccess.incrementAndGet();
                 if (result.text != null) {

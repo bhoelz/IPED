@@ -57,6 +57,9 @@ import iped.data.IItem;
 import iped.data.IItemReader;
 import iped.engine.config.CategoryToExpandConfig;
 import iped.engine.config.ConfigurationManager;
+import iped.engine.config.ExternalParsersConfig;
+import iped.engine.config.OCRConfig;
+import iped.engine.config.ParsersConfig;
 import iped.engine.config.ParsingTaskConfig;
 import iped.engine.config.SplitLargeBinaryConfig;
 import iped.engine.core.Manager;
@@ -245,7 +248,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
     }
 
     private void fillMetadata(IItem evidence) {
-        fillMetadata(evidence, evidence.getMetadata());
+        fillMetadata(evidence, (Metadata) evidence.getMetadata());
     }
 
     public static void fillMetadata(IItem evidence, Metadata metadata) {
@@ -271,7 +274,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
 
         fillMetadata(evidence);
 
-        Parser parser = autoParser.getLeafParser(evidence.getMetadata());
+        Parser parser = autoParser.getLeafParser((Metadata) evidence.getMetadata());
         if (parser instanceof EmptyParser) {
             setEmptyTextCache(evidence);
             return;
@@ -322,7 +325,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
     }
 
     public static boolean hasSpecificParser(StandardParser autoParser, IItem evidence) {
-        return autoParser.hasSpecificParser(evidence.getMetadata());
+        return autoParser.hasSpecificParser((Metadata) evidence.getMetadata());
     }
 
     private void safeProcess() throws Exception {
@@ -337,7 +340,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
 
         TikaInputStream tis = null;
         try {
-            tis = evidence.getTikaStream();
+            tis = (TikaInputStream) evidence.getTikaStream();
 
         } catch (IOException e) {
             LOGGER.warn("{} Error opening: {} {}", Thread.currentThread().getName(), evidence.getPath(), e.toString()); //$NON-NLS-1$
@@ -355,9 +358,9 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
             }
         }
 
-        Metadata metadata = evidence.getMetadata();
+        Metadata metadata = (Metadata) evidence.getMetadata();
 
-        if (typesToCheckZipBomb.contains(evidence.getMediaType())) {
+        if (typesToCheckZipBomb.contains((MediaType) evidence.getMediaType())) {
             zipBombStatsMap.put(evidence.getId(), new ZipBombStats(evidence.getLength()));
         }
 
@@ -399,7 +402,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
 
     private final void handleMetadata(IItem evidence) {
         // Ajusta metadados:
-        Metadata metadata = evidence.getMetadata();
+        Metadata metadata = (Metadata) evidence.getMetadata();
         if (metadata.get(StandardParser.ENCRYPTED_DOCUMENT) != null) {
             evidence.setExtraAttribute(ParsingTask.ENCRYPTED, "true"); //$NON-NLS-1$
             metadata.remove(StandardParser.ENCRYPTED_DOCUMENT);
@@ -410,7 +413,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
             int charCount = Integer.parseInt(value);
             evidence.setExtraAttribute(OCRParser.OCR_CHAR_COUNT, charCount);
             metadata.remove(OCRParser.OCR_CHAR_COUNT);
-            if (charCount >= 100 && MetadataUtil.isImageType(evidence.getMediaType())) {
+            if (charCount >= 100 && MetadataUtil.isImageType((MediaType) evidence.getMediaType())) {
                 evidence.setCategory(SetCategoryTask.SCANNED_CATEGORY);
             }
         }
@@ -447,7 +450,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
 
         String compressRatio = evidence.getMetadataValue(EntropyTask.COMPRESS_RATIO);
         if (compressRatio != null) {
-            evidence.getMetadata().remove(EntropyTask.COMPRESS_RATIO);
+            ((Metadata) evidence.getMetadata()).remove(EntropyTask.COMPRESS_RATIO);
             evidence.setExtraAttribute(EntropyTask.COMPRESS_RATIO, Double.valueOf(compressRatio));
         }
     }
@@ -456,8 +459,8 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
     public boolean shouldParseEmbedded(Metadata subitemMeta) {
 
         // do not extract images from html generated previews
-        if (evidence != null && !MetadataUtil.isHtmlMediaType(evidence.getMediaType())
-                && MetadataUtil.isHtmlSubType(evidence.getMediaType())) {
+        if (evidence != null && !MetadataUtil.isHtmlMediaType((MediaType) evidence.getMediaType())
+                && MetadataUtil.isHtmlSubType((MediaType) evidence.getMediaType())) {
             String type = subitemMeta == null ? null : subitemMeta.get(Metadata.CONTENT_TYPE);
             if (type != null && type.startsWith("image")) //$NON-NLS-1$
                 return false;

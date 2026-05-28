@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,10 +95,10 @@ public class PhotoDNATask extends AbstractTask {
             return;
 
         boolean isAnimationImage = MetadataUtil.isAnimationImage(evidence);
-        if (MetadataUtil.isImageType(evidence.getMediaType()) && !isAnimationImage) {
+        if (MetadataUtil.isImageType((MediaType) evidence.getMediaType()) && !isAnimationImage) {
             processImage(evidence);
 
-        } else if (MetadataUtil.isVideoType(evidence.getMediaType()) || isAnimationImage) {
+        } else if (MetadataUtil.isVideoType((MediaType) evidence.getMediaType()) || isAnimationImage) {
             processVideo(evidence);
         }
     }

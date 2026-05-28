@@ -138,7 +138,7 @@ public abstract class BaseCarveTask extends AbstractTask {
 
     protected boolean isToProcess(IItem evidence) {
         if (evidence.isCarved() || evidence.getExtraAttribute(BaseCarveTask.FILE_FRAGMENT) != null
-                || !carverConfig.isToProcess(evidence.getMediaType())) {
+                || !carverConfig.isToProcess((MediaType) evidence.getMediaType())) {
             return false;
         }
         return true;

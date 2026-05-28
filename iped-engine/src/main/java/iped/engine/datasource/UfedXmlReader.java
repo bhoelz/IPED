@@ -198,7 +198,7 @@ public class UfedXmlReader extends DataSourceReader {
         return null;
     }
 
-    private boolean entryExists(String entryPath) {
+    private boolean entryExists(String entryPath) throws IOException {
         if (ufdrFile != null) {
             return getUISF().entryExists(entryPath);
         } else {
@@ -206,7 +206,7 @@ public class UfedXmlReader extends DataSourceReader {
         }
     }
 
-    private UFDRInputStreamFactory getUISF() {
+    private UFDRInputStreamFactory getUISF() throws IOException {
         if (uisf == null) {
             synchronized (uisfMap) {
                 uisf = uisfMap.get(ufdrFile);
@@ -1239,12 +1239,16 @@ public class UfedXmlReader extends DataSourceReader {
                     item.setLength(file.length());
                 }
             } else {
-                if (getUISF().entryExists(path)) {
-                    item.setLength(getUISF().getEntrySize(path));
-                    item.setInputStreamFactory(getUISF());
-                    path = UFDRInputStreamFactory.UFDR_PATH_PREFIX + path;
-                    String id = item.getIdInDataSource() != null ? item.getIdInDataSource() + "_" + path : path;
-                    item.setIdInDataSource(id);
+                try {
+                    if (getUISF().entryExists(path)) {
+                        item.setLength(getUISF().getEntrySize(path));
+                        item.setInputStreamFactory(getUISF());
+                        path = UFDRInputStreamFactory.UFDR_PATH_PREFIX + path;
+                        String id = item.getIdInDataSource() != null ? item.getIdInDataSource() + "_" + path : path;
+                        item.setIdInDataSource(id);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -1364,9 +1368,13 @@ double score = TaskRuntime.invokeVideoScoreList("iped.engine.task.die.DIETask", 
                 ufedId = ufdrPathToUfedId.get(extracted_path);
 
                 // If extracted path doesn't exist, replace non-existent extracted path by attached file's local path
-                if (!entryExists(extracted_path)) {
-                    // Replace extracted path by attached file's local path
-                    extracted_path = ufedFileIdToLocalPath.get(item.getMetadataValue(FILE_ID_ATTR));
+                try {
+                    if (!entryExists(extracted_path)) {
+                        // Replace extracted path by attached file's local path
+                        extracted_path = ufedFileIdToLocalPath.get(item.getMetadataValue(FILE_ID_ATTR));
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
 
                 // if extracted_path does not reference a ufedId, use the ufedId of attached file

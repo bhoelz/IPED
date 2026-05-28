@@ -141,7 +141,7 @@ public class KnownMetCarveTask extends BaseCarveTask {
 
     public void process(IItem evidence) {
         // Verifica se está desabilitado e se o tipo de arquivo é tratado
-        if (!taskEnabled || caseData.isIpedReport() || !isAcceptedType(evidence.getMediaType()))
+        if (!taskEnabled || caseData.isIpedReport() || !isAcceptedType((MediaType) evidence.getMediaType()))
             return;
 
         // Percorre conteúdo buscando padrões plausíveis de arquivos known.met

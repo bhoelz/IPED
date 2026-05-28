@@ -33,8 +33,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
 import iped.data.IItem;
+import iped.engine.hash.HashAlgorithm;
 import iped.engine.search.QueryBuilder;
-import iped.engine.task.HashTask;
 import iped.engine.task.jumplist.JumpListTask;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
@@ -60,11 +60,11 @@ public class ReferencedByTableModel extends BaseTableModel {
         String nameToScroll = null;
         if (refDoc != null) {
             if (KnownMetParser.EMULE_MIME_TYPE.equals(item.getMediaTypeString())) {
-                nameToScroll = refDoc.get(HashTask.HASH.EDONKEY.toString());
+                nameToScroll = refDoc.get(HashAlgorithm.EDONKEY.toString());
             } else if (AresParser.ARES_MIME_TYPE.equals(item.getMediaTypeString())) {
-                nameToScroll = refDoc.get(HashTask.HASH.SHA1.toString());
+                nameToScroll = refDoc.get(HashAlgorithm.SHA1.toString());
             } else if (ShareazaLibraryDatParser.LIBRARY_DAT_MIME_TYPE.equals(item.getMediaTypeString())) {
-                nameToScroll = refDoc.get(HashTask.HASH.MD5.toString());
+                nameToScroll = refDoc.get(HashAlgorithm.MD5.toString());
             } else {
                 nameToScroll = refDoc.get(BasicProps.HASH);
             }
@@ -84,10 +84,10 @@ public class ReferencedByTableModel extends BaseTableModel {
         QueryBuilder b = new QueryBuilder(App.get().appCase);
 
         // hashes
-        String md5 = doc.get(HashTask.HASH.MD5.toString());
-        String sha1 = doc.get(HashTask.HASH.SHA1.toString());
-        String sha256 = doc.get(HashTask.HASH.SHA256.toString());
-        String edonkey = doc.get(HashTask.HASH.EDONKEY.toString());
+        String md5 = doc.get(HashAlgorithm.MD5.toString());
+        String sha1 = doc.get(HashAlgorithm.SHA1.toString());
+        String sha256 = doc.get(HashAlgorithm.SHA256.toString());
+        String edonkey = doc.get(HashAlgorithm.EDONKEY.toString());
         String hashes = Arrays.asList(md5, sha1, sha256, edonkey).stream().filter(StringUtils::isNotBlank).collect(Collectors.joining(" "));
         if (!hashes.isEmpty()) {
             try {

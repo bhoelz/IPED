@@ -48,6 +48,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.mime.MediaType;
 import org.apache.tika.metadata.XMP;
 import org.apache.tika.metadata.XMPDM;
 import org.slf4j.Logger;
@@ -329,7 +330,7 @@ public class VideoThumbTask extends ThumbTask {
         }
 
         // Check if evidence type is handled (video or animated image) and has a hash value
-        if ((!MetadataUtil.isVideoType(evidence.getMediaType()) && !checkAnimatedImage(evidence)) || !evidence.isToAddToCase()
+        if ((!MetadataUtil.isVideoType((MediaType) evidence.getMediaType()) && !checkAnimatedImage(evidence)) || !evidence.isToAddToCase()
                 || evidence.getHashValue() == null) {
             return;
         }
@@ -356,7 +357,7 @@ public class VideoThumbTask extends ThumbTask {
                     VideoProcessResult r = processedVideos.get(evidence.getHash());
                     evidence.setExtraAttribute(HAS_THUMB, r.isSuccess());
                     if (r.isSuccess()) {
-                        saveMetadata(r, evidence.getMetadata());
+                        saveMetadata(r, (Metadata) evidence.getMetadata());
                         evidence.setHasPreview(true);
                         evidence.setPreviewExt(PREVIEW_EXT);
                         File thumbFile = getThumbFile(evidence);
@@ -444,7 +445,7 @@ public class VideoThumbTask extends ThumbTask {
             // Atualiza atributo HasThumb do item
             evidence.setExtraAttribute(HAS_THUMB, r.isSuccess());
             if (r.isSuccess()) {
-                saveMetadata(r, evidence.getMetadata());
+                saveMetadata(r, (Metadata) evidence.getMetadata());
                 evidence.setHasPreview(true);
                 evidence.setPreviewExt(PREVIEW_EXT);
             }
@@ -695,7 +696,7 @@ public class VideoThumbTask extends ThumbTask {
         
         if (numImages > 1) {
             // Set only for images with multiple animated frames
-            evidence.getMetadata().set(ExtraProperties.ANIMATION_FRAMES_PROP, String.valueOf(numImages));
+            ((Metadata) evidence.getMetadata()).set(ExtraProperties.ANIMATION_FRAMES_PROP, String.valueOf(numImages));
             return true;
         }
         return false;

@@ -80,6 +80,7 @@
                             <finalName>iped-webapi</finalName>
                             <outputDirectory>${lib.dir}</outputDirectory>
                             <forceCreation>true</forceCreation>
+                            <attach>false</attach>
                             <archive>
                                 <addMavenDescriptor>false</addMavenDescriptor>
                                 <manifest>

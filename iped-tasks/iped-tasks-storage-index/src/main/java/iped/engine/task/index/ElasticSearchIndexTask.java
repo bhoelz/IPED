@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.tika.metadata.Metadata;
+
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -699,7 +701,7 @@ public class ElasticSearchIndexTask extends AbstractTask {
     }
 
     private String[] getMetadataKeys(IItem item) {
-        return item.getMetadata().names();
+        return ((Metadata) item.getMetadata()).names();
     }
 
 }

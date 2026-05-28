@@ -287,7 +287,7 @@ public class MetadataSearch extends MetadataSearchable {
                     int doc = App.get().appCase.getLuceneId(item);
                     boolean adv = docValuesSet.advanceExact(doc);
                     long ord;
-                    while (adv && (ord = docValuesSet.nextOrd()) != SortedSetDocValues.NO_MORE_ORDS) {
+                    while (adv && (ord = docValuesSet.nextOrd()) != -1L) {
                         if (ordsToGet.contains((int) ord)) {
                             items.add(item);
                             scores.add(result.getScore(k));
@@ -644,7 +644,7 @@ public class MetadataSearch extends MetadataSearchable {
                     int doc = App.get().appCase.getLuceneId(item);
                     boolean adv = docValuesSet.advanceExact(doc);
                     long ord, prevOrd = -1;
-                    while (adv && (ord = docValuesSet.nextOrd()) != SortedSetDocValues.NO_MORE_ORDS) {
+                    while (adv && (ord = docValuesSet.nextOrd()) != -1L) {
                         if (prevOrd != ord)
                             valueCount[(int) ord]++;
                         prevOrd = ord;

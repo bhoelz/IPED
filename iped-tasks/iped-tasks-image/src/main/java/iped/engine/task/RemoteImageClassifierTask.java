@@ -51,6 +51,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.tika.io.TemporaryResources;
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -814,7 +815,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
 
         // 'name' is a key to map to the evidence
         String name = evidence.getExtraAttribute(IndexItem.TRACK_ID).toString() + ".jpg";
-        if (MetadataUtil.isVideoType(evidence.getMediaType()) || MetadataUtil.isAnimationImage(evidence)) {
+        if (MetadataUtil.isVideoType((MediaType) evidence.getMediaType()) || MetadataUtil.isAnimationImage(evidence)) {
             // For videos, call the detection method for each extracted frame image (VideoThumbsTask must be enabled)
             File viewFile = evidence.getViewFile();
             List<BufferedImage> frames = null;

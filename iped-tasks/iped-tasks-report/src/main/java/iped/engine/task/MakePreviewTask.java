@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import org.apache.tika.mime.MediaType;
+
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.data.IItemReader;
@@ -157,7 +159,7 @@ public class MakePreviewTask extends AbstractTask {
         ParsingTaskSupport.fillMetadata(evidence, metadata);
 
         // Não é necessário fechar tis pois será fechado em evidence.dispose()
-        final TikaInputStream tis = evidence.getTikaStream();
+        final TikaInputStream tis = (TikaInputStream) evidence.getTikaStream();
 
         final ParseContext context = new ParseContext();
         IItemSearcher itemSearcher = (IItemSearcher) caseData.getCaseObject(IItemSearcher.class.getName());
@@ -192,7 +194,7 @@ public class MakePreviewTask extends AbstractTask {
         }
         final ProgressContentHandler pch = new ProgressContentHandler(handler);
 
-        if (QueuesProcessingOrder.getProcessingQueue(evidence.getMediaType()) == 0) {
+        if (QueuesProcessingOrder.getProcessingQueue((MediaType) evidence.getMediaType()) == 0) {
             parser.setCanUseForkParser(true);
         } else {
             parser.setCanUseForkParser(false);

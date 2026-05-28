@@ -49,7 +49,7 @@ public class PathToGuidConverterTest {
     public void testUserProfileDesktopPath() {
         String path = "%USERPROFILE%\\Desktop\\shortcut.lnk";
         List<String> result = converter.pathsWithKnownFolderIds(path);
-        
+
         assertEquals("Should return 1 GUID path for %USERPROFILE%\\Desktop", 1, result.size());
         assertEquals("Incorrect GUID for FOLDERID_Desktop", "{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}\\shortcut.lnk", result.get(0));
     }
@@ -107,7 +107,7 @@ public class PathToGuidConverterTest {
         List<String> result = converter.pathsWithKnownFolderIds(path);
         assertThat(result, is(empty()));
     }
-    
+
     @Test
     public void testPathKeyIsEntirePath() {
         String path = "%USERPROFILE%";

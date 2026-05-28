@@ -178,8 +178,8 @@ public class DocThumbTask extends ThumbTask {
     protected void process(IItem item) throws Exception {
         if (!isEnabled() 
                 || !item.isToAddToCase()
-                || ((externalParsingEnabled || !docThumbsConfig.isPdfEnabled() || !isPdfType(item.getMediaType()))
-                        && (!docThumbsConfig.isLoEnabled() || !isLibreOfficeType(item.getMediaType())))
+                || ((externalParsingEnabled || !docThumbsConfig.isPdfEnabled() || !isPdfType((MediaType) item.getMediaType()))
+                        && (!docThumbsConfig.isLoEnabled() || !isLibreOfficeType((MediaType) item.getMediaType())))
                 || item.getHashValue() == null 
                 || item.getThumb() != null
                 || item.getExtraAttribute(BaseCarveTask.FILE_FRAGMENT) != null) {
@@ -189,7 +189,7 @@ public class DocThumbTask extends ThumbTask {
         if (hasThumb(item, thumbFile)) {
             return;
         }
-        if (isPdfType(item.getMediaType())) {
+        if (isPdfType((MediaType) item.getMediaType())) {
             PDFThumbCreator pdfThumbCreator = new PDFThumbCreator(item, thumbFile);
             Future<?> future = executor.submit(pdfThumbCreator);
             try {
@@ -207,7 +207,7 @@ public class DocThumbTask extends ThumbTask {
             }
             return;
         }
-        Metadata metadata = item.getMetadata();
+        Metadata metadata = (Metadata) item.getMetadata();
         if (metadata != null) {
             String pe = metadata.get(StandardParser.PARSER_EXCEPTION);
             if (Boolean.valueOf(pe)) {

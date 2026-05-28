@@ -1,5 +1,7 @@
 package iped.engine.task;
 
+import org.apache.tika.metadata.Metadata;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -472,9 +474,9 @@ public class MinIOTask extends AbstractTask {
             if (is != null) {
                 String fullPath = insertWithZip(item, hash, is, mime, true);
                 if (fullPath != null) {
-                    item.getMetadata().add(ElasticSearchIndexTask.PREVIEW_IN_DATASOURCE,
+                    ((Metadata) item.getMetadata()).add(ElasticSearchIndexTask.PREVIEW_IN_DATASOURCE,
                             "idInDataSource" + ElasticSearchIndexTask.KEY_VAL_SEPARATOR + fullPath);
-                    item.getMetadata().add(ElasticSearchIndexTask.PREVIEW_IN_DATASOURCE,
+                    ((Metadata) item.getMetadata()).add(ElasticSearchIndexTask.PREVIEW_IN_DATASOURCE,
                             "type" + ElasticSearchIndexTask.KEY_VAL_SEPARATOR + mime);
                 }
             }

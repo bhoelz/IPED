@@ -444,7 +444,7 @@ public class GraphTask extends AbstractTask {
     }
 
     private void processCommunicationMetadata(IItem evidence) throws IOException {
-        Metadata metadata = evidence.getMetadata();
+        Metadata metadata = (Metadata) evidence.getMetadata();
         String sender = metadata.get(ExtraProperties.COMMUNICATION_FROM);
         if (sender == null || sender.trim().isEmpty()) {
             return;
@@ -457,7 +457,7 @@ public class GraphTask extends AbstractTask {
         boolean detectPhones = isToDetectPhones(evidence);
 
         String relationType = getRelationType(evidence.getMediaTypeString());
-        NodeValues nv1 = getNodeValues(sender, evidence.getMetadata(), detectPhones);
+        NodeValues nv1 = getNodeValues(sender, (Metadata) evidence.getMetadata(), detectPhones);
 
         graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue, nv1.props);
 
@@ -570,7 +570,7 @@ public class GraphTask extends AbstractTask {
 
         String[] address = item.getMetadataValues(ExtraProperties.USER_ADDRESS);
         if (address.length == 0)
-            address = new String[] { getUfedAddress(item.getMetadata()) };
+            address = new String[] { getUfedAddress((Metadata) item.getMetadata()) };
 
         String[] notes = item.getMetadataValues(ExtraProperties.UFED_META_PREFIX + "Notes");
         if (notes.length == 0)

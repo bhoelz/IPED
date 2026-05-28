@@ -128,7 +128,7 @@ public class IndexTask extends AbstractTask {
                 if (textReader == null) {
                     LOGGER.warn("Null Text reader, creating a new one for {}", evidence.getPath()); //$NON-NLS-1$
                     try {
-                        TikaInputStream tis = evidence.getTikaStream();
+                        TikaInputStream tis = (TikaInputStream) evidence.getTikaStream();
                         Metadata metadata = getMetadata(evidence);
                         final ParseContext context = getTikaContext(evidence);
                         textReader = new ParsingReader(this.autoParser, tis, metadata, context);

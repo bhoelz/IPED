@@ -659,7 +659,7 @@ public class ExportFileTask extends AbstractTask {
                 BufferedOutputStream bos = null;
                 try (TemporaryResources tmp = new TemporaryResources()) {
 
-                    TikaInputStream tis = TikaInputStream.get(inputStream, tmp);
+                    TikaInputStream tis = TikaInputStream.get(inputStream);
                     InputStream poiInputStream = Util.getPOIFSInputStream(tis);
                     inputStream = poiInputStream != null ? poiInputStream : tis;
 

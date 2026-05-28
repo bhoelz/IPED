@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
 
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,7 +94,7 @@ public class ImageSimilarityTask extends AbstractTask {
     }
 
     protected void process(IItem evidence) throws Exception {
-        if (!taskEnabled || !MetadataUtil.isImageType(evidence.getMediaType()) || !evidence.isToAddToCase()
+        if (!taskEnabled || !MetadataUtil.isImageType((MediaType) evidence.getMediaType()) || !evidence.isToAddToCase()
                 || evidence.getHash() == null) {
             return;
         }

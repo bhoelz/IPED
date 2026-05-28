@@ -34,6 +34,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.xml.sax.SAXException;
@@ -113,7 +114,7 @@ public class SimilarFacesFilterActions {
                 // populates tif orientation if rotated
                 try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
                     App.get().getAutoParser().parse(bis, new IgnoreContentHandler(),
-                            newSimilarFacesRefItem.getMetadata(), new ParseContext());
+                            (Metadata) newSimilarFacesRefItem.getMetadata(), new ParseContext());
                 } catch (IOException | SAXException | TikaException e2) {
                     e2.printStackTrace();
                 }

@@ -103,7 +103,7 @@ public class SkipCommitedTask extends AbstractTask {
             for (int doc = 0; doc < aReader.maxDoc(); doc++) {
                 String uuid = DocValuesUtil.getVal(evidenceUUIDs, doc);
                 if (uuid != null && !prevRootNameToEvidenceUUID.containsValue(uuid)) {
-                    Document luceneDoc = aReader.document(doc);
+                    Document luceneDoc = aReader.storedFields().document(doc);
                     String path = luceneDoc.get(BasicProps.PATH);
                     prevRootNameToEvidenceUUID.put(Util.getRootName(path), uuid);
                 }

@@ -138,7 +138,7 @@ public class SimilarFacesOptionsDialog extends JDialog {
         JPanel top = new JPanel();
         JPanel bottom = new JPanel();
 
-        MediaType mime = item.getMediaType();
+        MediaType mime = (MediaType) item.getMediaType();
         String mimeStr = (mime != null) ? mime.toString() : null;
         if (img == null) {
             File view = item.getViewFile();

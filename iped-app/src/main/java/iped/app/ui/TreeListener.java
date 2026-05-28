@@ -127,7 +127,7 @@ public class TreeListener extends MouseAdapter implements TreeSelectionListener,
         String parentId = null;
         try {
             do {
-                Document doc = App.get().appCase.getReader().document(docId);
+                Document doc = App.get().appCase.getReader().storedFields().document(docId);
 
                 parentId = doc.get(IndexItem.PARENTID);
                 if (parentId != null) {

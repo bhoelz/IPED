@@ -648,7 +648,7 @@ public class IpedChartsPanel extends JPanel implements ResultSetViewer, TableMod
             Date min = null;
             Date max = null;
 
-            LeafReader reader = resultsProvider.getIPEDSource().getLeafReader();
+            LeafReader reader = (LeafReader) resultsProvider.getIPEDSource().getLeafIndexReader();
             timeStampValues = reader.getSortedSetDocValues(BasicProps.TIMESTAMP);
             TreeSet<Integer> luceneIds = new TreeSet<Integer>();
 
@@ -673,7 +673,7 @@ public class IpedChartsPanel extends JPanel implements ResultSetViewer, TableMod
                 }
 
                 long ord, prevOrd = -1;
-                while (adv && (ord = timeStampValues.nextOrd()) != SortedSetDocValues.NO_MORE_ORDS) {
+                while (adv && (ord = timeStampValues.nextOrd()) != -1L) {
                     if (prevOrd != ord) {
                         Date d = domainAxis.ISO8601DateParse(timeStampValues.lookupOrd(ord).utf8ToString());
                         if (min == null || d.before(min)) {
@@ -712,7 +712,7 @@ public class IpedChartsPanel extends JPanel implements ResultSetViewer, TableMod
             ColumnsManager cm = (ColumnsManager) ((App) resultsProvider).getColumnsManager();
             String[] columnsArray = cm.fieldGroups[cm.fieldGroups.length - 1];
             synchronized (timeEventColumnNamesList) {
-                LeafReader reader = resultsProvider.getIPEDSource().getLeafReader();
+                LeafReader reader = (LeafReader) resultsProvider.getIPEDSource().getLeafIndexReader();
                 try {
                     SortedSetDocValues timeEventGroupValues = reader.getSortedSetDocValues(BasicProps.TIME_EVENT);
                     if (timeEventGroupValues != null) {

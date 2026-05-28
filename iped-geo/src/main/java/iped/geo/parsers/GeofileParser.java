@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.DatatypeConverter;
+import javax.xml.datatype.DatatypeFactory;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.tika.exception.TikaException;
@@ -174,7 +174,11 @@ public class GeofileParser extends AbstractParser {
     }
 
     private Date toDate(String timestamp) {
-        return DatatypeConverter.parseDateTime(timestamp).getTime();
+        try {
+            return DatatypeFactory.newInstance().newXMLGregorianCalendar(timestamp).toGregorianCalendar().getTime();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void featureParser(SimpleFeature feature, int parentId, String name, ContentHandler handler, Metadata metadata, EmbeddedDocumentExtractor extractor) throws TikaException {

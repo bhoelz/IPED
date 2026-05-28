@@ -25,10 +25,10 @@ import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.xml.bind.DatatypeConverter;
-
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
+import org.apache.pdfbox.io.RandomAccessInputStream;
+import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
 import org.jfree.data.time.TimePeriod;
 import org.roaringbitmap.RoaringBitmap;
 
@@ -95,7 +95,7 @@ public class CachePersistance {
                 md.update(string.getBytes());
             }
 
-            String uuid = DatatypeConverter.printHexBinary(md.digest());
+            String uuid = Hex.encodeHexString(md.digest()).toUpperCase();
 
             baseDir = new File(startDir, uuid);
             if (!baseDir.exists() && !baseDir.mkdirs()) {
@@ -407,7 +407,7 @@ public class CachePersistance {
         public CacheFileIterator(File f) {
             this.f = f;
             try {
-                dis = new DataInputStream(new RandomAccessBufferedFileInputStream(f));
+                dis = new DataInputStream(new RandomAccessInputStream(new RandomAccessReadBufferedFile(f)));
             } catch (FileNotFoundException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

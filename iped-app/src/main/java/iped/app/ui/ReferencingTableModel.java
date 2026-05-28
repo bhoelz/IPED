@@ -35,8 +35,8 @@ import org.apache.lucene.search.TermInSetQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
+import iped.engine.hash.HashAlgorithm;
 import iped.engine.search.QueryBuilder;
-import iped.engine.task.HashTask;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.parsers.ares.AresParser;
@@ -84,11 +84,11 @@ public class ReferencingTableModel extends BaseTableModel {
             String field;
             String mediaType = doc.get(BasicProps.CONTENTTYPE);
             if (KnownMetParser.EMULE_MIME_TYPE.equals(mediaType)) {
-                field = HashTask.HASH.EDONKEY.toString();
+                field = HashAlgorithm.EDONKEY.toString();
             } else if (AresParser.ARES_MIME_TYPE.equals(mediaType)) {
-                field = HashTask.HASH.SHA1.toString();
+                field = HashAlgorithm.SHA1.toString();
             } else if (ShareazaLibraryDatParser.LIBRARY_DAT_MIME_TYPE.equals(mediaType)) {
-                field = HashTask.HASH.MD5.toString();
+                field = HashAlgorithm.MD5.toString();
             } else {
                 field = BasicProps.HASH;
             }

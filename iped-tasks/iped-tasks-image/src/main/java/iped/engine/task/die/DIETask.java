@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.imageio.ImageIO;
 
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,8 +203,8 @@ public class DIETask extends AbstractTask {
         if (!taskEnabled  || !evidence.isToAddToCase() || evidence.getHash() == null) {
             return;
         }
-        boolean isImage = MetadataUtil.isImageType(evidence.getMediaType());
-        boolean isVideo = MetadataUtil.isVideoType(evidence.getMediaType());
+        boolean isImage = MetadataUtil.isImageType((MediaType) evidence.getMediaType());
+        boolean isVideo = MetadataUtil.isVideoType((MediaType) evidence.getMediaType());
         if (!isImage && !isVideo) {
             return;
         }
@@ -371,6 +372,6 @@ public class DIETask extends AbstractTask {
     }
 
     private static boolean isJpeg(IItem item) {
-        return item.getMediaType().getSubtype().startsWith("jpeg");
+        return ((MediaType) item.getMediaType()).getSubtype().startsWith("jpeg");
     }
 }

@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Vector;
 
 import javax.swing.event.TreeModelListener;
@@ -55,15 +54,13 @@ public class TreeViewModel implements TreeModel {
     private Collator collator = Collator.getInstance();
 
     private Comparator<Integer> getComparator() {
-        final HashSet<String> fields = new HashSet<String>();
-        fields.add(IndexItem.NAME);
         collator.setStrength(Collator.PRIMARY);
         return new Comparator<Integer>() {
             @Override
             public int compare(Integer a, Integer b) {
                 try {
-                    Document doc1 = App.get().appCase.getReader().document(a, fields);
-                    Document doc2 = App.get().appCase.getReader().document(b, fields);
+                    Document doc1 = App.get().appCase.getReader().storedFields().document(a);
+                    Document doc2 = App.get().appCase.getReader().storedFields().document(b);
                     return collator.compare(doc1.get(IndexItem.NAME), doc2.get(IndexItem.NAME));
 
                 } catch (IOException e) {
@@ -89,7 +86,7 @@ public class TreeViewModel implements TreeModel {
             if (doc == null) {
                 if (docId != -1) {
                     try {
-                        this.doc = App.get().appCase.getReader().document(docId);
+                        this.doc = App.get().appCase.getReader().storedFields().document(docId);
 
                     } catch (IOException e) {
                         // e.printStackTrace();

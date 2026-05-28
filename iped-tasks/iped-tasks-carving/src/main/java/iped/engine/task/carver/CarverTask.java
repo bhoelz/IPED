@@ -91,7 +91,7 @@ public class CarverTask extends BaseCarveTask {
 
         InputStream tis = null;
         try {
-            MediaType type = evidence.getMediaType();
+            MediaType type = (MediaType) evidence.getMediaType();
 
             tis = evidence.getBufferedInputStream();
 

@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.imageio.ImageIO;
 
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -245,7 +246,7 @@ public class ImageThumbTask extends ThumbTask {
     @Override
     protected void process(IItem evidence) throws Exception {
 
-        if (!isEnabled() || !MetadataUtil.isImageType(evidence.getMediaType()) || !evidence.isToAddToCase()
+        if (!isEnabled() || !MetadataUtil.isImageType((MediaType) evidence.getMediaType()) || !evidence.isToAddToCase()
                 || evidence.getHashValue() == null || evidence.getThumb() != null) {
             return;
         }
@@ -294,7 +295,7 @@ public class ImageThumbTask extends ThumbTask {
     }
 
     public static boolean isJpeg(IItem item) {
-        return item.getMediaType().getSubtype().startsWith("jpeg");
+        return ((MediaType) item.getMediaType()).getSubtype().startsWith("jpeg");
     }
 
     private void createImageThumb(IItem evidence, File thumbFile) {

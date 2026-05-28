@@ -177,7 +177,7 @@ public class NamedEntityTask extends AbstractTask {
                     for (String key : metadata.names()) {
                         if (key.startsWith(NER_PREFIX)) {
                             for (String val : metadata.getValues(key)) {
-                                evidence.getMetadata().add(key, val);
+                                ((Metadata) evidence.getMetadata()).add(key, val);
                             }
                         }
                     }
