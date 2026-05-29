@@ -445,15 +445,34 @@ curl -X POST http://localhost:8080/api/v1/configurations/merge \
 
 ---
 
+## Server Implementation
+
+The API is implemented using:
+- **JAX-RS** (Jersey) - REST framework
+- **Embedded Jetty** - HTTP server
+- **Jackson** - JSON serialization
+
+### Starting the Server
+
+```bash
+# Run with default port (8080)
+java -cp iped.jar iped.engine.config.api.ConfigurationServer
+
+# Run with custom port
+java -cp iped.jar iped.engine.config.api.ConfigurationServer 9090
+```
+
+The server will listen on `http://localhost:8080/api/v1`
+
+---
+
 ## Authentication
 
 Currently, the API does not require authentication. For production deployments, consider adding:
 
-- API Key authentication
-- JWT token authentication
-- OAuth 2.0 authentication
-
-See [API-SECURITY.md](API-SECURITY.md) for security recommendations.
+- API Key authentication via servlet filters
+- JWT token authentication via request interceptors
+- Custom security filters
 
 ---
 
@@ -461,9 +480,9 @@ See [API-SECURITY.md](API-SECURITY.md) for security recommendations.
 
 No rate limiting is currently implemented. For production, consider:
 
-- Per-IP rate limiting
-- Per-endpoint rate limiting
-- Burst allowances for batch operations
+- Adding servlet filters for per-IP rate limiting
+- Implementing custom request interceptors
+- Using external rate limiting proxies (e.g., nginx, HAProxy)
 
 ---
 

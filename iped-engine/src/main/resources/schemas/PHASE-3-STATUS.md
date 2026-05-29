@@ -44,6 +44,48 @@
   - `POST /api/v1/configurations/backup` - Create backup
   - `GET /api/v1/configurations/metadata` - Get metadata
 
+### JAX-RS Resources (3 files)
+
+#### 1. SchemaResource.java
+- **Location**: `iped-engine/src/main/java/iped/engine/config/api/SchemaResource.java`
+- **Purpose**: JAX-RS resource wrapper for schema operations
+- **Endpoints**:
+  - `GET /api/v1/schemas` - List all schemas
+  - `GET /api/v1/schemas/{componentName}` - Get schema
+  - `GET /api/v1/schemas/{componentName}/ui` - Get UI schema
+  - `POST /api/v1/schemas/{componentName}/validate` - Validate configuration
+  - `GET /api/v1/schemas/category/{category}` - Filter by category
+  - `GET /api/v1/cli-schemas` - List CLI schemas
+- **Uses**: SchemaAPIController, Jackson ObjectMapper
+
+#### 2. ConfigurationResource.java
+- **Location**: `iped-engine/src/main/java/iped/engine/config/api/ConfigurationResource.java`
+- **Purpose**: JAX-RS resource wrapper for configuration operations
+- **Endpoints**:
+  - `GET /api/v1/configurations` - Get all configurations
+  - `GET /api/v1/configurations/{componentName}` - Get specific config
+  - `GET /api/v1/configurations/{componentName}/export` - Export configuration
+  - `GET /api/v1/configurations/export/all` - Export all configurations
+  - `GET /api/v1/configurations/metadata` - Get metadata
+  - `POST /api/v1/configurations/backup` - Create backup
+  - `POST /api/v1/configurations/diff` - Compare configurations
+  - `POST /api/v1/configurations/merge` - Merge configurations
+- **Uses**: ConfigurationAPIController, ConfigurationDiffMerge, Jackson
+
+#### 3. ConfigurationServer.java
+- **Location**: `iped-engine/src/main/java/iped/engine/config/api/ConfigurationServer.java`
+- **Purpose**: Embedded Jetty server launcher
+- **Features**:
+  - Configurable HTTP port (default 8080)
+  - Jersey servlet configuration
+  - JSON processing support
+  - Logging via SLF4J
+- **Usage**:
+  ```bash
+  java -cp iped.jar iped.engine.config.api.ConfigurationServer 8080
+  ```
+- **Startup Output**: Logs server startup and listens on configured port
+
 ### Utility Classes (1 file)
 
 #### ConfigurationDiffMerge.java
@@ -141,12 +183,13 @@ All controllers follow consistent response format:
 - ConfigurationDiffMerge utility has comprehensive test coverage
 
 ### Integration Checklist (When Compilation is Resolved)
-- [ ] Add `@RestController` and `@RequestMapping` annotations to API controllers
-- [ ] Map endpoints according to API-REFERENCE.md
-- [ ] Register controllers in Spring application context
-- [ ] Add authentication/authorization layer
-- [ ] Implement rate limiting on endpoints
+- [x] Create JAX-RS resource classes (SchemaResource, ConfigurationResource)
+- [x] Implement embedded Jetty server (ConfigurationServer)
+- [x] Map all endpoints according to API-REFERENCE.md
+- [ ] Add authentication/authorization filters
+- [ ] Implement rate limiting filters
 - [ ] Create integration tests with real ConfigurationManager
+- [ ] Add request/response logging interceptors
 
 ---
 
@@ -155,12 +198,14 @@ All controllers follow consistent response format:
 | Metric | Value |
 |--------|-------|
 | API Controllers | 2 |
+| JAX-RS Resources | 2 |
+| Jetty Server | 1 |
 | Utility Classes | 1 |
 | Unit Tests | 27 (13 new + 14 pre-existing) |
-| API Endpoints Designed | 13 |
-| Lines of Code | ~800 (controllers) + ~250 (utilities) |
+| API Endpoints Implemented | 13 |
+| Lines of Code | ~800 (controllers) + ~600 (JAX-RS) + ~250 (utilities) |
 | Documentation | Complete |
-| Ready for Production | Yes (after Spring annotation) |
+| Ready for Integration | Yes |
 
 ---
 
@@ -170,17 +215,25 @@ All controllers follow consistent response format:
    - Either complete or remove unfinished SPI implementations
    - Rebuild project successfully
 
-2. **Spring Integration**
-   - Add @RestController/@RequestMapping annotations
-   - Register as Spring beans
-   - Test with embedded server
+2. **Test JAX-RS/Jetty Integration**
+   - Start ConfigurationServer on configured port
+   - Test all endpoints with curl or Postman
+   - Verify JSON request/response format
+   - Test error handling for invalid inputs
 
-3. **Web UI Development**
+3. **Add Security & Filtering**
+   - Implement servlet filters for authentication
+   - Add request/response logging filters
+   - Implement rate limiting filters
+   - Add CORS headers if needed
+
+4. **Web UI Development**
    - React-based configuration editor using react-jsonschema-form
    - Form generation from UI schemas
    - Real-time validation feedback
+   - Integration with ConfigurationServer API
 
-4. **Advanced Features**
+5. **Advanced Features**
    - Configuration versioning and history
    - Migration tools for old configurations
    - Audit logging for configuration changes
@@ -191,9 +244,20 @@ All controllers follow consistent response format:
 ## Files Reference
 
 **New Phase 3 Files**:
+
+API Controllers:
 - `iped-engine/src/main/java/iped/engine/config/api/SchemaAPIController.java`
 - `iped-engine/src/main/java/iped/engine/config/api/ConfigurationAPIController.java`
+
+JAX-RS Resources (Jetty Integration):
+- `iped-engine/src/main/java/iped/engine/config/api/SchemaResource.java`
+- `iped-engine/src/main/java/iped/engine/config/api/ConfigurationResource.java`
+- `iped-engine/src/main/java/iped/engine/config/api/ConfigurationServer.java`
+
+Utilities:
 - `iped-engine/src/main/java/iped/engine/config/schema/ConfigurationDiffMerge.java`
+
+Tests:
 - `iped-engine/src/test/java/iped/engine/config/api/SchemaAPIControllerTest.java`
 - `iped-engine/src/test/java/iped/engine/config/schema/ConfigurationDiffMergeTest.java`
 
