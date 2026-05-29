@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import static org.junit.Assert.*;
 
@@ -86,8 +87,7 @@ public class PluginResourceBundleLoaderTest {
 
     @Test
     public void testGetComponentBundlesEmpty() {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> bundles = (Map<String, Object>) (Map<?>) loader.getComponentBundles("nonexistent");
+        Map<String, ResourceBundle> bundles = loader.getComponentBundles("nonexistent");
         assertTrue(bundles.isEmpty());
     }
 
