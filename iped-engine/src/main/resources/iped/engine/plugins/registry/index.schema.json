@@ -115,6 +115,83 @@
         "sbomUrl": { "$ref": "#/$defs/url" }
       }
     },
+    "componentRegistration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id", "providerClass"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["carver", "parser", "datasource", "webhook", "metadata", "database", "category", "task"]
+        },
+        "id": { "type": "string", "minLength": 1 },
+        "providerClass": {
+          "type": "string",
+          "pattern": "^[A-Za-z_$][A-Za-z\\d_$]*(\\.[A-Za-z_$][A-Za-z\\d_$]*)+$"
+        },
+        "configSchemaPath": {
+          "type": "string",
+          "description": "Path to JSON Schema file in JAR (e.g., com/example/MyCarver.schema.json)"
+        },
+        "uiSchemaPath": {
+          "type": "string",
+          "description": "Path to UI Schema file in JAR (e.g., com/example/MyCarver.uischema.json)"
+        },
+        "databases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "type": { "enum": ["output", "query", "cache"] },
+              "description": { "type": "string" }
+            },
+            "required": ["id", "type"]
+          }
+        },
+        "metadata": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "displayName": { "type": "string" },
+              "dataType": { "enum": ["date", "boolean", "integer", "string", "decimal"] },
+              "indexed": { "type": "boolean" },
+              "faceted": { "type": "boolean" },
+              "analyzer": { "type": "string" },
+              "category": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "required": ["name", "dataType", "indexed"]
+          }
+        },
+        "fileCategories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Custom file categories (e.g., 'Forensic/Windows/Registry')"
+        },
+        "webhooks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "eventType": { "type": "string", "minLength": 1 },
+              "description": { "type": "string" }
+            },
+            "required": ["eventType"]
+          }
+        },
+        "i18nBundles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Resource bundle names (e.g., 'iped-plugin-xyz')"
+        }
+      }
+    },
     "pluginVersion": {
       "type": "object",
       "additionalProperties": false,
@@ -135,6 +212,12 @@
         "artifact": { "$ref": "#/$defs/artifact" },
         "signature": { "$ref": "#/$defs/signatureExternal" },
         "provider": { "$ref": "#/$defs/provider" },
+        "components": {
+          "type": "array",
+          "minItems": 0,
+          "items": { "$ref": "#/$defs/componentRegistration" },
+          "description": "Additional pluggable components provided by this plugin (carvers, parsers, webhooks, etc)"
+        },
         "dependencies": {
           "type": "array",
           "items": { "$ref": "#/$defs/dependency" }

@@ -1,0 +1,5 @@
+iped.engine.plugins.categories.BuiltInFileCategoryProviders$WindowsForensicsProvider
+iped.engine.plugins.categories.BuiltInFileCategoryProviders$WebArtifactsProvider
+iped.engine.plugins.categories.BuiltInFileCategoryProviders$CommunicationArtifactsProvider
+iped.engine.plugins.categories.BuiltInFileCategoryProviders$MultimediaProvider
+iped.engine.plugins.categories.BuiltInFileCategoryProviders$SystemDataProvider

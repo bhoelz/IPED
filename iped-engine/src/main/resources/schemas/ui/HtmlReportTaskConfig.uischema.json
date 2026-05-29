@@ -1,0 +1,22 @@
+{
+  "enableReport": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Report",
+    "ui:help": "Enable HTML report generation"
+  },
+  "reportTemplate": {
+    "ui:widget": "select",
+    "ui:title": "Report Template",
+    "ui:help": "Template name for report generation"
+  },
+  "includeImages": {
+    "ui:widget": "checkbox",
+    "ui:title": "Include Images",
+    "ui:help": "Include images in HTML report"
+  },
+  "maxReportSize": {
+    "ui:widget": "updown",
+    "ui:title": "Maximum Report Size (MB)",
+    "ui:help": "Maximum report size in MB"
+  }
+}

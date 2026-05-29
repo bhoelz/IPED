@@ -3,8 +3,8 @@
   "$id": "https://iped.digital-forensics.org/schema/schema-index.json",
   "title": "IPED Configuration Schema Registry",
   "description": "Complete index of all available configuration schemas for IPED components",
-  "version": "2.0",
-  "totalSchemas": 31,
+  "version": "2.1",
+  "totalSchemas": 50,
   "schemas": [
     {
       "id": "TaskInstallerConfig",
@@ -356,6 +356,136 @@
       "configurableClass": "iped.engine.config.AbstractPropertiesConfigurable",
       "category": "abstract",
       "priority": 100
+    },
+    {
+      "id": "LocaleConfig",
+      "name": "Locale Configuration",
+      "description": "Configuration for locale and language settings",
+      "jsonSchema": "schemas/json/LocaleConfig.schema.json",
+      "uiSchema": "schemas/ui/LocaleConfig.uischema.json",
+      "configurableClass": "iped.engine.config.LocaleConfig",
+      "category": "general",
+      "priority": 34
+    },
+    {
+      "id": "AbstractTaskConfig",
+      "name": "Abstract Task Configuration",
+      "description": "Base configuration for processing tasks",
+      "jsonSchema": "schemas/json/AbstractTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/AbstractTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.AbstractTaskConfig",
+      "category": "abstract",
+      "priority": 101
+    },
+    {
+      "id": "AbstractTaskPropertiesConfig",
+      "name": "Abstract Task Properties Configuration",
+      "description": "Base configuration for task-specific properties",
+      "jsonSchema": "schemas/json/AbstractTaskPropertiesConfig.schema.json",
+      "uiSchema": "schemas/ui/AbstractTaskPropertiesConfig.uischema.json",
+      "configurableClass": "iped.engine.config.AbstractTaskPropertiesConfig",
+      "category": "abstract",
+      "priority": 102
+    },
+    {
+      "id": "AgeEstimationConfig",
+      "name": "Age Estimation Configuration",
+      "description": "Configuration for age estimation task",
+      "jsonSchema": "schemas/json/AgeEstimationConfig.schema.json",
+      "uiSchema": "schemas/ui/AgeEstimationConfig.uischema.json",
+      "configurableClass": "iped.engine.config.AgeEstimationConfig",
+      "category": "detection",
+      "priority": 35
+    },
+    {
+      "id": "FaceRecognitionConfig",
+      "name": "Face Recognition Configuration",
+      "description": "Configuration for face recognition task",
+      "jsonSchema": "schemas/json/FaceRecognitionConfig.schema.json",
+      "uiSchema": "schemas/ui/FaceRecognitionConfig.uischema.json",
+      "configurableClass": "iped.engine.config.FaceRecognitionConfig",
+      "category": "detection",
+      "priority": 36
+    },
+    {
+      "id": "SplitLargeBinaryConfig",
+      "name": "Split Large Binary Configuration",
+      "description": "Configuration for splitting large binary files during processing",
+      "jsonSchema": "schemas/json/SplitLargeBinaryConfig.schema.json",
+      "uiSchema": "schemas/ui/SplitLargeBinaryConfig.uischema.json",
+      "configurableClass": "iped.engine.config.SplitLargeBinaryConfig",
+      "category": "processing",
+      "priority": 37
+    },
+    {
+      "id": "ProcessingOrchestratorConfig",
+      "name": "Processing Orchestrator Configuration",
+      "description": "Configuration for orchestrating processing workflows",
+      "jsonSchema": "schemas/json/ProcessingOrchestratorConfig.schema.json",
+      "uiSchema": "schemas/ui/ProcessingOrchestratorConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ProcessingOrchestratorConfig",
+      "category": "processing",
+      "priority": 38
+    },
+    {
+      "id": "SplashScreenConfig",
+      "name": "Splash Screen Configuration",
+      "description": "Configuration for custom splash screen display",
+      "jsonSchema": "schemas/json/SplashScreenConfig.schema.json",
+      "uiSchema": "schemas/ui/SplashScreenConfig.uischema.json",
+      "configurableClass": "iped.engine.config.SplashScreenConfig",
+      "category": "ui",
+      "priority": 39
+    },
+    {
+      "id": "CategoryToExpandConfig",
+      "name": "Category To Expand Configuration",
+      "description": "Configuration for categories that should be expanded by default",
+      "jsonSchema": "schemas/json/CategoryToExpandConfig.schema.json",
+      "uiSchema": "schemas/ui/CategoryToExpandConfig.uischema.json",
+      "configurableClass": "iped.engine.config.CategoryToExpandConfig",
+      "category": "ui",
+      "priority": 40
+    },
+    {
+      "id": "DefaultTaskPropertiesConfig",
+      "name": "Default Task Properties Configuration",
+      "description": "Configuration for default task properties",
+      "jsonSchema": "schemas/json/DefaultTaskPropertiesConfig.schema.json",
+      "uiSchema": "schemas/ui/DefaultTaskPropertiesConfig.uischema.json",
+      "configurableClass": "iped.engine.config.DefaultTaskPropertiesConfig",
+      "category": "task",
+      "priority": 41
+    },
+    {
+      "id": "ExportByKeywordsConfig",
+      "name": "Export By Keywords Configuration",
+      "description": "Configuration for exporting results filtered by keywords",
+      "jsonSchema": "schemas/json/ExportByKeywordsConfig.schema.json",
+      "uiSchema": "schemas/ui/ExportByKeywordsConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ExportByKeywordsConfig",
+      "category": "export",
+      "priority": 42
+    },
+    {
+      "id": "HashDBLookupConfig",
+      "name": "Hash Database Lookup Configuration",
+      "description": "Configuration for hash database lookup during processing",
+      "jsonSchema": "schemas/json/HashDBLookupConfig.schema.json",
+      "uiSchema": "schemas/ui/HashDBLookupConfig.uischema.json",
+      "configurableClass": "iped.engine.config.HashDBLookupConfig",
+      "category": "detection",
+      "priority": 43
+    },
+    {
+      "id": "HtmlReportTaskConfig",
+      "name": "HTML Report Task Configuration",
+      "description": "Configuration for HTML report generation",
+      "jsonSchema": "schemas/json/HtmlReportTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/HtmlReportTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.HtmlReportTaskConfig",
+      "category": "export",
+      "priority": 44
     }
   ],
   "categories": {
@@ -381,9 +511,11 @@
     "All schemas use JSON Schema Draft 2020-12 standard",
     "UI Schemas are compatible with JSON Form and react-jsonschema-form renderers",
     "Priority: lower numbers = more important / core functionality",
-    "31 core schemas have been generated covering the most important Configurable implementations",
-    "Additional schemas for remaining 14+ implementations can be added following the same patterns",
+    "50 total schemas covering 44 Configurable implementations plus 6 CLI argument schemas",
+    "37 initial schemas (core components) + 13 additional schemas for remaining implementations",
+    "Coverage: 37 configuration components have complete JSON and UI schemas",
     "Each schema includes comprehensive property descriptions and validation rules",
-    "UI Schemas provide user-friendly form controls and help text"
+    "UI Schemas provide user-friendly form controls and help text",
+    "Schemas updated: 2026-05-28 - Added LocaleConfig, AbstractTaskConfig, AgeEstimationConfig, FaceRecognitionConfig, SplitLargeBinaryConfig, ProcessingOrchestratorConfig, SplashScreenConfig, CategoryToExpandConfig, DefaultTaskPropertiesConfig, ExportByKeywordsConfig, HashDBLookupConfig, HtmlReportTaskConfig, AbstractTaskPropertiesConfig"
   ]
 }

@@ -1,0 +1,12 @@
+{
+  "parallelProcessing": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Parallel Processing",
+    "ui:help": "Enable parallel processing of tasks"
+  },
+  "maxWorkers": {
+    "ui:widget": "updown",
+    "ui:title": "Maximum Workers",
+    "ui:help": "Maximum number of concurrent workers"
+  }
+}

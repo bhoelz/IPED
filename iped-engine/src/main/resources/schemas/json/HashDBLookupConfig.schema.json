@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/HashDBLookupConfig.schema.json",
+  "title": "Hash Database Lookup Configuration",
+  "description": "Configuration for hash database lookup during processing",
+  "type": "object",
+  "properties": {
+    "enableLookup": {
+      "type": "boolean",
+      "description": "Enable hash database lookups",
+      "default": true
+    },
+    "databasePath": {
+      "type": "string",
+      "description": "Path to hash database files"
+    },
+    "timeout": {
+      "type": "integer",
+      "description": "Lookup timeout in seconds",
+      "minimum": 1,
+      "default": 30
+    }
+  },
+  "additionalProperties": false
+}

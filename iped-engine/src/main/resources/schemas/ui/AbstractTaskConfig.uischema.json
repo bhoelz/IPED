@@ -1,0 +1,7 @@
+{
+  "enabled": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enabled",
+    "ui:help": "Enable or disable this task"
+  }
+}

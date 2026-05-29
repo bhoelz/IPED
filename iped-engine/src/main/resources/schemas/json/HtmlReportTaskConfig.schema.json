@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/HtmlReportTaskConfig.schema.json",
+  "title": "HTML Report Task Configuration",
+  "description": "Configuration for HTML report generation",
+  "type": "object",
+  "properties": {
+    "enableReport": {
+      "type": "boolean",
+      "description": "Enable HTML report generation",
+      "default": true
+    },
+    "reportTemplate": {
+      "type": "string",
+      "description": "Template name for report generation"
+    },
+    "includeImages": {
+      "type": "boolean",
+      "description": "Include images in HTML report",
+      "default": false
+    },
+    "maxReportSize": {
+      "type": "integer",
+      "description": "Maximum report size in MB",
+      "minimum": 1,
+      "default": 100
+    }
+  },
+  "additionalProperties": false
+}

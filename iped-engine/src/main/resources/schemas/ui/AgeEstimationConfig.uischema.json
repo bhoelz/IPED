@@ -1,0 +1,12 @@
+{
+  "enableAgeEstimation": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Age Estimation",
+    "ui:help": "Enable age estimation for detected faces"
+  },
+  "minConfidence": {
+    "ui:widget": "updown",
+    "ui:title": "Minimum Confidence",
+    "ui:help": "Minimum confidence threshold (0.0-1.0)"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/FaceRecognitionConfig.schema.json",
+  "title": "Face Recognition Configuration",
+  "description": "Configuration for face recognition task",
+  "type": "object",
+  "properties": {
+    "enableFaceRecognition": {
+      "type": "boolean",
+      "description": "Enable face recognition in images",
+      "default": false
+    },
+    "minConfidence": {
+      "type": "number",
+      "description": "Minimum confidence threshold (0.0-1.0)",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.5
+    }
+  },
+  "additionalProperties": false
+}

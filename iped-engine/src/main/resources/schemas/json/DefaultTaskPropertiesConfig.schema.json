@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/DefaultTaskPropertiesConfig.schema.json",
+  "title": "Default Task Properties Configuration",
+  "description": "Configuration for default task properties",
+  "type": "object",
+  "properties": {
+    "defaultTimeout": {
+      "type": "integer",
+      "description": "Default task timeout in seconds",
+      "minimum": 1,
+      "default": 3600
+    },
+    "retryCount": {
+      "type": "integer",
+      "description": "Number of retries on task failure",
+      "minimum": 0,
+      "default": 0
+    }
+  },
+  "additionalProperties": false
+}

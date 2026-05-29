@@ -1,0 +1,8 @@
+{
+  "categories": {
+    "ui:widget": "textarea",
+    "ui:title": "Categories",
+    "ui:placeholder": "Enter category names (one per line)",
+    "ui:help": "List of category names to expand by default"
+  }
+}

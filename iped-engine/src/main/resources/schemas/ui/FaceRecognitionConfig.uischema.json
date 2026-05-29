@@ -1,0 +1,12 @@
+{
+  "enableFaceRecognition": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Face Recognition",
+    "ui:help": "Enable face recognition in images"
+  },
+  "minConfidence": {
+    "ui:widget": "updown",
+    "ui:title": "Minimum Confidence",
+    "ui:help": "Minimum confidence threshold (0.0-1.0)"
+  }
+}

@@ -1,0 +1,2 @@
+iped.engine.database.impl.SQLiteDatabaseProvider
+iped.engine.database.impl.PostgreSQLDatabaseProvider

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/AbstractTaskPropertiesConfig.schema.json",
+  "title": "Abstract Task Properties Configuration",
+  "description": "Base configuration for task-specific properties",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable or disable this task"
+    }
+  },
+  "additionalProperties": false
+}

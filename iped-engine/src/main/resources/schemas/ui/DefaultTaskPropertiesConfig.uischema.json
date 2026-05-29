@@ -1,0 +1,12 @@
+{
+  "defaultTimeout": {
+    "ui:widget": "updown",
+    "ui:title": "Default Timeout (seconds)",
+    "ui:help": "Default task timeout in seconds"
+  },
+  "retryCount": {
+    "ui:widget": "updown",
+    "ui:title": "Retry Count",
+    "ui:help": "Number of retries on task failure"
+  }
+}

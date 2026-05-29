@@ -1,0 +1,13 @@
+{
+  "message": {
+    "ui:widget": "textarea",
+    "ui:title": "Splash Screen Message",
+    "ui:placeholder": "Enter custom splash screen message",
+    "ui:help": "Custom message to display on splash screen"
+  },
+  "showSplash": {
+    "ui:widget": "checkbox",
+    "ui:title": "Show Splash Screen",
+    "ui:help": "Show splash screen during startup"
+  }
+}

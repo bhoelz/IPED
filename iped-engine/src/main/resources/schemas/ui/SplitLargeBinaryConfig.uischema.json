@@ -1,0 +1,12 @@
+{
+  "enableSplitting": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Splitting",
+    "ui:help": "Enable splitting of large binary files"
+  },
+  "maxFileSize": {
+    "ui:widget": "updown",
+    "ui:title": "Maximum File Size (bytes)",
+    "ui:help": "Maximum file size in bytes before splitting"
+  }
+}

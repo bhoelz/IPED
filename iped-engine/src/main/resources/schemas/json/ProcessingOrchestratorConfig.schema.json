@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/ProcessingOrchestratorConfig.schema.json",
+  "title": "Processing Orchestrator Configuration",
+  "description": "Configuration for orchestrating processing workflows",
+  "type": "object",
+  "properties": {
+    "parallelProcessing": {
+      "type": "boolean",
+      "description": "Enable parallel processing of tasks",
+      "default": true
+    },
+    "maxWorkers": {
+      "type": "integer",
+      "description": "Maximum number of concurrent workers",
+      "minimum": 1,
+      "default": 4
+    }
+  },
+  "additionalProperties": false
+}

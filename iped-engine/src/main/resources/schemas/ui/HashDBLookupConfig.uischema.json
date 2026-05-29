@@ -1,0 +1,18 @@
+{
+  "enableLookup": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Lookup",
+    "ui:help": "Enable hash database lookups"
+  },
+  "databasePath": {
+    "ui:widget": "text",
+    "ui:title": "Database Path",
+    "ui:placeholder": "/path/to/hashdb",
+    "ui:help": "Path to hash database files"
+  },
+  "timeout": {
+    "ui:widget": "updown",
+    "ui:title": "Timeout (seconds)",
+    "ui:help": "Lookup timeout in seconds"
+  }
+}

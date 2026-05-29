@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/LocaleConfig.schema.json",
+  "title": "Locale Configuration",
+  "description": "Configuration for locale and language settings",
+  "type": "object",
+  "properties": {
+    "hostCountryCode": {
+      "type": "string",
+      "description": "Host country code for locale settings"
+    },
+    "locale": {
+      "type": "string",
+      "description": "Locale language tag (e.g., 'en-US', 'pt-BR')"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/SplitLargeBinaryConfig.schema.json",
+  "title": "Split Large Binary Configuration",
+  "description": "Configuration for splitting large binary files during processing",
+  "type": "object",
+  "properties": {
+    "enableSplitting": {
+      "type": "boolean",
+      "description": "Enable splitting of large binary files",
+      "default": false
+    },
+    "maxFileSize": {
+      "type": "integer",
+      "description": "Maximum file size in bytes before splitting",
+      "minimum": 1048576,
+      "default": 104857600
+    }
+  },
+  "additionalProperties": false
+}

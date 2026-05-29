@@ -1,0 +1,13 @@
+{
+  "hostCountryCode": {
+    "ui:widget": "text",
+    "ui:title": "Host Country Code",
+    "ui:placeholder": "US",
+    "ui:help": "Country code for locale (e.g., US, BR, PT)"
+  },
+  "locale": {
+    "ui:widget": "select",
+    "ui:title": "Locale",
+    "ui:help": "Language locale setting (e.g., en-US, pt-BR)"
+  }
+}

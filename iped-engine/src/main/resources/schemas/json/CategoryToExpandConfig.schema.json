@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/CategoryToExpandConfig.schema.json",
+  "title": "Category To Expand Configuration",
+  "description": "Configuration for categories that should be expanded by default",
+  "type": "object",
+  "properties": {
+    "categories": {
+      "type": "array",
+      "description": "List of category names to expand",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

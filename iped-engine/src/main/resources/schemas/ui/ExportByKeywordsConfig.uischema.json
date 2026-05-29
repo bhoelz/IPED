@@ -1,0 +1,13 @@
+{
+  "keywords": {
+    "ui:widget": "textarea",
+    "ui:title": "Keywords",
+    "ui:placeholder": "Enter keywords (one per line)",
+    "ui:help": "Keywords to filter export results"
+  },
+  "matchMode": {
+    "ui:widget": "select",
+    "ui:title": "Match Mode",
+    "ui:help": "Keyword matching mode (all, any, or exact)"
+  }
+}

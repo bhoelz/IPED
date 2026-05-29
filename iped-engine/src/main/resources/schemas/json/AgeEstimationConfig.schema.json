@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/AgeEstimationConfig.schema.json",
+  "title": "Age Estimation Configuration",
+  "description": "Configuration for age estimation task",
+  "type": "object",
+  "properties": {
+    "enableAgeEstimation": {
+      "type": "boolean",
+      "description": "Enable age estimation for detected faces",
+      "default": false
+    },
+    "minConfidence": {
+      "type": "number",
+      "description": "Minimum confidence threshold (0.0-1.0)",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.5
+    }
+  },
+  "additionalProperties": false
+}

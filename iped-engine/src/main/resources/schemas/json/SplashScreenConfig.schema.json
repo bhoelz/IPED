@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/SplashScreenConfig.schema.json",
+  "title": "Splash Screen Configuration",
+  "description": "Configuration for custom splash screen display",
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Custom message to display on splash screen"
+    },
+    "showSplash": {
+      "type": "boolean",
+      "description": "Show splash screen during startup",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}
