@@ -34,9 +34,12 @@ import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+
 import iped.data.IHashValue;
 import iped.data.IItem;
 import iped.datasource.IDataSource;
+import iped.engine.core.CaseContextThreadLocal;
 import iped.engine.core.Statistics;
 import iped.engine.io.ReferencedFile;
 import iped.engine.lucene.analysis.CategoryTokenizer;
@@ -78,27 +81,59 @@ public class Item implements IItem {
 
     private static class Counter {
 
-        private static int nextId = 0;
+        private int nextId = 0;
 
-        public static synchronized int getNextId() {
+        public synchronized int getNextId() {
             return nextId++;
         }
 
-        public static synchronized int setStartID(int start) {
+        public synchronized int setStartID(int start) {
             return nextId = start;
         }
     }
 
+    private static final Counter globalCounter = new Counter();
+    private static final ConcurrentHashMap<UUID, Counter> caseCounters = new ConcurrentHashMap<>();
+
+    /**
+     * Get the next item ID, using case-scoped counter if running in multi-case context,
+     * otherwise using global counter for backwards compatibility.
+     */
     public static int getNextId() {
-        return Counter.getNextId();
+        var ctx = CaseContextThreadLocal.get();
+        if (ctx != null) {
+            Counter caseCounter = caseCounters.computeIfAbsent(ctx.getId(),
+                    k -> new Counter());
+            return caseCounter.getNextId();
+        }
+        return globalCounter.getNextId();
     }
 
     /**
-     * @param start
-     *            id inicial para itens adicionados após o processamento inicial
+     * Set the starting ID for the next items to be added. Applies to case-scoped
+     * counter if in multi-case context, otherwise to global counter.
+     *
+     * @param start the starting ID
      */
     public static void setStartID(int start) {
-        Counter.setStartID(start);
+        var ctx = CaseContextThreadLocal.get();
+        if (ctx != null) {
+            Counter caseCounter = caseCounters.computeIfAbsent(ctx.getId(),
+                    k -> new Counter());
+            caseCounter.setStartID(start);
+        } else {
+            globalCounter.setStartID(start);
+        }
+    }
+
+    /**
+     * Get the counter for a specific case ID. Used for testing and monitoring.
+     *
+     * @param caseId the case UUID
+     * @return the Counter for that case, or null if not created yet
+     */
+    public static Counter getCounterForCase(UUID caseId) {
+        return caseCounters.get(caseId);
     }
 
     /** representa a evidência de origem (imagem dd, pasta) do item */

@@ -1,0 +1,6 @@
+{
+  "properties": {
+    "ui:title": "Configuration Properties",
+    "ui:help": "Key-value configuration properties loaded from .properties files"
+  }
+}

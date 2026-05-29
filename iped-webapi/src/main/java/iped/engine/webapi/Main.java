@@ -13,6 +13,7 @@ import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import iped.engine.Version;
+import iped.engine.core.ProcessingOrchestrator;
 
 /**
  * Main class.
@@ -43,6 +44,9 @@ public class Main {
         } catch (Exception e) {
             throw new IOException("Failed to initialize sources", e);
         }
+
+        // Initialize ProcessingOrchestrator with default configuration
+        ProcessingOrchestrator.getInstance();
 
         // create and start a new instance of jetty http server
         // exposing the Jersey application at BASE_URI

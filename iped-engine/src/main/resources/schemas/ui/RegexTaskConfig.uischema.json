@@ -1,0 +1,33 @@
+{
+  "enableRegex": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Regex Searching"
+  },
+  "patterns": {
+    "ui:title": "Search Patterns",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "name": {
+        "ui:placeholder": "Pattern name"
+      },
+      "regex": {
+        "ui:widget": "textarea",
+        "ui:placeholder": "Regular expression pattern"
+      },
+      "category": {
+        "ui:placeholder": "EMAIL, URL, IP, PHONE, etc."
+      }
+    }
+  },
+  "formatRegexMatches": {
+    "ui:widget": "checkbox",
+    "ui:title": "Format Matches"
+  },
+  "ignoreCase": {
+    "ui:widget": "checkbox",
+    "ui:title": "Case-Insensitive"
+  }
+}

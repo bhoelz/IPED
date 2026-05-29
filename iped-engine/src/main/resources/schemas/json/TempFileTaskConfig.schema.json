@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/TempFileTaskConfig.schema.json",
+  "title": "Temporary File Task Configuration",
+  "description": "Configuration for temporary file recovery",
+  "type": "object",
+  "properties": {
+    "enableTempRecovery": {
+      "type": "boolean",
+      "description": "Recover and index temporary files",
+      "default": true
+    },
+    "recoverPrefetch": {
+      "type": "boolean",
+      "description": "Recover Windows Prefetch files",
+      "default": true
+    },
+    "recoverRecycleBin": {
+      "type": "boolean",
+      "description": "Recover Recycle Bin items",
+      "default": true
+    },
+    "recoverBrowserCache": {
+      "type": "boolean",
+      "description": "Recover browser cache files",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}

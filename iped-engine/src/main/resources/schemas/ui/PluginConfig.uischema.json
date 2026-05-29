@@ -1,0 +1,24 @@
+{
+  "pluginFolder": {
+    "ui:widget": "text",
+    "ui:title": "Plugin Folder",
+    "ui:placeholder": "e.g., /path/to/plugins",
+    "ui:help": "Directory where plugin JAR files are located"
+  },
+  "tskJarPath": {
+    "ui:widget": "text",
+    "ui:title": "Sleuth Kit JAR Path",
+    "ui:placeholder": "e.g., /path/to/tsk",
+    "ui:help": "Directory containing Sleuth Kit JAR files"
+  },
+  "enablePlugins": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Plugins",
+    "ui:help": "Load plugins from plugin folder on startup"
+  },
+  "pluginRepositoryUrl": {
+    "ui:widget": "url",
+    "ui:title": "Plugin Repository URL",
+    "ui:help": "Repository URL for checking plugin updates"
+  }
+}

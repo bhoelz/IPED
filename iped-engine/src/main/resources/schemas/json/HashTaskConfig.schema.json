@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/HashTaskConfig.schema.json",
+  "title": "Hash Task Configuration",
+  "description": "File hashing and hash database lookup settings",
+  "type": "object",
+  "properties": {
+    "hashAlgorithm": {
+      "type": "string",
+      "description": "Hash algorithm to use",
+      "enum": ["MD5", "SHA-1", "SHA-256"],
+      "default": "SHA-256"
+    },
+    "enableHashDatabase": {
+      "type": "boolean",
+      "description": "Enable lookups against known hash databases",
+      "default": false
+    },
+    "hashDatabasePath": {
+      "type": "string",
+      "description": "Path to hash database files"
+    }
+  },
+  "additionalProperties": false
+}

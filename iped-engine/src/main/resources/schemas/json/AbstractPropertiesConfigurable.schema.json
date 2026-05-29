@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/AbstractPropertiesConfigurable.schema.json",
+  "title": "Abstract Properties Configurable",
+  "description": "Base schema for properties-file-based configuration components",
+  "type": "object",
+  "properties": {
+    "properties": {
+      "type": "object",
+      "description": "Key-value pairs loaded from properties file",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/VideoThumbsConfig.schema.json",
+  "title": "Video Thumbnails Configuration",
+  "description": "Configuration for video thumbnail extraction",
+  "type": "object",
+  "properties": {
+    "enableVideoThumbs": {
+      "type": "boolean",
+      "description": "Generate thumbnails from video files",
+      "default": true
+    },
+    "thumbCount": {
+      "type": "integer",
+      "description": "Number of thumbnails to generate per video",
+      "default": 3,
+      "minimum": 1,
+      "maximum": 10
+    },
+    "thumbWidth": {
+      "type": "integer",
+      "description": "Width of generated thumbnails in pixels",
+      "default": 160,
+      "minimum": 80
+    },
+    "thumbHeight": {
+      "type": "integer",
+      "description": "Height of generated thumbnails in pixels",
+      "default": 120,
+      "minimum": 60
+    },
+    "extractFrames": {
+      "type": "boolean",
+      "description": "Extract individual frames from videos",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

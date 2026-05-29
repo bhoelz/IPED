@@ -1,16 +1,24 @@
 package iped.engine.graph;
 
+import java.io.File;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class GraphServiceFactoryImpl implements GraphServiceFactory {
 
     private static GraphServiceFactory instance;
-    private static GraphService serviceInstance;
+    private static final ConcurrentHashMap<File, GraphService> serviceInstances = new ConcurrentHashMap<>();
 
     @Override
     public synchronized GraphService getGraphService() {
-        if (serviceInstance == null) {
-            serviceInstance = new GraphServiceImpl();
+        return getGraphService(null);
+    }
+
+    public synchronized GraphService getGraphService(File graphDbFolder) {
+        if (graphDbFolder == null) {
+            return new GraphServiceImpl();
         }
-        return serviceInstance;
+
+        return serviceInstances.computeIfAbsent(graphDbFolder, folder -> new GraphServiceImpl());
     }
 
     public synchronized static GraphServiceFactory getInstance() {

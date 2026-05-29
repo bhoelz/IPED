@@ -224,6 +224,7 @@ public class Configuration {
 
         configManager.loadConfigs();
 
+        validateConfigurations(configManager);
 
         // blocks internet access from html viewers
         DefaultPolicy policy = new DefaultPolicy();
@@ -254,6 +255,17 @@ public class Configuration {
             if (jar.isDirectory()) {
                 configDirectory.addPath(jar.toPath());
             }
+        }
+    }
+
+    private void validateConfigurations(ConfigurationManager configManager) {
+        ConfigurationValidator validator = new ConfigurationValidator();
+        ConfigurationValidator.ValidationStats stats = validator.validateAll(configManager);
+
+        if (!stats.allPassed()) {
+            logger.warn("Configuration validation failed for: {}", stats.failedComponents);
+        } else {
+            logger.info("All configurations validated successfully");
         }
     }
 

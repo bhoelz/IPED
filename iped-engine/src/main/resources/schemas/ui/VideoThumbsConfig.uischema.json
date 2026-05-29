@@ -1,0 +1,27 @@
+{
+  "enableVideoThumbs": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Video Thumbnails",
+    "ui:help": "Generate preview thumbnails from video files"
+  },
+  "thumbCount": {
+    "ui:widget": "updown",
+    "ui:title": "Thumbnails per Video",
+    "ui:help": "How many preview images to extract"
+  },
+  "thumbWidth": {
+    "ui:widget": "updown",
+    "ui:title": "Thumbnail Width (px)",
+    "ui:help": "Width of generated thumbnails"
+  },
+  "thumbHeight": {
+    "ui:widget": "updown",
+    "ui:title": "Thumbnail Height (px)",
+    "ui:help": "Height of generated thumbnails"
+  },
+  "extractFrames": {
+    "ui:widget": "checkbox",
+    "ui:title": "Extract Frames",
+    "ui:help": "Export individual video frames as images"
+  }
+}

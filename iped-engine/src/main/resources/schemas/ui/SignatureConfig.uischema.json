@@ -1,0 +1,28 @@
+{
+  "customSignatures": {
+    "ui:title": "Custom Signatures",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "mimeType": {
+        "ui:placeholder": "e.g., application/x-custom"
+      },
+      "extension": {
+        "ui:placeholder": "e.g., .custom"
+      },
+      "signature": {
+        "ui:placeholder": "Hex pattern: FF D8 FF"
+      },
+      "offset": {
+        "ui:widget": "updown",
+        "ui:placeholder": "Byte offset"
+      }
+    }
+  },
+  "enableCustomSignatures": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Custom Signatures"
+  }
+}

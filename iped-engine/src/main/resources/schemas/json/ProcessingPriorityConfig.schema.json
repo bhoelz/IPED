@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/ProcessingPriorityConfig.schema.json",
+  "title": "Processing Priority Configuration",
+  "description": "Configure item processing priority and scheduling",
+  "type": "object",
+  "properties": {
+    "threadCount": {
+      "type": "integer",
+      "description": "Number of parallel processing threads",
+      "default": 4,
+      "minimum": 1
+    },
+    "prioritizeBySize": {
+      "type": "boolean",
+      "description": "Process smaller files first for faster early results",
+      "default": true
+    },
+    "maximumHeapSize": {
+      "type": "integer",
+      "description": "Maximum heap size in MB",
+      "default": 1024,
+      "minimum": 512
+    }
+  },
+  "additionalProperties": false
+}

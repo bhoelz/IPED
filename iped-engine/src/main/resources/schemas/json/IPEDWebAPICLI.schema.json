@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/IPEDWebAPICLI.schema.json",
+  "title": "IPED Web API Command-Line Interface",
+  "description": "Schema for IPED Web API server command-line arguments (java -jar iped-webapi.jar)",
+  "type": "object",
+  "properties": {
+    "host": {
+      "type": "string",
+      "description": "Host/IP address to bind the API server to",
+      "default": "0.0.0.0",
+      "format": "ipv4"
+    },
+    "port": {
+      "type": "integer",
+      "description": "Port number for the API server",
+      "default": 8080,
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "sources": {
+      "type": "string",
+      "description": "URL or endpoint to query for available case sources/repositories",
+      "format": "uri"
+    }
+  },
+  "required": ["sources"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "host": "0.0.0.0",
+      "port": 8080,
+      "sources": "http://cases.example.com/api/sources"
+    },
+    {
+      "host": "192.168.1.100",
+      "port": 9000,
+      "sources": "file:///data/cases/sources.json"
+    }
+  ]
+}

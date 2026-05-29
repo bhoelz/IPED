@@ -1,0 +1,34 @@
+{
+  "enableCarving": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Data Carving",
+    "ui:help": "Recover deleted files by scanning for signatures"
+  },
+  "carverTypes": {
+    "ui:title": "Carver Types",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "name": {
+        "ui:placeholder": "e.g., JPEG, PDF, ZIP"
+      },
+      "mediaType": {
+        "ui:placeholder": "e.g., image/jpeg"
+      },
+      "minLength": {
+        "ui:widget": "updown",
+        "ui:placeholder": "Minimum size"
+      },
+      "maxLength": {
+        "ui:widget": "updown",
+        "ui:placeholder": "Maximum size"
+      }
+    }
+  },
+  "ignoreCorrupted": {
+    "ui:widget": "checkbox",
+    "ui:title": "Ignore Corrupted Files"
+  }
+}

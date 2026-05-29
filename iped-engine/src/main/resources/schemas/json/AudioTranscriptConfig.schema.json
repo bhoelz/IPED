@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/AudioTranscriptConfig.schema.json",
+  "title": "Audio Transcript Configuration",
+  "description": "Configuration for audio transcription task",
+  "type": "object",
+  "properties": {
+    "enableTranscription": {
+      "type": "boolean",
+      "description": "Enable audio transcription",
+      "default": false
+    },
+    "transcriptionEngine": {
+      "type": "string",
+      "description": "Audio transcription engine to use",
+      "enum": ["whisper", "google", "azure"],
+      "default": "whisper"
+    },
+    "apiKey": {
+      "type": "string",
+      "description": "API key for cloud transcription services"
+    },
+    "language": {
+      "type": "string",
+      "description": "Language code for transcription",
+      "default": "en"
+    },
+    "minAudioDuration": {
+      "type": "integer",
+      "description": "Minimum audio duration in seconds to transcribe",
+      "default": 1,
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

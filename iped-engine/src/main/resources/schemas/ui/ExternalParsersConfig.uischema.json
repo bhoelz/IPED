@@ -1,0 +1,83 @@
+{
+  "parsers": {
+    "ui:title": "External Tool Parsers",
+    "ui:help": "Configure external command-line tools for content extraction",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "name": {
+        "ui:widget": "text",
+        "ui:placeholder": "e.g., FFMpegParser",
+        "ui:help": "Unique identifier for this tool"
+      },
+      "winToolPath": {
+        "ui:widget": "text",
+        "ui:placeholder": "e.g., C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe",
+        "ui:help": "Windows-specific tool path (optional)"
+      },
+      "check": {
+        "ui:title": "Availability Check",
+        "ui:help": "How to verify the tool is installed",
+        "command": {
+          "ui:widget": "text",
+          "ui:placeholder": "e.g., ffmpeg -version",
+          "ui:help": "Command to check tool availability"
+        },
+        "errorCodes": {
+          "ui:title": "Error Codes",
+          "ui:help": "Exit codes that indicate tool is missing (usually 126, 127)"
+        }
+      },
+      "command": {
+        "ui:widget": "textarea",
+        "ui:placeholder": "e.g., ffmpeg -i ${INPUT}",
+        "ui:help": "Command to execute. Use ${INPUT} placeholder for file path"
+      },
+      "mimeTypes": {
+        "ui:title": "MIME Types",
+        "ui:help": "File types this tool can process",
+        "ui:options": {
+          "addable": true,
+          "removable": true
+        },
+        "items": {
+          "ui:placeholder": "e.g., video/mpeg"
+        }
+      },
+      "outputCharset": {
+        "ui:widget": "select",
+        "ui:options": {
+          "enumOptions": [
+            {"value": "UTF-8", "label": "UTF-8"},
+            {"value": "ISO-8859-1", "label": "ISO-8859-1"},
+            {"value": "CP1252", "label": "Windows-1252"}
+          ]
+        },
+        "ui:help": "Character encoding of tool output"
+      },
+      "firstLinesToIgnore": {
+        "ui:widget": "updown",
+        "ui:help": "Number of header lines to skip"
+      },
+      "metadata": {
+        "ui:title": "Metadata Extraction",
+        "ui:help": "Regex patterns to extract metadata from tool output",
+        "ui:options": {
+          "addable": true,
+          "removable": true
+        },
+        "items": {
+          "key": {
+            "ui:placeholder": "e.g., xmpDM:videoFrameRate"
+          },
+          "pattern": {
+            "ui:widget": "textarea",
+            "ui:placeholder": "e.g., \\s*Stream.*:\\s+Video:.*,\\s+([0-9]+)\\s+fps"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "enableMinIO": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable MinIO Storage"
+  },
+  "minioEndpoint": {
+    "ui:widget": "text",
+    "ui:title": "MinIO Endpoint",
+    "ui:placeholder": "e.g., minio.example.com:9000"
+  },
+  "minioAccessKey": {
+    "ui:widget": "text",
+    "ui:title": "Access Key",
+    "ui:help": "MinIO access key for authentication"
+  },
+  "minioSecretKey": {
+    "ui:widget": "password",
+    "ui:title": "Secret Key",
+    "ui:help": "MinIO secret key for authentication"
+  },
+  "minioBucket": {
+    "ui:widget": "text",
+    "ui:title": "Bucket Name",
+    "ui:placeholder": "e.g., iped-data"
+  },
+  "minioUseSSL": {
+    "ui:widget": "checkbox",
+    "ui:title": "Use SSL/TLS"
+  }
+}

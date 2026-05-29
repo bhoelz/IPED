@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/AnalysisConfig.schema.json",
+  "title": "Analysis Configuration",
+  "description": "General analysis and processing settings",
+  "type": "object",
+  "properties": {
+    "embedLibreOffice": {
+      "type": "boolean",
+      "description": "Include LibreOffice for document format conversion and viewing",
+      "default": true
+    },
+    "copyJREToUserHome": {
+      "type": "boolean",
+      "description": "Cache JRE locally in user home for offline use",
+      "default": false
+    },
+    "searchThreads": {
+      "type": "integer",
+      "description": "Number of threads for index searching",
+      "default": 4,
+      "minimum": 1
+    },
+    "maxBackups": {
+      "type": "integer",
+      "description": "Maximum number of case state backups to keep",
+      "default": 5,
+      "minimum": 0
+    },
+    "backupInterval": {
+      "type": "integer",
+      "description": "Time between backups in seconds",
+      "default": 3600,
+      "minimum": 60
+    },
+    "openWithDoubleClick": {
+      "type": "string",
+      "description": "How to handle opening executables with double-click",
+      "enum": ["never", "ask_always", "ask_if_exe", "always"],
+      "default": "ask_if_exe"
+    }
+  },
+  "additionalProperties": false
+}

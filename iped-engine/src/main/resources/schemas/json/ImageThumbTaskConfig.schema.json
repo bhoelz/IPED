@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/ImageThumbTaskConfig.schema.json",
+  "title": "Image Thumbnails Configuration",
+  "description": "Configuration for image thumbnail generation",
+  "type": "object",
+  "properties": {
+    "enableImageThumbs": {
+      "type": "boolean",
+      "description": "Generate thumbnails from images",
+      "default": true
+    },
+    "thumbWidth": {
+      "type": "integer",
+      "description": "Thumbnail width in pixels",
+      "default": 160,
+      "minimum": 80
+    },
+    "thumbHeight": {
+      "type": "integer",
+      "description": "Thumbnail height in pixels",
+      "default": 120,
+      "minimum": 60
+    },
+    "jpegQuality": {
+      "type": "integer",
+      "description": "JPEG quality for thumbnails (0-100)",
+      "default": 85,
+      "minimum": 1,
+      "maximum": 100
+    },
+    "processLargeImages": {
+      "type": "boolean",
+      "description": "Process very large image files",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}

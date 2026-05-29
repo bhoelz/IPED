@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/CarverTaskConfig.schema.json",
+  "title": "Carver Task Configuration",
+  "description": "Configuration for data carving - recovering deleted files",
+  "type": "object",
+  "properties": {
+    "enableCarving": {
+      "type": "boolean",
+      "description": "Enable data carving to recover deleted files",
+      "default": false
+    },
+    "carverTypes": {
+      "type": "array",
+      "description": "File types to carve",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Carver type identifier"
+          },
+          "mediaType": {
+            "type": "string",
+            "description": "Output MIME type"
+          },
+          "minLength": {
+            "type": "integer",
+            "description": "Minimum file size in bytes"
+          },
+          "maxLength": {
+            "type": "integer",
+            "description": "Maximum file size in bytes"
+          }
+        },
+        "required": ["name", "mediaType"]
+      }
+    },
+    "ignoreCorrupted": {
+      "type": "boolean",
+      "description": "Continue carving even on corrupted files",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}

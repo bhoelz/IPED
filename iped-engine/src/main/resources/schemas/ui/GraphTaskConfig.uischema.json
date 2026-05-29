@@ -1,0 +1,21 @@
+{
+  "enableGraphAnalysis": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Graph Analysis"
+  },
+  "graphDepth": {
+    "ui:widget": "updown",
+    "ui:title": "Graph Depth"
+  },
+  "relationshipTypes": {
+    "ui:title": "Relationship Types",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    }
+  },
+  "minimumWeight": {
+    "ui:widget": "updown",
+    "ui:title": "Minimum Weight"
+  }
+}

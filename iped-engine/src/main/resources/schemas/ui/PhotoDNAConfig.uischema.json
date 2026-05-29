@@ -1,0 +1,24 @@
+{
+  "enablePhotoDNA": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable PhotoDNA",
+    "ui:help": "Fingerprint images for known content matching"
+  },
+  "photoDNAApiUrl": {
+    "ui:widget": "url",
+    "ui:title": "PhotoDNA API URL"
+  },
+  "photoDNAApiKey": {
+    "ui:widget": "password",
+    "ui:title": "API Key"
+  },
+  "hashImages": {
+    "ui:widget": "checkbox",
+    "ui:title": "Hash All Images",
+    "ui:help": "Generate hashes even without API lookup"
+  },
+  "minImageSize": {
+    "ui:widget": "updown",
+    "ui:title": "Minimum Image Size (bytes)"
+  }
+}

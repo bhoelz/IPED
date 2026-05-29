@@ -1,0 +1,31 @@
+{
+  "enablePreview": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Preview Generation"
+  },
+  "supportedMimes": {
+    "ui:title": "Supported MIME Types",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "ui:placeholder": "e.g., text/html, application/pdf"
+    }
+  },
+  "previewDirectory": {
+    "ui:widget": "text",
+    "ui:title": "Preview Directory"
+  },
+  "previewFormat": {
+    "ui:widget": "select",
+    "ui:title": "Preview Format",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "html", "label": "HTML"},
+        {"value": "pdf", "label": "PDF"},
+        {"value": "images", "label": "Images"}
+      ]
+    }
+  }
+}

@@ -100,6 +100,13 @@ public class Worker extends Thread {
         this.stats = manager.stats;
         baseFilePath = output.getParentFile().getAbsolutePath();
 
+        // Set the CaseContext for this worker thread. The context will be made
+        // available to all tasks and processing code running in this thread.
+        CaseContext caseContext = manager.getContext();
+        if (caseContext != null) {
+            CaseContextThreadLocal.set(caseContext);
+        }
+
         if (k == 0) {
             LOGGER.info("Starting Tika"); //$NON-NLS-1$
         }
@@ -237,90 +244,95 @@ public class Worker extends Thread {
 
         LOGGER.info("{} started.", getName()); //$NON-NLS-1$
 
-        while (!this.isInterrupted() && exception == null) {
+        try {
+            while (!this.isInterrupted() && exception == null) {
 
-            try {
-                evidence = null;
-                boolean sleep = false;
-                while (evidence == null) {
-                    if (sleep) {
-                        // this should be very rare
-                        sleep = false;
-                        Thread.sleep(100);
-                    }
-                    synchronized (manager.getProcessingQueues()) {
-                        evidence = manager.getProcessingQueues().pollFromCurrentQueue();
-                        if (evidence == null) {
-                            sleep = true;
-                            continue;
+                try {
+                    evidence = null;
+                    boolean sleep = false;
+                    while (evidence == null) {
+                        if (sleep) {
+                            // this should be very rare
+                            sleep = false;
+                            Thread.sleep(100);
                         }
-                        if (!evidence.isQueueEnd()) {
-                            incItemsBeingProcessed();
-                        }
-                    }
-                }
-
-
-                if (!evidence.isQueueEnd()) {
-                    lastItemProcessingTime = System.currentTimeMillis();
-
-                    process(evidence);
-
-                } else {
-                    IItem queueEnd = evidence;
-                    if (manager.getProcessingQueues().isNoItemInQueueOrBeingProcessed()) {
-                        manager.getProcessingQueues().addToCurrentQueue(queueEnd);
-                        evidence = null;
-
-                        LOGGER.debug(this.getName() + " going to wait queue change.");
-                        synchronized(this) {
-                            try {
-                                waiting = true;
-                                this.wait();
-                            } finally {
-                                waiting = false;
+                        synchronized (manager.getProcessingQueues()) {
+                            evidence = manager.getProcessingQueues().pollFromCurrentQueue();
+                            if (evidence == null) {
+                                sleep = true;
+                                continue;
+                            }
+                            if (!evidence.isQueueEnd()) {
+                                incItemsBeingProcessed();
                             }
                         }
+                    }
+
+
+                    if (!evidence.isQueueEnd()) {
+                        lastItemProcessingTime = System.currentTimeMillis();
+
+                        process(evidence);
+
                     } else {
-                        manager.getProcessingQueues().addToCurrentQueue(queueEnd);
-                        long timeSinceLastItemProcessed = System.currentTimeMillis() - lastItemProcessingTime;
-                        if (itemsBeingProcessed > 0 && timeSinceLastItemProcessed >= MIN_WAIT_TIME_TO_SEND_QUEUE_END) {
-                            LOGGER.debug(
-                                    this.getName() + " Queue size = "
-                                            + manager.getProcessingQueues().getCurrentQueueSize()
-                                    + " itemsInThisWorker = " + itemsBeingProcessed + " itemsInAllWorkers = "
-                                            + manager.getProcessingQueues().getItemsBeingProcessed());
-                            process(queueEnd);
+                        IItem queueEnd = evidence;
+                        if (manager.getProcessingQueues().isNoItemInQueueOrBeingProcessed()) {
+                            manager.getProcessingQueues().addToCurrentQueue(queueEnd);
+                            evidence = null;
 
+                            LOGGER.debug(this.getName() + " going to wait queue change.");
+                            synchronized(this) {
+                                try {
+                                    waiting = true;
+                                    this.wait();
+                                } finally {
+                                    waiting = false;
+                                }
+                            }
+                        } else {
+                            manager.getProcessingQueues().addToCurrentQueue(queueEnd);
+                            long timeSinceLastItemProcessed = System.currentTimeMillis() - lastItemProcessingTime;
+                            if (itemsBeingProcessed > 0 && timeSinceLastItemProcessed >= MIN_WAIT_TIME_TO_SEND_QUEUE_END) {
+                                LOGGER.debug(
+                                        this.getName() + " Queue size = "
+                                                + manager.getProcessingQueues().getCurrentQueueSize()
+                                        + " itemsInThisWorker = " + itemsBeingProcessed + " itemsInAllWorkers = "
+                                                + manager.getProcessingQueues().getItemsBeingProcessed());
+                                process(queueEnd);
+
+                            }
                         }
                     }
-                }
 
-            } catch (InterruptedException e) {
-                if (manager.getProcessingQueues().getCurrentQueuePriority() == null) {
-                    try {
-                        finishTasks();
-                    } catch (Exception e1) {
-                        if (exception == null) {
-                            exception = e1;
+                } catch (InterruptedException e) {
+                    if (manager.getProcessingQueues().getCurrentQueuePriority() == null) {
+                        try {
+                            finishTasks();
+                        } catch (Exception e1) {
+                            if (exception == null) {
+                                exception = e1;
+                            }
+                        } finally {
+                            synchronized (this) {
+                                this.notify();
+                            }
                         }
-                    } finally {
-                        synchronized (this) {
-                            this.notify();
-                        }
+                        break;
                     }
-                    break;
                 }
             }
-        }
 
-        if (evidence == null) {
-            LOGGER.info("{} finished.", getName()); //$NON-NLS-1$
-        } else {
-            AbstractTask task = runningTask;
-            if (task != null)
-                task.interrupted();
-            LOGGER.info("{} interrupted on {} ({} bytes)", getName(), evidence.getPath(), evidence.getLength()); //$NON-NLS-1$
+            if (evidence == null) {
+                LOGGER.info("{} finished.", getName()); //$NON-NLS-1$
+            } else {
+                AbstractTask task = runningTask;
+                if (task != null)
+                    task.interrupted();
+                LOGGER.info("{} interrupted on {} ({} bytes)", getName(), evidence.getPath(), evidence.getLength()); //$NON-NLS-1$
+            }
+        } finally {
+            // Clear the ThreadLocal context when the worker thread exits
+            CaseContextThreadLocal.clear();
         }
     }
 

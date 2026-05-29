@@ -1,0 +1,40 @@
+{
+  "embedLibreOffice": {
+    "ui:widget": "checkbox",
+    "ui:title": "Embed LibreOffice",
+    "ui:help": "Include LibreOffice for document viewing and format conversion"
+  },
+  "copyJREToUserHome": {
+    "ui:widget": "checkbox",
+    "ui:title": "Cache JRE Locally",
+    "ui:help": "Copy Java Runtime to user home for offline availability"
+  },
+  "searchThreads": {
+    "ui:widget": "updown",
+    "ui:title": "Search Threads",
+    "ui:help": "Number of parallel threads for index searching"
+  },
+  "maxBackups": {
+    "ui:widget": "updown",
+    "ui:title": "Maximum Backups",
+    "ui:help": "Number of case backups to retain"
+  },
+  "backupInterval": {
+    "ui:widget": "updown",
+    "ui:title": "Backup Interval (seconds)",
+    "ui:help": "Time between automatic case backups"
+  },
+  "openWithDoubleClick": {
+    "ui:widget": "select",
+    "ui:title": "Double-Click Behavior for Executables",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "never", "label": "Never"},
+        {"value": "ask_always", "label": "Always Ask"},
+        {"value": "ask_if_exe", "label": "Ask if Executable"},
+        {"value": "always", "label": "Always Open"}
+      ]
+    },
+    "ui:help": "How to handle opening potentially unsafe files"
+  }
+}

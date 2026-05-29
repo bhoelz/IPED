@@ -1,0 +1,22 @@
+{
+  "enableAIFilters": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable AI Filters"
+  },
+  "nudityDetection": {
+    "ui:widget": "checkbox",
+    "ui:title": "Nudity Detection"
+  },
+  "violenceDetection": {
+    "ui:widget": "checkbox",
+    "ui:title": "Violence Detection"
+  },
+  "confidentceThreshold": {
+    "ui:widget": "updown",
+    "ui:title": "Confidence Threshold (0.0-1.0)"
+  },
+  "modelPath": {
+    "ui:widget": "text",
+    "ui:title": "AI Model Path"
+  }
+}

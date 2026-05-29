@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/ParsingTaskConfig.schema.json",
+  "title": "Parsing Task Configuration",
+  "description": "Configuration for content extraction and parsing",
+  "type": "object",
+  "properties": {
+    "enableParsing": {
+      "type": "boolean",
+      "description": "Enable content extraction from files",
+      "default": true
+    },
+    "extractMetadata": {
+      "type": "boolean",
+      "description": "Extract metadata from parsed content",
+      "default": true
+    },
+    "parseTimeout": {
+      "type": "integer",
+      "description": "Timeout for parsing in seconds",
+      "default": 30,
+      "minimum": 1
+    },
+    "maxContentSize": {
+      "type": "integer",
+      "description": "Maximum content size to parse in MB",
+      "default": 1024,
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+{
+  "appIds": {
+    "ui:title": "Application ID Mappings",
+    "ui:help": "Maps Windows application IDs to readable names"
+  }
+}

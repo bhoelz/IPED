@@ -1,0 +1,18 @@
+{
+  "enableParsing": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Content Extraction"
+  },
+  "extractMetadata": {
+    "ui:widget": "checkbox",
+    "ui:title": "Extract Metadata"
+  },
+  "parseTimeout": {
+    "ui:widget": "updown",
+    "ui:title": "Parse Timeout (seconds)"
+  },
+  "maxContentSize": {
+    "ui:widget": "updown",
+    "ui:title": "Maximum Content Size (MB)"
+  }
+}

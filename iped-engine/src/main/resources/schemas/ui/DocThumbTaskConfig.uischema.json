@@ -1,0 +1,24 @@
+{
+  "enableDocThumbs": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Document Thumbnails",
+    "ui:help": "Generate preview images from documents"
+  },
+  "pageCount": {
+    "ui:widget": "updown",
+    "ui:title": "Pages to Thumbnail",
+    "ui:help": "Number of pages from each document to process"
+  },
+  "thumbWidth": {
+    "ui:widget": "updown",
+    "ui:title": "Width (px)"
+  },
+  "thumbHeight": {
+    "ui:widget": "updown",
+    "ui:title": "Height (px)"
+  },
+  "pdfResolution": {
+    "ui:widget": "updown",
+    "ui:title": "PDF Resolution (DPI)"
+  }
+}

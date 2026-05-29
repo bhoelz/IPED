@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/TaskInstallerConfig.schema.json",
+  "title": "Task Installer Configuration",
+  "description": "Configuration for IPED processing task installation and ordering",
+  "type": "object",
+  "properties": {
+    "tasks": {
+      "type": "array",
+      "description": "Ordered list of processing tasks to execute",
+      "items": {
+        "type": "object",
+        "description": "A single processing task definition",
+        "properties": {
+          "class": {
+            "type": "string",
+            "description": "Fully qualified Java class name implementing AbstractTask"
+          },
+          "script": {
+            "type": "string",
+            "description": "Path to script file (JavaScript .js or Python .py)"
+          }
+        },
+        "oneOf": [
+          {
+            "required": ["class"],
+            "not": { "required": ["script"] }
+          },
+          {
+            "required": ["script"],
+            "not": { "required": ["class"] }
+          }
+        ]
+      }
+    }
+  },
+  "required": ["tasks"],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "tasks": [
+        {
+          "class": "iped.engine.task.HashTask"
+        },
+        {
+          "class": "iped.engine.task.SignatureTask"
+        },
+        {
+          "script": "RefineCategoryTask.js"
+        }
+      ]
+    }
+  ]
+}

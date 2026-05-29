@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/ExternalParsersConfig.schema.json",
+  "title": "External Parsers Configuration",
+  "description": "Configuration for external tool integration with Tika",
+  "type": "object",
+  "properties": {
+    "parsers": {
+      "type": "array",
+      "description": "List of external parser/tool configurations",
+      "items": {
+        "type": "object",
+        "description": "An external tool parser configuration",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Identifier/name for this external parser"
+          },
+          "winToolPath": {
+            "type": "string",
+            "description": "Windows-specific path to tool executable"
+          },
+          "check": {
+            "type": "object",
+            "description": "Tool availability check configuration",
+            "properties": {
+              "command": {
+                "type": "string",
+                "description": "Command to check if tool is available"
+              },
+              "errorCodes": {
+                "type": "array",
+                "description": "Exit codes indicating tool is not available",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "command": {
+            "type": "string",
+            "description": "Command to execute. Use ${INPUT} for file path placeholder"
+          },
+          "mimeTypes": {
+            "type": "array",
+            "description": "MIME types this parser can handle",
+            "items": {
+              "type": "string"
+            }
+          },
+          "outputCharset": {
+            "type": "string",
+            "description": "Character encoding of tool output"
+          },
+          "firstLinesToIgnore": {
+            "type": "integer",
+            "description": "Number of header lines to skip in output"
+          },
+          "metadata": {
+            "type": "array",
+            "description": "Regex patterns to extract metadata from output",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "Metadata key name"
+                },
+                "pattern": {
+                  "type": "string",
+                  "description": "Regex pattern to match and extract value"
+                }
+              },
+              "required": ["key", "pattern"]
+            }
+          }
+        },
+        "required": ["name", "command", "mimeTypes"]
+      }
+    }
+  },
+  "required": ["parsers"],
+  "additionalProperties": false
+}

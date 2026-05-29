@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/NamedEntityTaskConfig.schema.json",
+  "title": "Named Entity Recognition Configuration",
+  "description": "Configuration for natural language named entity extraction",
+  "type": "object",
+  "properties": {
+    "enableNER": {
+      "type": "boolean",
+      "description": "Enable named entity recognition",
+      "default": true
+    },
+    "entityTypes": {
+      "type": "array",
+      "description": "Entity types to extract",
+      "items": {
+        "type": "string",
+        "enum": ["PERSON", "LOCATION", "ORGANIZATION", "DATE", "MONEY", "PERCENT"]
+      },
+      "default": ["PERSON", "LOCATION", "ORGANIZATION"]
+    },
+    "language": {
+      "type": "string",
+      "description": "Language for NER processing",
+      "default": "en"
+    },
+    "confidenceThreshold": {
+      "type": "number",
+      "description": "Minimum confidence score (0.0-1.0)",
+      "default": 0.6,
+      "minimum": 0.0,
+      "maximum": 1.0
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/DocThumbTaskConfig.schema.json",
+  "title": "Document Thumbnails Configuration",
+  "description": "Configuration for document preview generation",
+  "type": "object",
+  "properties": {
+    "enableDocThumbs": {
+      "type": "boolean",
+      "description": "Generate thumbnails from documents",
+      "default": true
+    },
+    "pageCount": {
+      "type": "integer",
+      "description": "Number of pages to generate thumbnails for",
+      "default": 1,
+      "minimum": 1
+    },
+    "thumbWidth": {
+      "type": "integer",
+      "description": "Thumbnail width in pixels",
+      "default": 160,
+      "minimum": 80
+    },
+    "thumbHeight": {
+      "type": "integer",
+      "description": "Thumbnail height in pixels",
+      "default": 200,
+      "minimum": 100
+    },
+    "pdfResolution": {
+      "type": "integer",
+      "description": "DPI for PDF rendering",
+      "default": 150,
+      "minimum": 72,
+      "maximum": 300
+    }
+  },
+  "additionalProperties": false
+}

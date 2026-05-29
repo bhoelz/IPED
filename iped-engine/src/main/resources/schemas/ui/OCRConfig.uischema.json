@@ -1,0 +1,32 @@
+{
+  "enableOCR": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable OCR",
+    "ui:help": "Extract text from images using optical character recognition"
+  },
+  "ocrLanguage": {
+    "ui:widget": "text",
+    "ui:title": "OCR Language",
+    "ui:placeholder": "e.g., eng, por, spa",
+    "ui:help": "Language code for OCR engine"
+  },
+  "pdfToImgResolution": {
+    "ui:widget": "updown",
+    "ui:title": "PDF to Image Resolution (DPI)",
+    "ui:help": "Resolution for converting PDFs to images before OCR"
+  },
+  "pageSegMode": {
+    "ui:widget": "select",
+    "ui:title": "Page Segmentation Mode",
+    "ui:help": "Tesseract algorithm mode for page analysis",
+    "ui:options": {
+      "enumOptions": [
+        {"value": 0, "label": "0 - Orientation and script detection only"},
+        {"value": 1, "label": "1 - Automatic page segmentation"},
+        {"value": 3, "label": "3 - Assume single column text"},
+        {"value": 6, "label": "6 - Assume single uniform block"},
+        {"value": 11, "label": "11 - Sparse text"}
+      ]
+    }
+  }
+}

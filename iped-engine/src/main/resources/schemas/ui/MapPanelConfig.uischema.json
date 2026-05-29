@@ -1,0 +1,13 @@
+{
+  "tileServerUrlPattern": {
+    "ui:widget": "textarea",
+    "ui:title": "Default Tile Server URL",
+    "ui:help": "URL pattern for map tiles with placeholders: {s}=subdomain, {z}=zoom, {x},{y}=tile coordinates, {quad}=quadkey",
+    "ui:placeholder": "http://r{s}.ortho.tiles.virtualearth.net/tiles/r{quad}.png?g=1"
+  },
+  "tileServers": {
+    "ui:title": "Named Tile Servers",
+    "ui:help": "User-selectable tile server options",
+    "ui:widget": "textarea"
+  }
+}

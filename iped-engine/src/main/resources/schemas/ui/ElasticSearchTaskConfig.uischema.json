@@ -1,0 +1,28 @@
+{
+  "elasticsearchHost": {
+    "ui:widget": "text",
+    "ui:title": "Elasticsearch Host",
+    "ui:placeholder": "e.g., localhost or 192.168.1.100"
+  },
+  "elasticsearchPort": {
+    "ui:widget": "updown",
+    "ui:title": "Elasticsearch Port",
+    "ui:help": "Default is 9200"
+  },
+  "elasticsearchUsername": {
+    "ui:widget": "text",
+    "ui:title": "Username"
+  },
+  "elasticsearchPassword": {
+    "ui:widget": "password",
+    "ui:title": "Password"
+  },
+  "indexName": {
+    "ui:widget": "text",
+    "ui:title": "Index Name"
+  },
+  "useRemoteES": {
+    "ui:widget": "checkbox",
+    "ui:title": "Use Remote Elasticsearch"
+  }
+}

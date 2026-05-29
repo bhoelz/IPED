@@ -1,0 +1,52 @@
+{
+  "indexUnallocated": {
+    "ui:widget": "checkbox",
+    "ui:title": "Index Unallocated Space",
+    "ui:help": "Include unallocated/free space in the index"
+  },
+  "convertCharsToLowerCase": {
+    "ui:widget": "checkbox",
+    "ui:title": "Case-Insensitive Search",
+    "ui:help": "Convert all text to lowercase for case-insensitive searching"
+  },
+  "convertCharsToAscii": {
+    "ui:widget": "checkbox",
+    "ui:title": "ASCII Conversion",
+    "ui:help": "Convert diacritical marks to ASCII (é → e)"
+  },
+  "filterNonLatinChars": {
+    "ui:widget": "checkbox",
+    "ui:title": "Filter Non-Latin Text",
+    "ui:help": "Exclude non-Latin scripts (Chinese, Arabic, etc.)"
+  },
+  "textSplitSize": {
+    "ui:widget": "updown",
+    "ui:title": "Text Chunk Size (bytes)",
+    "ui:help": "Maximum length of text to index at once"
+  },
+  "useNIOFSDirectory": {
+    "ui:widget": "checkbox",
+    "ui:title": "Use NIO for Network Shares",
+    "ui:help": "Use NIO filesystem for network/SMB compatibility"
+  },
+  "forceMerge": {
+    "ui:widget": "checkbox",
+    "ui:title": "Force Merge",
+    "ui:help": "Merge all segments into one for faster searching"
+  },
+  "storeTermVectors": {
+    "ui:widget": "checkbox",
+    "ui:title": "Store Term Vectors",
+    "ui:help": "Enable similar document search functionality"
+  },
+  "maxTokenLength": {
+    "ui:widget": "updown",
+    "ui:title": "Maximum Token Length",
+    "ui:help": "Longest word to include in index"
+  },
+  "commitIntervalSeconds": {
+    "ui:widget": "updown",
+    "ui:title": "Commit Interval (seconds)",
+    "ui:help": "How often to flush index changes to disk"
+  }
+}

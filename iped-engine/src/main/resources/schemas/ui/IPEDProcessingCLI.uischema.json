@@ -1,0 +1,186 @@
+{
+  "datasources": {
+    "ui:title": "Input Data Sources",
+    "ui:help": "Forensic images, folders, or other data sources to process. Can specify DD, E01, VHD, ISO, AFF, and more",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "ui:widget": "text",
+      "ui:placeholder": "/path/to/image.dd or /dev/sda1"
+    }
+  },
+  "dname": {
+    "ui:title": "Display Names",
+    "ui:help": "Optional human-readable names for each datasource. Must match datasources order",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "ui:placeholder": "e.g., SuspectPhone, LaptopDrive"
+    }
+  },
+  "output": {
+    "ui:widget": "text",
+    "ui:title": "Output Folder",
+    "ui:placeholder": "/path/to/output",
+    "ui:help": "Directory where case results will be stored"
+  },
+  "keywords": {
+    "ui:widget": "text",
+    "ui:title": "Keywords File",
+    "ui:placeholder": "/path/to/keywords.txt",
+    "ui:help": "Text file with search keywords (one per line)"
+  },
+  "ocr": {
+    "ui:title": "OCR Categories",
+    "ui:help": "Run OCR only on specific file categories or bookmarks",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "ui:placeholder": "e.g., Documents, Images"
+    }
+  },
+  "log": {
+    "ui:widget": "text",
+    "ui:title": "Log File",
+    "ui:placeholder": "/path/to/logfile.txt",
+    "ui:help": "Custom location for log file output"
+  },
+  "asap": {
+    "ui:widget": "text",
+    "ui:title": "ASAP File",
+    "ui:placeholder": "/path/to/case.asap",
+    "ui:help": "Brazilian Federal Police case information file"
+  },
+  "nocontent": {
+    "ui:title": "Exclude from Report",
+    "ui:help": "Categories/bookmarks to exclude file contents (only thumbnails and properties exported)",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "ui:placeholder": "e.g., Videos, LargeFiles"
+    }
+  },
+  "timezone": {
+    "ui:widget": "select",
+    "ui:title": "FAT Device Timezone",
+    "ui:help": "Original timezone of FAT filesystems",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "GMT-12", "label": "GMT-12"},
+        {"value": "GMT-11", "label": "GMT-11"},
+        {"value": "GMT-10", "label": "GMT-10"},
+        {"value": "GMT-9", "label": "GMT-9"},
+        {"value": "GMT-8", "label": "GMT-8 (PST)"},
+        {"value": "GMT-7", "label": "GMT-7 (MST)"},
+        {"value": "GMT-6", "label": "GMT-6 (CST)"},
+        {"value": "GMT-5", "label": "GMT-5 (EST)"},
+        {"value": "GMT-4", "label": "GMT-4"},
+        {"value": "GMT-3", "label": "GMT-3 (Brazil)"},
+        {"value": "GMT+0", "label": "GMT+0 (UTC)"},
+        {"value": "GMT+1", "label": "GMT+1"},
+        {"value": "GMT+2", "label": "GMT+2"},
+        {"value": "GMT+3", "label": "GMT+3"},
+        {"value": "GMT+5:30", "label": "GMT+5:30 (IST)"}
+      ]
+    }
+  },
+  "blocksize": {
+    "ui:widget": "updown",
+    "ui:title": "Block Size (bytes)",
+    "ui:help": "Sector block size. Use 4096 for 4k sector drives, 512 for standard"
+  },
+  "password": {
+    "ui:title": "Image Passwords",
+    "ui:help": "Passwords for encrypted volumes or images",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "ui:widget": "password",
+      "ui:placeholder": "encrypted image password"
+    }
+  },
+  "profile": {
+    "ui:widget": "select",
+    "ui:title": "Processing Profile",
+    "ui:help": "Pre-configured processing profile",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "forensic", "label": "Forensic (Complete)"},
+        {"value": "pedo", "label": "Pedophilia (Targeted)"},
+        {"value": "fastmode", "label": "Fast Mode"},
+        {"value": "blind", "label": "Blind (No Cache)"},
+        {"value": "triage", "label": "Triage (Quick Analysis)"}
+      ]
+    }
+  },
+  "addowner": {
+    "ui:widget": "checkbox",
+    "ui:title": "Index File Owner",
+    "ui:help": "Extract and index file owner information (slow on network folders)"
+  },
+  "append": {
+    "ui:widget": "checkbox",
+    "ui:title": "Append to Existing Case",
+    "ui:help": "Add data to an existing case instead of creating new one"
+  },
+  "continue": {
+    "ui:widget": "checkbox",
+    "ui:title": "Continue Processing",
+    "ui:help": "Resume a stopped or aborted processing run"
+  },
+  "restart": {
+    "ui:widget": "checkbox",
+    "ui:title": "Restart Processing",
+    "ui:help": "Discard failed processing and start from beginning"
+  },
+  "nogui": {
+    "ui:widget": "checkbox",
+    "ui:title": "Text Mode (No GUI)",
+    "ui:help": "Run without progress windows, useful for headless/remote systems"
+  },
+  "nologfile": {
+    "ui:widget": "checkbox",
+    "ui:title": "Log to Console",
+    "ui:help": "Output logs to console instead of file"
+  },
+  "nopstattachs": {
+    "ui:widget": "checkbox",
+    "ui:title": "Skip PST Attachments",
+    "ui:help": "Do not export email attachments from PST/OST files"
+  },
+  "nolinkeditems": {
+    "ui:widget": "checkbox",
+    "ui:title": "Skip Linked Items",
+    "ui:help": "Do not export items linked to chat conversations"
+  },
+  "portable": {
+    "ui:widget": "checkbox",
+    "ui:title": "Portable Case",
+    "ui:help": "Use relative paths so case can be moved across machines"
+  },
+  "downloadInternetData": {
+    "ui:widget": "checkbox",
+    "ui:title": "Download Internet Data",
+    "ui:help": "Fetch current data from internet sources (e.g., WhatsApp media still available on servers)"
+  },
+  "splash": {
+    "ui:widget": "textarea",
+    "ui:title": "Splash Screen Message",
+    "ui:placeholder": "Custom message to display on startup",
+    "ui:help": "Custom text for splash screen"
+  },
+  "extraParams": {
+    "ui:title": "Advanced Options",
+    "ui:help": "Module-specific configuration (key=value pairs, use -Xkey=value format)"
+  }
+}

@@ -1,9 +1,14 @@
 package iped.engine.util;
 
 import java.io.File;
+import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Queue;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import iped.data.IBookmarks;
 
@@ -18,6 +23,9 @@ public class SaveStateThread extends Thread {
 
     // Use a LinkedHashMap so bookmark files are saved in the order they are inserted
     private final Map<IBookmarks, File> stateMap = new LinkedHashMap<>();
+
+    // Per-case state queues for multi-case processing
+    private final ConcurrentHashMap<UUID, Queue<Map.Entry<IBookmarks, File>>> caseStateMap = new ConcurrentHashMap<>();
 
     private SaveStateThread() {
     }
@@ -37,20 +45,45 @@ public class SaveStateThread extends Thread {
         }
     }
 
+    public void saveState(UUID caseId, IBookmarks state, File file) {
+        Queue<Map.Entry<IBookmarks, File>> caseQueue = caseStateMap.computeIfAbsent(caseId,
+                k -> new ConcurrentLinkedQueue<>());
+        caseQueue.offer(new AbstractMap.SimpleEntry<>(state, file));
+    }
+
     public void run() {
         while (!Thread.interrupted()) {
             try {
                 IBookmarks state = null;
                 File file = null;
+
+                Map.Entry<IBookmarks, File> entry = null;
+
                 synchronized (stateMap) {
                     if (!stateMap.isEmpty()) {
                         Iterator<Map.Entry<IBookmarks, File>> it = stateMap.entrySet().iterator();
-                        Map.Entry<IBookmarks, File> entry = it.next();
+                        entry = it.next();
                         it.remove();
-                        state = entry.getKey();
-                        file = entry.getValue();
                     }
                 }
+
+                if (entry == null && !caseStateMap.isEmpty()) {
+                    for (UUID caseId : caseStateMap.keySet()) {
+                        Queue<Map.Entry<IBookmarks, File>> caseQueue = caseStateMap.get(caseId);
+                        if (caseQueue != null) {
+                            entry = caseQueue.poll();
+                            if (entry != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (entry != null) {
+                    state = entry.getKey();
+                    file = entry.getValue();
+                }
+
                 if (state != null && file != null) {
                     File tmp = new File(file.getAbsolutePath() + ".tmp");
                     if (tmp.exists())

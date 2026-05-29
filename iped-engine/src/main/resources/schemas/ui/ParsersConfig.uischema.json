@@ -1,0 +1,48 @@
+{
+  "parsers": {
+    "ui:title": "Parsers",
+    "ui:help": "Configure Tika parsers for content extraction",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "ui:help": "Parser configuration with optional parameters",
+      "class": {
+        "ui:widget": "text",
+        "ui:placeholder": "e.g., org.apache.tika.parser.pdf.PDFParser",
+        "ui:help": "Fully qualified Java class name"
+      },
+      "params": {
+        "ui:title": "Parameters",
+        "ui:help": "Parser-specific configuration parameters",
+        "ui:widget": "textarea"
+      },
+      "mimeExclusions": {
+        "ui:title": "MIME Type Exclusions",
+        "ui:help": "MIME types that this parser should skip",
+        "ui:options": {
+          "addable": true,
+          "removable": true
+        },
+        "items": {
+          "ui:placeholder": "e.g., image/jpeg"
+        }
+      }
+    }
+  },
+  "encodingDetectors": {
+    "ui:title": "Encoding Detectors",
+    "ui:help": "Configure text encoding detection",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    },
+    "items": {
+      "class": {
+        "ui:widget": "text",
+        "ui:placeholder": "Encoding detector class"
+      }
+    }
+  }
+}

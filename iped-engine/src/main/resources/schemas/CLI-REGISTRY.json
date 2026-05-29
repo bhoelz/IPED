@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/CLI-REGISTRY.json",
+  "title": "IPED Command-Line Interface Registry",
+  "description": "Complete registry of all IPED command-line interfaces and their arguments",
+  "version": "1.0",
+  "applications": [
+    {
+      "id": "iped-processing",
+      "name": "IPED Processing Application",
+      "description": "Main IPED application for digital forensic evidence processing and analysis",
+      "mainClass": "iped.app.processing.Main",
+      "jarName": "iped.jar",
+      "invocation": "java -jar iped.jar [options]",
+      "jsonSchema": "schemas/json/IPEDProcessingCLI.schema.json",
+      "uiSchema": "schemas/ui/IPEDProcessingCLI.uischema.json",
+      "implementationClass": "iped.app.processing.CmdLineArgsImpl",
+      "interfaceClass": "iped.engine.CmdLineArgs",
+      "priority": 1,
+      "keyArguments": [
+        {
+          "name": "datasources (-d)",
+          "description": "Input data sources (forensic images, folders, etc.)",
+          "type": "array",
+          "required": true
+        },
+        {
+          "name": "output (-o)",
+          "description": "Output folder for case results",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "profile",
+          "description": "Processing profile (forensic, pedo, fastmode, blind, triage)",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "nogui",
+          "description": "Run in text mode without GUI",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "iped-webapi",
+      "name": "IPED Web API Server",
+      "description": "RESTful API server for IPED case access and analysis",
+      "mainClass": "iped.engine.webapi.Main",
+      "jarName": "iped-webapi.jar",
+      "invocation": "java -jar iped-webapi.jar --host=HOST --port=PORT --sources=URL",
+      "jsonSchema": "schemas/json/IPEDWebAPICLI.schema.json",
+      "uiSchema": "schemas/ui/IPEDWebAPICLI.uischema.json",
+      "priority": 2,
+      "keyArguments": [
+        {
+          "name": "host",
+          "description": "Server host/IP address",
+          "type": "string",
+          "default": "0.0.0.0",
+          "required": false
+        },
+        {
+          "name": "port",
+          "description": "Server port number",
+          "type": "integer",
+          "default": 8080,
+          "required": false
+        },
+        {
+          "name": "sources",
+          "description": "URL to sources endpoint",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "iped-searchapp",
+      "name": "IPED Search/Analysis Application",
+      "description": "GUI application for searching and analyzing IPED cases",
+      "mainClass": "iped.app.ui.AppMain",
+      "jarName": "iped-search-app.jar",
+      "invocation": "java -jar iped-search-app.jar [caseFolder] [casesFolder]",
+      "jsonSchema": "schemas/json/IPEDSearchAppCLI.schema.json",
+      "uiSchema": "schemas/ui/IPEDSearchAppCLI.uischema.json",
+      "priority": 3,
+      "keyArguments": [
+        {
+          "name": "caseFolder",
+          "description": "Path to IPED case folder to open",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "casesFolder",
+          "description": "Path to folder containing multiple cases",
+          "type": "string",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "usageExamples": {
+    "iped-processing": {
+      "basic": "java -jar iped.jar -d /path/to/image.dd -o /path/to/output",
+      "noGui": "java -jar iped.jar -d /path/to/image.dd -o /path/to/output --nogui",
+      "withProfile": "java -jar iped.jar -d /path/to/image.dd -o /path/to/output -profile forensic",
+      "withKeywords": "java -jar iped.jar -d /path/to/image.dd -o /path/to/output -l /path/to/keywords.txt",
+      "continueCase": "java -jar iped.jar -o /path/to/output --continue",
+      "multipleSources": "java -jar iped.jar -d /source1 -dname Source1 -d /source2 -dname Source2 -o /path/to/output"
+    },
+    "iped-webapi": {
+      "default": "java -jar iped-webapi.jar --host=0.0.0.0 --port=8080 --sources=http://localhost:9000/sources",
+      "custom": "java -jar iped-webapi.jar --host=192.168.1.100 --port=9000 --sources=file:///data/sources.json"
+    },
+    "iped-searchapp": {
+      "singleCase": "java -jar iped-search-app.jar /path/to/case/iped",
+      "multiCase": "java -jar iped-search-app.jar --casesFolder=/path/to/cases"
+    }
+  },
+  "environmentVariables": [
+    {
+      "name": "IPED_MEMORY",
+      "description": "Maximum JVM memory allocation (-Xmx)",
+      "example": "IPED_MEMORY=8g java -jar iped.jar ..."
+    },
+    {
+      "name": "JAVA_TOOL_OPTIONS",
+      "description": "Additional JVM options",
+      "example": "JAVA_TOOL_OPTIONS='-Duser.timezone=UTC' java -jar iped.jar ..."
+    }
+  ],
+  "commonOptions": [
+    {
+      "pattern": "-d, --data",
+      "description": "Input data source(s)",
+      "applicableTo": ["iped-processing"]
+    },
+    {
+      "pattern": "-o, --output",
+      "description": "Output directory",
+      "applicableTo": ["iped-processing"]
+    },
+    {
+      "pattern": "--nogui",
+      "description": "Run without graphical interface",
+      "applicableTo": ["iped-processing"]
+    }
+  ],
+  "profiles": {
+    "forensic": {
+      "description": "Complete forensic analysis with all tasks enabled",
+      "use_case": "Comprehensive investigation"
+    },
+    "pedo": {
+      "description": "Targeted profile for pedophilia-related investigations",
+      "use_case": "Child exploitation material detection"
+    },
+    "fastmode": {
+      "description": "Faster processing with reduced analysis depth",
+      "use_case": "Quick triage and preliminary analysis"
+    },
+    "blind": {
+      "description": "Forensic analysis without caching",
+      "use_case": "Court-approved forensic examination"
+    },
+    "triage": {
+      "description": "Quick initial analysis for case assessment",
+      "use_case": "Rapid case evaluation"
+    }
+  },
+  "notes": [
+    "Parameter order generally does not matter",
+    "Multiple -d parameters can be used to process multiple data sources",
+    "-d and -data are equivalent (long form)",
+    "-o and -output are equivalent (long form)",
+    "Boolean options (--flag) require no value",
+    "Options with values (-option value) require a value",
+    "File paths with spaces should be quoted",
+    "Use --help or -h to display complete help message",
+    "Processing profiles override individual task settings",
+    "Case append/continue/restart require valid existing case folder"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/SignatureConfig.schema.json",
+  "title": "Signature Configuration",
+  "description": "Configuration for custom file type signatures",
+  "type": "object",
+  "properties": {
+    "customSignatures": {
+      "type": "array",
+      "description": "Custom MIME type signatures",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type identifier"
+          },
+          "extension": {
+            "type": "string",
+            "description": "File extension"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Hex signature pattern"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Byte offset for signature"
+          }
+        }
+      }
+    },
+    "enableCustomSignatures": {
+      "type": "boolean",
+      "description": "Enable custom signature detection",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}

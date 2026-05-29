@@ -1,0 +1,18 @@
+{
+  "enableTempRecovery": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Temporary File Recovery"
+  },
+  "recoverPrefetch": {
+    "ui:widget": "checkbox",
+    "ui:title": "Recover Windows Prefetch"
+  },
+  "recoverRecycleBin": {
+    "ui:widget": "checkbox",
+    "ui:title": "Recover Recycle Bin"
+  },
+  "recoverBrowserCache": {
+    "ui:widget": "checkbox",
+    "ui:title": "Recover Browser Cache"
+  }
+}

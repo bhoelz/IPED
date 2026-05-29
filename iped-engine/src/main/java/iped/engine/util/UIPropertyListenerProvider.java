@@ -3,8 +3,13 @@ package iped.engine.util;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.SwingUtilities;
+
+import iped.engine.core.CaseContextThreadLocal;
 
 public class UIPropertyListenerProvider {
 
@@ -12,6 +17,9 @@ public class UIPropertyListenerProvider {
 
     private ArrayList<PropertyChangeListener> listeners = new ArrayList<>();
     private ArrayList<PropertyChangeListener> uiListeners = new ArrayList<>();
+
+    private final ConcurrentHashMap<UUID, Set<PropertyChangeListener>> caseListeners = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Set<PropertyChangeListener>> caseUiListeners = new ConcurrentHashMap<>();
 
     private Thread executorthread;
 
@@ -36,8 +44,43 @@ public class UIPropertyListenerProvider {
         }
     }
 
+    public void addPropertyChangeListener(UUID caseId, PropertyChangeListener l, boolean isUIListener) {
+        if (isUIListener) {
+            caseUiListeners.computeIfAbsent(caseId, k -> ConcurrentHashMap.newKeySet()).add(l);
+        } else {
+            caseListeners.computeIfAbsent(caseId, k -> ConcurrentHashMap.newKeySet()).add(l);
+        }
+    }
+
     public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         PropertyChangeEvent event = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
+
+        var ctx = CaseContextThreadLocal.get();
+        if (ctx != null) {
+            Set<PropertyChangeListener> caseListenersSet = caseListeners.get(ctx.getId());
+            if (caseListenersSet != null) {
+                for (PropertyChangeListener l : caseListenersSet) {
+                    l.propertyChange(event);
+                }
+            }
+
+            Set<PropertyChangeListener> caseUiListenersSet = caseUiListeners.get(ctx.getId());
+            if (caseUiListenersSet != null) {
+                for (PropertyChangeListener l : caseUiListenersSet) {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        l.propertyChange(event);
+                    } else {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                l.propertyChange(event);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
         for (PropertyChangeListener l : listeners) {
             l.propertyChange(event);
         }

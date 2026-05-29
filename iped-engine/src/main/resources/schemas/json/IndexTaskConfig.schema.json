@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/IndexTaskConfig.schema.json",
+  "title": "Index Task Configuration",
+  "description": "Elasticsearch indexing and search engine settings",
+  "type": "object",
+  "properties": {
+    "indexUnallocated": {
+      "type": "boolean",
+      "description": "Index unallocated/free space data",
+      "default": false
+    },
+    "convertCharsToLowerCase": {
+      "type": "boolean",
+      "description": "Convert indexed text to lowercase for case-insensitive search",
+      "default": true
+    },
+    "convertCharsToAscii": {
+      "type": "boolean",
+      "description": "Convert diacritical characters to ASCII equivalents",
+      "default": false
+    },
+    "filterNonLatinChars": {
+      "type": "boolean",
+      "description": "Exclude non-Latin character text",
+      "default": false
+    },
+    "textSplitSize": {
+      "type": "integer",
+      "description": "Maximum text chunk size in bytes",
+      "default": 262144,
+      "minimum": 1024
+    },
+    "useNIOFSDirectory": {
+      "type": "boolean",
+      "description": "Use NIO filesystem for network share compatibility",
+      "default": false
+    },
+    "forceMerge": {
+      "type": "boolean",
+      "description": "Force merge to single segment for search optimization",
+      "default": true
+    },
+    "storeTermVectors": {
+      "type": "boolean",
+      "description": "Store term vectors for similar document searches",
+      "default": false
+    },
+    "maxTokenLength": {
+      "type": "integer",
+      "description": "Maximum word length to index",
+      "default": 255,
+      "minimum": 1
+    },
+    "commitIntervalSeconds": {
+      "type": "integer",
+      "description": "Interval between index commits",
+      "default": 60,
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

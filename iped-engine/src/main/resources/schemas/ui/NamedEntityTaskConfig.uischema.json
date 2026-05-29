@@ -1,0 +1,29 @@
+{
+  "enableNER": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Named Entity Recognition"
+  },
+  "entityTypes": {
+    "ui:widget": "checkboxes",
+    "ui:title": "Entity Types to Extract",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "PERSON", "label": "Person Names"},
+        {"value": "LOCATION", "label": "Locations"},
+        {"value": "ORGANIZATION", "label": "Organizations"},
+        {"value": "DATE", "label": "Dates"},
+        {"value": "MONEY", "label": "Money Amounts"},
+        {"value": "PERCENT", "label": "Percentages"}
+      ]
+    }
+  },
+  "language": {
+    "ui:widget": "text",
+    "ui:title": "Language",
+    "ui:placeholder": "e.g., en, es, pt"
+  },
+  "confidenceThreshold": {
+    "ui:widget": "updown",
+    "ui:title": "Confidence Threshold (0.0-1.0)"
+  }
+}

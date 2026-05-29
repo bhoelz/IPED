@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/PhotoDNAConfig.schema.json",
+  "title": "PhotoDNA Configuration",
+  "description": "Configuration for PhotoDNA image fingerprinting",
+  "type": "object",
+  "properties": {
+    "enablePhotoDNA": {
+      "type": "boolean",
+      "description": "Enable PhotoDNA analysis",
+      "default": false
+    },
+    "photoDNAApiUrl": {
+      "type": "string",
+      "description": "PhotoDNA API endpoint URL"
+    },
+    "photoDNAApiKey": {
+      "type": "string",
+      "description": "PhotoDNA API authentication key"
+    },
+    "hashImages": {
+      "type": "boolean",
+      "description": "Hash all images even without PhotoDNA lookup",
+      "default": true
+    },
+    "minImageSize": {
+      "type": "integer",
+      "description": "Minimum image size in bytes to process",
+      "default": 10000,
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

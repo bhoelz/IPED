@@ -62,6 +62,8 @@ import iped.engine.config.SplashScreenConfig;
 import iped.engine.data.Bookmarks;
 import iped.engine.data.CaseData;
 import iped.engine.data.IPEDSource;
+import iped.engine.config.ConfigurationView;
+import java.util.UUID;
 import iped.engine.data.Item;
 import iped.engine.datasource.ItemProducer;
 import iped.engine.datasource.SleuthkitReader;
@@ -125,7 +127,6 @@ public class Manager {
 
     private static long commitIntervalMillis = 30 * 60 * 1000;
     private static Logger LOGGER = LogManager.getLogger(Manager.class);
-    private static Manager instance;
 
     private CaseData caseData;
     private ProcessingQueues processingQueues;
@@ -170,7 +171,27 @@ public class Manager {
     }
 
     public static Manager getInstance() {
-        return instance;
+        CaseContext context = CaseContextThreadLocal.get();
+        if (context != null) {
+            return context.getManager();
+        }
+        return null;
+    }
+
+    /**
+     * Get the CaseContext that owns this Manager instance. Used during worker
+     * initialization to set the ThreadLocal context.
+     *
+     * @return the CaseContext for this case, or null if not set
+     */
+    private CaseContext caseContext;
+
+    public void setCaseContext(CaseContext context) {
+        this.caseContext = context;
+    }
+
+    public CaseContext getContext() {
+        return caseContext;
     }
 
     public ICaseData getCaseData() {
@@ -214,9 +235,16 @@ public class Manager {
             indexDir = finalIndexDir;
         }
 
-        stats = Statistics.get(caseData, finalIndexDir);
+        stats = new Statistics(caseData, finalIndexDir);
 
-        instance = this;
+        CaseContext context = new CaseContext.Builder(UUID.randomUUID())
+                .withManager(this)
+                .withStatistics(stats)
+                .withCaseData(caseData)
+                .withConfigurationView(new ConfigurationView())
+                .build();
+
+        this.caseContext = context;
 
         commitIntervalMillis = indexConfig.getCommitIntervalSeconds() * 1000;
     }
@@ -488,8 +516,9 @@ public class Manager {
         GraphService graphService = null;
         try {
             if (new File(output, GraphConstants.DB_DATA_PATH).exists()) {
-                graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
-                graphService.start(new File(output, GraphConstants.DB_HOME_DIR));
+                File graphDbFolder = new File(output, GraphConstants.DB_HOME_DIR);
+                graphService = GraphServiceFactoryImpl.getInstance().getGraphService(graphDbFolder);
+                graphService.start(graphDbFolder);
                 int deletions = graphService.deleteRelationshipsFromDatasource(evidenceUUID);
                 LOGGER.log(CONSOLE, "Deleted {} graph connections.", deletions);
             } else {

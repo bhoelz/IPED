@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/CategoryConfig.schema.json",
+  "title": "Category Configuration",
+  "description": "Configuration for file categorization hierarchy",
+  "type": "object",
+  "properties": {
+    "categories": {
+      "type": "object",
+      "description": "File category definitions",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "mimeTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

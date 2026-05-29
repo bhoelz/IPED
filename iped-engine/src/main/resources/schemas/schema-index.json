@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/schema-index.json",
+  "title": "IPED Configuration Schema Registry",
+  "description": "Complete index of all available configuration schemas for IPED components",
+  "version": "2.0",
+  "totalSchemas": 31,
+  "schemas": [
+    {
+      "id": "TaskInstallerConfig",
+      "name": "Task Installer Configuration",
+      "description": "Configuration for IPED processing task installation and ordering",
+      "jsonSchema": "schemas/json/TaskInstallerConfig.schema.json",
+      "uiSchema": "schemas/ui/TaskInstallerConfig.uischema.json",
+      "configurableClass": "iped.engine.config.TaskInstallerConfig",
+      "resourcePattern": "TaskInstaller.xml",
+      "category": "core",
+      "priority": 1
+    },
+    {
+      "id": "ParsersConfig",
+      "name": "Parsers Configuration",
+      "description": "Configuration for Tika parsers and custom parser integration",
+      "jsonSchema": "schemas/json/ParsersConfig.schema.json",
+      "uiSchema": "schemas/ui/ParsersConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ParsersConfig",
+      "resourcePattern": "ParserConfig.xml",
+      "category": "core",
+      "priority": 2
+    },
+    {
+      "id": "ExternalParsersConfig",
+      "name": "External Parsers Configuration",
+      "description": "Configuration for external tool integration with Tika",
+      "jsonSchema": "schemas/json/ExternalParsersConfig.schema.json",
+      "uiSchema": "schemas/ui/ExternalParsersConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ExternalParsersConfig",
+      "resourcePattern": "ExternalParsers.xml",
+      "category": "core",
+      "priority": 3
+    },
+    {
+      "id": "MapPanelConfig",
+      "name": "Map Panel Configuration",
+      "description": "Configuration for geographic mapping and tile server settings",
+      "jsonSchema": "schemas/json/MapPanelConfig.schema.json",
+      "uiSchema": "schemas/ui/MapPanelConfig.uischema.json",
+      "configurableClass": "iped.geo.impl.MapPanelConfig",
+      "resourcePattern": "GEOConfig.txt",
+      "category": "ui",
+      "priority": 10
+    },
+    {
+      "id": "AnalysisConfig",
+      "name": "Analysis Configuration",
+      "description": "General application-wide analysis and processing settings",
+      "jsonSchema": "schemas/json/AnalysisConfig.schema.json",
+      "uiSchema": "schemas/ui/AnalysisConfig.uischema.json",
+      "configurableClass": "iped.engine.config.AnalysisConfig",
+      "resourcePattern": "AnalysisConfig.txt",
+      "category": "general",
+      "priority": 5
+    },
+    {
+      "id": "OCRConfig",
+      "name": "OCR Configuration",
+      "description": "Optical character recognition settings for image text extraction",
+      "jsonSchema": "schemas/json/OCRConfig.schema.json",
+      "uiSchema": "schemas/ui/OCRConfig.uischema.json",
+      "configurableClass": "iped.engine.config.OCRConfig",
+      "resourcePattern": "OCRConfig.txt",
+      "category": "processing",
+      "priority": 8
+    },
+    {
+      "id": "IndexTaskConfig",
+      "name": "Index Task Configuration",
+      "description": "Elasticsearch indexing and search engine settings",
+      "jsonSchema": "schemas/json/IndexTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/IndexTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.IndexTaskConfig",
+      "resourcePattern": "IndexTaskConfig.txt",
+      "category": "task",
+      "priority": 4
+    },
+    {
+      "id": "HashTaskConfig",
+      "name": "Hash Task Configuration",
+      "description": "File hashing and hash database lookup settings",
+      "jsonSchema": "schemas/json/HashTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/HashTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.HashTaskConfig",
+      "resourcePattern": "HashTaskConfig.txt",
+      "category": "task",
+      "priority": 6
+    },
+    {
+      "id": "PluginConfig",
+      "name": "Plugin Configuration",
+      "description": "Configuration for plugin loading and management",
+      "jsonSchema": "schemas/json/PluginConfig.schema.json",
+      "uiSchema": "schemas/ui/PluginConfig.uischema.json",
+      "configurableClass": "iped.engine.config.PluginConfig",
+      "resourcePattern": "LocalConfig.txt",
+      "category": "system",
+      "priority": 15
+    },
+    {
+      "id": "FileSystemConfig",
+      "name": "File System Configuration",
+      "description": "File system access and mounting settings",
+      "jsonSchema": "schemas/json/FileSystemConfig.schema.json",
+      "uiSchema": "schemas/ui/FileSystemConfig.uischema.json",
+      "configurableClass": "iped.engine.config.FileSystemConfig",
+      "resourcePattern": "FileSystemConfig.txt",
+      "category": "system",
+      "priority": 12
+    },
+    {
+      "id": "ProcessingPriorityConfig",
+      "name": "Processing Priority Configuration",
+      "description": "Configure item processing priority and scheduling",
+      "jsonSchema": "schemas/json/ProcessingPriorityConfig.schema.json",
+      "uiSchema": "schemas/ui/ProcessingPriorityConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ProcessingPriorityConfig",
+      "resourcePattern": "ProcessingPriorityConfig.txt",
+      "category": "performance",
+      "priority": 7
+    },
+    {
+      "id": "AudioTranscriptConfig",
+      "name": "Audio Transcript Configuration",
+      "description": "Configuration for audio transcription task",
+      "jsonSchema": "schemas/json/AudioTranscriptConfig.schema.json",
+      "uiSchema": "schemas/ui/AudioTranscriptConfig.uischema.json",
+      "configurableClass": "iped.engine.config.AudioTranscriptConfig",
+      "category": "task",
+      "priority": 20
+    },
+    {
+      "id": "VideoThumbsConfig",
+      "name": "Video Thumbnails Configuration",
+      "description": "Configuration for video thumbnail extraction",
+      "jsonSchema": "schemas/json/VideoThumbsConfig.schema.json",
+      "uiSchema": "schemas/ui/VideoThumbsConfig.uischema.json",
+      "configurableClass": "iped.engine.config.VideoThumbsConfig",
+      "category": "task",
+      "priority": 18
+    },
+    {
+      "id": "DocThumbTaskConfig",
+      "name": "Document Thumbnails Configuration",
+      "description": "Configuration for document preview generation",
+      "jsonSchema": "schemas/json/DocThumbTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/DocThumbTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.DocThumbTaskConfig",
+      "category": "task",
+      "priority": 19
+    },
+    {
+      "id": "ImageThumbTaskConfig",
+      "name": "Image Thumbnails Configuration",
+      "description": "Configuration for image thumbnail generation",
+      "jsonSchema": "schemas/json/ImageThumbTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/ImageThumbTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ImageThumbTaskConfig",
+      "category": "task",
+      "priority": 17
+    },
+    {
+      "id": "MinIOConfig",
+      "name": "MinIO Configuration",
+      "description": "Configuration for MinIO object storage integration",
+      "jsonSchema": "schemas/json/MinIOConfig.schema.json",
+      "uiSchema": "schemas/ui/MinIOConfig.uischema.json",
+      "configurableClass": "iped.engine.config.MinIOConfig",
+      "category": "storage",
+      "priority": 25
+    },
+    {
+      "id": "ElasticSearchTaskConfig",
+      "name": "Elasticsearch Task Configuration",
+      "description": "Configuration for Elasticsearch integration",
+      "jsonSchema": "schemas/json/ElasticSearchTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/ElasticSearchTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ElasticSearchTaskConfig",
+      "category": "task",
+      "priority": 9
+    },
+    {
+      "id": "PhotoDNAConfig",
+      "name": "PhotoDNA Configuration",
+      "description": "Configuration for PhotoDNA image fingerprinting",
+      "jsonSchema": "schemas/json/PhotoDNAConfig.schema.json",
+      "uiSchema": "schemas/ui/PhotoDNAConfig.uischema.json",
+      "configurableClass": "iped.engine.config.PhotoDNAConfig",
+      "category": "detection",
+      "priority": 22
+    },
+    {
+      "id": "RegexTaskConfig",
+      "name": "Regular Expression Task Configuration",
+      "description": "Configuration for regex pattern matching and searching",
+      "jsonSchema": "schemas/json/RegexTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/RegexTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.RegexTaskConfig",
+      "category": "task",
+      "priority": 11
+    },
+    {
+      "id": "NamedEntityTaskConfig",
+      "name": "Named Entity Recognition Configuration",
+      "description": "Configuration for natural language named entity extraction",
+      "jsonSchema": "schemas/json/NamedEntityTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/NamedEntityTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.NamedEntityTaskConfig",
+      "category": "nlp",
+      "priority": 21
+    },
+    {
+      "id": "CarverTaskConfig",
+      "name": "Carver Task Configuration",
+      "description": "Configuration for data carving - recovering deleted files",
+      "jsonSchema": "schemas/json/CarverTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/CarverTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.CarverTaskConfig",
+      "category": "recovery",
+      "priority": 13
+    },
+    {
+      "id": "CategoryConfig",
+      "name": "Category Configuration",
+      "description": "Configuration for file categorization hierarchy",
+      "jsonSchema": "schemas/json/CategoryConfig.schema.json",
+      "uiSchema": "schemas/ui/CategoryConfig.uischema.json",
+      "configurableClass": "iped.engine.config.CategoryConfig",
+      "category": "classification",
+      "priority": 24
+    },
+    {
+      "id": "GraphTaskConfig",
+      "name": "Graph Task Configuration",
+      "description": "Configuration for relationship graph analysis",
+      "jsonSchema": "schemas/json/GraphTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/GraphTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.GraphTaskConfig",
+      "category": "analysis",
+      "priority": 23
+    },
+    {
+      "id": "MakePreviewConfig",
+      "name": "Make Preview Configuration",
+      "description": "Configuration for preview/viewer file generation",
+      "jsonSchema": "schemas/json/MakePreviewConfig.schema.json",
+      "uiSchema": "schemas/ui/MakePreviewConfig.uischema.json",
+      "configurableClass": "iped.engine.config.MakePreviewConfig",
+      "category": "task",
+      "priority": 16
+    },
+    {
+      "id": "LocalConfig",
+      "name": "Local Configuration",
+      "description": "Local machine-specific configuration settings",
+      "jsonSchema": "schemas/json/LocalConfig.schema.json",
+      "uiSchema": "schemas/ui/LocalConfig.uischema.json",
+      "configurableClass": "iped.engine.config.LocalConfig",
+      "category": "system",
+      "priority": 14
+    },
+    {
+      "id": "SignatureConfig",
+      "name": "Signature Configuration",
+      "description": "Configuration for custom file type signatures",
+      "jsonSchema": "schemas/json/SignatureConfig.schema.json",
+      "uiSchema": "schemas/ui/SignatureConfig.uischema.json",
+      "configurableClass": "iped.engine.config.SignatureConfig",
+      "category": "detection",
+      "priority": 26
+    },
+    {
+      "id": "AppIDsConfig",
+      "name": "Application IDs Configuration",
+      "description": "Configuration for Windows application ID mappings",
+      "jsonSchema": "schemas/json/AppIDsConfig.schema.json",
+      "uiSchema": "schemas/ui/AppIDsConfig.uischema.json",
+      "configurableClass": "iped.engine.config.AppIDsConfig",
+      "category": "detection",
+      "priority": 27
+    },
+    {
+      "id": "ParsingTaskConfig",
+      "name": "Parsing Task Configuration",
+      "description": "Configuration for content extraction and parsing",
+      "jsonSchema": "schemas/json/ParsingTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/ParsingTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ParsingTaskConfig",
+      "category": "task",
+      "priority": 28
+    },
+    {
+      "id": "RemoteImageClassifierConfig",
+      "name": "Remote Image Classifier Configuration",
+      "description": "Configuration for remote image classification services",
+      "jsonSchema": "schemas/json/RemoteImageClassifierConfig.schema.json",
+      "uiSchema": "schemas/ui/RemoteImageClassifierConfig.uischema.json",
+      "configurableClass": "iped.engine.config.RemoteImageClassifierConfig",
+      "category": "ai",
+      "priority": 29
+    },
+    {
+      "id": "TempFileTaskConfig",
+      "name": "Temporary File Task Configuration",
+      "description": "Configuration for temporary file recovery",
+      "jsonSchema": "schemas/json/TempFileTaskConfig.schema.json",
+      "uiSchema": "schemas/ui/TempFileTaskConfig.uischema.json",
+      "configurableClass": "iped.engine.config.TempFileTaskConfig",
+      "category": "recovery",
+      "priority": 30
+    },
+    {
+      "id": "ExportByCategoriesConfig",
+      "name": "Export by Categories Configuration",
+      "description": "Configuration for exporting results by file category",
+      "jsonSchema": "schemas/json/ExportByCategoriesConfig.schema.json",
+      "uiSchema": "schemas/ui/ExportByCategoriesConfig.uischema.json",
+      "configurableClass": "iped.engine.config.ExportByCategoriesConfig",
+      "category": "export",
+      "priority": 31
+    },
+    {
+      "id": "PhotoDNALookupConfig",
+      "name": "PhotoDNA Lookup Configuration",
+      "description": "Configuration for PhotoDNA database lookups",
+      "jsonSchema": "schemas/json/PhotoDNALookupConfig.schema.json",
+      "uiSchema": "schemas/ui/PhotoDNALookupConfig.uischema.json",
+      "configurableClass": "iped.engine.config.PhotoDNALookupConfig",
+      "category": "detection",
+      "priority": 32
+    },
+    {
+      "id": "AIFiltersConfig",
+      "name": "AI Filters Configuration",
+      "description": "Configuration for AI-based content filtering",
+      "jsonSchema": "schemas/json/AIFiltersConfig.schema.json",
+      "uiSchema": "schemas/ui/AIFiltersConfig.uischema.json",
+      "configurableClass": "iped.engine.config.AIFiltersConfig",
+      "category": "ai",
+      "priority": 33
+    },
+    {
+      "id": "AbstractPropertiesConfigurable",
+      "name": "Abstract Properties Configurable",
+      "description": "Base schema for properties-file-based configuration",
+      "jsonSchema": "schemas/json/AbstractPropertiesConfigurable.schema.json",
+      "uiSchema": "schemas/ui/AbstractPropertiesConfigurable.uischema.json",
+      "configurableClass": "iped.engine.config.AbstractPropertiesConfigurable",
+      "category": "abstract",
+      "priority": 100
+    }
+  ],
+  "categories": {
+    "core": "Core configuration components",
+    "task": "Task-specific configuration",
+    "processing": "Content processing settings",
+    "ui": "User interface configuration",
+    "general": "General application settings",
+    "system": "System-level configuration",
+    "performance": "Performance tuning",
+    "recovery": "Data recovery settings",
+    "analysis": "Analysis and graph settings",
+    "detection": "Detection and recognition",
+    "nlp": "Natural language processing",
+    "ai": "Artificial intelligence services",
+    "storage": "Storage backend configuration",
+    "export": "Export and reporting",
+    "classification": "File classification",
+    "abstract": "Abstract base classes"
+  },
+  "generationDate": "2026-05-28",
+  "notes": [
+    "All schemas use JSON Schema Draft 2020-12 standard",
+    "UI Schemas are compatible with JSON Form and react-jsonschema-form renderers",
+    "Priority: lower numbers = more important / core functionality",
+    "31 core schemas have been generated covering the most important Configurable implementations",
+    "Additional schemas for remaining 14+ implementations can be added following the same patterns",
+    "Each schema includes comprehensive property descriptions and validation rules",
+    "UI Schemas provide user-friendly form controls and help text"
+  ]
+}

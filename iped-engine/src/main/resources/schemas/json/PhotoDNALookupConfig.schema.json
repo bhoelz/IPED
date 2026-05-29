@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/PhotoDNALookupConfig.schema.json",
+  "title": "PhotoDNA Lookup Configuration",
+  "description": "Configuration for PhotoDNA database lookups",
+  "type": "object",
+  "properties": {
+    "enableLookup": {
+      "type": "boolean",
+      "description": "Enable PhotoDNA lookups",
+      "default": false
+    },
+    "lookupApiUrl": {
+      "type": "string",
+      "description": "PhotoDNA lookup API endpoint"
+    },
+    "apiTimeout": {
+      "type": "integer",
+      "description": "API timeout in seconds",
+      "default": 30,
+      "minimum": 1
+    },
+    "retryOnFailure": {
+      "type": "boolean",
+      "description": "Retry failed lookups",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}

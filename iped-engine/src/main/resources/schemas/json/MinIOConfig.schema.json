@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/MinIOConfig.schema.json",
+  "title": "MinIO Configuration",
+  "description": "Configuration for MinIO object storage integration",
+  "type": "object",
+  "properties": {
+    "enableMinIO": {
+      "type": "boolean",
+      "description": "Enable MinIO storage backend",
+      "default": false
+    },
+    "minioEndpoint": {
+      "type": "string",
+      "description": "MinIO server endpoint URL"
+    },
+    "minioAccessKey": {
+      "type": "string",
+      "description": "MinIO access key"
+    },
+    "minioSecretKey": {
+      "type": "string",
+      "description": "MinIO secret key"
+    },
+    "minioBucket": {
+      "type": "string",
+      "description": "MinIO bucket name",
+      "default": "iped-data"
+    },
+    "minioUseSSL": {
+      "type": "boolean",
+      "description": "Use SSL/TLS for MinIO connection",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}

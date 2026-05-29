@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/IPEDSearchAppCLI.schema.json",
+  "title": "IPED Search Application Command-Line Interface",
+  "description": "Schema for IPED Search/Analysis UI application command-line arguments (java -jar iped-search-app.jar)",
+  "type": "object",
+  "properties": {
+    "caseFolder": {
+      "type": "string",
+      "description": "Path to IPED case folder to open"
+    },
+    "casesFolder": {
+      "type": "string",
+      "description": "Path to folder containing multiple IPED cases for multi-case search"
+    }
+  },
+  "oneOf": [
+    { "required": ["caseFolder"] },
+    { "required": ["casesFolder"] },
+    { "not": { "required": ["caseFolder", "casesFolder"] } }
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "caseFolder": "/path/to/case/iped"
+    },
+    {
+      "casesFolder": "/path/to/cases"
+    }
+  ]
+}

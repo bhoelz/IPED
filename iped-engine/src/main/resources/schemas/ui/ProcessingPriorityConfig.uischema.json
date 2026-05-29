@@ -1,0 +1,17 @@
+{
+  "threadCount": {
+    "ui:widget": "updown",
+    "ui:title": "Processing Threads",
+    "ui:help": "Number of concurrent processing threads"
+  },
+  "prioritizeBySize": {
+    "ui:widget": "checkbox",
+    "ui:title": "Prioritize by Size",
+    "ui:help": "Process smaller files first for faster results"
+  },
+  "maximumHeapSize": {
+    "ui:widget": "updown",
+    "ui:title": "Maximum Heap Size (MB)",
+    "ui:help": "JVM maximum memory allocation"
+  }
+}

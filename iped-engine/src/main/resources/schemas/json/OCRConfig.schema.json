@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/OCRConfig.schema.json",
+  "title": "OCR Configuration",
+  "description": "Optical character recognition settings for image text extraction",
+  "type": "object",
+  "properties": {
+    "enableOCR": {
+      "type": "boolean",
+      "description": "Enable optical character recognition on images",
+      "default": false
+    },
+    "ocrLanguage": {
+      "type": "string",
+      "description": "Language code for OCR (e.g., eng, por, spa)",
+      "default": "eng"
+    },
+    "pdfToImgResolution": {
+      "type": "integer",
+      "description": "DPI resolution for PDF to image conversion before OCR",
+      "default": 150,
+      "minimum": 72,
+      "maximum": 600
+    },
+    "pageSegMode": {
+      "type": "integer",
+      "description": "Tesseract page segmentation mode (0-13)",
+      "default": 3,
+      "minimum": 0,
+      "maximum": 13
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/MapPanelConfig.schema.json",
+  "title": "Map Panel Configuration",
+  "description": "Configuration for geographic mapping and tile server settings",
+  "type": "object",
+  "properties": {
+    "tileServerUrlPattern": {
+      "type": "string",
+      "description": "Default tile server URL with placeholders: {s}=subdomain, {z}=zoom, {x},{y}=coordinates, {quad}=quadkey",
+      "default": "http://r{s}.ortho.tiles.virtualearth.net/tiles/r{quad}.png?g=1"
+    },
+    "tileServers": {
+      "type": "object",
+      "description": "Named tile server definitions for user selection",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Tile server URL with same placeholders as tileServerUrlPattern"
+      },
+      "examples": {
+        "Bing": "http://r{s}.ortho.tiles.virtualearth.net/tiles/r{quad}.png?g=1",
+        "Open Street Maps": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "Esri_WorldImagery": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      }
+    }
+  },
+  "required": ["tileServerUrlPattern"],
+  "additionalProperties": false
+}

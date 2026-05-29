@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/IPEDProcessingCLI.schema.json",
+  "title": "IPED Processing Command-Line Interface",
+  "description": "Schema for IPED processing command-line arguments (java -jar iped.jar)",
+  "type": "object",
+  "properties": {
+    "datasources": {
+      "type": "array",
+      "description": "Input data sources to process. Can specify DD, E01, VHD, VHDX, VMDK, ISO, AFF, AD1, UFDR, folder, or .iped file",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "dname": {
+      "type": "array",
+      "description": "Display names (optional) for each datasource added with -d. Must match datasources order",
+      "items": {
+        "type": "string"
+      }
+    },
+    "output": {
+      "type": "string",
+      "description": "Output folder for case results. Defaults to parent directory of first datasource"
+    },
+    "keywords": {
+      "type": "string",
+      "description": "Path to file with keywords to import into case. Keywords with no hits are filtered out"
+    },
+    "ocr": {
+      "type": "array",
+      "description": "Run OCR only on specific categories or bookmarks (multiple allowed)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "log": {
+      "type": "string",
+      "description": "Path to redirect log messages to custom log file"
+    },
+    "asap": {
+      "type": "string",
+      "description": "Path to .asap file (Brazilian Federal Police) with case info for HTML report"
+    },
+    "nocontent": {
+      "type": "array",
+      "description": "Categories or bookmarks to exclude file contents from report (multiple allowed)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timezone": {
+      "type": "string",
+      "description": "Original timezone of FAT devices (e.g., GMT-3, GMT-4). Uses system timezone if unspecified",
+      "pattern": "^GMT[+-]\\d{1,2}$"
+    },
+    "blocksize": {
+      "type": "integer",
+      "description": "Sector block size in bytes. Must set to 4k for 4k sector devices",
+      "default": 512,
+      "minimum": 512,
+      "maximum": 65536
+    },
+    "password": {
+      "type": "array",
+      "description": "Passwords for encrypted images/volumes (multiple allowed)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "profile": {
+      "type": "string",
+      "description": "Processing profile to use",
+      "enum": ["forensic", "pedo", "fastmode", "blind", "triage"]
+    },
+    "addowner": {
+      "type": "boolean",
+      "description": "Index file owner information when processing local folders (slower on network)",
+      "default": false
+    },
+    "append": {
+      "type": "boolean",
+      "description": "Add data to be processed to an existing case",
+      "default": false
+    },
+    "continue": {
+      "type": "boolean",
+      "description": "Continue a stopped or aborted processing",
+      "default": false
+    },
+    "restart": {
+      "type": "boolean",
+      "description": "Discard last aborted processing and start from beginning",
+      "default": false
+    },
+    "nogui": {
+      "type": "boolean",
+      "description": "Do not open progress windows, use text mode processing",
+      "default": false
+    },
+    "nologfile": {
+      "type": "boolean",
+      "description": "Log messages to standard output instead of file",
+      "default": false
+    },
+    "nopstattachs": {
+      "type": "boolean",
+      "description": "Do not export PST/OST email attachments automatically to report",
+      "default": false
+    },
+    "nolinkeditems": {
+      "type": "boolean",
+      "description": "Do not export items linked to chats automatically to report",
+      "default": false
+    },
+    "portable": {
+      "type": "boolean",
+      "description": "Use relative references to forensic images, enabling case portability across machines",
+      "default": false
+    },
+    "downloadInternetData": {
+      "type": "boolean",
+      "description": "Download Internet data to enrich evidence processing (e.g., WhatsApp media still available on servers)",
+      "default": false
+    },
+    "splash": {
+      "type": "string",
+      "description": "Custom message to display in splash screen"
+    },
+    "help": {
+      "type": "boolean",
+      "description": "Display help message",
+      "default": false
+    },
+    "extraParams": {
+      "type": "object",
+      "description": "Extra module-specific options (specified with -Xkey=value)",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["datasources"],
+  "oneOf": [
+    { "required": ["datasources"] },
+    { "required": ["remove"] }
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "datasources": ["/path/to/image.dd"],
+      "output": "/path/to/output",
+      "profile": "forensic",
+      "nogui": true
+    },
+    {
+      "datasources": ["/path/to/data1", "/path/to/data2"],
+      "dname": ["SuspectPhone", "LaptopDrive"],
+      "output": "/path/to/case",
+      "keywords": "/path/to/keywords.txt",
+      "profile": "pedo"
+    }
+  ]
+}

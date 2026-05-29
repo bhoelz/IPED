@@ -1,0 +1,32 @@
+{
+  "appRoot": {
+    "ui:widget": "text",
+    "ui:title": "Application Root",
+    "ui:help": "IPED installation directory"
+  },
+  "configPath": {
+    "ui:widget": "text",
+    "ui:title": "Configuration Directory"
+  },
+  "tempPath": {
+    "ui:widget": "text",
+    "ui:title": "Temporary Directory",
+    "ui:help": "Working directory for processing"
+  },
+  "casesPath": {
+    "ui:widget": "text",
+    "ui:title": "Cases Directory",
+    "ui:help": "Default location for case storage"
+  },
+  "locale": {
+    "ui:widget": "select",
+    "ui:title": "Locale",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "en_US", "label": "English (US)"},
+        {"value": "pt_BR", "label": "Portuguese (Brazil)"},
+        {"value": "es_ES", "label": "Spanish"}
+      ]
+    }
+  }
+}

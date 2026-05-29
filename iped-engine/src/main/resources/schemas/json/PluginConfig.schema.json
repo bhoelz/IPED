@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/PluginConfig.schema.json",
+  "title": "Plugin Configuration",
+  "description": "Configuration for plugin loading and management",
+  "type": "object",
+  "properties": {
+    "pluginFolder": {
+      "type": "string",
+      "description": "Path to directory containing plugin JAR files"
+    },
+    "tskJarPath": {
+      "type": "string",
+      "description": "Path to Sleuth Kit JAR files"
+    },
+    "enablePlugins": {
+      "type": "boolean",
+      "description": "Enable plugin loading",
+      "default": true
+    },
+    "pluginRepositoryUrl": {
+      "type": "string",
+      "description": "URL to plugin repository for auto-updates"
+    }
+  },
+  "required": ["pluginFolder"],
+  "additionalProperties": false
+}

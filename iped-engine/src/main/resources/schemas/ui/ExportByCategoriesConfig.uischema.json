@@ -1,0 +1,24 @@
+{
+  "categories": {
+    "ui:title": "Categories to Export",
+    "ui:options": {
+      "addable": true,
+      "removable": true
+    }
+  },
+  "exportFormat": {
+    "ui:widget": "select",
+    "ui:title": "Export Format",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "folder", "label": "Folder Structure"},
+        {"value": "zip", "label": "ZIP Archive"},
+        {"value": "tarball", "label": "TAR.GZ Archive"}
+      ]
+    }
+  },
+  "includeMetadata": {
+    "ui:widget": "checkbox",
+    "ui:title": "Include Metadata"
+  }
+}

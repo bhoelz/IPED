@@ -53,7 +53,6 @@ public class Statistics {
     private static final String CARVED_IGNORED_MAP_FILE = "data/carvedIgnoredMap.dat";
 
     private static Logger LOGGER = LoggerFactory.getLogger(Statistics.class);
-    private static Statistics instance = null;
 
     private static final float IO_ERROR_RATE_TO_WARN = 0.05f;
 
@@ -77,14 +76,15 @@ public class Statistics {
     AtomicInteger subitensDiscovered = new AtomicInteger();
 
     public static Statistics get(ICaseData caseData, File indexDir) {
-        if (instance == null) {
-            instance = new Statistics(caseData, indexDir);
-        }
-        return instance;
+        return new Statistics(caseData, indexDir);
     }
 
     public static Statistics get() {
-        return instance;
+        CaseContext context = CaseContextThreadLocal.get();
+        if (context != null) {
+            return context.getStatistics();
+        }
+        return null;
     }
 
     public int getCarvedIgnoredNum(HashValue trackId) {
@@ -93,7 +93,7 @@ public class Statistics {
         }
     }
 
-    private Statistics(ICaseData caseData, File indexDir) {
+    Statistics(ICaseData caseData, File indexDir) {
         this.caseData = caseData;
         this.indexDir = indexDir;
         loadPrevCarvedIgnoredMap();

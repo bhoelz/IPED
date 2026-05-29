@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/AppIDsConfig.schema.json",
+  "title": "Application IDs Configuration",
+  "description": "Configuration for Windows application ID mappings",
+  "type": "object",
+  "properties": {
+    "appIds": {
+      "type": "object",
+      "description": "Mapping of application IDs to names",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Application name"
+      }
+    }
+  },
+  "additionalProperties": false
+}

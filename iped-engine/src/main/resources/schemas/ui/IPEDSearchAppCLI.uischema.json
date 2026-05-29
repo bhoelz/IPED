@@ -1,0 +1,14 @@
+{
+  "caseFolder": {
+    "ui:widget": "text",
+    "ui:title": "Case Folder",
+    "ui:placeholder": "/path/to/case/iped",
+    "ui:help": "Path to a single IPED case folder to open"
+  },
+  "casesFolder": {
+    "ui:widget": "text",
+    "ui:title": "Cases Folder",
+    "ui:placeholder": "/path/to/cases",
+    "ui:help": "Path to folder containing multiple IPED cases for multi-case search"
+  }
+}

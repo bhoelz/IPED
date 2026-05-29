@@ -1,0 +1,24 @@
+{
+  "hashAlgorithm": {
+    "ui:widget": "select",
+    "ui:title": "Hash Algorithm",
+    "ui:help": "Cryptographic algorithm for file hashing",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "MD5", "label": "MD5 (Legacy)"},
+        {"value": "SHA-1", "label": "SHA-1"},
+        {"value": "SHA-256", "label": "SHA-256 (Recommended)"}
+      ]
+    }
+  },
+  "enableHashDatabase": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Hash Database Lookup",
+    "ui:help": "Check hashes against known good/bad databases"
+  },
+  "hashDatabasePath": {
+    "ui:widget": "text",
+    "ui:title": "Hash Database Path",
+    "ui:help": "Directory containing hash database files"
+  }
+}

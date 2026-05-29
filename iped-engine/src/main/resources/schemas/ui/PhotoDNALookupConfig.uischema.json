@@ -1,0 +1,18 @@
+{
+  "enableLookup": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable PhotoDNA Lookup"
+  },
+  "lookupApiUrl": {
+    "ui:widget": "url",
+    "ui:title": "Lookup API URL"
+  },
+  "apiTimeout": {
+    "ui:widget": "updown",
+    "ui:title": "API Timeout (seconds)"
+  },
+  "retryOnFailure": {
+    "ui:widget": "checkbox",
+    "ui:title": "Retry Failed Lookups"
+  }
+}

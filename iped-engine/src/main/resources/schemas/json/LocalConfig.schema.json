@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/LocalConfig.schema.json",
+  "title": "Local Configuration",
+  "description": "Local machine-specific configuration settings",
+  "type": "object",
+  "properties": {
+    "appRoot": {
+      "type": "string",
+      "description": "IPED application root directory"
+    },
+    "configPath": {
+      "type": "string",
+      "description": "Configuration directory path"
+    },
+    "tempPath": {
+      "type": "string",
+      "description": "Temporary working directory"
+    },
+    "casesPath": {
+      "type": "string",
+      "description": "Default cases storage directory"
+    },
+    "locale": {
+      "type": "string",
+      "description": "UI locale (e.g., en_US, pt_BR)",
+      "default": "en_US"
+    }
+  },
+  "additionalProperties": false
+}

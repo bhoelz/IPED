@@ -1,0 +1,24 @@
+{
+  "tasks": {
+    "ui:title": "Processing Tasks",
+    "ui:help": "Define the sequence of processing tasks to execute. Task order is critical - some tasks depend on results from others.",
+    "ui:options": {
+      "addable": true,
+      "removable": true,
+      "orderable": true
+    },
+    "items": {
+      "ui:help": "Each task must specify either a class or a script, but not both",
+      "class": {
+        "ui:widget": "text",
+        "ui:placeholder": "e.g., iped.engine.task.HashTask",
+        "ui:help": "Java class implementing AbstractTask"
+      },
+      "script": {
+        "ui:widget": "text",
+        "ui:placeholder": "e.g., RefineCategoryTask.js",
+        "ui:help": "Script file path (.js or .py)"
+      }
+    }
+  }
+}

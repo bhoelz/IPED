@@ -1,0 +1,19 @@
+{
+  "host": {
+    "ui:widget": "text",
+    "ui:title": "Server Host/IP",
+    "ui:placeholder": "0.0.0.0",
+    "ui:help": "IP address to bind API server to (0.0.0.0 = all interfaces)"
+  },
+  "port": {
+    "ui:widget": "updown",
+    "ui:title": "Server Port",
+    "ui:help": "Port number for HTTP API server (default: 8080)"
+  },
+  "sources": {
+    "ui:widget": "url",
+    "ui:title": "Sources Endpoint",
+    "ui:placeholder": "http://cases.example.com/api/sources",
+    "ui:help": "URL or file path to query for available case sources"
+  }
+}

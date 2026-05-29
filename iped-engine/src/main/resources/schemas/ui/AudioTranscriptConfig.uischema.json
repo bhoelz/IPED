@@ -1,0 +1,35 @@
+{
+  "enableTranscription": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Audio Transcription",
+    "ui:help": "Extract text from audio files"
+  },
+  "transcriptionEngine": {
+    "ui:widget": "select",
+    "ui:title": "Transcription Engine",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "whisper", "label": "OpenAI Whisper (Local)"},
+        {"value": "google", "label": "Google Cloud Speech-to-Text"},
+        {"value": "azure", "label": "Azure Cognitive Services"}
+      ]
+    },
+    "ui:help": "Select transcription service"
+  },
+  "apiKey": {
+    "ui:widget": "password",
+    "ui:title": "API Key",
+    "ui:help": "Required for cloud-based transcription services"
+  },
+  "language": {
+    "ui:widget": "text",
+    "ui:title": "Language Code",
+    "ui:placeholder": "e.g., en, es, pt",
+    "ui:help": "ISO 639-1 language code"
+  },
+  "minAudioDuration": {
+    "ui:widget": "updown",
+    "ui:title": "Minimum Duration (seconds)",
+    "ui:help": "Skip audio clips shorter than this"
+  }
+}

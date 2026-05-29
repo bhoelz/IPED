@@ -1,0 +1,27 @@
+{
+  "enableUNIX": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable UNIX Processing",
+    "ui:help": "Process UNIX/Linux filesystems"
+  },
+  "enableFAT": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable FAT Processing",
+    "ui:help": "Process FAT16/FAT32 filesystems"
+  },
+  "enableNTFS": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable NTFS Processing",
+    "ui:help": "Process NTFS filesystems"
+  },
+  "enableEXT": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable EXT Processing",
+    "ui:help": "Process EXT2/EXT3/EXT4 filesystems"
+  },
+  "recoveredFilesFolder": {
+    "ui:widget": "text",
+    "ui:title": "Recovered Files Folder",
+    "ui:placeholder": "Output directory for recovered files"
+  }
+}

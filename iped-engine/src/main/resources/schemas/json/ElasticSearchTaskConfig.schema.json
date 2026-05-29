@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/ElasticSearchTaskConfig.schema.json",
+  "title": "Elasticsearch Task Configuration",
+  "description": "Configuration for Elasticsearch integration",
+  "type": "object",
+  "properties": {
+    "elasticsearchHost": {
+      "type": "string",
+      "description": "Elasticsearch server hostname or IP",
+      "default": "localhost"
+    },
+    "elasticsearchPort": {
+      "type": "integer",
+      "description": "Elasticsearch port",
+      "default": 9200,
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "elasticsearchUsername": {
+      "type": "string",
+      "description": "Elasticsearch username"
+    },
+    "elasticsearchPassword": {
+      "type": "string",
+      "description": "Elasticsearch password"
+    },
+    "indexName": {
+      "type": "string",
+      "description": "Elasticsearch index name",
+      "default": "iped-cases"
+    },
+    "useRemoteES": {
+      "type": "boolean",
+      "description": "Connect to remote Elasticsearch instead of embedded",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

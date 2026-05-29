@@ -43,8 +43,9 @@ public class GraphGenerator {
     private void runPostImportOps(File output) throws IOException {
         GraphService graphService = null;
         try {
-            graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
-            graphService.start(output);
+            File graphDbFolder = new File(output, GraphConstants.DB_HOME_DIR);
+            graphService = GraphServiceFactoryImpl.getInstance().getGraphService(graphDbFolder);
+            graphService.start(graphDbFolder);
             GraphConfiguration config = (GraphConfiguration) ConfigurationManager.get()
                     .findObject(GraphTaskConfig.class)
                     .getConfiguration();
@@ -99,8 +100,9 @@ public class GraphGenerator {
 
         GraphService graphService = null;
         try {
-            graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
-            graphService.start(new File(path));
+            File graphDbFolder = new File(path, GraphConstants.DB_HOME_DIR);
+            graphService = GraphServiceFactoryImpl.getInstance().getGraphService(graphDbFolder);
+            graphService.start(graphDbFolder);
             GraphConfiguration config = GraphConfiguration.loadFrom(new File(configPath, GraphTaskConfig.CONFIG_FILE));
 
             GraphGenerator graphGenerator = new GraphGenerator();

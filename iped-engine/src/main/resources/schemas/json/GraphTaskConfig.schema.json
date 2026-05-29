@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/GraphTaskConfig.schema.json",
+  "title": "Graph Task Configuration",
+  "description": "Configuration for relationship graph analysis",
+  "type": "object",
+  "properties": {
+    "enableGraphAnalysis": {
+      "type": "boolean",
+      "description": "Enable relationship graph generation",
+      "default": false
+    },
+    "graphDepth": {
+      "type": "integer",
+      "description": "Maximum depth for graph traversal",
+      "default": 3,
+      "minimum": 1,
+      "maximum": 10
+    },
+    "relationshipTypes": {
+      "type": "array",
+      "description": "Types of relationships to extract",
+      "items": {
+        "type": "string"
+      }
+    },
+    "minimumWeight": {
+      "type": "number",
+      "description": "Minimum weight for relationship inclusion",
+      "default": 0.1,
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false
+}

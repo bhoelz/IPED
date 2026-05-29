@@ -1,0 +1,29 @@
+{
+  "enableImageClassification": {
+    "ui:widget": "checkbox",
+    "ui:title": "Enable Image Classification"
+  },
+  "classificationService": {
+    "ui:widget": "select",
+    "ui:title": "Classification Service",
+    "ui:options": {
+      "enumOptions": [
+        {"value": "google-vision", "label": "Google Cloud Vision"},
+        {"value": "azure-cv", "label": "Azure Computer Vision"},
+        {"value": "aws-rekognition", "label": "AWS Rekognition"}
+      ]
+    }
+  },
+  "apiKey": {
+    "ui:widget": "password",
+    "ui:title": "API Key"
+  },
+  "classificationThreshold": {
+    "ui:widget": "updown",
+    "ui:title": "Confidence Threshold (0.0-1.0)"
+  },
+  "enableLabels": {
+    "ui:widget": "checkbox",
+    "ui:title": "Extract Object Labels"
+  }
+}

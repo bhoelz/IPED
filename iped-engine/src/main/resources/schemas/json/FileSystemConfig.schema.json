@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iped.digital-forensics.org/schema/FileSystemConfig.schema.json",
+  "title": "File System Configuration",
+  "description": "File system access and mounting settings",
+  "type": "object",
+  "properties": {
+    "enableUNIX": {
+      "type": "boolean",
+      "description": "Enable UNIX filesystem processing",
+      "default": true
+    },
+    "enableFAT": {
+      "type": "boolean",
+      "description": "Enable FAT filesystem processing",
+      "default": true
+    },
+    "enableNTFS": {
+      "type": "boolean",
+      "description": "Enable NTFS filesystem processing",
+      "default": true
+    },
+    "enableEXT": {
+      "type": "boolean",
+      "description": "Enable EXT filesystem processing",
+      "default": true
+    },
+    "recoveredFilesFolder": {
+      "type": "string",
+      "description": "Directory for recovered file outputs"
+    }
+  },
+  "additionalProperties": false
+}
