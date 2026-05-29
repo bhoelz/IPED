@@ -5,3 +5,7 @@ nbactions.xml
 /.project
 .pydevproject
 /.idea/
+*.log
+**/dependency-reduced-pom.xml
+iped-ui/node_modules/
+iped-ui/build/

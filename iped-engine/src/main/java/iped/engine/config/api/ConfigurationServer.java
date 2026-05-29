@@ -24,6 +24,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import iped.engine.config.Configuration;
 
 /**
  * Embedded Jetty server for Configuration API.
@@ -49,6 +50,17 @@ public class ConfigurationServer {
      * @throws Exception if server startup fails
      */
     public void start() throws Exception {
+        // Initialize Configuration Manager to load schemas
+        try {
+            Configuration.getInstance();
+            logger.info("Configuration Manager initialized successfully");
+        } catch (NoClassDefFoundError e) {
+            // Viewer/UI classes not available in API-only mode
+            logger.info("Running in API-only mode without viewer support: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.warn("Configuration Manager initialization warning: {}", e.getMessage());
+        }
+
         server = new Server(port);
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -59,7 +71,7 @@ public class ConfigurationServer {
         jerseyServlet.setInitParameter("jersey.config.server.provider.packages",
                 "iped.engine.config.api");
         jerseyServlet.setInitParameter("jersey.config.server.provider.classnames",
-                "org.glassfish.jersey.media.json.JsonProcessingFeature");
+                "org.glassfish.jersey.media.json.JsonProcessingFeature,com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider");
 
         context.addServlet(jerseyServlet, "/*");
 
