@@ -7,6 +7,7 @@ import iped.io.SeekableInputStream;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.channels.SeekableByteChannel;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -311,8 +312,27 @@ public interface IItem extends IItemReader {
      */
     default void setMediaType(Object mediaType) {
         try {
-            Method method = getClass().getMethod("setMediaType", mediaType == null ? Object.class : mediaType.getClass()); //$NON-NLS-1$
+            Method method;
+            if (mediaType == null) {
+                // When null, we cannot use the argument type to locate the target method.
+                // Searching by Object.class would resolve to this default method itself and
+                // recurse infinitely, so instead find the first concrete single-parameter
+                // setMediaType overload declared by the implementing class.
+                method = Arrays.stream(getClass().getMethods())
+                        .filter(m -> m.getName().equals("setMediaType") //$NON-NLS-1$
+                                && m.getParameterCount() == 1
+                                && m.getParameterTypes()[0] != Object.class)
+                        .findFirst()
+                        .orElse(null);
+                if (method == null) {
+                    throw new UnsupportedOperationException("setMediaType(Object) is not implemented"); //$NON-NLS-1$
+                }
+            } else {
+                method = getClass().getMethod("setMediaType", mediaType.getClass()); //$NON-NLS-1$
+            }
             method.invoke(this, mediaType);
+        } catch (UnsupportedOperationException e) {
+            throw e;
         } catch (NoSuchMethodException e) {
             throw new UnsupportedOperationException("setMediaType(Object) is not implemented", e); //$NON-NLS-1$
         } catch (Exception e) {
@@ -330,7 +350,13 @@ public interface IItem extends IItemReader {
     default void setMetadata(Object metadata) {
         try {
             Method method = getClass().getMethod("setMetadata", metadata == null ? Object.class : metadata.getClass()); //$NON-NLS-1$
+            if (method.isDefault()) {
+                // No concrete override — invoking would recurse back into this default
+                throw new UnsupportedOperationException("setMetadata(Object) is not implemented"); //$NON-NLS-1$
+            }
             method.invoke(this, metadata);
+        } catch (UnsupportedOperationException e) {
+            throw e;
         } catch (NoSuchMethodException e) {
             throw new UnsupportedOperationException("setMetadata(Object) is not implemented", e); //$NON-NLS-1$
         } catch (Exception e) {
