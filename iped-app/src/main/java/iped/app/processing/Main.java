@@ -33,6 +33,7 @@ import iped.app.bootstrap.Bootstrap;
 import iped.app.config.LogConfiguration;
 import iped.app.processing.ui.ProgressConsole;
 import iped.app.processing.ui.ProgressFrame;
+import iped.app.processing.ui.ProgressJLine;
 import iped.app.ui.App;
 import iped.app.ui.splash.StartUpControlClient;
 import iped.app.ui.utils.UiScale;
@@ -229,6 +230,7 @@ public class Main {
         provider.setExecutorThread(Thread.currentThread());
 
         Object frame = null;
+        ProgressJLine jlineTui = null;
 
         if (!cmdLineParams.isNogui()) {
             ProgressFrame progressFrame = new ProgressFrame(provider);
@@ -236,18 +238,24 @@ public class Main {
             provider.addPropertyChangeListener(progressFrame, true);
             frame = progressFrame;
         } else {
-            ProgressConsole console = new ProgressConsole();
-            provider.addPropertyChangeListener(console, false);
+            jlineTui = ProgressJLine.tryCreate();
+            if (jlineTui != null) {
+                provider.addPropertyChangeListener(jlineTui, false);
+            } else {
+                provider.addPropertyChangeListener(new ProgressConsole(), false);
+            }
         }
 
         if (startUpControlClient != null) {
             startUpControlClient.finish();
         }
 
+        final ProgressJLine tui = jlineTui;
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 provider.cancel(true);
+                if (tui != null) tui.close();
             }
         });
 
@@ -259,6 +267,9 @@ public class Main {
         } finally {
             if (frame != null) {
                 closeFrameinEDT(frame);
+            }
+            if (jlineTui != null) {
+                jlineTui.close();
             }
         }
 
