@@ -24,6 +24,7 @@
         <module>iped-tasks-graph</module>
         <module>iped-tasks-report</module>
         <module>iped-tasks-forensics</module>
+        <module>iped-tasks-coverage</module>
     </modules>
 
     <dependencyManagement>
@@ -37,6 +38,16 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <dependencies>
+        <!-- Enables JUnit 4 test discovery via JUnit Platform (required by surefire's JUnitPlatformProvider) -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <repositories>
         <repository>
