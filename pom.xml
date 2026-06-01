@@ -9,14 +9,13 @@
 
     <modules>
         <module>iped-api</module>
-        <module>iped-engine-core</module>
+        <module>iped-engine-parent</module>
         <module>iped-utils</module>
         <module>iped-parsers</module>
         <module>iped-viewers</module>
         <module>iped-carvers</module>
         <module>iped-tasks</module>
         <module>iped-geo</module>
-        <module>iped-engine</module>
         <module>iped-webapi</module>
         <module>iped-mcp</module>
         <module>iped-app</module>

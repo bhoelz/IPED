@@ -16,8 +16,6 @@ import jakarta.ws.rs.core.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import iped.engine.core.CaseContext;
-import iped.engine.core.ProcessingOrchestrator;
 import iped.engine.webapi.json.CaseStatusJSON;
 import iped.engine.webapi.json.DataListJSON;
 
@@ -25,8 +23,8 @@ import iped.engine.webapi.json.DataListJSON;
 @Path("cases")
 public class Cases {
 
-    static ProcessingOrchestrator orchestrator() {
-        return ProcessingOrchestrator.getInstance();
+    static IProcessingService service() {
+        return ProcessingServiceRegistry.get();
     }
 
     @ApiOperation(value = "List all active cases")
@@ -34,7 +32,7 @@ public class Cases {
     @Produces(MediaType.APPLICATION_JSON)
     public static DataListJSON<String> listCases() {
         List<String> caseIds = new ArrayList<>();
-        for (UUID uuid : orchestrator().getActiveCaseIds()) {
+        for (UUID uuid : service().getActiveCaseIds()) {
             caseIds.add(uuid.toString());
         }
         return new DataListJSON<>(caseIds);
@@ -47,13 +45,12 @@ public class Cases {
     public static Response getCaseStatus(@PathParam("caseId") String caseIdStr) {
         try {
             UUID caseId = UUID.fromString(caseIdStr);
-            CaseContext context = orchestrator().getCaseContext(caseId);
-            if (context == null) {
+            if (!service().caseExists(caseId)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
             CaseStatusJSON status = new CaseStatusJSON();
             status.setCaseId(caseId.toString());
-            status.setState(context.getState().toString());
+            status.setState(service().getCaseState(caseId));
             return Response.ok(status).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -67,11 +64,10 @@ public class Cases {
     public static Response pauseCase(@PathParam("caseId") String caseIdStr) {
         try {
             UUID caseId = UUID.fromString(caseIdStr);
-            CaseContext context = orchestrator().getCaseContext(caseId);
-            if (context == null) {
+            if (!service().caseExists(caseId)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
-            orchestrator().pauseCase(caseId);
+            service().pauseCase(caseId);
             return Response.ok().build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -85,11 +81,10 @@ public class Cases {
     public static Response resumeCase(@PathParam("caseId") String caseIdStr) {
         try {
             UUID caseId = UUID.fromString(caseIdStr);
-            CaseContext context = orchestrator().getCaseContext(caseId);
-            if (context == null) {
+            if (!service().caseExists(caseId)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
-            orchestrator().resumeCase(caseId);
+            service().resumeCase(caseId);
             return Response.ok().build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -104,8 +99,7 @@ public class Cases {
             @ApiParam(required = true) long maxMemoryBytes) {
         try {
             UUID caseId = UUID.fromString(caseIdStr);
-            CaseContext context = orchestrator().getCaseContext(caseId);
-            if (context == null) {
+            if (!service().caseExists(caseId)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
             return Response.ok().build();

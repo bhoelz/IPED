@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Wladimir Leite
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -44,6 +44,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import iped.engine.hashdb.PhotoDNAConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
@@ -62,7 +63,7 @@ import iped.engine.config.VideoThumbsConfig;
 import iped.engine.core.Statistics;
 import iped.engine.core.Worker.ProcessTime;
 import iped.engine.data.Item;
-import iped.engine.hash.PhotoDNAConstants;
+
 import iped.engine.preview.PreviewRepository;
 import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.task.ExportFileTask;
@@ -140,7 +141,7 @@ public class VideoThumbTask extends ThumbTask {
     private static final AtomicLong totalAnimatedImagesProcessed = new AtomicLong();
     private static final AtomicLong totalAnimatedImagesFailed = new AtomicLong();
     private static final AtomicLong totalAnimatedImagesTime = new AtomicLong();
-    
+
     private static final AtomicLong totalTimeGallery = new AtomicLong();
     private static final AtomicLong totalGallery = new AtomicLong();
 
@@ -264,7 +265,7 @@ public class VideoThumbTask extends ThumbTask {
         videoThumbsMaker.setTimeoutProcess(videoConfig.getTimeoutProcess());
         videoThumbsMaker.setTimeoutInfo(videoConfig.getTimeoutInfo());
         videoThumbsMaker.setVideoThumbsOriginalDimension(videoConfig.getVideoThumbsOriginalDimension());
-        videoThumbsMaker.setCompression(videoConfig.getCompression()); 
+        videoThumbsMaker.setCompression(videoConfig.getCompression());
         videoThumbsMaker.setMaxDimensionSize(videoConfig.getMaxDimensionSize());
         videoThumbsMaker.setNumFramesEquation(videoConfig.getNumFramesEquation());
 
@@ -633,7 +634,7 @@ public class VideoThumbTask extends ThumbTask {
             if (photoDNA != null) {
                 framesPhotoDNA.add(photoDNA);
             }
-            
+
         }
 
         if (!framesNudityScore.isEmpty()) {
@@ -657,7 +658,7 @@ public class VideoThumbTask extends ThumbTask {
         return img;
     }
 
-    /** 
+    /**
      * Checks if the evidence is an animated image, and update
      * its metadata if this is the case.
      */
@@ -679,7 +680,7 @@ public class VideoThumbTask extends ThumbTask {
                 if (reader != null)
                     reader.dispose();
             }
-        
+
         } else if (mediaType.equals("image/png")) {
             byte[] b = new byte[128];
             try (BufferedInputStream is = evidence.getBufferedInputStream()) {
@@ -693,7 +694,7 @@ public class VideoThumbTask extends ThumbTask {
             } catch (Exception e) {
             }
         }
-        
+
         if (numImages > 1) {
             // Set only for images with multiple animated frames
             ((Metadata) evidence.getMetadata()).set(ExtraProperties.ANIMATION_FRAMES_PROP, String.valueOf(numImages));

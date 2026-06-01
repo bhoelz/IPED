@@ -11,9 +11,6 @@ import jakarta.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import iped.engine.core.CaseContext;
-import iped.engine.core.ProcessingOrchestrator;
-import iped.engine.core.ResourceManager;
 import iped.engine.webapi.json.CaseStatsJSON;
 import iped.engine.webapi.json.GlobalStatsJSON;
 
@@ -21,8 +18,8 @@ import iped.engine.webapi.json.GlobalStatsJSON;
 @Path("stats")
 public class Stats {
 
-    static ProcessingOrchestrator orchestrator() {
-        return ProcessingOrchestrator.getInstance();
+    static IProcessingService service() {
+        return ProcessingServiceRegistry.get();
     }
 
     @ApiOperation(value = "Get global statistics")
@@ -30,15 +27,12 @@ public class Stats {
     @Path("global")
     @Produces(MediaType.APPLICATION_JSON)
     public static Response getGlobalStats() {
+        IProcessingService svc = service();
         GlobalStatsJSON stats = new GlobalStatsJSON();
-        ProcessingOrchestrator orchestrator = orchestrator();
-        ResourceManager resourceMgr = orchestrator.getResourceManager();
-
-        stats.setActiveCases(orchestrator.getActiveCaseCount());
-        stats.setMaxConcurrentCases(resourceMgr.getMaxConcurrentCases());
-        stats.setTotalMemoryUsed(resourceMgr.getTotalMemoryUsage());
-        stats.setMaxMemoryPerCase(resourceMgr.getMaxMemoryPerCase());
-
+        stats.setActiveCases(svc.getActiveCaseCount());
+        stats.setMaxConcurrentCases(svc.getMaxConcurrentCases());
+        stats.setTotalMemoryUsed(svc.getTotalMemoryUsage());
+        stats.setMaxMemoryPerCase(svc.getMaxMemoryPerCase());
         return Response.ok(stats).build();
     }
 
@@ -49,17 +43,15 @@ public class Stats {
     public static Response getCaseStats(@PathParam("caseId") String caseIdStr) {
         try {
             UUID caseId = UUID.fromString(caseIdStr);
-            CaseContext context = orchestrator().getCaseContext(caseId);
-            if (context == null) {
+            IProcessingService svc = service();
+            if (!svc.caseExists(caseId)) {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
 
             CaseStatsJSON stats = new CaseStatsJSON();
             stats.setCaseId(caseId.toString());
-            stats.setState(context.getState().toString());
-
-            ResourceManager resourceMgr = orchestrator().getResourceManager();
-            stats.setMemoryUsage(resourceMgr.getMemoryUsage(caseId));
+            stats.setState(svc.getCaseState(caseId));
+            stats.setMemoryUsage(svc.getMemoryUsage(caseId));
 
             return Response.ok(stats).build();
         } catch (IllegalArgumentException e) {

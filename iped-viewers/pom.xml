@@ -24,6 +24,7 @@
 	<modules>
 		<module>iped-viewers-api</module>
 		<module>iped-viewers-impl</module>
+		<module>iped-viewers-web</module>
 	</modules>
 
 	<build>
