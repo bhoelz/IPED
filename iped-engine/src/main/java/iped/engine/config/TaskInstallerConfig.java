@@ -67,6 +67,10 @@ public class TaskInstallerConfig implements Configurable<String> {
     @Override
     public void processConfig(Path resource) throws IOException {
         byte[] bytes = Files.readAllBytes(resource);
+        // Each discovered config file replaces the previous one so that a profile's
+        // TaskInstaller.xml fully controls the task list instead of merging with the
+        // base config (same override semantics used by all other Configurable types).
+        xmlContents.clear();
         xmlContents.add(new String(bytes, StandardCharsets.UTF_8));
     }
 

@@ -100,13 +100,6 @@ public class Worker extends Thread {
         this.stats = manager.stats;
         baseFilePath = output.getParentFile().getAbsolutePath();
 
-        // Set the CaseContext for this worker thread. The context will be made
-        // available to all tasks and processing code running in this thread.
-        CaseContext caseContext = manager.getContext();
-        if (caseContext != null) {
-            CaseContextThreadLocal.set(caseContext);
-        }
-
         if (k == 0) {
             LOGGER.info("Starting Tika"); //$NON-NLS-1$
         }
@@ -243,6 +236,12 @@ public class Worker extends Thread {
     public void run() {
 
         LOGGER.info("{} started.", getName()); //$NON-NLS-1$
+
+        // Bind this worker thread's case context so Manager.getInstance() resolves correctly.
+        CaseContext caseContext = manager.getContext();
+        if (caseContext != null) {
+            CaseContextThreadLocal.set(caseContext);
+        }
 
         try {
             while (!this.isInterrupted() && exception == null) {

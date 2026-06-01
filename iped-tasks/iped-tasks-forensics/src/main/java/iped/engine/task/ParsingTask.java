@@ -744,6 +744,11 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
     public void init(ConfigurationManager configurationManager) {
 
         parsingConfig = configurationManager.findObject(ParsingTaskConfig.class);
+        if (!parsingConfig.isEnabled()) {
+            // Skip the heavy Tika initialization when file parsing is disabled.
+            return;
+        }
+
         expandConfig = configurationManager.findObject(CategoryToExpandConfig.class);
 
         SplitLargeBinaryConfig splitConfig = configurationManager.findObject(SplitLargeBinaryConfig.class);

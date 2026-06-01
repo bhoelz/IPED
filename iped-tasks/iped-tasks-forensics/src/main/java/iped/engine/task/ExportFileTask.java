@@ -881,7 +881,7 @@ public class ExportFileTask extends AbstractTask {
 
     @Override
     public void finish() throws Exception {
-        hashMap.clear();
+        if (hashMap != null) hashMap.clear();
         if (storageCon.get(output) != null) {
             for (Entry<Integer, Connection> entry : storageCon.get(output).entrySet()) {
                 Connection con = entry.getValue();

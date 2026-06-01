@@ -59,14 +59,17 @@ public class CategoryToExpandConfig extends AbstractTaskConfig<Set<String>> {
                     continue;
                 }
 
-                LinkedList <Category> cats = new LinkedList<>();
-                cats.push(categoryConfig.getCategoryFromName(line.trim()));
+                Category root = categoryConfig.getCategoryFromName(line.trim());
+                if (root == null) {
+                    continue; // category not found in config (e.g. config not yet loaded)
+                }
+                LinkedList<Category> cats = new LinkedList<>();
+                cats.push(root);
                 while (cats.size() > 0) {
                     Category cat = cats.pop();
                     categoriesToExpand.add(cat.getName());
                     cats.addAll(cat.getChildren());
                 }
-                
 
             }
         }

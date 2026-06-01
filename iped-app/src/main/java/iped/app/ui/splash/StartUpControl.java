@@ -16,7 +16,7 @@ public class StartUpControl {
             Vector<Class<?>> classes = (Vector<Class<?>>) f.get(classLoader);
             return classes.size();
         } catch (Exception e) {
-            e.printStackTrace();
+            // ClassLoader.classes field is not accessible on Java 9+; return 0 silently.
         }
         return 0;
     }

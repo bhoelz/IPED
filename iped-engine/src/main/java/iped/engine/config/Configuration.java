@@ -229,15 +229,21 @@ public class Configuration {
         // blocks internet access from html viewers
         DefaultPolicy policy = new DefaultPolicy();
         MinIOConfig minIOConfig = configManager.findObject(MinIOConfig.class);
-        if (minIOConfig.isEnabled()) {
+        if (minIOConfig != null && minIOConfig.isEnabled()) {
             String host = minIOConfig.getHostAndPort();
             if (host.startsWith("http://") || host.startsWith("https://")) {
                 host = host.substring(host.indexOf("://") + 3);
             }
             policy.addAllowedPermission(new SocketPermission(host, "connect,resolve"));
         }
-        Policy.setPolicy(policy);
-        System.setSecurityManager(new SecurityManager());
+        try {
+            Policy.setPolicy(policy);
+            System.setSecurityManager(new SecurityManager());
+        } catch (UnsupportedOperationException e) {
+            // Policy/SecurityManager APIs were removed in Java 17+.
+            // Internet access from HTML viewers will not be restricted on this JVM.
+            logger.warn("Cannot install security policy (Java 17+): {}", e.getMessage());
+        }
     }
 
     // add plugin jars to the configuration resource look up engine

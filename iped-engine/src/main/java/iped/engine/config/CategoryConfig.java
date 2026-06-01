@@ -136,7 +136,7 @@ public class CategoryConfig extends AbstractTaskConfig<String> {
         if (nameToCategoryMap == null) {
             synchronized (this) {
                 if (nameToCategoryMap == null) {
-                    nameToCategoryMap = buildNameToCategoryMap(root);
+                    nameToCategoryMap = root != null ? buildNameToCategoryMap(root) : new HashMap<>();
                 }
             }
         }

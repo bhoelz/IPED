@@ -24,7 +24,7 @@ function process(e){
 	var categorias = e.getCategories();
 	var length = e.getLength();
 	var ext = e.getExt().toLowerCase();
-	var mime = e.getMediaType().toString();
+	var mime = e.getMediaType() != null ? e.getMediaType().toString() : "";
 	var name = e.getName().toLowerCase();
 	var rawPath = e.getPath();
 	var path = e.getPath().toLowerCase().replace(/\\/g, "/");
@@ -146,7 +146,7 @@ function process(e){
 	}
 	
 	else if(isFromInternet(e)){
-		if(e.getMediaType().toString().equals("application/x-sqlite3"))
+		if(mime.equals("application/x-sqlite3"))
 			e.setCategory("Internet History");
 	}
     
@@ -332,7 +332,7 @@ function process(e){
 	//Categories for Brazilian Software
 	
 	//Program Files of Federal Taxes Agency
-	if(e.getMediaType().toString().equals("application/irpf")){
+	if(mime.equals("application/irpf")){
 		
 		if (name.indexOf("-irpf-") !== -1)
 			e.addCategory("Tax Returns and Receipts IRPF");

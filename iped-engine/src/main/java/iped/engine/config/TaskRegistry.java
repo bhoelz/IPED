@@ -94,7 +94,9 @@ class TaskRegistry {
             for (TaskDependency dep : registration.descriptor.dependencies()) {
                 String dependencyTaskId = dep.taskId();
                 if (!registrations.containsKey(dependencyTaskId)) {
-                    if (dep.optional()) {
+                    // AFTER/BEFORE are ordering hints: silently skip if the target task is absent.
+                    // Only REQUIRES is a hard error when not satisfied.
+                    if (dep.optional() || dep.type() != TaskDependencyType.REQUIRES) {
                         continue;
                     }
                     throw new IllegalStateException("Task '" + registration.id + "' has missing dependency '" + dependencyTaskId + "'");

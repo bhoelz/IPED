@@ -51,6 +51,7 @@ import org.apache.lucene.store.Directory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import iped.data.ICaseData;
+import iped.engine.core.CaseContextThreadLocal;
 import iped.data.IItem;
 import iped.engine.CmdLineArgs;
 import iped.engine.config.AnalysisConfig;
@@ -267,6 +268,11 @@ public class Manager {
 
     public void process() throws Exception {
 
+        // Bind the case context to this thread so Statistics.get(),
+        // Manager.getInstance(), and UIPropertyListenerProvider all resolve
+        // correctly on the main processing thread (monitoring loop, post-processing).
+        CaseContextThreadLocal.set(this.caseContext);
+
         stats.printSystemInfo();
 
         output = output.getCanonicalFile();
@@ -353,6 +359,7 @@ public class Manager {
         status.addSuccessfulEvidences(args);
         status.save();
 
+        CaseContextThreadLocal.clear();
     }
 
     private void closeItemProducers() {

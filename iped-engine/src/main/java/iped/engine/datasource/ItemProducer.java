@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import iped.data.ICaseData;
+import iped.engine.core.CaseContext;
+import iped.engine.core.CaseContextThreadLocal;
 import iped.engine.core.Manager;
 import iped.engine.data.Item;
 import iped.engine.localization.Messages;
@@ -99,6 +101,11 @@ public class ItemProducer extends Thread implements Closeable {
 
     @Override
     public void run() {
+        // Bind this thread's case context so Manager.getInstance() resolves correctly.
+        CaseContext caseContext = manager.getContext();
+        if (caseContext != null) {
+            CaseContextThreadLocal.set(caseContext);
+        }
         File currSource = null;
         try {
             for (File source : datasources) {
@@ -154,6 +161,8 @@ public class ItemProducer extends Thread implements Closeable {
                 e1.initCause(e);
                 manager.exception = e1;
             }
+        } finally {
+            CaseContextThreadLocal.clear();
         }
 
     }
