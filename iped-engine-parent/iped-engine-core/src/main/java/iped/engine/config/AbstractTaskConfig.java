@@ -1,16 +1,16 @@
 package iped.engine.config;
 
+import iped.configuration.Configurable;
+import iped.configuration.EnabledInterface;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 
-import iped.configuration.Configurable;
-import iped.configuration.EnabledInterface;
-
 public abstract class AbstractTaskConfig<T> implements Configurable<T>, EnabledInterface {
-    
+
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     protected EnableTaskProperty enabledProp;

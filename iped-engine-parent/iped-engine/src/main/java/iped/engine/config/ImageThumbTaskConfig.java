@@ -1,10 +1,10 @@
 package iped.engine.config;
 
+import iped.utils.UTF8Properties;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import iped.utils.UTF8Properties;
 
 public class ImageThumbTaskConfig extends AbstractTaskPropertiesConfig {
 

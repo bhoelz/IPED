@@ -1,36 +1,23 @@
 package iped.engine.data;
 
-import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.swing.KeyStroke;
-
-import org.apache.commons.lang.ArrayUtils;
-
-import iped.data.IBookmarks;
-import iped.data.IIPEDSource;
-import iped.data.IItemId;
-import iped.data.IMultiBookmarks;
-import iped.data.SelectionListener;
+import iped.data.*;
 import iped.engine.search.MultiSearchResult;
 import iped.engine.util.Util;
 import iped.search.IMultiSearchResult;
+import org.apache.commons.lang.ArrayUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
+import java.util.List;
 
 public class MultiBookmarks implements Serializable, IMultiBookmarks {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -252,12 +239,12 @@ public class MultiBookmarks implements Serializable, IMultiBookmarks {
         }
         return null;
     }
-    
+
     public void removeBookmarkKeyStroke(String bookmarkName) {
         for (IBookmarks m : map.values())
             m.removeBookmarkKeyStroke(m.getBookmarkId(bookmarkName));
     }
-    
+
     public int getBookmarkCount(String bookmarkName) {
         int ret = 0;
         for (IBookmarks m : map.values()) {
@@ -268,7 +255,7 @@ public class MultiBookmarks implements Serializable, IMultiBookmarks {
         }
         return ret;
     }
-    
+
     public void setInReport(String bookmarkName, boolean inReport) {
         for (IBookmarks m : map.values()) {
             int bookmarkId = m.getBookmarkId(bookmarkName);

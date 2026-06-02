@@ -1,26 +1,5 @@
 package iped.engine.data;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.IntStream;
-
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiReader;
-import org.sleuthkit.datamodel.TskCoreException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IIPEDSource;
 import iped.data.IItem;
 import iped.data.IItemId;
@@ -28,6 +7,18 @@ import iped.engine.lucene.SlowCompositeReaderWrapper;
 import iped.engine.lucene.analysis.AppAnalyzer;
 import iped.engine.search.LuceneSearchResult;
 import iped.exception.IPEDException;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
+import org.sleuthkit.datamodel.TskCoreException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.IntStream;
 
 public class IPEDMultiSource extends IPEDSource {
 
@@ -300,7 +291,7 @@ public class IPEDMultiSource extends IPEDSource {
         int baseDoc = baseDocCache.get(sourceid);
         return atomicCase.getLuceneId(id.getId()) + baseDoc;
     }
-    
+
     @SuppressWarnings("resource")
     @Override
     public IntStream getLuceneIdStream() {

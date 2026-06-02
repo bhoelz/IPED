@@ -16,16 +16,13 @@
  */
 package iped.engine.io;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.ParsingTaskConfig;
+import iped.engine.core.QueuesProcessingOrder;
+import iped.parsers.fork.ParsingTimeout;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.CorruptedCarvedException;
+import iped.parsers.util.ItemInfo;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -39,13 +36,11 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.ParsingTaskConfig;
-import iped.engine.core.QueuesProcessingOrder;
-import iped.parsers.fork.ParsingTimeout;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.CorruptedCarvedException;
-import iped.parsers.util.ItemInfo;
+import java.io.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Reader for the text content from a given binary stream. This class uses a

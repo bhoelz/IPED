@@ -1,13 +1,12 @@
 package iped.engine.data;
 
+import iped.data.IItemId;
+import org.roaringbitmap.RoaringBitmap;
+
 import java.util.AbstractSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
-import org.roaringbitmap.RoaringBitmap;
-
-import iped.data.IItemId;
 
 public class ItemIdSet extends AbstractSet<IItemId> {
 

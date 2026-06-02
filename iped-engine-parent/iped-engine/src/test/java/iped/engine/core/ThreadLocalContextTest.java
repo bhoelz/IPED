@@ -1,19 +1,18 @@
 package iped.engine.core;
 
-import static org.junit.jupiter.api.Assertions.*;
+import iped.engine.config.ConfigurationView;
+import iped.engine.data.CaseData;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import iped.engine.config.ConfigurationView;
-import iped.engine.data.CaseData;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests verifying ThreadLocal isolation of CaseContext across threads

@@ -1,17 +1,15 @@
 package iped.engine.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.UUID;
-
+import iped.engine.config.ConfigurationView;
+import iped.engine.data.CaseData;
+import iped.engine.data.Item;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import iped.engine.config.ConfigurationView;
-import iped.engine.core.Statistics;
-import iped.engine.data.CaseData;
-import iped.engine.data.Item;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests verifying multi-case processing with independent

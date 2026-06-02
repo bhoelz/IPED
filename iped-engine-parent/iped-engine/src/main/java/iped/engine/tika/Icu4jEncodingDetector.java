@@ -1,27 +1,27 @@
 package iped.engine.tika;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
 import org.apache.tika.utils.CharsetUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Copy and paste from Tika-2.4.0 with a fix for TIKA-3774.
- * 
+ *
  * @author Nassif
  *
  */
 public class Icu4jEncodingDetector extends org.apache.tika.parser.txt.Icu4jEncodingDetector {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

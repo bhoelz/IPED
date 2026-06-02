@@ -1,12 +1,11 @@
 package iped.engine.graph;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import iped.io.URLUtil;
+import org.neo4j.cli.AdminTool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -16,12 +15,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
-import org.neo4j.cli.AdminTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.io.URLUtil;
 
 public class GraphImportRunner {
 
@@ -133,7 +126,7 @@ public class GraphImportRunner {
             args.add("--high-io");
             args.add("true");
         }
-        
+
         args.add("--ignore-empty-strings");
         args.add("true");
         args.add("--skip-duplicate-nodes");

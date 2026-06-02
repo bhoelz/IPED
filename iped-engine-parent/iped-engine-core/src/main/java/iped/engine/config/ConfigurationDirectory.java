@@ -1,24 +1,15 @@
 package iped.engine.config;
 
+import iped.configuration.Configurable;
+import iped.configuration.IConfigurationDirectory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.*;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import iped.configuration.Configurable;
-import iped.configuration.IConfigurationDirectory;
 
 public class ConfigurationDirectory implements IConfigurationDirectory {
 

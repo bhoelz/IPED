@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,19 +18,6 @@
  */
 package iped.engine.search;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
-
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.lucene.NoScoringCollector;
@@ -40,6 +27,12 @@ import iped.exception.QueryNodeException;
 import iped.search.IIPEDSearcher;
 import iped.search.SearchQueryDefinition;
 import iped.search.SearchResult;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.*;
+
+import java.io.IOException;
+import java.io.InterruptedIOException;
 
 public class IPEDSearcher implements IIPEDSearcher {
 
@@ -200,7 +193,7 @@ public class IPEDSearcher implements IIPEDSearcher {
         } else {
             sort = new Sort(SortField.FIELD_DOC);
         }
-        
+
         int maxResults = MAX_SIZE_TO_SCORE;
         ScoreDoc[] scoreDocs = null;
         do {
@@ -216,7 +209,7 @@ public class IPEDSearcher implements IIPEDSearcher {
 
         return searchResult;
     }
-    
+
     public boolean hasDocId(int docId) {
         if (collector != null) {
             return collector.bits.get(docId);

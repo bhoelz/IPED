@@ -1,23 +1,17 @@
 package iped.engine.preview;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.InflaterInputStream;
-
+import com.zaxxer.hikari.HikariDataSource;
+import iped.data.IItemReader;
+import iped.utils.SeekableFileInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zaxxer.hikari.HikariDataSource;
-
-import iped.data.IItemReader;
-import iped.utils.SeekableFileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.*;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.InflaterInputStream;
 
 /**
  * Handles storage and retrieval of item previews in an H2 database.

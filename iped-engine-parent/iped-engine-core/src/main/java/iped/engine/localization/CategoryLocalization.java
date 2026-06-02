@@ -1,12 +1,12 @@
 package iped.engine.localization;
 
+import iped.localization.LocaleResolver;
+
 import java.text.Collator;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
-
-import iped.localization.LocaleResolver;
 
 public class CategoryLocalization {
 

@@ -1,19 +1,14 @@
 package iped.engine.core;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.SplittableRandom;
-import java.util.TreeMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.ProcessingPriorityConfig;
 import iped.engine.data.CaseData;
 import iped.engine.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 
 public class ProcessingQueues {
     /*

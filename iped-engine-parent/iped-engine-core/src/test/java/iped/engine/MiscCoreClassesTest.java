@@ -1,13 +1,12 @@
 package iped.engine;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import iped.exception.ZipBombException;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
-import org.junit.jupiter.api.Test;
-
-import iped.exception.ZipBombException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MiscCoreClassesTest {
 

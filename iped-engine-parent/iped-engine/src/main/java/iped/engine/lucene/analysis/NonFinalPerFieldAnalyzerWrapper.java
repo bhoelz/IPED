@@ -1,10 +1,10 @@
 package iped.engine.lucene.analysis;
 
-import java.util.Collections;
-import java.util.Map;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.DelegatingAnalyzerWrapper;
+
+import java.util.Collections;
+import java.util.Map;
 
 public class NonFinalPerFieldAnalyzerWrapper extends DelegatingAnalyzerWrapper {
 
@@ -22,13 +22,13 @@ public class NonFinalPerFieldAnalyzerWrapper extends DelegatingAnalyzerWrapper {
     }
 
     /**
-     * Constructs with default analyzer and a map of analyzers to use for 
+     * Constructs with default analyzer and a map of analyzers to use for
      * specific fields.
      *
      * @param defaultAnalyzer Any fields not specifically
      * defined to use a different analyzer will use the one provided here.
-     * @param fieldAnalyzers a Map (String field name to the Analyzer) to be 
-     * used for those fields 
+     * @param fieldAnalyzers a Map (String field name to the Analyzer) to be
+     * used for those fields
      */
     public NonFinalPerFieldAnalyzerWrapper(Analyzer defaultAnalyzer, Map<String, Analyzer> fieldAnalyzers) {
       super(PER_FIELD_REUSE_STRATEGY);

@@ -1,14 +1,14 @@
 package iped.engine.data;
 
+import iped.datasource.IDataSource;
+
 import java.io.File;
 import java.util.UUID;
-
-import iped.datasource.IDataSource;
 
 /**
  * Representa uma fonte de dados, como imagem de dispositivo, disco físico,
  * pasta ou relatório de outra ferramenta.
- * 
+ *
  * @author Nassif
  *
  */

@@ -19,20 +19,15 @@
 package iped.engine.config.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import iped.engine.config.ConfigurationManager;
 import iped.configuration.Configurable;
+import iped.engine.config.ConfigurationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * API controller for configuration management.

@@ -1,6 +1,11 @@
 package iped.engine.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import iped.engine.config.ConfigurationView;
+import iped.engine.core.CaseContext;
+import iped.engine.core.CaseContextThreadLocal;
+import iped.engine.data.CaseData;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -8,13 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
-import iped.engine.config.ConfigurationView;
-import iped.engine.core.CaseContext;
-import iped.engine.core.CaseContextThreadLocal;
-import iped.engine.data.CaseData;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests to verify UIPropertyListenerProvider routes events per case.

@@ -1,14 +1,13 @@
 package iped.engine.config;
 
+import iped.utils.UTF8Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import iped.utils.UTF8Properties;
 
 public class DocThumbTaskConfig extends AbstractTaskPropertiesConfig {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String ENABLE_PROP = "enableDocThumbs";

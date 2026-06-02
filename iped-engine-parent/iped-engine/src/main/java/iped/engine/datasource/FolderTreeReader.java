@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,6 +18,19 @@
  */
 package iped.engine.datasource;
 
+import iped.data.ICaseData;
+import iped.data.IItem;
+import iped.engine.CmdLineArgs;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.FileSystemConfig;
+import iped.engine.core.Manager;
+import iped.engine.data.DataSource;
+import iped.engine.data.Item;
+import iped.properties.ExtraProperties;
+import iped.utils.FileInputStreamFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -29,20 +42,6 @@ import java.nio.file.attribute.UserPrincipal;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.data.ICaseData;
-import iped.data.IItem;
-import iped.engine.CmdLineArgs;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.FileSystemConfig;
-import iped.engine.core.Manager;
-import iped.engine.data.DataSource;
-import iped.engine.data.Item;
-import iped.properties.ExtraProperties;
-import iped.utils.FileInputStreamFactory;
 
 public class FolderTreeReader extends DataSourceReader {
 
@@ -81,7 +80,7 @@ public class FolderTreeReader extends DataSourceReader {
     }
 
     @Override
-    public void read(File file, Item parent) throws Exception {
+    public void read(File file, IItem parent) throws Exception {
         args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
         evidenceName = getEvidenceName(file);
         if (evidenceName == null) {
@@ -102,7 +101,7 @@ public class FolderTreeReader extends DataSourceReader {
         transverse(file, parent);
     }
 
-    private void transverse(File file, Item parent)
+    private void transverse(File file, IItem parent)
             throws IOException {
         new FolderVisitor(parent).walk(file);
     }

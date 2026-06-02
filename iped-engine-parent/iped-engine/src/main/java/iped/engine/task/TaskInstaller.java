@@ -1,10 +1,10 @@
 package iped.engine.task;
 
-import java.util.List;
-
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.TaskInstallerConfig;
 import iped.engine.core.Worker;
+
+import java.util.List;
 
 /**
  * Instancia e instala as tarefas de processamento em um Worker. A ordem de
@@ -17,7 +17,7 @@ import iped.engine.core.Worker;
 public class TaskInstaller {
 
     public void installProcessingTasks(Worker worker) throws Exception {
-        
+
         TaskInstallerConfig taskConfig = ConfigurationManager.get().findObject(TaskInstallerConfig.class);
 
         List<AbstractTask> tasks = taskConfig.getNewTaskInstances();

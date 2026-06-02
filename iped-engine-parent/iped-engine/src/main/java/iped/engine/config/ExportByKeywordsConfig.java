@@ -1,20 +1,16 @@
 package iped.engine.config;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import iped.engine.util.Util;
+
+import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import iped.engine.util.Util;
-
 public class ExportByKeywordsConfig extends AbstractTaskConfig<List<String>> implements Externalizable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 2L;
 

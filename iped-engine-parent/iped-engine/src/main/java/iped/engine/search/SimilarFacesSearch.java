@@ -1,23 +1,16 @@
 package iped.engine.search;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.SortedSetDocValues;
-import org.apache.lucene.util.BytesRef;
-
 import iped.data.IItem;
 import iped.data.IItemId;
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.index.SortedSetDocValues;
+import org.apache.lucene.util.BytesRef;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 public class SimilarFacesSearch {
 

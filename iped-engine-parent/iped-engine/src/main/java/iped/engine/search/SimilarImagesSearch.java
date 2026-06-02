@@ -1,11 +1,10 @@
 package iped.engine.search;
 
+import iped.data.IItem;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-
-import iped.data.IItem;
 
 public class SimilarImagesSearch {
 

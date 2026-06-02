@@ -1,16 +1,16 @@
 package iped.engine.core;
 
-import static org.junit.jupiter.api.Assertions.*;
+import iped.data.ICaseData;
+import iped.engine.config.ConfigurationView;
+import iped.engine.data.CaseData;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
-import iped.data.ICaseData;
-import iped.engine.config.ConfigurationView;
-import iped.engine.data.CaseData;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests to verify Statistics correctly delegates to ThreadLocal CaseContext.

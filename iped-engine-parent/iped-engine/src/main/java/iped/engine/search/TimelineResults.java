@@ -1,13 +1,5 @@
 package iped.engine.search;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.lucene.index.BinaryDocValues;
-import org.apache.lucene.index.SortedSetDocValues;
-
 import iped.data.IItemId;
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.ItemId;
@@ -15,6 +7,13 @@ import iped.engine.lucene.DocValuesUtil;
 import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
+import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.SortedSetDocValues;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class TimelineResults {
 
@@ -147,7 +146,7 @@ while (tsvAdv && (ord = timeStampValues.nextOrd()) != -1) {
 
         /**
          * This is not thread-safe.
-         * 
+         *
          * @return
          * @throws IOException
          */
@@ -161,7 +160,7 @@ while (tsvAdv && (ord = timeStampValues.nextOrd()) != -1) {
 
         /**
          * This is not thread-safe.
-         * 
+         *
          * @return
          * @throws IOException
          */

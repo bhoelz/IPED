@@ -1,21 +1,20 @@
 package iped.engine.config;
 
+import iped.configuration.IConfigurationDirectory;
+import iped.exception.IPEDException;
+import iped.utils.UTF8Properties;
+import org.apache.commons.lang3.SystemUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 
-import org.apache.commons.lang3.SystemUtils;
-
-import iped.configuration.IConfigurationDirectory;
-import iped.exception.IPEDException;
-import iped.utils.UTF8Properties;
-
 public class PluginConfig extends AbstractPropertiesConfigurable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private String relativePluginFolder;

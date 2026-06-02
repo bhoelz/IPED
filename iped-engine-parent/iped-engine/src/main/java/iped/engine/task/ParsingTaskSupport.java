@@ -1,12 +1,11 @@
 package iped.engine.task;
 
-import java.util.Map;
-
+import iped.data.IItem;
+import iped.parsers.standard.StandardParser;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 
-import iped.data.IItem;
-import iped.parsers.standard.StandardParser;
+import java.util.Map;
 
 public final class ParsingTaskSupport {
 

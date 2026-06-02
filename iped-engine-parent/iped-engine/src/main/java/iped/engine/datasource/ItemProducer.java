@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,17 +18,6 @@
  */
 package iped.engine.datasource;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.ICaseData;
 import iped.engine.core.CaseContext;
 import iped.engine.core.CaseContextThreadLocal;
@@ -38,6 +27,16 @@ import iped.engine.localization.Messages;
 import iped.engine.task.SkipCommitDataKeys;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.utils.HashValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Responsável por instanciar e executar o contador e o produtor de itens do
@@ -138,7 +137,7 @@ public class ItemProducer extends Thread implements Closeable {
                         .getCaseObject(SkipCommitDataKeys.PARENTS_WITH_LOST_SUBITEMS);
                 if (parentsWithLostSubitems != null && parentsWithLostSubitems.size() > 0) {
                     try (IPEDReader reader = new IPEDReader(caseData, output, listOnly)) {
-                    	reader.read(parentsWithLostSubitems, manager);	
+                    	reader.read(parentsWithLostSubitems, manager);
                     }
                 }
 

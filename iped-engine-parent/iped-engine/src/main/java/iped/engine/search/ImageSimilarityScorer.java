@@ -1,25 +1,19 @@
 package iped.engine.search;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.BinaryDocValues;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.util.BytesRef;
-
 import iped.data.IItem;
 import iped.data.IItemId;
 import iped.engine.data.IPEDSource;
 import iped.engine.lucene.DocValuesUtil;
 import iped.engine.task.similarity.ImageSimilarity;
 import iped.properties.BasicProps;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.util.BytesRef;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ImageSimilarityScorer {
 
@@ -153,7 +147,7 @@ public class ImageSimilarityScorer {
             }
         }
         trim(0);
-        
+
         BinaryDocValues similarityFeaturesValues = null;
         try {
             similarityFeaturesValues = ipedCase.getLeafReader()
@@ -171,7 +165,7 @@ public class ImageSimilarityScorer {
             byte[] currFeatures = bytesRef.bytes.clone();
             idToFeaturesMap.put(idx, currFeatures);
         }
-        
+
         int start = topResults.size();
         for (int i = 1; i < topResults.size(); i++) {
             int idx = topResults.get(i);

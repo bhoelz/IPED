@@ -1,19 +1,14 @@
 package iped.engine.graph.links;
 
+import iped.engine.graph.PathQueryListener;
+import org.apache.commons.io.IOUtils;
+import org.neo4j.graphdb.*;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.graphdb.Result;
-import org.neo4j.graphdb.Transaction;
-
-import iped.engine.graph.PathQueryListener;
 
 public abstract class AbstractSearchLinksQuery implements SearchLinksQuery {
 

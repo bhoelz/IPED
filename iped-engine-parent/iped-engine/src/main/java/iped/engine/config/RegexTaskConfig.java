@@ -1,25 +1,19 @@
 package iped.engine.config;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
+import iped.engine.localization.Messages;
+import iped.engine.util.Util;
+import iped.exception.IPEDException;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import iped.engine.localization.Messages;
-import iped.engine.util.Util;
-import iped.exception.IPEDException;
-
 public class RegexTaskConfig extends AbstractTaskConfig<Pair<Boolean, List<iped.engine.config.RegexTaskConfig.RegexEntry>>> implements Externalizable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 2L;
 
@@ -41,7 +35,7 @@ public class RegexTaskConfig extends AbstractTaskConfig<Pair<Boolean, List<iped.
     public static class RegexEntry implements Serializable {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = -3493962168817933193L;
 

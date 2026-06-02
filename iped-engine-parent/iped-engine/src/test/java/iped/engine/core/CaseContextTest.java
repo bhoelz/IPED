@@ -1,13 +1,12 @@
 package iped.engine.core;
 
-import static org.junit.jupiter.api.Assertions.*;
+import iped.engine.config.ConfigurationView;
+import iped.engine.data.CaseData;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import org.junit.jupiter.api.Test;
-
-import iped.engine.config.ConfigurationView;
-import iped.engine.data.CaseData;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CaseContextTest {
 

@@ -1,14 +1,14 @@
 package iped.engine.config;
 
+import iped.utils.UTF8Properties;
+
 import java.io.IOException;
 import java.nio.file.Path;
-
-import iped.utils.UTF8Properties;
 
 public abstract class AbstractTaskPropertiesConfig extends AbstractTaskConfig<UTF8Properties> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     protected UTF8Properties properties = new UTF8Properties();

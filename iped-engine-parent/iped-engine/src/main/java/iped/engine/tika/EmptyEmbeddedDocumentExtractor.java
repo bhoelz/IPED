@@ -1,18 +1,18 @@
 package iped.engine.tika;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.metadata.Metadata;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+
 public class EmptyEmbeddedDocumentExtractor implements EmbeddedDocumentExtractor, Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

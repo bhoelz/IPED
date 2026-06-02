@@ -1,39 +1,20 @@
 package iped.engine.graph;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.Flushable;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
-import java.io.Writer;
+import iped.utils.StringUtil;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.lucene.util.IOUtils;
+import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.RelationshipType;
+
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -42,13 +23,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.RelationshipType;
-
-import org.apache.lucene.util.IOUtils;
-import iped.utils.StringUtil;
 
 public class GraphFileWriter implements Closeable, Flushable {
 
@@ -573,7 +547,7 @@ public class GraphFileWriter implements Closeable, Flushable {
         private Set<String> prevNodeRecords = Collections
                 .newSetFromMap(new LinkedHashMap<String, Boolean>(16, 0.75f, true) {
                     /**
-					 * 
+					 *
 					 */
 					private static final long serialVersionUID = 1L;
 

@@ -1,12 +1,11 @@
 package iped.engine.lucene;
 
-import java.io.IOException;
-import java.util.List;
-
+import iped.engine.CmdLineArgs;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexDeletionPolicy;
 
-import iped.engine.CmdLineArgs;
+import java.io.IOException;
+import java.util.List;
 
 public class CustomIndexDeletionPolicy extends IndexDeletionPolicy {
 

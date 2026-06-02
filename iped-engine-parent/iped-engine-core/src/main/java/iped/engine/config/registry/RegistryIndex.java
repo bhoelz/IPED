@@ -1,8 +1,8 @@
 package iped.engine.config.registry;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = false)
 public record RegistryIndex(String schemaVersion, String registryId, String generatedAt, SignatureInline signature, List<Plugin> plugins) {

@@ -1,27 +1,5 @@
 package iped.engine.webapi;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.sax.ToTextContentHandler;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.xml.sax.ContentHandler;
-
 import iped.data.IIPEDSource;
 import iped.data.IItem;
 import iped.data.IItemId;
@@ -35,27 +13,23 @@ import iped.engine.data.ItemIdSet;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.task.ParsingTaskContextFactory;
 import iped.engine.task.ParsingTaskSupport;
-import iped.engine.webapi.spi.BookmarkService;
-import iped.engine.webapi.spi.DocRef;
-import iped.engine.webapi.spi.RenditionDescriptor;
-import iped.engine.webapi.spi.RenditionService;
-import iped.engine.webapi.spi.SearchService;
-import iped.engine.webapi.spi.SelectionService;
-import iped.engine.webapi.spi.SourceCatalogService;
-import iped.engine.webapi.spi.SourceDescriptor;
-import iped.engine.webapi.spi.TextService;
-import iped.engine.webapi.spi.ViewerSessionService;
-import iped.engine.webapi.spi.WebApiServices;
-import iped.engine.webapi.spi.WebApiServicesFactory;
-import iped.viewers.web.RenderRequest;
-import iped.viewers.web.RenditionKind;
-import iped.viewers.web.ViewerCapabilities;
-import iped.viewers.web.WebRenderer;
-import iped.viewers.web.WebRendererRegistry;
+import iped.engine.webapi.spi.*;
 import iped.parsers.standard.StandardParser;
 import iped.search.IIPEDSearcher;
 import iped.search.IMultiSearchResult;
 import iped.search.SearchResult;
+import iped.viewers.web.*;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.sax.ToTextContentHandler;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.xml.sax.ContentHandler;
+
+import java.io.*;
+import java.net.URL;
+import java.util.*;
 
 public class EngineWebApiServicesFactory implements WebApiServicesFactory {
     @Override

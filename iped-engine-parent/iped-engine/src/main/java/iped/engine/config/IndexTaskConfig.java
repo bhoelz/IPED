@@ -1,13 +1,13 @@
 package iped.engine.config;
 
-import java.util.ArrayList;
-
 import iped.utils.UTF8Properties;
+
+import java.util.ArrayList;
 
 public class IndexTaskConfig extends AbstractTaskPropertiesConfig {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

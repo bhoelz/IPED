@@ -1,13 +1,12 @@
 package iped.engine.search;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
-import org.junit.jupiter.api.Test;
-
 import iped.data.IItemId;
 import iped.engine.data.ItemId;
 import iped.search.IMultiSearchResult;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ImageSimilarityLowScoreFilterTest {
 

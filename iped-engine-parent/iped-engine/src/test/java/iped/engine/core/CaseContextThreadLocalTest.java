@@ -1,14 +1,13 @@
 package iped.engine.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.UUID;
-
+import iped.engine.config.ConfigurationView;
+import iped.engine.data.CaseData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import iped.engine.config.ConfigurationView;
-import iped.engine.data.CaseData;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CaseContextThreadLocalTest {
 

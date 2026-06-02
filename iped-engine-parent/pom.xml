@@ -21,6 +21,7 @@
         <module>iped-ufed</module>
         <module>iped-ad1</module>
         <module>iped-distributed</module>
+        <module>iped-additional-index</module>
         <module>iped-engine</module>
     </modules>
 

@@ -1,12 +1,11 @@
 package iped.engine.task;
 
-import org.apache.tika.parser.ParseContext;
-
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.core.Worker;
 import iped.engine.data.IPEDSource;
 import iped.parsers.standard.StandardParser;
+import org.apache.tika.parser.ParseContext;
 
 public final class ParsingTaskContextFactory {
 

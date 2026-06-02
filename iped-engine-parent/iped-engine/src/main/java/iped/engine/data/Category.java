@@ -1,5 +1,10 @@
 package iped.engine.data;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import iped.engine.localization.CategoryLocalization;
+import iped.utils.LocalizedFormat;
+
 import java.io.Serializable;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -7,16 +12,10 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import iped.engine.localization.CategoryLocalization;
-import iped.utils.LocalizedFormat;
-
 public class Category implements Serializable, Comparable<Category> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

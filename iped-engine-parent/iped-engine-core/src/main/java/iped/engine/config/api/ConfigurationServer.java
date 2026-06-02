@@ -18,13 +18,13 @@
  */
 package iped.engine.config.api;
 
-import org.eclipse.jetty.server.Server;
+import iped.engine.config.Configuration;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.server.Server;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import iped.engine.config.Configuration;
 
 /**
  * Embedded Jetty server for Configuration API.

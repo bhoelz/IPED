@@ -58,7 +58,7 @@ public final class ItemConverter {
         }
         msg.setItemUuid(uuid);
         msg.setCaseId(caseId);
-        msg.setLocalItemId(item.getId() != null ? item.getId() : -1);
+        msg.setLocalItemId(item.getId());
 
         if (item.getDataSource() != null) {
             msg.setDataSourceUuid(item.getDataSource().getUUID());
@@ -87,7 +87,7 @@ public final class ItemConverter {
         // Dates
         msg.setAccessDate(item.getAccessDate());
         msg.setCreationDate(item.getCreationDate());
-        msg.setModificationDate(item.getModificationDate());
+        msg.setModificationDate(item.getModDate());
         msg.setChangeDate(item.getChangeDate());
 
         // Analysis state

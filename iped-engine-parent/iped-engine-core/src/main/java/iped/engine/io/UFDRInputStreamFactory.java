@@ -1,5 +1,8 @@
 package iped.engine.io;
 
+import iped.io.ISeekableInputStreamFactory;
+import iped.io.SeekableInputStream;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -7,9 +10,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.file.Path;
-
-import iped.io.ISeekableInputStreamFactory;
-import iped.io.SeekableInputStream;
 
 public class UFDRInputStreamFactory implements ISeekableInputStreamFactory, Closeable {
 

@@ -1,17 +1,16 @@
 package iped.engine.search;
 
+import iped.data.IItemReader;
+import iped.engine.data.IPEDSource;
+import iped.search.IItemSearcher;
+import iped.search.SearchResult;
+import org.apache.lucene.index.IndexWriter;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.lucene.index.IndexWriter;
-
-import iped.data.IItemReader;
-import iped.engine.data.IPEDSource;
-import iped.search.IItemSearcher;
-import iped.search.SearchResult;
 
 public class ItemSearcher implements IItemSearcher {
 

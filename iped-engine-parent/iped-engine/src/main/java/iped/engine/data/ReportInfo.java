@@ -1,28 +1,19 @@
 package iped.engine.data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import com.github.openjson.JSONArray;
+import com.github.openjson.JSONObject;
+import iped.engine.localization.Messages;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.openjson.JSONArray;
-import com.github.openjson.JSONObject;
-
-import iped.engine.localization.Messages;
-
 public class ReportInfo implements Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

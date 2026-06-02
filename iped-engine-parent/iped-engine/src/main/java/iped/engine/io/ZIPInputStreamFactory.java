@@ -1,11 +1,18 @@
 package iped.engine.io;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import iped.io.SeekableInputStream;
+import iped.utils.ReadOnlyRAFSeekableByteChannel;
+import iped.utils.SeekableFileInputStream;
+import iped.utils.SeekableInputStreamFactory;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipSplitReadOnlySeekableByteChannel;
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
@@ -17,26 +24,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.CRC32;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.compress.archivers.zip.ZipSplitReadOnlySeekableByteChannel;
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import iped.io.SeekableInputStream;
-import iped.utils.ReadOnlyRAFSeekableByteChannel;
-import iped.utils.SeekableFileInputStream;
-import iped.utils.SeekableInputStreamFactory;
 
 public class ZIPInputStreamFactory extends SeekableInputStreamFactory implements Closeable {
 

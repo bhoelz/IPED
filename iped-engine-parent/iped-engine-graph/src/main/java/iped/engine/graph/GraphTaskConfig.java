@@ -1,14 +1,14 @@
 package iped.engine.graph;
 
+import iped.engine.config.AbstractTaskConfig;
+
 import java.io.IOException;
 import java.nio.file.Path;
-
-import iped.engine.config.AbstractTaskConfig;
 
 public class GraphTaskConfig extends AbstractTaskConfig<GraphConfiguration> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

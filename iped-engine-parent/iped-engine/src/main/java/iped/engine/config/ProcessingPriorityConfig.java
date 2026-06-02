@@ -1,11 +1,11 @@
 package iped.engine.config;
 
+import iped.utils.UTF8Properties;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
-import java.nio.file.Path;
 import java.nio.file.DirectoryStream.Filter;
-
-import iped.utils.UTF8Properties;
+import java.nio.file.Path;
 
 public class ProcessingPriorityConfig extends AbstractPropertiesConfigurable {
     private static final long serialVersionUID = 1L;

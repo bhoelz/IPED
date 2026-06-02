@@ -1,11 +1,11 @@
 package iped.engine.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.util.BytesRef;
+
+import java.io.IOException;
 
 public class DocValuesUtil {
 

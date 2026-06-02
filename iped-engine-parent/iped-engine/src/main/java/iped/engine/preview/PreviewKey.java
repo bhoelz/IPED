@@ -1,14 +1,13 @@
 package iped.engine.preview;
 
-import java.nio.ByteBuffer;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
-
 import iped.data.IItemReader;
 import iped.engine.hash.HashAlgorithm;
 import iped.properties.ExtraProperties;
 import iped.utils.HashValue;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
+
+import java.nio.ByteBuffer;
 
 /**
  * Primary key for storing/retrieving an item's preview. Prioritizes MD5 hash, falls back to item ID. Uses a 16-byte key

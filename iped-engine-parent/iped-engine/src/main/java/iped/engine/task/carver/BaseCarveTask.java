@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2016, Wladimir Leite, Luis Filipe Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,13 +18,6 @@
  */
 package iped.engine.task.carver;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.tika.mime.MediaType;
-
 import iped.carvers.api.CarverConfiguration;
 import iped.data.IItem;
 import iped.engine.data.Item;
@@ -32,6 +25,12 @@ import iped.engine.task.AbstractTask;
 import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.properties.MediaTypes;
+import org.apache.tika.mime.MediaType;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Classe base de tarefas de carving. Centraliza contador de itens carveados e
@@ -107,7 +106,7 @@ public abstract class BaseCarveTask extends AbstractTask {
     /**
      * Used to clear counters added to extra attributes of parent items, needed when
      * resuming processing, so those counters will start from zero.
-     * 
+     *
      * @param parentFile
      */
     protected void clearExtraAttributes(IItem parentFile) {

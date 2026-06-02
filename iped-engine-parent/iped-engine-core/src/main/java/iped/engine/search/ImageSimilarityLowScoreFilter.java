@@ -1,10 +1,10 @@
 package iped.engine.search;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import iped.data.IItemId;
 import iped.search.IMultiSearchResult;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImageSimilarityLowScoreFilter {
 

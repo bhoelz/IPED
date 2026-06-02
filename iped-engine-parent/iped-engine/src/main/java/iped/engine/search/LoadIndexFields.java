@@ -1,12 +1,11 @@
 package iped.engine.search;
 
-import java.util.HashSet;
-import java.util.List;
-
-import org.apache.lucene.index.IndexReader;
-
 import iped.data.IIPEDSource;
 import iped.engine.task.index.IndexItem;
+import org.apache.lucene.index.IndexReader;
+
+import java.util.HashSet;
+import java.util.List;
 
 public class LoadIndexFields {
 

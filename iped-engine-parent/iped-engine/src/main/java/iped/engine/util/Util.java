@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,39 +18,18 @@
  */
 package iped.engine.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.lang.management.ManagementFactory;
-import java.net.URI;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
+import com.sun.jna.Native;
+import iped.data.IItem;
+import iped.engine.data.CaseData;
+import iped.engine.data.Item;
+import iped.engine.localization.Messages;
+import iped.engine.task.SkipCommitDataKeys;
+import iped.engine.task.carver.BaseCarveTask;
+import iped.engine.task.index.IndexItem;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.HashValue;
+import iped.utils.IOUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.lucene.util.IOUtils;
@@ -63,19 +42,17 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 
-import com.sun.jna.Native;
-
-import iped.data.IItem;
-import iped.engine.data.CaseData;
-import iped.engine.data.Item;
-import iped.engine.localization.Messages;
-import iped.engine.task.SkipCommitDataKeys;
-import iped.engine.task.carver.BaseCarveTask;
-import iped.engine.task.index.IndexItem;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.HashValue;
-import iped.utils.IOUtil;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.net.URI;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Util {
 
@@ -153,11 +130,11 @@ public class Util {
         }
         return id;
     }
-    
+
     /**
      * Computes trackID and reassign the item ID if it was mapped to a different ID
      * in a previous processing, being resumed or restarted.
-     * 
+     *
      * @param item
      */
     public static void calctrackIDAndUpdateID(CaseData caseData, IItem item) {
@@ -446,7 +423,7 @@ public class Util {
 
     /**
      * Carrega bibliotecas nativas de uma pasta, tentando adivinhar a ordem correta
-     * 
+     *
      * @param libDir
      */
     public static void loadNatLibs(File libDir) {

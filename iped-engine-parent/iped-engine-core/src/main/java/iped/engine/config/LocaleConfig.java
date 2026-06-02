@@ -1,18 +1,18 @@
 package iped.engine.config;
 
+import iped.localization.LocaleResolver;
+import iped.utils.UTF8Properties;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 import java.util.Locale;
 
-import iped.localization.LocaleResolver;
-import iped.utils.UTF8Properties;
-
 public class LocaleConfig extends AbstractPropertiesConfigurable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     public static final String CONFIG_FILE = "LocalConfig.txt"; //$NON-NLS-1$

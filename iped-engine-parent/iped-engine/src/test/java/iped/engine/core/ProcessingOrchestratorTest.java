@@ -1,16 +1,15 @@
 package iped.engine.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.List;
-import java.util.UUID;
-
+import iped.engine.config.ConfigurationView;
+import iped.engine.data.CaseData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import iped.engine.config.ConfigurationView;
-import iped.engine.data.CaseData;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests to verify ProcessingOrchestrator manages multi-case processing.

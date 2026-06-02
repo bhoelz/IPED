@@ -1,18 +1,13 @@
 package iped.engine.data;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import iped.data.ICaseData;
+
+import java.io.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import iped.data.ICaseData;
 
 /**
  * Classe que define todos os dados do caso.

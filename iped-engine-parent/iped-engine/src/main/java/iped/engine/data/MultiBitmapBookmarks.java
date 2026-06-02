@@ -1,40 +1,27 @@
 package iped.engine.data;
 
-import java.awt.Color;
+import iped.data.*;
+import iped.engine.search.MultiSearchResult;
+import iped.engine.util.Util;
+import iped.search.IMultiSearchResult;
+import org.apache.commons.lang.ArrayUtils;
+import org.roaringbitmap.RoaringBitmap;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
-
-import javax.swing.KeyStroke;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.roaringbitmap.RoaringBitmap;
-
-import iped.data.IBookmarks;
-import iped.data.IIPEDSource;
-import iped.data.IItemId;
-import iped.data.IMultiBookmarks;
-import iped.data.SelectionListener;
-import iped.engine.search.MultiSearchResult;
-import iped.engine.util.Util;
-import iped.search.IMultiSearchResult;
 
 public class MultiBitmapBookmarks implements Serializable, IMultiBookmarks {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

@@ -16,44 +16,17 @@
  */
 package iped.engine.lucene;
 
+import org.apache.lucene.index.*;
+import org.apache.lucene.index.MultiDocValues.MultiSortedDocValues;
+import org.apache.lucene.search.AcceptDocs;
+import org.apache.lucene.search.KnnCollector;
+import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.Version;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.lucene.index.BinaryDocValues;
-import org.apache.lucene.index.CompositeReader;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.DocValues;
-import org.apache.lucene.index.DocValuesType;
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.FieldInfos;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.LeafMetaData;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.index.MultiBits;
-import org.apache.lucene.index.MultiDocValues;
-import org.apache.lucene.index.MultiDocValues.MultiSortedDocValues;
-import org.apache.lucene.index.MultiReader;
-import org.apache.lucene.index.MultiTerms;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.OrdinalMap;
-import org.apache.lucene.index.PointValues;
-import org.apache.lucene.index.SortedDocValues;
-import org.apache.lucene.index.SortedNumericDocValues;
-import org.apache.lucene.index.DocValuesSkipper;
-import org.apache.lucene.index.SortedSetDocValues;
-import org.apache.lucene.index.StoredFields;
-import org.apache.lucene.index.TermVectors;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.ByteVectorValues;
-import org.apache.lucene.index.FloatVectorValues;
-import org.apache.lucene.search.AcceptDocs;
-import org.apache.lucene.search.KnnCollector;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.util.Bits;
-import org.apache.lucene.util.Version;
 
 /**
  * This class forces a composite reader (eg a {@link
@@ -181,7 +154,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
     ensureOpen();
     return MultiDocValues.getBinaryValues(in, field); // TODO cache?
   }
-  
+
   @Override
   public SortedNumericDocValues getSortedNumericDocValues(String field) throws IOException {
     ensureOpen();
@@ -229,7 +202,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
     starts[size] = maxDoc();
     return new MultiSortedDocValues(values, starts, map, totalCost);
   }
-  
+
   @Override
   public SortedSetDocValues getSortedSetDocValues(String field) throws IOException {
     ensureOpen();
@@ -249,7 +222,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
         return dv;
       }
     }
-   
+
     assert map != null;
     int size = in.leaves().size();
     final SortedSetDocValues[] values = new SortedSetDocValues[size];
@@ -279,7 +252,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
     ensureOpen();
     return MultiDocValues.getNormValues(in, field); // TODO cache?
   }
-  
+
   @Override
   public TermVectors termVectors() throws IOException {
     ensureOpen();

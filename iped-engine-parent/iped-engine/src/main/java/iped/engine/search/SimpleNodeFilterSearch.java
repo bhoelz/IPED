@@ -1,17 +1,16 @@
 package iped.engine.search;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery.Builder;
-import org.apache.lucene.search.Query;
-
 import iped.data.IIPEDSource;
 import iped.engine.data.SimpleFilterNode;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery.Builder;
+import org.apache.lucene.search.Query;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SimpleNodeFilterSearch {
     private static final Map<SimpleFilterNode, Query> queryFromNode = Collections

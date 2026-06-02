@@ -1,10 +1,10 @@
 package iped.engine.graph;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests to verify GraphServiceFactoryImpl supports per-database isolation.

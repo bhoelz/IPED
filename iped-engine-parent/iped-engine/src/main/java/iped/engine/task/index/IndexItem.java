@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,50 +18,25 @@
  */
 package iped.engine.task.index;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
+import iped.data.IItem;
+import iped.datasource.IDataSource;
+import iped.engine.data.DataSource;
+import iped.engine.data.IPEDSource;
+import iped.engine.data.Item;
+import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
+import iped.engine.preview.PreviewConstants;
+import iped.engine.preview.PreviewInputStreamFactory;
+import iped.engine.preview.ThumbConstants;
+import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
+import iped.engine.util.Util;
+import iped.parsers.ocr.OCRParser;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.MetadataUtil;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.document.BinaryDocValuesField;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.DoubleDocValuesField;
-import org.apache.lucene.document.DoublePoint;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.FloatDocValuesField;
-import org.apache.lucene.document.FloatPoint;
-import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.document.KnnFloatVectorField;
-import org.apache.lucene.document.LatLonDocValuesField;
-import org.apache.lucene.document.LatLonPoint;
-import org.apache.lucene.document.LongPoint;
-import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.SortedDocValuesField;
-import org.apache.lucene.document.SortedNumericDocValuesField;
-import org.apache.lucene.document.SortedSetDocValuesField;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.BytesRef;
@@ -73,28 +48,18 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.utils.DateUtils;
 import org.sleuthkit.datamodel.SleuthkitCase;
 
-import iped.data.IItem;
-import iped.datasource.IDataSource;
-import iped.engine.data.DataSource;
-import iped.engine.data.IPEDSource;
-import iped.engine.data.Item;
-import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
-import iped.engine.preview.PreviewConstants;
-import iped.engine.preview.ThumbConstants;
-import iped.engine.preview.PreviewInputStreamFactory;
-import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
-import iped.engine.util.Util;
-import iped.parsers.ocr.OCRParser;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.MetadataUtil;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.DateUtil;
-import iped.utils.FileInputStreamFactory;
-import iped.utils.IOUtil;
-import iped.utils.SeekableInputStreamFactory;
-import iped.utils.SelectImagePathWithDialog;
-import iped.utils.UTF8Properties;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.ParseException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Cria um org.apache.lucene.document.Document a partir das propriedades do

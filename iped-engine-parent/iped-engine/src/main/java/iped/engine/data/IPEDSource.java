@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,33 +18,35 @@
  */
 package iped.engine.data;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.IntStream;
-
+import iped.data.*;
+import iped.datasource.IAdditionalDataSourceManager;
+import iped.engine.additionalindex.DefaultAdditionalDataSourceManager;
+import iped.engine.additionalindex.EnrichedItem;
+import iped.engine.additionalindex.LuceneAdditionalDataSource;
+import iped.engine.config.AnalysisConfig;
+import iped.engine.config.CategoryConfig;
+import iped.engine.config.Configuration;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.datasource.SleuthkitReader;
+import iped.engine.index.IndexExtraAttributes;
+import iped.engine.index.IndexMetadata;
+import iped.engine.localization.Messages;
+import iped.engine.lucene.ConfiguredFSDirectory;
+import iped.engine.lucene.SlowCompositeReaderWrapper;
+import iped.engine.lucene.analysis.AppAnalyzer;
+import iped.engine.search.IPEDSearcher;
+import iped.engine.search.IndexerSimilarity;
+import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
+import iped.engine.sleuthkit.TouchSleuthkitImages;
+import iped.engine.task.index.IndexItem;
+import iped.engine.util.Util;
+import iped.exception.IPEDException;
+import iped.properties.BasicProps;
+import iped.utils.IOUtil;
+import iped.utils.SelectImagePathWithDialog;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.SortedDocValues;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
@@ -54,32 +56,13 @@ import org.sleuthkit.datamodel.TskCoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.data.IBookmarks;
-import iped.data.IIPEDSource;
-import iped.data.IItem;
-import iped.data.IItemId;
-import iped.data.IMultiBookmarks;
-import iped.engine.config.AnalysisConfig;
-import iped.engine.config.CategoryConfig;
-import iped.engine.config.Configuration;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.datasource.SleuthkitReader;
-import iped.engine.localization.Messages;
-import iped.engine.lucene.ConfiguredFSDirectory;
-import iped.engine.lucene.SlowCompositeReaderWrapper;
-import iped.engine.lucene.analysis.AppAnalyzer;
-import iped.engine.index.IndexExtraAttributes;
-import iped.engine.search.IPEDSearcher;
-import iped.engine.search.IndexerSimilarity;
-import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
-import iped.engine.sleuthkit.TouchSleuthkitImages;
-import iped.engine.index.IndexMetadata;
-import iped.engine.task.index.IndexItem;
-import iped.engine.util.Util;
-import iped.exception.IPEDException;
-import iped.properties.BasicProps;
-import iped.utils.IOUtil;
-import iped.utils.SelectImagePathWithDialog;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 
 public class IPEDSource implements IIPEDSource {
 
@@ -136,6 +119,10 @@ public class IPEDSource implements IIPEDSource {
     boolean isReport = false;
 
     boolean askImagePathIfNotFound = true;
+
+    /** Manages additional-processing results for this case. Never null. */
+    private IAdditionalDataSourceManager additionalDataSourceManager =
+            new DefaultAdditionalDataSourceManager();
 
     public static boolean checkIfIsCaseFolder(File dir) {
         File module = new File(dir, MODULE_DIR);
@@ -249,6 +236,8 @@ public class IPEDSource implements IIPEDSource {
             bookmarks.loadState();
             multiBookmarks = new MultiBitmapBookmarks(Collections.singletonList(this));
 
+            loadAdditionalDataSources();
+
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
@@ -286,7 +275,7 @@ public class IPEDSource implements IIPEDSource {
         for (int i = 0; i < ids.length; i++) {
             ids[i] = -1;
         }
-        
+
         parentDocs = new BitSet(ids.length);
 
         NumericDocValues ndv = atomicReader.getNumericDocValues(IndexItem.ID);
@@ -340,7 +329,7 @@ public class IPEDSource implements IIPEDSource {
          * Bits liveDocs = MultiFields.getLiveDocs(reader); for(int i = 0; i <
          * docs.length; i++) if(docs[i] > 0 && (liveDocs == null ||
          * liveDocs.get(docs[i]))) totalItens++;
-         * 
+         *
          * //inclui docId = 0 na contagem se nao for deletado if(liveDocs == null ||
          * liveDocs.get(0)) totalItens++;
          */
@@ -517,6 +506,11 @@ public class IPEDSource implements IIPEDSource {
             if (searchExecutorService != null)
                 searchExecutorService.shutdown();
 
+            // Close all registered additional data sources
+            for (iped.datasource.IAdditionalDataSource ads : additionalDataSourceManager.getSources()) {
+                IOUtil.closeQuietly(ads);
+            }
+
             // if(sleuthCase != null)
             // sleuthCase.close();
 
@@ -525,10 +519,27 @@ public class IPEDSource implements IIPEDSource {
         }
     }
 
+    /**
+     * Returns the item enriched with any additional-processing results that
+     * have been stored for it.  When no additional data exists for the item
+     * the original item is returned unchanged (no allocation overhead).
+     *
+     * <p><strong>Note for task-processing code:</strong> use
+     * {@link #getRawItemByID(int)} instead when running tasks so that only
+     * the new results produced by the task are captured, not pre-existing
+     * additional attributes.</p>
+     */
     public IItem getItemByLuceneID(int docID) {
         try {
             Document doc = searcher.storedFields().document(docID);
             IItem item = IndexItem.getItem(doc, this, false);
+            if (additionalDataSourceManager.hasAnySources()) {
+                java.util.Map<String, Object> extra =
+                        additionalDataSourceManager.getMergedExtraAttributes(item.getId());
+                if (!extra.isEmpty()) {
+                    return new EnrichedItem(item, extra);
+                }
+            }
             return item;
 
         } catch (IOException e) {
@@ -539,6 +550,54 @@ public class IPEDSource implements IIPEDSource {
 
     public IItem getItemByID(int id) {
         return getItemByLuceneID(docs[id]);
+    }
+
+    /**
+     * Returns the raw item from the main Lucene index without merging any
+     * additional-processing results.  Used by {@code AdditionalTaskRunner} to
+     * ensure tasks start from a clean slate.
+     *
+     * @param id IPED item identifier
+     * @return the raw item, or {@code null} on error
+     */
+    public IItem getRawItemByID(int id) {
+        return getRawItemByLuceneID(docs[id]);
+    }
+
+    private IItem getRawItemByLuceneID(int docID) {
+        try {
+            Document doc = searcher.storedFields().document(docID);
+            return IndexItem.getItem(doc, this, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * @return the additional data source manager for this case; never null
+     */
+    public IAdditionalDataSourceManager getAdditionalDataSourceManager() {
+        return additionalDataSourceManager;
+    }
+
+    /**
+     * Called during case bootstrap.  Scans the module directory for a
+     * {@code .additional-index/} subdirectory and, if found, registers a
+     * {@link LuceneAdditionalDataSource} with the manager.
+     */
+    private void loadAdditionalDataSources() {
+        java.nio.file.Path additionalIndexPath =
+                moduleDir.toPath().resolve(".additional-index"); //$NON-NLS-1$
+        if (java.nio.file.Files.exists(additionalIndexPath)) {
+            try {
+                LuceneAdditionalDataSource ads = new LuceneAdditionalDataSource(additionalIndexPath);
+                additionalDataSourceManager.register(ads);
+                LOGGER.info("Additional processing index loaded from {}", additionalIndexPath); //$NON-NLS-1$
+            } catch (IOException e) {
+                LOGGER.error("Could not open additional processing index at {}", additionalIndexPath, e); //$NON-NLS-1$
+            }
+        }
     }
 
     public void reopen() throws IOException {
@@ -562,7 +621,7 @@ public class IPEDSource implements IIPEDSource {
 
     /**
      * Substitui caminhos absolutos para imagens por relativos
-     * 
+     *
      */
     public void updateImagePathsToRelative() {
         if (sleuthCase == null)
@@ -712,7 +771,7 @@ public class IPEDSource implements IIPEDSource {
     public int getId(int luceneId) {
         return ids[luceneId];
     }
-    
+
     public IntStream getLuceneIdStream() {
     	return parentDocs.stream();
     }

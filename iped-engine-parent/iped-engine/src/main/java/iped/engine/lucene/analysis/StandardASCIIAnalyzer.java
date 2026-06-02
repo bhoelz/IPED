@@ -1,16 +1,16 @@
 package iped.engine.lucene.analysis;
 
+import iped.engine.task.index.IndexItem;
+import iped.localization.LocalizedProperties;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.FilteringTokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
-/* [Triage] The following libraries are used to process tokens in a non-standard way */
 import org.apache.lucene.analysis.miscellaneous.LengthFilter;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-import iped.engine.task.index.IndexItem;
-import iped.localization.LocalizedProperties;
+/* [Triage] The following libraries are used to process tokens in a non-standard way */
 
 /*
  * Analisador de texto que utiliza o tokenizador LowerCaseLetterDigitTokenizer e

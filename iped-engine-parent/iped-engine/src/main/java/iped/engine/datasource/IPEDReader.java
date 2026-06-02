@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,36 +18,6 @@
  */
 package iped.engine.datasource;
 
-import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.TermQuery;
-import org.apache.tika.mime.MediaType;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IBookmarks;
 import iped.data.ICaseData;
 import iped.data.IIPEDSource;
@@ -58,12 +28,9 @@ import iped.engine.config.CategoryToExpandConfig;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.FileSystemConfig;
 import iped.engine.core.Manager;
-import iped.engine.data.BitmapBookmarks;
-import iped.engine.data.Bookmarks;
-import iped.engine.data.DataSource;
-import iped.engine.data.IPEDSource;
-import iped.engine.data.Item;
+import iped.engine.data.*;
 import iped.engine.hash.HashAlgorithm;
+import iped.engine.index.IndexMetadata;
 import iped.engine.io.MetadataInputStreamFactory;
 import iped.engine.preview.PreviewConstants;
 import iped.engine.preview.PreviewRepositoryManager;
@@ -72,7 +39,6 @@ import iped.engine.search.LuceneSearchResult;
 import iped.engine.search.SimilarFacesSearch;
 import iped.engine.task.ParsingTaskSupport;
 import iped.engine.task.TaskRuntime;
-import iped.engine.index.IndexMetadata;
 import iped.engine.task.index.IndexItem;
 import iped.engine.task.index.IndexItem.KnnVector;
 import iped.engine.util.Util;
@@ -87,6 +53,28 @@ import iped.search.SearchResult;
 import iped.utils.DateUtil;
 import iped.utils.HashValue;
 import iped.utils.SeekableInputStreamFactory;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.TermQuery;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
  * Enfileira para processamento os arquivos selecionados via interface de pesquisa de uma indexação anterior.

@@ -1,13 +1,8 @@
 package iped.engine.graph;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.LocalConfig;
+import iped.engine.graph.GraphImportRunner.ImportListener;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
@@ -15,9 +10,13 @@ import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.LocalConfig;
-import iped.engine.graph.GraphImportRunner.ImportListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class GraphGenerator {
 

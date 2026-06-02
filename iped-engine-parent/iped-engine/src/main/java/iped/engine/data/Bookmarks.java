@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,35 +18,27 @@
  */
 package iped.engine.data;
 
-import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.swing.KeyStroke;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IBookmarks;
 import iped.engine.Version;
 import iped.engine.util.SaveStateThread;
 import iped.engine.util.Util;
 import iped.search.SearchResult;
 import iped.utils.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
+import java.util.List;
 
 public class Bookmarks implements IBookmarks {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -352,7 +344,7 @@ public class Bookmarks implements IBookmarks {
     public KeyStroke getBookmarkKeyStroke(int bookmarkId) {
         return bookmarkKeyStrokes.get(bookmarkId);
     }
-    
+
     public synchronized void removeBookmarkKeyStroke(int bookmarkId) {
     	bookmarkKeyStrokes.remove(bookmarkId);
     }

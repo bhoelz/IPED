@@ -1,15 +1,14 @@
 package iped.engine.lucene;
 
-import java.io.File;
-import java.io.IOException;
-
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.IndexTaskConfig;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.IndexTaskConfig;
+import java.io.File;
+import java.io.IOException;
 
 public class ConfiguredFSDirectory {
 

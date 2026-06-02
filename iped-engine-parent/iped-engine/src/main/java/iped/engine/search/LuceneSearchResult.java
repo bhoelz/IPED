@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,19 +18,18 @@
  */
 package iped.engine.search;
 
-import java.util.Arrays;
-import java.util.Comparator;
-
-import org.apache.lucene.search.ScoreDoc;
-
 import iped.data.IIPEDSource;
 import iped.search.SearchResult;
+import org.apache.lucene.search.ScoreDoc;
+
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * Classe que armazena os resultados de uma pesquisa. Decompõe ScoreDoc[] para
  * descartar atributo desnecessário e header do objeto, ocupando 1/3 da memória
  * original.
- * 
+ *
  * @author Nassif
  *
  */
@@ -145,7 +144,7 @@ public class LuceneSearchResult {
 
     /**
      * Interseção mais eficiente
-     * 
+     *
      * @param items
      * @return
      */

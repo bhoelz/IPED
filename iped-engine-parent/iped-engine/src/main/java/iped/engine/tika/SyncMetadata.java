@@ -1,23 +1,23 @@
 package iped.engine.tika;
 
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.Property;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.Property;
-
 /**
  * Synchronized wrapper around Tika's Metadata class to avoid concurrent access
  * issues.
- * 
+ *
  * @author Nassif
  *
  */
 public class SyncMetadata extends Metadata {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -32,7 +32,7 @@ public class SyncMetadata extends Metadata {
 
     /**
      * Constructs a new synchronized metadata from another metadata.
-     * 
+     *
      * @param metadata
      */
     public SyncMetadata(Metadata metadata) {

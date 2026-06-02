@@ -1,15 +1,14 @@
 package iped.engine.util;
 
+import iped.engine.core.CaseContextThreadLocal;
+
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.swing.SwingUtilities;
-
-import iped.engine.core.CaseContextThreadLocal;
 
 public class UIPropertyListenerProvider {
 

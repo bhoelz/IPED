@@ -1,8 +1,8 @@
 package iped.engine.webapi.spi;
 
-import java.util.List;
-
 import iped.data.IIPEDSource;
+
+import java.util.List;
 
 public interface SourceCatalogService {
     void init(String urlToAskSources) throws Exception;

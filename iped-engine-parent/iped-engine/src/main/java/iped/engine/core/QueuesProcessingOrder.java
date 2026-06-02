@@ -1,14 +1,5 @@
 package iped.engine.core;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.mime.MediaTypeRegistry;
-
 import iped.parsers.ares.AresParser;
 import iped.parsers.bittorrent.BitTorrentResumeDatEntryParser;
 import iped.parsers.bittorrent.BitTorrentResumeDatParser;
@@ -32,6 +23,14 @@ import iped.parsers.ufed.UfedChatParser;
 import iped.parsers.usnjrnl.UsnJrnlParser;
 import iped.parsers.whatsapp.WhatsAppParser;
 import iped.properties.MediaTypes;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.mime.MediaTypeRegistry;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Classe de definição de prioridade de processamento de itens com base no
@@ -65,7 +64,7 @@ public class QueuesProcessingOrder {
         // handle wal logs
         mediaTypes.put(SQLite3Parser.MEDIA_TYPE, 2);
 
-        // links processed after theirs targets 
+        // links processed after theirs targets
         mediaTypes.put(LNKShortcutParser.LNK_MEDIA_TYPE, 2);
 
         // must be after sqlite processing to find storage_db.db

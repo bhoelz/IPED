@@ -1,28 +1,23 @@
 package iped.engine.datasource.ufed;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import iped.parsers.ufed.model.BaseModel;
+import iped.parsers.ufed.model.ContactEntry;
+import iped.parsers.ufed.model.KeyValueModel;
+import iped.parsers.ufed.model.UserAccount;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
-
-import iped.parsers.ufed.model.BaseModel;
-import iped.parsers.ufed.model.ContactEntry;
-import iped.parsers.ufed.model.KeyValueModel;
-import iped.parsers.ufed.model.UserAccount;
+import static org.junit.Assert.*;
 
 public class UfedModelHandlerUserAccountTest {
 

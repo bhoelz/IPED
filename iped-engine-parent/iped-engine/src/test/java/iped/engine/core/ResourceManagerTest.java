@@ -1,10 +1,10 @@
 package iped.engine.core;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests to verify ResourceManager enforces quotas and tracks resources.

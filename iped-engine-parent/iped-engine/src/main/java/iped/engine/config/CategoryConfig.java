@@ -1,25 +1,23 @@
 package iped.engine.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import iped.engine.data.Category;
+import iped.properties.MediaTypes;
+import org.apache.tika.mime.MediaType;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.tika.mime.MediaType;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import iped.engine.data.Category;
-import iped.properties.MediaTypes;
-
 public class CategoryConfig extends AbstractTaskConfig<String> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

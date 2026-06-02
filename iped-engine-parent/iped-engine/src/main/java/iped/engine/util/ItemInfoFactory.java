@@ -1,11 +1,11 @@
 package iped.engine.util;
 
-import java.util.List;
-
 import iped.data.IItem;
 import iped.engine.task.HashDBConstants;
 import iped.parsers.util.ItemInfo;
 import iped.properties.ExtraProperties;
+
+import java.util.List;
 
 public class ItemInfoFactory {
 

@@ -1,26 +1,21 @@
 package iped.engine.preview;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
-
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
 import iped.utils.EmptyInputStream;
 import iped.utils.SeekableFileInputStream;
 import iped.utils.SeekableInputStreamFactory;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.nio.file.*;
+import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class is not indexed as value of IndexItem.SOURCE_DECODER field.

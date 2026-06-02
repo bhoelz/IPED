@@ -1,17 +1,12 @@
 package iped.engine.data;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Comparator;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.text.Collator;
-import iped.localization.LocaleResolver;
-import iped.localization.Messages;
-
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import iped.localization.LocaleResolver;
+
+import java.io.Serializable;
+import java.text.Collator;
+import java.util.*;
 
 public class SimpleFilterNode implements Serializable, Cloneable {
     private static final long serialVersionUID = 197209091220L;
@@ -221,7 +216,7 @@ public class SimpleFilterNode implements Serializable, Cloneable {
             if (name1 == null && name2 == null) return 0;
             if (name1 == null) return -1;
             if (name2 == null) return 1;
-            
+
             // Return the localized alphabetical comparison
             return collator.compare(name1, name2);
         }

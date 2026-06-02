@@ -1,9 +1,9 @@
 package iped.engine.config.registry;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 
 final class RegistryJson {
 

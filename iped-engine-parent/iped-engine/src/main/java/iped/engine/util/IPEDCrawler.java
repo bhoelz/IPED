@@ -1,5 +1,9 @@
 package iped.engine.util;
 
+import iped.data.IItem;
+import iped.engine.data.IPEDSource;
+import iped.engine.search.IPEDSearcher;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -8,10 +12,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import iped.data.IItem;
-import iped.engine.data.IPEDSource;
-import iped.engine.search.IPEDSearcher;
 
 public class IPEDCrawler {
 

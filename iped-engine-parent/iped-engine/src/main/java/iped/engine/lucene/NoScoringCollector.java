@@ -1,19 +1,18 @@
 package iped.engine.lucene;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.util.BitSet;
-
+import iped.engine.search.LuceneSearchResult;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.SimpleCollector;
 
-import iped.engine.search.LuceneSearchResult;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.util.BitSet;
 
 /**
  * Fast collector that do not compute scores, for cases with dozens of millions
  * of items
- * 
+ *
  * @author Nassif
  *
  */
@@ -74,7 +73,7 @@ public class NoScoringCollector extends SimpleCollector {
 
         return results;
     }
-    
+
     @Override
     public ScoreMode scoreMode() {
         return ScoreMode.COMPLETE_NO_SCORES;

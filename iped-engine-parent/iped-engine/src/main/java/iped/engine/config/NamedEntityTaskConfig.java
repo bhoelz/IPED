@@ -1,16 +1,16 @@
 package iped.engine.config;
 
+import iped.utils.UTF8Properties;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import iped.utils.UTF8Properties;
-
 public class NamedEntityTaskConfig extends AbstractTaskPropertiesConfig {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

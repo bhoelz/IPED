@@ -1,5 +1,7 @@
 package iped.engine.config;
 
+import iped.engine.data.Category;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,12 +11,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
-import iped.engine.data.Category;
-
 public class CategoryToExpandConfig extends AbstractTaskConfig<Set<String>> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     public static final String CONFIG_FILE = "CategoriesToExpand.txt";

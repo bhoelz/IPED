@@ -1,12 +1,14 @@
 package iped.engine.graph;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import iped.engine.config.LocaleConfig;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,19 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import iped.engine.config.LocaleConfig;
-
 public class GraphConfiguration implements Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -262,7 +255,7 @@ public class GraphConfiguration implements Serializable {
     public static class GraphEntity implements Serializable {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 
@@ -309,7 +302,7 @@ public class GraphConfiguration implements Serializable {
     public static class GraphEntityMetadata implements Serializable {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 

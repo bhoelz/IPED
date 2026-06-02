@@ -1,16 +1,16 @@
 package iped.engine.config;
 
+import iped.configuration.EnabledInterface;
+import iped.utils.UTF8Properties;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 
-import iped.configuration.EnabledInterface;
-import iped.utils.UTF8Properties;
-
 public class EnableTaskProperty extends AbstractPropertiesConfigurable implements EnabledInterface {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private String propertyName;

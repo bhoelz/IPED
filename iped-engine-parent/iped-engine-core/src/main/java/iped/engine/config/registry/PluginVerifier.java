@@ -1,5 +1,7 @@
 package iped.engine.config.registry;
 
+import iped.tasks.spi.TaskProvider;
+
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -8,8 +10,6 @@ import java.nio.file.Path;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.ServiceLoader;
-
-import iped.tasks.spi.TaskProvider;
 
 public class PluginVerifier {
 

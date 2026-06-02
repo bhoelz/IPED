@@ -1,18 +1,16 @@
 package iped.engine.search;
 
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.lucene.index.IndexReader;
-
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.data.IIPEDSource;
 import iped.data.IItemId;
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.data.ItemId;
 import iped.search.IMultiSearchResult;
+import org.apache.lucene.index.IndexReader;
+import org.roaringbitmap.RoaringBitmap;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class MultiSearchResult implements IMultiSearchResult {
 

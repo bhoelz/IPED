@@ -1,5 +1,13 @@
 package iped.engine.preview;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.LocalConfig;
+import iped.engine.core.Manager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -8,16 +16,6 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.LocalConfig;
-import iped.engine.core.Manager;
 
 /**
  * Manages the lifecycle of PreviewRepository instances, ensuring one instance

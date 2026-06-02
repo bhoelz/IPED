@@ -1,17 +1,16 @@
 package iped.engine.config;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import iped.engine.task.AbstractTask;
+import iped.tasks.spi.TaskDependency;
+import iped.tasks.spi.TaskDescriptor;
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
-
-import iped.engine.task.AbstractTask;
-import iped.tasks.spi.TaskDependency;
-import iped.tasks.spi.TaskDescriptor;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TaskRegistryTest {
 

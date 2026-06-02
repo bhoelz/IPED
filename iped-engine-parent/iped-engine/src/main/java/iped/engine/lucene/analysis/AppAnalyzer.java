@@ -18,13 +18,6 @@
  */
 package iped.engine.lucene.analysis;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.IndexTaskConfig;
 import iped.engine.hash.HashAlgorithm;
@@ -33,6 +26,12 @@ import iped.engine.index.IndexMetadata;
 import iped.engine.task.index.IndexItem;
 import iped.localization.LocalizedProperties;
 import iped.properties.ExtraProperties;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
  * Define analizadores, tokenizadores implicitamente, de indexação específicos para cada propriedade,

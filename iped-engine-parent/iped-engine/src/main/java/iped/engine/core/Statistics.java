@@ -1,37 +1,10 @@
 package iped.engine.core;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.swing.JOptionPane;
-
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.ICaseData;
 import iped.data.IItem;
 import iped.engine.CmdLineArgs;
-import iped.engine.config.Configuration;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.EnableTaskProperty;
-import iped.engine.config.ExportByCategoriesConfig;
-import iped.engine.config.ExportByKeywordsConfig;
-import iped.engine.config.LocalConfig;
-import iped.engine.config.LocaleConfig;
-import iped.engine.config.PluginConfig;
+import iped.engine.config.*;
 import iped.engine.localization.Messages;
 import iped.engine.lucene.ConfiguredFSDirectory;
 import iped.engine.task.ExportFileTaskRuntime;
@@ -42,6 +15,19 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.parsers.standard.StandardParser;
 import iped.utils.HashValue;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Classe que armazena estatísticas diversas, como número de itens processados,
@@ -301,7 +287,7 @@ public class Statistics {
                 sb.setLength(0);
             }
         }
-        
+
         int numDocs;
         try (IndexReader reader = DirectoryReader.open(ConfiguredFSDirectory.open(indexDir))) {
             numDocs = reader.numDocs();

@@ -1,8 +1,7 @@
 package iped.engine.graph.links;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-
 import iped.engine.graph.PathQueryListener;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 public interface SearchLinksQuery {
 

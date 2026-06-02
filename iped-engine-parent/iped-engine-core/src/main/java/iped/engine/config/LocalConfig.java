@@ -1,5 +1,8 @@
 package iped.engine.config;
 
+import iped.utils.UTF8Properties;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -10,14 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.slf4j.Logger;
-
-import iped.utils.UTF8Properties;
-
 public class LocalConfig extends AbstractPropertiesConfigurable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

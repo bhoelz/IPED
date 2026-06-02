@@ -1,16 +1,11 @@
 package iped.engine.util;
 
+import iped.data.IBookmarks;
+
 import java.io.File;
-import java.util.AbstractMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import iped.data.IBookmarks;
 
 public class SaveStateThread extends Thread {
 

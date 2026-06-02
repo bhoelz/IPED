@@ -1,23 +1,12 @@
 package iped.engine.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import iped.configuration.Configurable;
 import iped.configuration.IConfigurationDirectory;
 import iped.configuration.ObjectManager;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.util.*;
 
 public class ConfigurationManager implements ObjectManager<Configurable<?>> {
 
@@ -157,7 +146,7 @@ public class ConfigurationManager implements ObjectManager<Configurable<?>> {
     public void removeObject(Configurable<?> aObject) {
         loadedConfigurables.remove(aObject);
     }
-    
+
     public void saveSerializedConfig(File file) throws FileNotFoundException, IOException {
         try(FileOutputStream fos = new FileOutputStream(file);
                 ObjectOutputStream oos = new ObjectOutputStream(fos)){

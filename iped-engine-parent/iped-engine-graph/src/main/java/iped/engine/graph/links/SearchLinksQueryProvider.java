@@ -1,16 +1,11 @@
 package iped.engine.graph.links;
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.TreeMap;
-
+import iped.io.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.io.URLUtil;
+import java.net.URL;
+import java.util.*;
 
 public class SearchLinksQueryProvider {
 

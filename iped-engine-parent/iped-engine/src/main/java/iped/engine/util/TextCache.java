@@ -1,30 +1,17 @@
 package iped.engine.util;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.RandomAccessFile;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystemException;
-import java.nio.file.Files;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import iped.data.IItem;
+import iped.utils.IOUtil;
 import org.apache.commons.io.input.BoundedReader;
 import org.apache.commons.io.input.RandomAccessFileInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.data.IItem;
-import iped.utils.IOUtil;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TextCache implements Closeable, Cloneable {
 

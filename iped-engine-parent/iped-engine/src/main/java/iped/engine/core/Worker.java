@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,14 +18,6 @@
  */
 package iped.engine.core;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.lucene.index.IndexWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.data.CaseData;
@@ -35,6 +27,13 @@ import iped.engine.task.TaskInstaller;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
+import org.apache.lucene.index.IndexWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Responsável por retirar um item da fila e enviá-lo para cada tarefa de
@@ -88,6 +87,21 @@ public class Worker extends Thread {
     public void decItemsBeingProcessed() {
         itemsBeingProcessed--;
         manager.getProcessingQueues().decItemsBeingProcessed();
+    }
+
+    /**
+     * Minimal constructor for subclasses (e.g. {@code AdditionalTaskWorker})
+     * that do not participate in the full processing pipeline.
+     * The full task pipeline is NOT installed; {@code manager}, {@code stats},
+     * {@code caseData}, {@code output}, and {@code writer} remain {@code null}
+     * unless the subclass sets them explicitly.
+     *
+     * @param id worker identifier
+     */
+    protected Worker(int id) {
+        super(new ThreadGroup(workerNamePrefix + id), workerNamePrefix + id); //$NON-NLS-1$
+        this.id    = id;
+        this.state = STATE.RUNNING;
     }
 
     public Worker(int k, CaseData caseData, IndexWriter writer, File output, Manager manager) throws Exception {

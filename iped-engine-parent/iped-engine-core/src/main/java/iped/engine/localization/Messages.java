@@ -1,13 +1,12 @@
 package iped.engine.localization;
 
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
+import iped.localization.LocaleResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.localization.LocaleResolver;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 public class Messages {
 

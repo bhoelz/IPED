@@ -1,36 +1,21 @@
 package iped.engine.datasource.ufed;
 
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.InputStream;
-import java.util.Optional;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
+import iped.engine.datasource.ufed.UfedModelHandler.UfedModelListener;
+import iped.parsers.ufed.model.*;
+import iped.utils.DateUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-import iped.engine.datasource.ufed.UfedModelHandler.UfedModelListener;
-import iped.parsers.ufed.model.Attachment;
-import iped.parsers.ufed.model.BaseModel;
-import iped.parsers.ufed.model.Chat;
-import iped.parsers.ufed.model.ChatActivity;
-import iped.parsers.ufed.model.Contact;
-import iped.parsers.ufed.model.ContactEntry;
-import iped.parsers.ufed.model.InstantMessage;
-import iped.parsers.ufed.model.JumpTarget;
-import iped.parsers.ufed.model.Party;
-import iped.parsers.ufed.model.ReplyMessageData;
-import iped.utils.DateUtil;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.InputStream;
+import java.util.Optional;
+
+import static org.junit.Assert.*;
 
 
 public class UfedModelHandlerChatTest {

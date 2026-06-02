@@ -1,5 +1,11 @@
 package iped.engine.index;
 
+import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
+import iped.parsers.util.MetadataUtil;
+import iped.utils.DateUtil;
+import iped.utils.UTF8Properties;
+import org.apache.lucene.index.IndexableField;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -7,13 +13,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.lucene.index.IndexableField;
-
-import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
-import iped.parsers.util.MetadataUtil;
-import iped.utils.DateUtil;
-import iped.utils.UTF8Properties;
 
 public final class IndexMetadata {
 

@@ -1,17 +1,16 @@
 package iped.engine.tika;
 
+import iped.parsers.util.Util;
+import org.apache.tika.metadata.Metadata;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-import org.apache.tika.metadata.Metadata;
-
-import iped.parsers.util.Util;
-
 public class HtmlEncodingDetector extends org.apache.tika.parser.html.HtmlEncodingDetector {
 
     /**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 	private static String utf8Header = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"; //$NON-NLS-1$

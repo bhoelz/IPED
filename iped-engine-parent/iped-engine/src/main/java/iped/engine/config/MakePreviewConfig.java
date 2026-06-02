@@ -1,5 +1,7 @@
 package iped.engine.config;
 
+import iped.engine.util.Util;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -7,12 +9,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import iped.engine.util.Util;
-
 public class MakePreviewConfig extends AbstractTaskConfig<List<Set<String>>> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

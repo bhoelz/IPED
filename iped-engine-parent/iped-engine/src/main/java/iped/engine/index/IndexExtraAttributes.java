@@ -1,11 +1,11 @@
 package iped.engine.index;
 
+import iped.engine.data.Item;
+import iped.engine.util.Util;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-
-import iped.engine.data.Item;
-import iped.engine.util.Util;
 
 public final class IndexExtraAttributes {
 

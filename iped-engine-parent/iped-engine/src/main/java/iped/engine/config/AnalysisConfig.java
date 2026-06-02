@@ -1,19 +1,19 @@
 package iped.engine.config;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.Path;
-
 import iped.engine.util.SaveStateThread;
 import iped.utils.IOUtil;
 import iped.utils.IOUtil.ExternalOpenEnum;
 import iped.utils.UTF8Properties;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Path;
+
 public class AnalysisConfig extends AbstractPropertiesConfigurable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -54,7 +54,7 @@ public class AnalysisConfig extends AbstractPropertiesConfigurable {
         if (value != null) {
             copyJREToUserHome = Boolean.valueOf(value.trim());
         }
-        
+
         value = properties.getProperty("searchThreads"); //$NON-NLS-1$
         if (value != null) {
             value = value.trim();

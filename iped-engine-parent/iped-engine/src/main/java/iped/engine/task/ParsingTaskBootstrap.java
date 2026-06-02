@@ -1,18 +1,6 @@
 package iped.engine.task;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.utils.XMLReaderUtils;
-
-import iped.engine.config.Configuration;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.ExternalParsersConfig;
-import iped.engine.config.LocalConfig;
-import iped.engine.config.OCRConfig;
-import iped.engine.config.ParsersConfig;
-import iped.engine.config.ParsingTaskConfig;
-import iped.engine.config.PluginConfig;
+import iped.engine.config.*;
 import iped.exception.IPEDException;
 import iped.parsers.browsers.ie.IndexDatParser;
 import iped.parsers.database.EDBParser;
@@ -27,6 +15,10 @@ import iped.parsers.registry.RegRipperParser;
 import iped.parsers.standard.RawStringParser;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.PDFToImage;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.utils.XMLReaderUtils;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class ParsingTaskBootstrap {
 

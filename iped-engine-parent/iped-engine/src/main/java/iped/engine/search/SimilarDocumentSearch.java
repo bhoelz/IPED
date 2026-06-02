@@ -1,9 +1,10 @@
 package iped.engine.search;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
+import iped.data.IItemId;
+import iped.engine.data.IPEDMultiSource;
+import iped.engine.data.IPEDSource;
+import iped.engine.task.index.IndexItem;
+import iped.properties.BasicProps;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.br.BrazilianAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -20,11 +21,9 @@ import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.data.IItemId;
-import iped.engine.data.IPEDMultiSource;
-import iped.engine.data.IPEDSource;
-import iped.engine.task.index.IndexItem;
-import iped.properties.BasicProps;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class SimilarDocumentSearch {
 
@@ -54,14 +53,14 @@ public class SimilarDocumentSearch {
              * autoParser.setFallback(Configuration.fallBackParser);
              * autoParser.setErrorParser(Configuration.errorParser);
              * autoParser.setPrintMetadata(false);
-             * 
+             *
              * EvidenceFile ev = App.get().appCase.getItemByItemId(item); Metadata m = new
              * Metadata(); m.set(StandardParser.INDEXER_CONTENT_TYPE,
              * ev.getMediaTypeString());
-             * 
+             *
              * ParsingReader pr = new ParsingReader(autoParser, ev.getStream(), m, new
              * ParseContext()); pr.startBackgroundParsing();
-             * 
+             *
              * String[] keyTerms = mlt.retrieveInterestingTerms(pr, IndexItem.CONTENT);
              */
 

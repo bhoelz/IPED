@@ -1,12 +1,5 @@
 package iped.engine.task;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.CmdLineArgs;
@@ -21,6 +14,12 @@ import iped.engine.io.TimeoutException;
 import iped.exception.IPEDException;
 import iped.parsers.util.CorruptedCarvedException;
 import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Classe que representa uma tarefa de procesamento (assinatura, hash, carving,
@@ -120,7 +119,7 @@ public abstract class AbstractTask {
      * passed to the task init(...). This method could be also used by an UI to
      * query each task options. Each implementation is responsible to load/store
      * processing options from/to configuration Files, Paths or other resources.
-     * 
+     *
      * @return List of Configurable instances with task specific configurations.
      */
     public abstract List<Configurable<?>> getConfigurables();
@@ -160,7 +159,7 @@ public abstract class AbstractTask {
     protected static class ItemReEnqueuedException extends RuntimeException {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 
@@ -227,7 +226,11 @@ public abstract class AbstractTask {
     protected void sendToNextTask(IItem evidence) throws Exception {
         if (nextTask != null) {
             int priority = QueuesProcessingOrder.getProcessingQueue((MediaType) evidence.getMediaType());
-            if (evidence.isRoot() || priority <= worker.manager.getProcessingQueues().getCurrentQueuePriority())
+            // worker.manager may be null when running in AdditionalTaskWorker context.
+            Integer currentPriority = (worker.manager != null)
+                    ? worker.manager.getProcessingQueues().getCurrentQueuePriority()
+                    : null;
+            if (evidence.isRoot() || currentPriority == null || priority <= currentPriority)
                 nextTask.processAndSendToNextTask(evidence);
             else {
                 reEnqueueItem(evidence, priority);
@@ -239,27 +242,34 @@ public abstract class AbstractTask {
             // clear resources
             evidence.dispose();
 
-            // update statistics
-            stats.incProcessed();
-            if (!evidence.isSubItem() && !evidence.isCarved() && !evidence.isDeleted() && evidence.isToSumVolume()) {
-                stats.incActiveProcessed();
-            }
-            if (evidence.isToSumVolume()) {
-                Long len = evidence.getLength();
-                if (len == null) {
-                    len = 0L;
+            // update statistics (stats may be null in AdditionalTaskWorker context)
+            if (stats != null) {
+                stats.incProcessed();
+                if (!evidence.isSubItem() && !evidence.isCarved() && !evidence.isDeleted() && evidence.isToSumVolume()) {
+                    stats.incActiveProcessed();
                 }
-                stats.addVolume(len);
+                if (evidence.isToSumVolume()) {
+                    Long len = evidence.getLength();
+                    if (len == null) {
+                        len = 0L;
+                    }
+                    stats.addVolume(len);
+                }
             }
         }
     }
 
     protected void reEnqueueItem(IItem item) throws InterruptedException {
+        if (worker.manager == null) {
+            throw new UnsupportedOperationException(
+                    "Re-enqueueing is not supported in AdditionalTaskWorker context."); //$NON-NLS-1$
+        }
         reEnqueueItem(item, worker.manager.getProcessingQueues().getCurrentQueuePriority());
         throw new ItemReEnqueuedException();
     }
 
     private void reEnqueueItem(IItem item, int queue) throws InterruptedException {
+        if (worker.manager == null) return;
         item.dispose();
         SkipCommitedTaskSupport.checkAgainLaterProcessedParents(item);
         worker.manager.getProcessingQueues().addItemToQueue(item, queue);
@@ -329,12 +339,12 @@ public abstract class AbstractTask {
     public String getName() {
         return this.getClass().getSimpleName();
     }
-    
+
     /**
      * This method can be overwritten by concrete tasks to detect when the processing is interrupted
-     * by the user (e.g. closing the application window) when the tasking *is running* (i.e. it is the 
-     * active task of a worker), and release resources (e.g. stop external processes). 
-     * Default implementation does nothing. 
+     * by the user (e.g. closing the application window) when the tasking *is running* (i.e. it is the
+     * active task of a worker), and release resources (e.g. stop external processes).
+     * Default implementation does nothing.
      */
     public void interrupted() {
     }

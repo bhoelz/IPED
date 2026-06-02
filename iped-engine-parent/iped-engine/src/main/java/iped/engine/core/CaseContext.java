@@ -1,9 +1,9 @@
 package iped.engine.core;
 
-import java.util.UUID;
-
 import iped.data.ICaseData;
 import iped.engine.config.ConfigurationView;
+
+import java.util.UUID;
 
 public class CaseContext {
 

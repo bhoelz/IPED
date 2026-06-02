@@ -1,18 +1,14 @@
 package iped.engine.core;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import iped.engine.CmdLineArgs;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-
-import iped.engine.CmdLineArgs;
 
 public class EvidenceStatus {
 

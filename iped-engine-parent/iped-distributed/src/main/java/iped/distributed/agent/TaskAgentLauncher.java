@@ -2,6 +2,7 @@ package iped.distributed.agent;
 
 import iped.distributed.config.DistributedConfig;
 import iped.distributed.coordinator.CoordinatorClient;
+import iped.engine.config.ConfigurationDirectory;
 import iped.engine.config.ConfigurationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,9 @@ public class TaskAgentLauncher {
 
         // 1. Load IPED configuration
         if (cfg.configPath != null) {
-            ConfigurationManager.loadFrom(java.nio.file.Paths.get(cfg.configPath));
+            ConfigurationDirectory dir = new ConfigurationDirectory(java.nio.file.Paths.get(cfg.configPath));
+            ConfigurationManager cm = ConfigurationManager.createInstance(dir);
+            cm.loadConfigs();
         }
 
         // 2. Register known InputStreamFactory builders

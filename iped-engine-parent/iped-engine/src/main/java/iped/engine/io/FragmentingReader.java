@@ -1,10 +1,10 @@
 package iped.engine.io;
 
+import iped.engine.util.TextCache.KnownSizeReader;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-
-import iped.engine.util.TextCache.KnownSizeReader;
 
 public class FragmentingReader extends Reader {
 

@@ -1,16 +1,15 @@
 package iped.engine.data;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.UUID;
-
+import iped.engine.config.ConfigurationView;
+import iped.engine.core.CaseContext;
+import iped.engine.core.CaseContextThreadLocal;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import iped.engine.core.CaseContext;
-import iped.engine.core.CaseContextThreadLocal;
-import iped.engine.config.ConfigurationView;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ItemCounterTest {
 

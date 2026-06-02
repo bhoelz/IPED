@@ -1,20 +1,15 @@
 package iped.engine.config;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.engine.task.AbstractTask;
 import iped.tasks.spi.TaskDescriptor;
 import iped.tasks.spi.TaskProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
 
 class PluginTaskLoader {
 

@@ -1,41 +1,5 @@
 package iped.engine.data;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
-
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
-import org.apache.tika.io.TemporaryResources;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.UUID;
-
 import iped.data.IHashValue;
 import iped.data.IItem;
 import iped.datasource.IDataSource;
@@ -52,13 +16,26 @@ import iped.engine.util.TextCache;
 import iped.engine.util.Util;
 import iped.io.ISeekableInputStreamFactory;
 import iped.io.SeekableInputStream;
-import iped.utils.ByteArrayImageInputStream;
-import iped.utils.EmptyInputStream;
-import iped.utils.HashValue;
-import iped.utils.IOUtil;
-import iped.utils.LimitedSeekableInputStream;
-import iped.utils.SeekableByteChannelImpl;
-import iped.utils.SeekableFileInputStream;
+import iped.utils.*;
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
+import org.apache.tika.io.TemporaryResources;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
+import java.io.*;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Classe que define um arquivo de evidência, que é um arquivo do caso,
@@ -254,7 +231,7 @@ public class Item implements IItem {
     private ISeekableInputStreamFactory inputStreamFactory;
 
     private static final int BUF_LEN = 8 * 1024 * 1024;
-    
+
     private static final int maxImageLength = 128 << 20;
 
     /**
@@ -449,8 +426,8 @@ public class Item implements IItem {
      * Retrieves a subset of extra attributes whose keys begin with the specified prefix.
      *
      * @param prefix The prefix string to search for at the beginning of attribute keys.
-     * @return A new {@code Map<String, Object>} containing only the key-value pairs 
-     * from {@code extraAttributes} where the key starts with {@code prefix}. 
+     * @return A new {@code Map<String, Object>} containing only the key-value pairs
+     * from {@code extraAttributes} where the key starts with {@code prefix}.
      * Returns an empty map if no matching keys are found.
      */
     public Map<String, Object> getExtraAttributesStartWith(String prefix) {
@@ -516,7 +493,7 @@ public class Item implements IItem {
 
     /**
      * Set to true if ID could be retrieved after being set to its final value.
-     * 
+     *
      * @param allowGetId
      */
     public void setAllowGetId(boolean allowGetId) {
@@ -706,8 +683,8 @@ public class Item implements IItem {
      *  1. multiple decompression of data from compressed evidences
      *  2. multiple reads from evidences in network shares
      *  3. writing small temp files in temp dir, when possible
-     *  4. decrease heavy IO calls into kernel space 
-     *  
+     *  4. decrease heavy IO calls into kernel space
+     *
      * @return true if data was cached on memory, false otherwise
      */
     public boolean cacheDataInMemory() {
@@ -1356,7 +1333,7 @@ public class Item implements IItem {
 
     private void addTmpResource(Closeable c) {
         if (tmpResources == null) {
-            tmpResources = new TemporaryResources(); 
+            tmpResources = new TemporaryResources();
         }
         tmpResources.addResource(c);
     }

@@ -18,14 +18,14 @@
  */
 package iped.engine.config.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.schema.ConfigurationDiffMerge;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.HashMap;
 import java.util.Map;
 
