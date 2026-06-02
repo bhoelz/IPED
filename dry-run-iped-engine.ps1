@@ -39,11 +39,8 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = 'Folder to ingest (must exist)')]
     [ValidateScript({ Test-Path $_ -PathType Container })]
     [string]$TestFolder,
-
     [string]$OutputFolder = '',
-
-    [string]$IpedHome = '..',
-
+    [string]$IpedHome = '',
     [switch]$KeepOutput
 )
 
