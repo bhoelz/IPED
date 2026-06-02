@@ -42,7 +42,7 @@ param(
 
     [string]$OutputFolder = '',
 
-    [string]$IpedHome = '',
+    [string]$IpedHome = '..',
 
     [switch]$KeepOutput
 )
@@ -59,7 +59,7 @@ function Resolve-IpedHome {
 
     $pom = Join-Path $PSScriptRoot 'pom.xml'
     if (-not (Test-Path $pom)) {
-        throw "Cannot find pom.xml at $pom.  Pass -IpedHome explicitly."
+        throw "Cannot find pom.xml at $pom. Pass -IpedHome explicitly."
     }
     $version = ([xml](Get-Content $pom -Raw)).project.version
     $candidate = Join-Path $PSScriptRoot "target\release\iped-$version"

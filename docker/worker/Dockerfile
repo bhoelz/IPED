@@ -7,8 +7,9 @@
 # host or in a CI/CD pipeline), and the resulting JARs are copied in.
 #
 # Expected input (relative to build context = repo root):
-#   dist/lib/   — all IPED JARs (engine, tasks, parsers, distributed, deps)
-#   dist/native/ — optional: native .so files if not available via apt
+#   dist/lib/    — all IPED JARs (engine, tasks, parsers, distributed, deps)
+#   dist/native/ — optional: native .so files not in Alpine repos
+#                  (libewf, libvmdk, libvhdi, libafflib)
 #
 # Build:
 #   mvn -B package -DskipTests          # from repo root
@@ -26,28 +27,29 @@
 #     iped-worker:latest
 # ─────────────────────────────────────────────────────────────────────────────
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:25-jre-alpine
 
 LABEL org.opencontainers.image.title="IPED Distributed Task Agent" \
       org.opencontainers.image.description="Kafka-driven task executor for IPED distributed processing" \
       org.opencontainers.image.source="https://github.com/sepinf-inc/IPED"
 
 # ── System dependencies ───────────────────────────────────────────────────────
-# Sleuthkit and forensic image library runtimes
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Packages available in Alpine main/community repos:
+#   sleuthkit  — TSK core + command-line tools (includes libtsk)
+#   file       — libmagic (MIME detection used by parsers)
+#   curl/wget  — diagnostics and coordinator wait
+#
+# NOTE: libewf, libvmdk, libvhdi, libafflib are NOT in Alpine's default repos.
+# Supply their compiled .so files in dist/native/ and uncomment the
+# LD_LIBRARY_PATH lines below, or switch to a glibc-based image (e.g. jammy)
+# if those formats are required in your deployment.
+RUN apk add --no-cache \
         sleuthkit \
-        libafflib0v5 \
-        libewf2 \
-        libvmdk1 \
-        libvhdi1 \
-        libmagic1 \
-        libtsk19 \
-        # Useful for diagnostics inside the container
+        file \
         curl \
-        wget \
-    && rm -rf /var/lib/apt/lists/*
+        wget
 
-RUN groupadd -r iped && useradd -r -g iped -m iped
+RUN addgroup -S iped && adduser -S -G iped iped
 
 # ── IPED JARs (pre-built outside Docker) ─────────────────────────────────────
 WORKDIR /opt/iped
@@ -58,7 +60,8 @@ WORKDIR /opt/iped
 # Then also copy the assembled module JARs there.
 COPY dist/lib/ /opt/iped/lib/
 
-# Optional: additional native libraries not available via apt
+# Optional: native libs not in Alpine repos (libewf, libvmdk, libvhdi, libafflib)
+# Compile them for musl/Alpine and place the .so files in dist/native/, then:
 # COPY dist/native/ /opt/iped/native/
 # ENV LD_LIBRARY_PATH=/opt/iped/native:${LD_LIBRARY_PATH}
 

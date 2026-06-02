@@ -2,9 +2,9 @@
 # IPED Distributed — Coordinator Service
 #
 # Multi-stage build:
-#   Stage 1 (build)   — Maven + JDK 21; compiles only iped-distributed and its
-#                        pure-Java prerequisites (no native Sleuthkit libraries).
-#   Stage 2 (runtime) — Minimal JRE 21; contains only the coordinator fat-JAR.
+#   Stage 1 (build)   — Maven + JDK 25 (Alpine); compiles only iped-distributed
+#                        and its pure-Java prerequisites (no native libraries).
+#   Stage 2 (runtime) — Minimal JRE 25 (Alpine); contains only the fat-JAR.
 #
 # Runtime size: ~100–150 MB (JRE + fat JAR with Kafka/Jetty/Jersey/Jackson).
 #
@@ -23,7 +23,10 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM maven:3.9-eclipse-temurin-21-alpine AS build
+# eclipse-temurin:25-jdk-alpine + Maven (no maven:3.9-eclipse-temurin-25-alpine tag exists)
+FROM eclipse-temurin:25-jdk-alpine AS build
+
+RUN apk add --no-cache maven
 
 WORKDIR /build
 
@@ -54,7 +57,7 @@ RUN mvn -B package -DskipTests \
     --no-transfer-progress
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 LABEL org.opencontainers.image.title="IPED Distributed Coordinator" \
       org.opencontainers.image.description="REST server for IPED distributed agent registration and case lifecycle" \
