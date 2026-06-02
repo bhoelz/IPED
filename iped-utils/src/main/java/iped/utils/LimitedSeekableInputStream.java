@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,9 +18,9 @@
  */
 package iped.utils;
 
-import java.io.IOException;
-
 import iped.io.SeekableInputStream;
+
+import java.io.IOException;
 
 public class LimitedSeekableInputStream extends SeekableInputStream {
 

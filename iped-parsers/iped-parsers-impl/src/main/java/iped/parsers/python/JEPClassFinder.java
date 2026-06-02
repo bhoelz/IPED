@@ -8,58 +8,45 @@ package iped.parsers.python;
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any
  * damages arising from the use of this software.
- * 
+ *
  * Permission is granted to anyone to use this software for any
  * purpose, including commercial applications, and to alter it and
  * redistribute it freely, subject to the following restrictions:
- * 
+ *
  *     1. The origin of this software must not be misrepresented; you
  *     must not claim that you wrote the original software. If you use
  *     this software in a product, an acknowledgment in the product
  *     documentation would be appreciated but is not required.
- * 
+ *
  *     2. Altered source versions must be plainly marked as such, and
  *     must not be misrepresented as being the original software.
- * 
+ *
  *     3. This notice may not be removed or altered from any source
  *     distribution.
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import jep.ClassEnquirer;
+import jep.Jep;
+import jep.JepException;
+
+import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-
-import jep.ClassEnquirer;
-import jep.Jep;
-import jep.JepException;
 
 /**
  * A singleton that searches for loaded classes from the JRE and the Java
  * classpath. This is the default ClassEnquirer that is used if no ClassEnquirer
  * is specified when constructing an Interpreter. ClassList is also used by the
  * command line <code>jep</code> script.
- * 
+ *
  * PS: This is a copy and paste of ClassList class from JEP with a fix for
  * https://github.com/ninia/jep/issues/323. To be removed when we upgrade to
  * fixed JEP (Luis Nassif).
- * 
+ *
  * @author Mike Johnson
  */
 public class JEPClassFinder implements ClassEnquirer {
@@ -85,7 +72,7 @@ public class JEPClassFinder implements ClassEnquirer {
 
     /**
      * load jar files from class path
-     * 
+     *
      */
     private void loadClassPath() {
         StringTokenizer tok = new StringTokenizer(System.getProperty("java.class.path"),
@@ -320,7 +307,7 @@ public class JEPClassFinder implements ClassEnquirer {
 
     /**
      * get classnames in package
-     * 
+     *
      * @param pkg
      *            a <code>String</code> value
      * @return <code>String[]</code> array of class names
@@ -349,7 +336,7 @@ public class JEPClassFinder implements ClassEnquirer {
 
     /**
      * Checks if the String is known to the ClassList as an available package
-     * 
+     *
      * @param s
      *            a <code>String</code> to check
      * @return if the String is considered a Java package
@@ -361,7 +348,7 @@ public class JEPClassFinder implements ClassEnquirer {
 
     /**
      * get ClassList instance
-     * 
+     *
      * @return <code>ClassList</code> instance
      * @throws JepException
      *             if an error occurs
@@ -374,7 +361,7 @@ public class JEPClassFinder implements ClassEnquirer {
 
     /**
      * for testing only
-     * 
+     *
      * @param argv
      *            command line arguments
      * @throws Throwable

@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,18 +18,6 @@
  */
 package iped.app.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.util.List;
-
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.KeyStroke;
-
 import iped.app.ui.themes.Theme;
 import iped.app.ui.themes.ThemeManager;
 import iped.data.IItem;
@@ -40,6 +28,12 @@ import iped.engine.task.similarity.ImageSimilarityTask;
 import iped.parsers.vcard.VCardParser;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.List;
 
 public class MenuClass extends JPopupMenu {
 

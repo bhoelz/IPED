@@ -1,11 +1,10 @@
 package iped.parsers.ufed.handler;
 
-import static iped.properties.ExtraProperties.UFED_META_PREFIX;
-
-import org.apache.tika.metadata.Metadata;
-
 import iped.data.IItemReader;
 import iped.parsers.ufed.model.ChatActivity;
+import org.apache.tika.metadata.Metadata;
+
+import static iped.properties.ExtraProperties.UFED_META_PREFIX;
 
 public class ChatActivityHandler extends BaseModelHandler<ChatActivity> {
 
@@ -23,7 +22,7 @@ public class ChatActivityHandler extends BaseModelHandler<ChatActivity> {
 
     @Override
     protected void fillMetadata(String prefix, Metadata metadata) {
-        
+
         super.fillMetadata(prefix, metadata);
 
         // ChatActivity Party

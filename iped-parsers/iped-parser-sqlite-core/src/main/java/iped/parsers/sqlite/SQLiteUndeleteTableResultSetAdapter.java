@@ -1,33 +1,15 @@
 package iped.parsers.sqlite;
 
+import fqlite.base.SqliteRow;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
+import java.sql.*;
 import java.sql.Date;
-import java.sql.NClob;
-import java.sql.Ref;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.RowId;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
-
-import fqlite.base.SqliteRow;
 
 public class SQLiteUndeleteTableResultSetAdapter implements ResultSet {
 
@@ -67,7 +49,7 @@ public class SQLiteUndeleteTableResultSetAdapter implements ResultSet {
         }
         idx = -1;
     }
-    
+
     private String getMappedColumnName(String columnName) throws SQLException {
         String result = columnNamesMap.getOrDefault(columnName, columnName);
         if (colNamesSet.contains(result)) {
@@ -75,7 +57,7 @@ public class SQLiteUndeleteTableResultSetAdapter implements ResultSet {
         }
         throw new SQLException("Column " + columnName + " not found. no such column");
     }
-    
+
     public SqliteRow getCurrentRow() {
         return table.getTableRows().get(idx);
     }

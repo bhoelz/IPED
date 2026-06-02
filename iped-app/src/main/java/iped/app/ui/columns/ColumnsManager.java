@@ -1,24 +1,5 @@
 package iped.app.ui.columns;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.swing.table.TableColumn;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.document.Document;
-import org.apache.tika.metadata.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.app.ui.App;
 import iped.app.ui.Messages;
 import iped.app.ui.ResultTableModel;
@@ -28,7 +9,6 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.data.IPEDSource;
 import iped.engine.data.Item;
 import iped.engine.search.LoadIndexFields;
-import iped.engine.task.HashDBLookupTask;
 import iped.engine.task.LanguageDetectTask;
 import iped.engine.task.NamedEntityTask;
 import iped.engine.task.PhotoDNALookup;
@@ -42,6 +22,18 @@ import iped.parsers.standard.StandardParser;
 import iped.properties.ExtraProperties;
 import iped.viewers.api.IColumnsManager;
 import iped.viewers.util.ProgressDialog;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.document.Document;
+import org.apache.tika.metadata.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.table.TableColumn;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.Collator;
+import java.util.*;
 
 public class ColumnsManager implements Serializable, IColumnsManager {
 
@@ -75,7 +67,7 @@ public class ColumnsManager implements Serializable, IColumnsManager {
 
     protected static final List<Integer> defaultWidths = Arrays.asList(50, 100, 200, 50, 50, 100, 60, 150, 155, 155, 155, 155,
             155, 155, 250, 2000);
-    
+
     protected static final String[] defaultFields = { ResultTableModel.SCORE_COL, ResultTableModel.BOOKMARK_COL,
             IndexItem.NAME, IndexItem.EXT, IndexItem.TYPE, IndexItem.LENGTH, IndexItem.DELETED, IndexItem.CATEGORY, IndexItem.CREATED,
             IndexItem.MODIFIED, IndexItem.ACCESSED, IndexItem.CHANGED, IndexItem.TIMESTAMP, IndexItem.TIME_EVENT,

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Wladimir Leite
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,18 +18,13 @@
  */
 package iped.parsers.ares;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.IItemReader;
+import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.Messages;
+import iped.parsers.util.P2PUtil;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.LocalizedFormat;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
@@ -43,17 +38,16 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import iped.data.IItemReader;
-import iped.parsers.util.ChildPornHashLookup;
-import iped.parsers.util.Messages;
-import iped.parsers.util.P2PUtil;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.LocalizedFormat;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Parser for Ares Galaxy ShareH.dat e ShareL.dat files.
- * 
+ *
  * @author Wladimir
  */
 public class AresParser extends AbstractParser {
@@ -168,7 +162,7 @@ public class AresParser extends AbstractParser {
 
         int hashAlertHits = 0;
         String[] colClass = new String[header.length];
-        Arrays.fill(colClass, "a"); //$NON-NLS-1$        
+        Arrays.fill(colClass, "a"); //$NON-NLS-1$
         colClass[0] = "s"; //$NON-NLS-1$
 
         for (int i = -1; i < l.size(); i++) {

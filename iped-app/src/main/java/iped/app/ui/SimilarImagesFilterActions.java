@@ -1,21 +1,5 @@
 package iped.app.ui;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.RowSorter;
-import javax.swing.RowSorter.SortKey;
-import javax.swing.SortOrder;
-import javax.swing.filechooser.FileFilter;
-
 import iped.data.IItem;
 import iped.data.IItemId;
 import iped.engine.config.ConfigurationManager;
@@ -25,6 +9,18 @@ import iped.engine.task.similarity.ImageSimilarityTask;
 import iped.utils.ExternalImageConverter;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.filechooser.FileFilter;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimilarImagesFilterActions {
     private static final int sampleFactor = 3;

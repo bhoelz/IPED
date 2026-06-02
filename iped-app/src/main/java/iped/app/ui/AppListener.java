@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,21 +18,17 @@
  */
 package iped.app.ui;
 
-import java.awt.Component;
-import java.awt.Rectangle;
+import iped.engine.search.LuceneSearchResult;
+import iped.engine.search.MultiSearchResult;
+import org.apache.lucene.search.Query;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.concurrent.Future;
-
-import javax.swing.BorderFactory;
-import javax.swing.JOptionPane;
-
-import org.apache.lucene.search.Query;
-
-import iped.engine.search.LuceneSearchResult;
-import iped.engine.search.MultiSearchResult;
 
 public class AppListener implements ActionListener, MouseListener {
 

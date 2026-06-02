@@ -1,8 +1,7 @@
 package iped.parsers.emule;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import iped.parsers.util.BaseItemSearchContext;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -11,8 +10,8 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.BaseItemSearchContext;
-import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class KnownMetParserTest extends BaseItemSearchContext {
 

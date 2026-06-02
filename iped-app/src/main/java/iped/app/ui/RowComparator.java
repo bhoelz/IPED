@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,22 +18,6 @@
  */
 package iped.app.ui;
 
-import java.io.IOException;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.SortedDocValues;
-import org.apache.lucene.index.SortedNumericDocValues;
-import org.apache.lucene.index.SortedSetDocValues;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IItemId;
 import iped.engine.localization.CategoryLocalization;
 import iped.engine.search.TimelineResults.TimeItemId;
@@ -41,6 +25,17 @@ import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 
 public class RowComparator implements Comparator<Integer> {
 

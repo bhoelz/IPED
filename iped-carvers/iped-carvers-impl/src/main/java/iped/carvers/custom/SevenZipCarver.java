@@ -1,11 +1,11 @@
 package iped.carvers.custom;
 
-import java.io.IOException;
-
 import iped.carvers.api.Hit;
 import iped.carvers.standard.AbstractCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
+
+import java.io.IOException;
 
 public class SevenZipCarver extends AbstractCarver {
 
@@ -18,7 +18,7 @@ public class SevenZipCarver extends AbstractCarver {
             int read = is.readNBytes(buf, 0, buf.length);
             if (read < buf.length)
                 return -1;
-            
+
             long nextHeaderOffset = (long) (buf[19] & 0xff) << 56 | (long) (buf[18] & 0xff) << 48
                     | (long) (buf[17] & 0xff) << 40 | (long) (buf[16] & 0xff) << 32
                     | (long) (buf[15] & 0xff) << 24 | (buf[14] & 0xff) << 16

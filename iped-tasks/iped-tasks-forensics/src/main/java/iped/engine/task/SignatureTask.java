@@ -1,11 +1,13 @@
 package iped.engine.task;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-
+import iped.configuration.Configurable;
+import iped.data.IItem;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.SignatureConfig;
+import iped.io.SeekableInputStream;
+import iped.properties.MediaTypes;
+import iped.utils.IOUtil;
+import iped.utils.SimpleInputStreamFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
@@ -17,14 +19,11 @@ import org.apache.tika.mime.MimeTypesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.configuration.Configurable;
-import iped.data.IItem;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.SignatureConfig;
-import iped.io.SeekableInputStream;
-import iped.properties.MediaTypes;
-import iped.utils.IOUtil;
-import iped.utils.SimpleInputStreamFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Análise de assinatura utilizando biblioteca Apache Tika.

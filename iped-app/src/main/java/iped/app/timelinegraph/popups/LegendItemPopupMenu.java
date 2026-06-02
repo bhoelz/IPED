@@ -1,19 +1,5 @@
 package iped.app.timelinegraph.popups;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.swing.JList;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.title.LegendItemBlockContainer;
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.app.timelinegraph.IpedChartPanel;
 import iped.app.timelinegraph.IpedCombinedDomainXYPlot;
 import iped.app.timelinegraph.datasets.IpedTimelineDataset;
@@ -22,6 +8,16 @@ import iped.app.ui.App;
 import iped.app.ui.Messages;
 import iped.engine.data.IPEDSource;
 import iped.viewers.api.IMultiSearchResultProvider;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.title.LegendItemBlockContainer;
+import org.roaringbitmap.RoaringBitmap;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Iterator;
+import java.util.List;
 
 public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
     IpedChartPanel ipedChartPanel;
@@ -58,7 +54,7 @@ public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
         selectAll = new JMenuItem(Messages.getString("TimeLineGraph.selectAllEventTypes"));
         selectAll.addActionListener(this);
         add(selectAll);
-        
+
         unselectAll = new JMenuItem(Messages.getString("TimeLineGraph.unselectAllEventTypes"));
         unselectAll.addActionListener(this);
         add(unselectAll);
@@ -66,7 +62,7 @@ public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
         checkItems = new JMenuItem(Messages.getString("TimeLineGraph.checkEventItems"));
         checkItems.addActionListener(this);
         add(checkItems);
-        
+
         uncheckItems = new JMenuItem(Messages.getString("TimeLineGraph.uncheckEventItems"));
         uncheckItems.addActionListener(this);
         add(uncheckItems);
@@ -144,12 +140,12 @@ public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
             bsCheck.execute();
         }
     }
-    
+
     public void unselectEvents(List<LegendItemBlockContainer> selLegends) {
         List<LegendItemBlockContainer> selLegendsList = ipedChartPanel.getIpedChartsPanel().getLegendList().getSelectedValuesList();
     	for (int i = 0; i < selLegendsList.size(); i++) {
     		LegendItemBlockContainer valor = selLegendsList.get(i);
-    		
+
     	}
     }
 
@@ -190,7 +186,7 @@ public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
             }
             ipedChartPanel.filterSelection();
         }
-        
+
       //IMPORTANT
         if (e.getSource() == unfilter) {
             IpedCombinedDomainXYPlot rootPlot = ((IpedCombinedDomainXYPlot) ipedChartPanel.getChart().getPlot());
@@ -246,7 +242,7 @@ public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
         boolean selectionContainsNotHidden = false;
         boolean selectionContainsSelect = false;
         boolean selectionContainsUnselect = false;
-        
+
         if (selLegends.isEmpty()) {
             unselectAll.setEnabled(false);
         } else {
@@ -261,31 +257,31 @@ public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
 
         for (Iterator iterator = selLegends.iterator(); iterator.hasNext();) {
             LegendItemBlockContainer legendItemBlockContainer = (LegendItemBlockContainer) iterator.next();
-            
+
             if(ipedChartPanel.getExcludedEvents().contains(legendItemBlockContainer.getSeriesKey())){
                 selectionContainsExcluded = true;
             }
             else{
                 selectionContainsIncluded = true;
             }
-            
+
             if(ipedChartPanel.getHiddenEvents().contains(legendItemBlockContainer.getSeriesKey())){
                 selectionContainsHidden = true;
             }else{
                 selectionContainsNotHidden = true;
             }
-            
+
             if(ipedChartPanel.getSelectedEvents().contains(legendItemBlockContainer.getSeriesKey())){
                 selectionContainsSelect = true;
             }else{
                 selectionContainsUnselect = true;
             }
-            
+
             if(selectionContainsIncluded && selectionContainsExcluded && selectionContainsHidden && selectionContainsNotHidden && selectionContainsSelect && selectionContainsUnselect){
                 break;
             }
         }
-        
+
         //Unfilter
         if(selectionContainsExcluded){
             unfilter.setEnabled(true);
@@ -309,7 +305,7 @@ public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
         else{
             show.setEnabled(true);
         }
-        
+
         //Hide
         if(!selectionContainsNotHidden){
             hide.setEnabled(false);
@@ -317,7 +313,7 @@ public class LegendItemPopupMenu extends JPopupMenu implements ActionListener {
         else{
             hide.setEnabled(true);
         }
-        
+
         super.show(invoker, x, y);
     }
 }

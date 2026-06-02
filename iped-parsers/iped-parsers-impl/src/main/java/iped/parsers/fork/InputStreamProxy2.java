@@ -16,14 +16,10 @@
  */
 package iped.parsers.fork;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.tika.fork.ForkProxy;
 import org.apache.tika.io.TikaInputStream;
+
+import java.io.*;
 
 class InputStreamProxy2 extends InputStream implements ForkProxy {
 

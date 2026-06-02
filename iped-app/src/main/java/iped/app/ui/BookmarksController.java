@@ -1,17 +1,13 @@
 package iped.app.ui;
 
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
 import iped.data.IMultiBookmarks;
 import iped.engine.data.Bookmarks;
 import iped.utils.LocalizedFormat;
 import iped.viewers.bookmarks.IBookmarksController;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
 
 public class BookmarksController implements IBookmarksController {
 
@@ -62,12 +58,12 @@ public class BookmarksController implements IBookmarksController {
         if (!text.equals(HISTORY_DIV) && !text.trim().isEmpty() && !App.get().appCase.getKeywords().contains(text)) {
             JComboBox<String> queryComboBox = App.get().queryComboBox;
             IMultiBookmarks multiBookmarks = App.get().appCase.getMultiBookmarks();
-            
+
             if (multiBookmarks.getTypedWords().isEmpty()) {
                 queryComboBox.addItem(HISTORY_DIV);
             }
             multiBookmarks.addToTypedWords(text);
-            
+
             // Remove if already present
             queryComboBox.removeItem(text);
 
@@ -136,7 +132,7 @@ public class BookmarksController implements IBookmarksController {
         if (App.get().appCase.getMultiBookmarks().getTypedWords().size() != 0)
             App.get().queryComboBox.addItem(HISTORY_DIV);
 
-        int insPos = App.get().queryComboBox.getItemCount(); 
+        int insPos = App.get().queryComboBox.getItemCount();
         for (String text : App.get().appCase.getMultiBookmarks().getTypedWords()) {
             App.get().queryComboBox.insertItemAt(text, insPos);
         }

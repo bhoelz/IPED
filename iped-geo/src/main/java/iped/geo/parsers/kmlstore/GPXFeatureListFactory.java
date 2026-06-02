@@ -1,11 +1,10 @@
 package iped.geo.parsers.kmlstore;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
+import iped.geo.localization.Messages;
+import iped.geo.parsers.GeofileParser;
+import org.apache.tika.io.TemporaryResources;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,13 +15,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import org.apache.tika.io.TemporaryResources;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import iped.geo.localization.Messages;
-import iped.geo.parsers.GeofileParser;
+import java.io.*;
+import java.util.List;
 
 public class GPXFeatureListFactory implements FeatureListFactory {
 

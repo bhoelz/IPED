@@ -1,26 +1,9 @@
 package iped.parsers.apk;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
-import javax.imageio.ImageIO;
-
+import iped.parsers.util.Messages;
+import iped.utils.IOUtil;
+import iped.utils.ImageUtil;
+import net.dongliu.apk.parser.bean.*;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -36,16 +19,14 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.Messages;
-import iped.utils.IOUtil;
-import iped.utils.ImageUtil;
-import net.dongliu.apk.parser.bean.ApkMeta;
-import net.dongliu.apk.parser.bean.ApkSigner;
-import net.dongliu.apk.parser.bean.ApkV2Signer;
-import net.dongliu.apk.parser.bean.CertificateMeta;
-import net.dongliu.apk.parser.bean.Icon;
-import net.dongliu.apk.parser.bean.IconFace;
-import net.dongliu.apk.parser.bean.UseFeature;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class APKParser extends AbstractParser {
     private static final long serialVersionUID = 8308661247390527209L;

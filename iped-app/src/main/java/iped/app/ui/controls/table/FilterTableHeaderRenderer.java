@@ -1,39 +1,21 @@
 package iped.app.ui.controls.table;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.LinearGradientPaint;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import iped.app.ui.ResultTableModel;
+import iped.app.ui.TableHeaderFilterManager;
+import iped.utils.UiUtil;
+
+import javax.swing.*;
+import javax.swing.plaf.UIResource;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
 import java.awt.RenderingHints.Key;
-import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.plaf.UIResource;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-
-import iped.app.ui.ResultTableModel;
-import iped.app.ui.TableHeaderFilterManager;
-import iped.utils.UiUtil;
 
 public class FilterTableHeaderRenderer extends DefaultTableCellRenderer implements UIResource {
     private static final long serialVersionUID = 6359006660516330179L;

@@ -1,30 +1,9 @@
 package iped.app.timelinegraph.cache.persistance;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
+import iped.app.timelinegraph.IpedChartsPanel;
+import iped.app.timelinegraph.cache.*;
+import iped.app.ui.App;
+import iped.utils.IOUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.pdfbox.io.RandomAccessInputStream;
@@ -32,15 +11,14 @@ import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
 import org.jfree.data.time.TimePeriod;
 import org.roaringbitmap.RoaringBitmap;
 
-import iped.app.timelinegraph.IpedChartsPanel;
-import iped.app.timelinegraph.cache.CacheEventEntry;
-import iped.app.timelinegraph.cache.CacheTimePeriodEntry;
-import iped.app.timelinegraph.cache.PersistedArrayList;
-import iped.app.timelinegraph.cache.TimeIndexedMap;
-import iped.app.timelinegraph.cache.TimeStampCache;
-import iped.app.timelinegraph.cache.TimelineCache;
-import iped.app.ui.App;
-import iped.utils.IOUtil;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /*
  * Class implementing method for timeline chart cache persistance

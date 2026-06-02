@@ -1,12 +1,5 @@
 package iped.app.ui.filters;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.NumericUtils;
-
 import iped.app.metadata.MetadataSearchable;
 import iped.app.ui.App;
 import iped.data.IItemId;
@@ -17,11 +10,17 @@ import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
 import iped.search.IMultiSearchResult;
 import iped.viewers.api.IResultSetFilter;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.NumericUtils;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Represents a filter to check which documents have a field value matching some
  * criteria based on the provided value.
- * 
+ *
  * @author Patrick Dalla Bernardina
  */
 public abstract class ValueFilter extends MetadataSearchable implements IResultSetFilter {

@@ -1,14 +1,11 @@
 package iped.parsers.browsers.safari;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import com.dd.plist.*;
+import iped.parsers.browsers.Download;
+import iped.parsers.util.ItemInfo;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -26,32 +23,23 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.dd.plist.NSArray;
-import com.dd.plist.NSDate;
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSNumber;
-import com.dd.plist.NSObject;
-import com.dd.plist.NSString;
-import com.dd.plist.PropertyListParser;
-
-import iped.parsers.browsers.Download;
-import iped.parsers.util.ItemInfo;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Parser para histórico do Safari - plist
  *
  * https://medium.com/@karaiskc/understanding-apples-binary-property-list-format-281e6da00dbd
  * https://github.com/3breadt/dd-plist
- * 
+ *
  * @author Paulo César Herrmann Wanner <herrmann.pchw@pf.gov.br>
  */
 public class SafariPlistParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";

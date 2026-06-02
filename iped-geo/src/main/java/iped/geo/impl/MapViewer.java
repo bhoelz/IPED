@@ -1,17 +1,5 @@
 package iped.geo.impl;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
-
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-
 import bibliothek.gui.dock.common.DefaultSingleCDockable;
 import iped.data.IItemId;
 import iped.geo.localization.Messages;
@@ -22,6 +10,15 @@ import iped.viewers.api.ResultSetViewer;
 import iped.viewers.api.events.RowSorterTableDataChange;
 import iped.viewers.bookmarks.IBookmarksController;
 import javafx.application.Platform;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 public class MapViewer implements ResultSetViewer, TableModelListener, ListSelectionListener {
 

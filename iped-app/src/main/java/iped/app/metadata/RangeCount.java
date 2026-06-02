@@ -1,8 +1,8 @@
 package iped.app.metadata;
 
-import java.text.NumberFormat;
-
 import iped.utils.LocalizedFormat;
+
+import java.text.NumberFormat;
 
 public class RangeCount extends ValueCount {
     double start, end;

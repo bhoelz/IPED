@@ -1,14 +1,14 @@
 package iped.parsers.usnjrnl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import iped.data.IItemReader;
+import iped.io.SeekableInputStream;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.MetadataUtil;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.EmptyInputStream;
+import iped.utils.IOUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -23,19 +23,13 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.io.SeekableInputStream;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.MetadataUtil;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
-import iped.utils.IOUtil;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 public class UsnJrnlParser extends AbstractParser {
     /**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 

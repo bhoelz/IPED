@@ -1,23 +1,13 @@
 package iped.engine.task.regex.validator;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import iped.engine.task.regex.RegexValidatorService;
+
+import javax.script.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.script.Bindings;
-import javax.script.Invocable;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-import iped.engine.task.regex.RegexValidatorService;
 
 public class ScriptValidatorService implements RegexValidatorService {
 

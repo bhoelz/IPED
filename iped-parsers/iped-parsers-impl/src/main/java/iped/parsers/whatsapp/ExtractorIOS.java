@@ -1,104 +1,6 @@
 package iped.parsers.whatsapp;
 
-import static iped.parsers.whatsapp.Message.MessageType.AUDIO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.BLOCKED_CONTACT;
-import static iped.parsers.whatsapp.Message.MessageType.BUSINESS_CHANGED_NAME;
-import static iped.parsers.whatsapp.Message.MessageType.BUSINESS_CHAT;
-import static iped.parsers.whatsapp.Message.MessageType.BUSINESS_OFFICIAL;
-import static iped.parsers.whatsapp.Message.MessageType.BUSINESS_TO_STANDARD;
-import static iped.parsers.whatsapp.Message.MessageType.CHANGED_NUMBER_CHATTING_WITH_NEW;
-import static iped.parsers.whatsapp.Message.MessageType.CHANGED_NUMBER_CHATTING_WITH_OLD;
-import static iped.parsers.whatsapp.Message.MessageType.CHANNEL_ADDED_PRIVACY;
-import static iped.parsers.whatsapp.Message.MessageType.CHANNEL_CREATED;
-import static iped.parsers.whatsapp.Message.MessageType.CHAT_ADDED_PRIVACY;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_CHANGED_ALL_MEMBERS_CAN_ADD;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_CHANGED_ONLY_ADMINS_CAN_ADD;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_DESCRIPTION_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_MANAGEMENT_ACTION;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_NOT_AVAILABLE;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_WELCOME;
-import static iped.parsers.whatsapp.Message.MessageType.CONTACT_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.DELETED_BY_SENDER;
-import static iped.parsers.whatsapp.Message.MessageType.DOC_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.ENCRYPTION_KEY_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.EPHEMERAL_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.EPHEMERAL_DEFAULT;
-import static iped.parsers.whatsapp.Message.MessageType.EPHEMERAL_SAVE;
-import static iped.parsers.whatsapp.Message.MessageType.GIF_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_ADDED_TO_COMMUNITY;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ALL_MEMBERS_CAN_EDIT;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ALL_MEMBERS_CAN_SEND;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ONLY_ADMINS_CAN_ADD;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ONLY_ADMINS_CAN_EDIT;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ONLY_ADMINS_CAN_SEND;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CREATED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_DESCRIPTION_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_DESCRIPTION_DELETED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_ICON_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_ICON_DELETED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_INVITE;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_NAME_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_NOT_PART_OF_COMMUNITY;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_REMOVED_FROM_COMMUNITY;
-import static iped.parsers.whatsapp.Message.MessageType.IMAGE_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.LOCATION_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.MESSAGE_ASSOCIATION;
-import static iped.parsers.whatsapp.Message.MessageType.MESSAGES_NOW_ENCRYPTED;
-import static iped.parsers.whatsapp.Message.MessageType.MISSED_VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.MISSED_VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.POLL_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.PRODUCT_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.SENDER_ADDED_TO_CONTACTS;
-import static iped.parsers.whatsapp.Message.MessageType.STICKER_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.TEMPLATE_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.TEXT_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.UNBLOCKED_CONTACT;
-import static iped.parsers.whatsapp.Message.MessageType.UNKNOWN_MEDIA_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.UNKNOWN_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.URL_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.USER_ADDED_TO_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.USER_ADMIN;
-import static iped.parsers.whatsapp.Message.MessageType.USER_JOINED_GROUP_FROM_COMMUNITY;
-import static iped.parsers.whatsapp.Message.MessageType.USER_JOINED_GROUP_FROM_INVITATION;
-import static iped.parsers.whatsapp.Message.MessageType.USER_JOINED_GROUP_FROM_LINK;
-import static iped.parsers.whatsapp.Message.MessageType.USER_LEFT_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.USER_REMOVED_FROM_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.VIDEO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VIEW_ONCE_AUDIO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VIEW_ONCE_IMAGE_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VIEW_ONCE_VIDEO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.WAITING_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.YOU_ADMIN;
-import static iped.parsers.whatsapp.Message.MessageType.YOU_NOT_ADMIN;
-
-import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.ImmutableSet;
-
 import fqlite.base.SqliteRow;
 import iped.parsers.sqlite.SQLite3DBParser;
 import iped.parsers.sqlite.SQLiteRecordValidator;
@@ -108,6 +10,19 @@ import iped.parsers.whatsapp.Message.MessageQuotedType;
 import iped.parsers.whatsapp.Message.MessageStatus;
 import iped.parsers.whatsapp.Message.MessageType;
 import iped.parsers.whatsapp.ProtoBufDecoder.Part;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Date;
+import java.util.regex.Pattern;
+
+import static iped.parsers.whatsapp.Message.MessageType.*;
 
 /**
  *
@@ -138,7 +53,7 @@ public abstract class ExtractorIOS extends Extractor {
     @Override
     protected List<Chat> extractChatList() throws WAExtractorException {
         extractPushNames();
-        
+
         List<Chat> list;
 
         Map<String, SQLiteUndeleteTable> undeleteTables = null;
@@ -219,7 +134,7 @@ public abstract class ExtractorIOS extends Extractor {
                 try (ResultSet rs = stmt.executeQuery(chatListQuery)) {
                     while (rs.next()) {
                         String contactId = rs.getString("contact");
-                        String originalId = contactId; 
+                        String originalId = contactId;
                         if (contactId.endsWith(WAContact.lidSuffix)) {
                             String identifier = rs.getString("identifier");
                             if (StringUtils.isNotBlank(identifier)) {
@@ -347,7 +262,7 @@ public abstract class ExtractorIOS extends Extractor {
         } else {
             sql = isGroupChat ? SELECT_MESSAGES_GROUP_NOZTITLE : SELECT_MESSAGES_USER_NOZTITLE;
         }
-        
+
         if (!hasMessageInfoTable) {
             sql = sql.replace("LEFT JOIN ZWAMESSAGEINFO INFO ON INFO.Z_PK = ZWAMESSAGE.ZMESSAGEINFO ", "");
             sql = sql.replace("INFO.ZRECEIPTINFO", "NULL");
@@ -443,7 +358,7 @@ public abstract class ExtractorIOS extends Extractor {
                     Message messageQuote = messagesMap.get(uuidQuote);
                     if (messageQuote != null) {
                         messageQuote.setMessageQuotedType(MessageQuotedType.QUOTE_FOUND);
-                    }else {                        
+                    }else {
                         // Referenced message was deleted, so create a new message and fill with data
                         // extracted from referencing message metadata.
                         messageQuote = new Message();
@@ -775,7 +690,7 @@ public abstract class ExtractorIOS extends Extractor {
         if (hasZMOVIEDURATIONColumn) {
             m.setDuration(rs.getInt("duration"));
         }
-        
+
         switch (m.getMessageType()) {
             case TEXT_MESSAGE:
                 try {
@@ -786,7 +701,7 @@ public abstract class ExtractorIOS extends Extractor {
                     e.printStackTrace();
                 }
                 break;
-                
+
             case GROUP_CREATED:
                 String user = rs.getString("remoteResource");
                 if (user == null) {
@@ -884,7 +799,7 @@ public abstract class ExtractorIOS extends Extractor {
                 m.setDuration(duration);
                 m.setData("");
                 break;
-                
+
             case EPHEMERAL_DEFAULT:
                 m.setDuration(decodeEphemeralDuration(metadata));
                 break;
@@ -1410,7 +1325,7 @@ public abstract class ExtractorIOS extends Extractor {
         if (undeleteChatsSessions != null && !undeleteChatsSessions.getTableRows().isEmpty()) {
             for (SqliteRow row : undeleteChatsSessions.getTableRows()) {
                 String contactId = row.getTextValue("ZCONTACTJID");
-                String originalId = contactId; 
+                String originalId = contactId;
                 if (contactId.endsWith(WAContact.lidSuffix)) {
                     String identifier = row.getTextValue("ZCONTACTIDENTIFIER");
                     if (StringUtils.isNotBlank(identifier)) {
@@ -1543,7 +1458,7 @@ public abstract class ExtractorIOS extends Extractor {
                     case 22:
                         result = GROUP_DESCRIPTION_DELETED;
                         break;
-                        
+
                     case 23:
                         result = USER_JOINED_GROUP_FROM_INVITATION;
                         break;
@@ -1568,7 +1483,7 @@ public abstract class ExtractorIOS extends Extractor {
                     case 39:
                         result = USER_ADMIN;
                         break;
-                        
+
                     case 42:
                         result = GROUP_CHANGED_ONLY_ADMINS_CAN_ADD;
                         break;
@@ -1587,15 +1502,15 @@ public abstract class ExtractorIOS extends Extractor {
                         break;
 
                     case 56:
-                        // new group name change, 
+                        // new group name change,
                         // DATA is {"previous_subject":"Old Name","new_subject":"New Name"}
                         result = GROUP_NAME_CHANGED;
                         break;
-                        
+
                     case 57:
                         result = COMMUNITY_DESCRIPTION_CHANGED;
                         break;
-                        
+
                     case 60:
                         result = COMMUNITY_WELCOME;
                         break;
@@ -1772,19 +1687,19 @@ public abstract class ExtractorIOS extends Extractor {
             case 55:
                 switch (gEventType) {
                     case 1:
-                        result = CHANNEL_CREATED;                        
+                        result = CHANNEL_CREATED;
                         break;
-                    
+
                     case 4:
-                        result = CHANNEL_ADDED_PRIVACY;                        
+                        result = CHANNEL_ADDED_PRIVACY;
                         break;
                 }
                 break;
-                
+
             case 59:
                 result = VOICE_CALL;
                 break;
-            
+
             case 66:
                 result = MESSAGE_ASSOCIATION;
                 break;
@@ -1849,7 +1764,7 @@ public abstract class ExtractorIOS extends Extractor {
             + "ORDER BY ZLASTMESSAGEDATE DESC";
 
     private static final String SELECT_PUSH_NAMES = "select ZJID as jid, ZPUSHNAME as pushname from ZWAPROFILEPUSHNAME";
-    
+
     private static final String SELECT_GROUP_MEMBERS = "select CS.ZCONTACTJID as `group`, ZMEMBERJID as member from ZWAGROUPMEMBER GM "
             + "inner join ZWACHATSESSION CS on GM.ZCHATSESSION=CS.Z_PK where `group`=?";
 
@@ -1883,7 +1798,7 @@ public abstract class ExtractorIOS extends Extractor {
             + "LEFT JOIN ZWAMESSAGEINFO INFO ON INFO.Z_PK = ZWAMESSAGE.ZMESSAGEINFO " //$NON-NLS-1$
             + "LEFT JOIN ZWAGROUPMEMBER ON ZWAGROUPMEMBER.ZCHATSESSION = chatId AND ZWAGROUPMEMBER.Z_PK = ZGROUPMEMBER " //$NON-NLS-1$
             + "ORDER BY ZSORT"; //$NON-NLS-1$
-    
+
     private static final String SELECT_MESSAGES_USER_NOZTITLE = "SELECT ZWAMESSAGE.Z_PK AS id, ZCHATSESSION " //$NON-NLS-1$
             + "as chatId, ZFROMJID AS remoteResource, ZMESSAGESTATUS AS status, ZTEXT AS data, " //$NON-NLS-1$
             + "ZISFROMME AS fromMe, datetime(ZMESSAGEDATE + 978307200, 'unixepoch') AS timestamp, " //$NON-NLS-1$
@@ -1892,7 +1807,7 @@ public abstract class ExtractorIOS extends Extractor {
             + "ZLATITUDE as latitude, ZLONGITUDE as longitude, ZMEDIAURL as url, ZXMPPTHUMBPATH as thumbpath, " //$NON-NLS-1$
             + "INFO.ZRECEIPTINFO as receiptInfo, " //$NON-NLS-1$
             + "ZFLAGS as zflags, " //$NON-NLS-1$
-            + "ZWAMESSAGE.ZSTANZAID as uuid, ZWAMEDIAITEM.ZMETADATA as metadata, " //$NON-NLS-1$           
+            + "ZWAMESSAGE.ZSTANZAID as uuid, ZWAMEDIAITEM.ZMETADATA as metadata, " //$NON-NLS-1$
             + "ZWAMEDIAITEM.ZMOVIEDURATION as duration, "
             + "ZGROUPEVENTTYPE as gEventType, ZMESSAGETYPE as messageType, ZSORT FROM ZWAMESSAGE " //$NON-NLS-1$
             + "LEFT JOIN ZWAMEDIAITEM ON ZWAMESSAGE.Z_PK = ZWAMEDIAITEM.ZMESSAGE " //$NON-NLS-1$
@@ -1907,7 +1822,7 @@ public abstract class ExtractorIOS extends Extractor {
             + "ZLATITUDE as latitude, ZLONGITUDE as longitude, ZMEDIAURL as url, ZXMPPTHUMBPATH as thumbpath, " //$NON-NLS-1$
             + "INFO.ZRECEIPTINFO as receiptInfo, " //$NON-NLS-1$
             + "ZFLAGS as zflags, " //$NON-NLS-1$
-            + "ZWAMESSAGE.ZSTANZAID as uuid, ZWAMEDIAITEM.ZMETADATA as metadata, " //$NON-NLS-1$          
+            + "ZWAMESSAGE.ZSTANZAID as uuid, ZWAMEDIAITEM.ZMETADATA as metadata, " //$NON-NLS-1$
             + "ZWAMEDIAITEM.ZMOVIEDURATION as duration, "
             + "ZGROUPEVENTTYPE as gEventType, ZMESSAGETYPE as messageType, ZSORT FROM ZWAMESSAGE " //$NON-NLS-1$
             + "LEFT JOIN ZWAMEDIAITEM ON ZWAMESSAGE.Z_PK = ZWAMEDIAITEM.ZMESSAGE " //$NON-NLS-1$

@@ -1,33 +1,5 @@
 package iped.app.graph;
 
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingWorker;
-import javax.swing.WindowConstants;
-
 import iped.app.graph.CheckboxListCellRenderer.CheckboxListItem;
 import iped.app.graph.CheckboxListCellRenderer.CheckboxSelectionMouseAdapter;
 import iped.app.ui.App;
@@ -35,6 +7,13 @@ import iped.app.ui.Messages;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.graph.LabelQueryListener;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExportLinksDialog extends JDialog {
 

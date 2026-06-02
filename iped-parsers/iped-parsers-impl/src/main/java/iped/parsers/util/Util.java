@@ -1,20 +1,14 @@
 package iped.parsers.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
+import iped.data.IItem;
+import iped.data.IItemReader;
+import iped.parsers.standard.RawStringParser;
+import iped.parsers.standard.StandardParser;
+import iped.search.IItemSearcher;
+import iped.utils.IOUtil;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.AutoDetectReader;
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.mime.MediaType;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -25,12 +19,11 @@ import org.slf4j.Logger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItem;
-import iped.data.IItemReader;
-import iped.parsers.standard.RawStringParser;
-import iped.parsers.standard.StandardParser;
-import iped.search.IItemSearcher;
-import iped.utils.IOUtil;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 public class Util {
 
@@ -234,7 +227,7 @@ public class Util {
         t.setDaemon(true);
         t.start();
     }
-    
+
     public static void logInputStream(final InputStream stream, final Logger logger) {
         Thread t = new Thread() {
             @Override

@@ -1,13 +1,13 @@
 package iped.parsers.bittorrent;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.IItemReader;
+import iped.parsers.util.IgnoreCorruptedCarved;
+import iped.parsers.util.Messages;
+import iped.parsers.util.P2PUtil;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.LocalizedFormat;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
@@ -19,14 +19,13 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.util.IgnoreCorruptedCarved;
-import iped.parsers.util.Messages;
-import iped.parsers.util.P2PUtil;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.LocalizedFormat;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TimeZone;
 
 public class TransmissionResumeParser extends AbstractParser {
     private static final long serialVersionUID = 2692632610374337656L;
@@ -34,7 +33,7 @@ public class TransmissionResumeParser extends AbstractParser {
             .singleton(MediaType.application("x-transmission-resume"));
     public static final String TRANSMISSION_RESUME_MIME_TYPE = "application/x-transmission-resume";
 
-    private static final String[] header = new String[] { 
+    private static final String[] header = new String[] {
             Messages.getString("TransmissionResumeParser.Name"),
             Messages.getString("TransmissionResumeParser.Destination"),
             Messages.getString("TransmissionResumeParser.IncompleteDir"),
@@ -145,16 +144,16 @@ public class TransmissionResumeParser extends AbstractParser {
                 }
             }
 
-            String[] rowElements = new String[] { 
-                    dict.getString("name"), 
+            String[] rowElements = new String[] {
+                    dict.getString("name"),
                     dict.getString("destination"),
                     dict.getString("incomplete-dir"),
                     infoHash,
                     LocalizedFormat.format(dict.getLong("downloaded")),
-                    LocalizedFormat.format(dict.getLong("uploaded")), 
+                    LocalizedFormat.format(dict.getLong("uploaded")),
                     dict.getDate("added-date"),
-                    dict.getDate("activity-date"), 
-                    dict.getDate("done-date"), 
+                    dict.getDate("activity-date"),
+                    dict.getDate("done-date"),
                     torrentItem != null ? strYes : "",
                     filesFoundInCase > 0 ? String.valueOf(filesFoundInCase) : ""};
 

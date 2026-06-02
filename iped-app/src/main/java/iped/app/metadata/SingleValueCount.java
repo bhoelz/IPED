@@ -1,8 +1,8 @@
 package iped.app.metadata;
 
-import java.text.NumberFormat;
-
 import iped.utils.LocalizedFormat;
+
+import java.text.NumberFormat;
 
 public class SingleValueCount extends ValueCount implements Comparable<SingleValueCount> {
     double value;

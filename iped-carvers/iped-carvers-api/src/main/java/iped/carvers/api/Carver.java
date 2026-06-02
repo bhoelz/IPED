@@ -1,8 +1,8 @@
 package iped.carvers.api;
 
-import java.io.IOException;
-
 import iped.data.IItem;
+
+import java.io.IOException;
 
 public interface Carver {
 

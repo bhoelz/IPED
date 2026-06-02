@@ -1,12 +1,12 @@
 package iped.app.ui.columns;
 
-import java.io.File;
-import java.util.Set;
-
 import iped.app.ui.columns.ColumnsManager.CheckBoxState;
 import iped.engine.task.HTMLReportTask;
 import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
+
+import java.io.File;
+import java.util.Set;
 
 public class ColumnsSelectReportUI extends ColumnsSelectUI {
 
@@ -46,7 +46,7 @@ public class ColumnsSelectReportUI extends ColumnsSelectUI {
     @Override
     protected void updatePanelList() {
         disableRequiredPropertiesCheckBoxes();
-        super.updatePanelList();        
+        super.updatePanelList();
     }
 
     public void disableRequiredPropertiesCheckBoxes() {

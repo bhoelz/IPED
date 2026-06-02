@@ -1,9 +1,9 @@
 package iped.geo.impl;
 
-import javax.swing.JTable;
-
 import iped.geo.MarkerCheckBoxListener;
 import iped.geo.kml.GetResultsKMLWorker;
+
+import javax.swing.*;
 
 public class AppMarkerCheckBoxListener implements MarkerCheckBoxListener {
     AppMapPanel mapaPanel;

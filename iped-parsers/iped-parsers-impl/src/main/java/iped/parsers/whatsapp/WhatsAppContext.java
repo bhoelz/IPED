@@ -1,8 +1,8 @@
 package iped.parsers.whatsapp;
 
-import java.util.List;
-
 import iped.data.IItemReader;
+
+import java.util.List;
 
 public class WhatsAppContext {
 
@@ -22,7 +22,7 @@ public class WhatsAppContext {
         this.setItem(item);
         this.setBackup(false);
         this.setMainDBItem(null);
-        
+
     }
 
     public boolean isMainDB() {

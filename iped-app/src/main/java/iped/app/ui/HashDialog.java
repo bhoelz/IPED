@@ -1,17 +1,12 @@
 package iped.app.ui;
 
-import java.awt.BorderLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
+import java.awt.*;
 
 public class HashDialog extends JDialog {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

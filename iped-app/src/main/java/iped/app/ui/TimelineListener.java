@@ -1,14 +1,5 @@
 package iped.app.ui;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.RowSorter;
-import javax.swing.RowSorter.SortKey;
-import javax.swing.SortOrder;
-
 import bibliothek.gui.dock.common.action.CCheckBox;
 import iped.app.ui.columns.ColumnsManagerUI;
 import iped.engine.search.MultiSearchResult;
@@ -20,6 +11,12 @@ import iped.search.IMultiSearchResult;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IResultSetFilter;
 import iped.viewers.api.IResultSetFilterer;
+
+import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TimelineListener implements IResultSetFilterer {
 

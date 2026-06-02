@@ -1,8 +1,7 @@
 package iped.utils;
 
-import java.awt.Color;
-
-import javax.swing.UIManager;
+import javax.swing.*;
+import java.awt.*;
 
 public class UiUtil {
     public static String getHexRGB(Color c) {

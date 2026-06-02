@@ -1,14 +1,9 @@
 package iped.app.ui.bookmarks;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
-
 import iped.app.ui.App;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class BookmarkListRenderer extends JLabel implements ListCellRenderer<BookmarkAndKey> {
     private static final long serialVersionUID = 19720909122009L;

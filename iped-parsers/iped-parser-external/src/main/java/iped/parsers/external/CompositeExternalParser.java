@@ -16,13 +16,13 @@
  */
 package iped.parsers.external;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.mime.MediaTypeRegistry;
 import org.apache.tika.parser.CompositeParser;
 import org.apache.tika.parser.Parser;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * A Composite Parser that wraps up all the available External Parsers, and

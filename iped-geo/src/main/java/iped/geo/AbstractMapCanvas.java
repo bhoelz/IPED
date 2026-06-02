@@ -1,23 +1,18 @@
 package iped.geo;
 
-import java.awt.Canvas;
-import java.awt.Component;
+import iped.geo.localization.Messages;
+import org.apache.commons.io.IOUtils;
+
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.io.IOUtils;
-
-import iped.geo.localization.Messages;
 
 abstract public class AbstractMapCanvas extends Canvas {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     protected static final String ALLMARKERS_TAG = "allmarkers";

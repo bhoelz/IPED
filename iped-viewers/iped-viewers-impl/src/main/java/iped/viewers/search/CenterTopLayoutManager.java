@@ -1,10 +1,7 @@
 package iped.viewers.search;
 
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.LayoutManager2;
+import java.awt.*;
 
 public class CenterTopLayoutManager implements LayoutManager2 {
     public static final String TOP = "TOP";

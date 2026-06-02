@@ -1,11 +1,11 @@
 package iped.engine.webapi.json;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * SourceToIDsModel lists documents grouped by source: { "data": [ { "source":

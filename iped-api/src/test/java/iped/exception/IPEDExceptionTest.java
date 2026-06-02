@@ -1,9 +1,9 @@
 package iped.exception;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for IPEDException class.
@@ -15,10 +15,10 @@ class IPEDExceptionTest {
     void constructor_withMessage_shouldSetMessage() {
         // Given
         String message = "Test error message";
-        
+
         // When
         IPEDException exception = new IPEDException(message);
-        
+
         // Then
         assertEquals(message, exception.getMessage());
     }
@@ -29,10 +29,10 @@ class IPEDExceptionTest {
         // Given
         String message = "Test error message";
         Throwable cause = new RuntimeException("Original cause");
-        
+
         // When
         IPEDException exception = new IPEDException(message, cause);
-        
+
         // Then
         assertEquals(message, exception.getMessage());
         assertEquals(cause, exception.getCause());
@@ -43,10 +43,10 @@ class IPEDExceptionTest {
     void constructor_withCauseOnly_shouldSetCause() {
         // Given
         Throwable cause = new RuntimeException("Original cause");
-        
+
         // When
         IPEDException exception = new IPEDException(cause);
-        
+
         // Then
         assertEquals(cause, exception.getCause());
         // Message should contain the cause's message
@@ -58,7 +58,7 @@ class IPEDExceptionTest {
     void shouldBeRuntimeException() {
         // When
         IPEDException exception = new IPEDException("test");
-        
+
         // Then
         assertTrue(exception instanceof RuntimeException);
     }
@@ -68,7 +68,7 @@ class IPEDExceptionTest {
     void constructor_withNullMessage_shouldHandle() {
         // When
         IPEDException exception = new IPEDException((String) null);
-        
+
         // Then
         assertNull(exception.getMessage());
     }
@@ -78,7 +78,7 @@ class IPEDExceptionTest {
     void shouldBeThrowable() {
         // Given
         IPEDException exception = new IPEDException("test");
-        
+
         // When/Then
         assertThrows(IPEDException.class, () -> {
             throw exception;
@@ -90,10 +90,10 @@ class IPEDExceptionTest {
     void stackTrace_shouldBeAccessible() {
         // Given
         IPEDException exception = new IPEDException("test");
-        
+
         // When
         StackTraceElement[] stackTrace = exception.getStackTrace();
-        
+
         // Then
         assertNotNull(stackTrace);
     }
@@ -103,10 +103,10 @@ class IPEDExceptionTest {
     void canWrapCheckedException() {
         // Given
         Exception checked = new Exception("Checked exception");
-        
+
         // When
         IPEDException exception = new IPEDException(checked);
-        
+
         // Then
         assertEquals(checked, exception.getCause());
     }
@@ -118,10 +118,10 @@ class IPEDExceptionTest {
         String innerMsg = "Inner exception";
         String outerMsg = "Outer exception";
         RuntimeException inner = new RuntimeException(innerMsg);
-        
+
         // When
         IPEDException exception = new IPEDException(outerMsg, inner);
-        
+
         // Then
         assertEquals(outerMsg, exception.getMessage());
         assertEquals(innerMsg, exception.getCause().getMessage());

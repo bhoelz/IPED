@@ -1,12 +1,5 @@
 package iped.app.ui;
 
-import java.awt.Desktop;
-import java.io.File;
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.app.ui.viewers.AttachmentSearcherImpl;
 import iped.data.IItem;
 import iped.exception.IPEDException;
@@ -15,6 +8,12 @@ import iped.parsers.util.Util;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 public class ExternalFileOpen {
 

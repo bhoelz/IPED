@@ -1,17 +1,17 @@
 package iped.parsers.skype;
 
+import iped.parsers.util.Messages;
+import iped.utils.LocalizedFormat;
+import iped.utils.SimpleHTMLEncoder;
+
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import iped.parsers.util.Messages;
-import iped.utils.LocalizedFormat;
-import iped.utils.SimpleHTMLEncoder;
-
 /**
  * Reúne métodos auxiliares para formatação de dados.
- * 
+ *
  * @author Patrick Dalla Bernardina
  */
 public class FormatUtil {
@@ -38,7 +38,7 @@ public class FormatUtil {
 
     /**
      * Formata uma data no formato "dd/MM/yyyy HH:mm:ss".
-     * 
+     *
      * @param date
      *            Objeto da class Date a ser formatado.
      * @return String com a data formatada. No caso da data ser nula ou inválida
@@ -55,7 +55,7 @@ public class FormatUtil {
 
     /**
      * Formata um número inteiro (da classe Long) no formato "1.234.567".
-     * 
+     *
      * @param number
      *            Número a ser formatado.
      * @return String com o número formatado. No caso do número ser nulo retorna uma
@@ -69,7 +69,7 @@ public class FormatUtil {
 
     /**
      * Formata um número decimal.
-     * 
+     *
      * @param d
      *            Número a ser formatado.
      * @return String com o número formatado. No caso do número ser nulo retorna uma

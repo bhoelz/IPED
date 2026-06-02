@@ -1,27 +1,21 @@
 package iped.engine.task.regex.validator;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.engine.config.ConfigurationManager; // Import ConfigurationManager
 import iped.engine.config.RegexTaskConfig; // Import RegexTaskConfig
 import iped.engine.config.RegexTaskConfig.RegexEntry; // Import RegexEntry
 import iped.engine.task.regex.RegexValidatorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Dynamically validates BIP-39 and Electrum seed phrases for any language

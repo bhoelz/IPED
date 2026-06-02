@@ -1,26 +1,18 @@
 package iped.app.timelinegraph;
 
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
-import java.util.Iterator;
-
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
-import javax.swing.ListModel;
-
 import org.jfree.chart.LegendItemSource;
-import org.jfree.chart.block.Block;
-import org.jfree.chart.block.BlockContainer;
-import org.jfree.chart.block.BlockResult;
-import org.jfree.chart.block.EntityBlockParams;
-import org.jfree.chart.block.RectangleConstraint;
+import org.jfree.chart.block.*;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.entity.StandardEntityCollection;
 import org.jfree.chart.entity.TitleEntity;
 import org.jfree.chart.title.LegendItemBlockContainer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.ui.Size2D;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.util.Iterator;
 
 public class IpedLegendTitle extends LegendTitle {
     private IpedChartPanel ipedChartPanel;

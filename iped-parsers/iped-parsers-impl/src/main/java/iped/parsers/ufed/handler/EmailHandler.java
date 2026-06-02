@@ -1,17 +1,5 @@
 package iped.parsers.ufed.handler;
 
-import static iped.properties.ExtraProperties.COMMUNICATION_DIRECTION;
-import static iped.properties.ExtraProperties.MESSAGE_ATTACHMENT_COUNT;
-
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.metadata.Message;
-import org.apache.tika.metadata.Metadata;
-
 import iped.data.IItemReader;
 import iped.parsers.chat.EmailPartyStringBuilder;
 import iped.parsers.ufed.model.Attachment;
@@ -19,6 +7,17 @@ import iped.parsers.ufed.model.Email;
 import iped.parsers.ufed.model.Party;
 import iped.parsers.util.ConversationConstants;
 import iped.search.IItemSearcher;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.metadata.Message;
+import org.apache.tika.metadata.Metadata;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static iped.properties.ExtraProperties.COMMUNICATION_DIRECTION;
+import static iped.properties.ExtraProperties.MESSAGE_ATTACHMENT_COUNT;
 
 public class EmailHandler extends BaseModelHandler<Email> {
 

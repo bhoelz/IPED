@@ -1,11 +1,5 @@
 package iped.app.timelinegraph;
 
-import java.awt.Paint;
-import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
-import java.util.HashSet;
-
 import org.jfree.chart.LegendItem;
 import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.LegendItemSource;
@@ -14,6 +8,11 @@ import org.jfree.chart.plot.DrawingSupplier;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYDataset;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class IpedLegendItemCollection implements LegendItemSource {
 

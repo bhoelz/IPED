@@ -1,9 +1,19 @@
 package iped.viewers;
 
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
+import iped.data.IItemReader;
+import iped.io.IStreamSource;
+import iped.utils.IOUtil;
+import iped.utils.IconUtil;
+import iped.utils.ImageUtil;
+import iped.viewers.localization.Messages;
+import iped.viewers.util.ImageMetadataUtil;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -14,25 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
-import iped.data.IItemReader;
-import iped.io.IStreamSource;
-import iped.utils.IOUtil;
-import iped.utils.IconUtil;
-import iped.utils.ImageUtil;
-import iped.viewers.localization.Messages;
-import iped.viewers.util.ImageMetadataUtil;
 
 public class TiffViewer extends ImageViewer {
     private final JTextField textCurrentPage = new JTextField(2);

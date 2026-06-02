@@ -1,11 +1,11 @@
 package iped.parsers.plist;
 
+import com.dd.plist.NSNumber;
+import com.dd.plist.UID;
+
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-
-import com.dd.plist.NSNumber;
-import com.dd.plist.UID;
 
 public class PListHelper {
 

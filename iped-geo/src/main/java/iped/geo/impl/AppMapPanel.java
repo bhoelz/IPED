@@ -1,34 +1,5 @@
 package iped.geo.impl;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.function.Consumer;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.data.IItemId;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.data.ItemId;
@@ -43,15 +14,34 @@ import iped.search.IIPEDSearcher;
 import iped.search.IMultiSearchResult;
 import iped.viewers.api.GUIProvider;
 import iped.viewers.api.IMultiSearchResultProvider;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.roaringbitmap.RoaringBitmap;
 
-/* 
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.function.Consumer;
+
+/*
  * Classe que controla a integração da classe App com a classe MapaCanvas
  */
 
 public class AppMapPanel extends JPanel implements Consumer<Object[]> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     IMultiSearchResultProvider resultsProvider;

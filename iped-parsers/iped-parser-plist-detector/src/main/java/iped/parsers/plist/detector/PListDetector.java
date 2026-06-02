@@ -1,11 +1,6 @@
 package iped.parsers.plist.detector;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
+import com.dd.plist.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.detect.Detector;
@@ -15,11 +10,10 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.xml.sax.SAXException;
 
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSObject;
-import com.dd.plist.NSString;
-import com.dd.plist.PropertyListFormatException;
-import com.dd.plist.PropertyListParser;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
 
 
 /**

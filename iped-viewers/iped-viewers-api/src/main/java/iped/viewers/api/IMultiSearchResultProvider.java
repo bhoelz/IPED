@@ -1,11 +1,10 @@
 package iped.viewers.api;
 
-import javax.swing.JTable;
-import javax.swing.SortOrder;
-
 import iped.data.IIPEDSource;
 import iped.search.IIPEDSearcher;
 import iped.search.IMultiSearchResult;
+
+import javax.swing.*;
 
 public interface IMultiSearchResultProvider {
     IMultiSearchResult getResults();

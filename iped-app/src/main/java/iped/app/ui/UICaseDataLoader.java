@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,18 +18,6 @@
  */
 package iped.app.ui;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.app.ui.ai.AIFiltersLoader;
 import iped.app.ui.columns.ColumnsManagerUI;
 import iped.engine.config.ConfigurationManager;
@@ -41,6 +29,14 @@ import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.task.ParsingTaskBootstrap;
 import iped.engine.task.SignatureTask;
 import iped.parsers.standard.StandardParser;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 public class UICaseDataLoader extends SwingWorker<Void, Integer> {
 

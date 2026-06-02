@@ -1,11 +1,7 @@
 package iped.parsers.whatsapp;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import iped.parsers.util.BaseItemSearchContext;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -17,8 +13,11 @@ import org.apache.tika.parser.Parser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.BaseItemSearchContext;
-import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public abstract class AbstractPkgTest extends BaseItemSearchContext {
 

@@ -1,32 +1,22 @@
 package iped.app.ui;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
-
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.data.IMultiBookmarks;
 import iped.engine.data.MultiBitmapBookmarks;
 import iped.engine.search.MultiSearchResult;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.search.IMultiSearchResult;
-import iped.viewers.api.IBitmapFilter;
-import iped.viewers.api.IFilter;
-import iped.viewers.api.IMutableFilter;
-import iped.viewers.api.IResultSetFilter;
-import iped.viewers.api.IResultSetFilterer;
+import iped.viewers.api.*;
+import org.roaringbitmap.RoaringBitmap;
+
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BookmarksTreeListener implements TreeSelectionListener, TreeExpansionListener, IResultSetFilterer {
     private HashSet<Object> selection = new HashSet<>();

@@ -1,15 +1,11 @@
 package iped.app.timelinegraph.popups;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-
 import iped.app.timelinegraph.IpedChartPanel;
 import iped.app.ui.Messages;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class SeriesAxisPopupMenu extends JPopupMenu implements ActionListener {
 

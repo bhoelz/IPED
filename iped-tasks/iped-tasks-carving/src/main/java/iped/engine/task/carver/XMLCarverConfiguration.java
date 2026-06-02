@@ -1,5 +1,18 @@
 package iped.engine.task.carver;
 
+import iped.carvers.api.*;
+import iped.carvers.api.Signature.SignatureType;
+import iped.carvers.standard.DefaultCarver;
+import iped.carvers.standard.JSCarver;
+import iped.utils.XMLUtil;
+import org.apache.tika.mime.MediaType;
+import org.arabidopsis.ahocorasick.AhoCorasick;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -8,29 +21,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.tika.mime.MediaType;
-import org.arabidopsis.ahocorasick.AhoCorasick;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import iped.carvers.api.CarvedItemListener;
-import iped.carvers.api.Carver;
-import iped.carvers.api.CarverConfiguration;
-import iped.carvers.api.CarverConfigurationException;
-import iped.carvers.api.CarverType;
-import iped.carvers.api.Signature;
-import iped.carvers.api.Signature.SignatureType;
-import iped.carvers.standard.DefaultCarver;
-import iped.carvers.standard.JSCarver;
-import iped.utils.XMLUtil;
-
 public class XMLCarverConfiguration implements CarverConfiguration, Serializable {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

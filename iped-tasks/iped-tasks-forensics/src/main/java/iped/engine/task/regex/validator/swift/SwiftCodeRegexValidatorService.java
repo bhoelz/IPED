@@ -1,11 +1,11 @@
 package iped.engine.task.regex.validator.swift;
 
+import iped.engine.task.regex.BasicAbstractRegexValidatorService;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import iped.engine.task.regex.BasicAbstractRegexValidatorService;
 
 public class SwiftCodeRegexValidatorService extends BasicAbstractRegexValidatorService {
 

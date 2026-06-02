@@ -1,8 +1,15 @@
 package iped.app.ui.popups;
 
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Toolkit;
+import iped.app.metadata.MetadataSearchable;
+import iped.app.ui.App;
+import iped.app.ui.Messages;
+import iped.app.ui.TableHeaderFilterManager;
+import iped.data.IItemId;
+import iped.engine.task.index.IndexItem;
+import iped.utils.DateUtil;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -13,24 +20,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-
-import iped.app.metadata.MetadataSearchable;
-import iped.app.ui.App;
-import iped.app.ui.Messages;
-import iped.app.ui.TableHeaderFilterManager;
-import iped.data.IItemId;
-import iped.engine.task.index.IndexItem;
-import iped.utils.DateUtil;
 
 public class FieldValuePopupMenu extends JPopupMenu implements ActionListener {
     private static final String STARTS_WITH_STR = Messages.get("FieldValuePopupMenu.StartsWith");

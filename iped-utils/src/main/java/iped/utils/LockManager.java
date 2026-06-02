@@ -1,9 +1,9 @@
 package iped.utils;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 public class LockManager<T> {
 

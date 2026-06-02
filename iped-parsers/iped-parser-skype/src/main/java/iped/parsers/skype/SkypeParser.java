@@ -1,16 +1,15 @@
 package iped.parsers.skype;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import iped.data.IItemReader;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.Messages;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.EmptyInputStream;
+import iped.utils.IOUtil;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -26,16 +25,10 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.util.ChildPornHashLookup;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.Messages;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
-import iped.utils.IOUtil;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * Parser para banco de dados do Skype
@@ -45,7 +38,7 @@ import iped.utils.IOUtil;
 public class SkypeParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";

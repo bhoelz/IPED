@@ -1,28 +1,26 @@
 package iped.engine.task;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.optimaize.langdetect.DetectedLanguage;
 import com.optimaize.langdetect.LanguageDetector;
 import com.optimaize.langdetect.LanguageDetectorBuilder;
 import com.optimaize.langdetect.ngram.NgramExtractors;
 import com.optimaize.langdetect.profiles.LanguageProfile;
 import com.optimaize.langdetect.profiles.LanguageProfileReader;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
 import iped.engine.data.Item;
 import iped.parsers.standard.StandardParser;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class LanguageDetectTask extends AbstractTask {
 

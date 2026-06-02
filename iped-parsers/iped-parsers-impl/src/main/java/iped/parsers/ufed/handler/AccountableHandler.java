@@ -1,14 +1,4 @@
 package iped.parsers.ufed.handler;
-import static iped.properties.ExtraProperties.UFED_META_PREFIX;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
 
 import iped.data.IItemReader;
 import iped.parsers.ufed.model.Accountable;
@@ -17,6 +7,16 @@ import iped.parsers.ufed.model.ContactEntry;
 import iped.parsers.ufed.model.ContactPhoto;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static iped.properties.ExtraProperties.UFED_META_PREFIX;
 
 /**
  * Handles all processing logic for a Accountable model.

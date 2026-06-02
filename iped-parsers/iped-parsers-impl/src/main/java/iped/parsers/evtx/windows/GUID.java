@@ -1,9 +1,8 @@
 package iped.parsers.evtx.windows;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 import iped.parsers.evtx.template.ByteArrayFormatted;
+
+import java.nio.ByteBuffer;
 
 public class GUID {
     byte[] timelower = new byte[4];

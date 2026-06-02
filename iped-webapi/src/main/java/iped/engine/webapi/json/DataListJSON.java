@@ -1,10 +1,10 @@
 package iped.engine.webapi.json;
 
-import java.util.Arrays;
-import java.util.List;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * DataListModel puts an array in a "data" property: { "data": [] }

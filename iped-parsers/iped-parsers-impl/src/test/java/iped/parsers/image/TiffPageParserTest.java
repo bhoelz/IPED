@@ -1,8 +1,7 @@
 package iped.parsers.image;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import iped.parsers.util.BaseItemSearchContext;
+import iped.parsers.util.ToXMLContentHandler;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -10,8 +9,8 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.BaseItemSearchContext;
-import iped.parsers.util.ToXMLContentHandler;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class TiffPageParserTest extends BaseItemSearchContext {
 

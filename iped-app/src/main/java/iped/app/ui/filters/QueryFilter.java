@@ -1,10 +1,9 @@
 package iped.app.ui.filters;
 
-import java.util.Objects;
-
+import iped.viewers.api.IQueryFilter;
 import org.apache.lucene.search.Query;
 
-import iped.viewers.api.IQueryFilter;
+import java.util.Objects;
 
 public class QueryFilter implements IQueryFilter {
     Query query;

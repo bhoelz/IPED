@@ -1,12 +1,12 @@
 package iped.parsers.whatsapp;
 
+import iped.utils.IOUtil;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Base64;
-
-import iped.utils.IOUtil;
 
 /**
  *
@@ -72,7 +72,7 @@ public class Util {
         }
         return "data:image/" + type + ";base64," + readResourceAsBase64String(resource); //$NON-NLS-1$ $NON-NLS-2$
     }
-    
+
     public static String nullToEmpty(String s) {
         if (s == null) {
             return ""; //$NON-NLS-1$

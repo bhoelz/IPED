@@ -1,15 +1,10 @@
 package iped.engine.task.regex.validator.crypto;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import dk.brics.automaton.*;
 import org.junit.Test;
 
-import dk.brics.automaton.Automaton;
-import dk.brics.automaton.AutomatonMatcher;
-import dk.brics.automaton.DatatypesAutomatonProvider;
-import dk.brics.automaton.RegExp;
-import dk.brics.automaton.RunAutomaton;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TronAddressValidatorServiceTest {
 

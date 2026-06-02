@@ -1,16 +1,5 @@
 package iped.parsers.skype;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.tika.metadata.Metadata;
-import org.xml.sax.ContentHandler;
-
 import iped.data.IItemReader;
 import iped.parsers.skype.v8.SkypeContactV8;
 import iped.parsers.skype.v8.SkypeConversationV14;
@@ -21,6 +10,16 @@ import iped.parsers.util.Util;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
 import iped.utils.SimpleHTMLEncoder;
+import org.apache.tika.metadata.Metadata;
+import org.xml.sax.ContentHandler;
+
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.Base64;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Classe responsável por gerar a representação HTML dos registros encontrados

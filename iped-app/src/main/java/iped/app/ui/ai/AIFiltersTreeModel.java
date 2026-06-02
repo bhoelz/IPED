@@ -1,13 +1,12 @@
 package iped.app.ui.ai;
 
-import java.util.ArrayList;
-import java.util.List;
+import iped.engine.data.SimpleFilterNode;
 
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-
-import iped.engine.data.SimpleFilterNode;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AIFiltersTreeModel implements TreeModel {
     private SimpleFilterNode root;

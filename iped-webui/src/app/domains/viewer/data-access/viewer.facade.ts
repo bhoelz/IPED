@@ -1,24 +1,15 @@
-import { Injectable, signal } from '@angular/core';
-import { DomSanitizer, SafeHtml, SafeResourceUrl } from '@angular/platform-browser';
-import { firstValueFrom } from 'rxjs';
+import {Injectable, signal} from '@angular/core';
+import {DomSanitizer, SafeHtml, SafeResourceUrl} from '@angular/platform-browser';
+import {firstValueFrom} from 'rxjs';
 
-import { ItemsService } from '../../../core/api/generated/api/items.service';
-import { ViewerService } from '../../../core/api/generated/api/viewer.service';
-import { ItemDetails } from '../../../core/api/generated/model/itemDetails';
-import {
-  RenditionLink,
-  RenditionLinkKindEnum
-} from '../../../core/api/generated/model/renditionLink';
-import {
-  ViewerHitState
-} from '../../../core/api/generated/model/viewerHitState';
-import {
-  ViewerNavigateHitRequestDirectionEnum
-} from '../../../core/api/generated/model/viewerNavigateHitRequest';
-import { ViewerOpenResponse } from '../../../core/api/generated/model/viewerOpenResponse';
-import {
-  ViewerSearchRequestMatchModeEnum
-} from '../../../core/api/generated/model/viewerSearchRequest';
+import {ItemsService} from '../../../core/api/generated/api/items.service';
+import {ViewerService} from '../../../core/api/generated/api/viewer.service';
+import {ItemDetails} from '../../../core/api/generated/model/itemDetails';
+import {RenditionLink, RenditionLinkKindEnum} from '../../../core/api/generated/model/renditionLink';
+import {ViewerHitState} from '../../../core/api/generated/model/viewerHitState';
+import {ViewerNavigateHitRequestDirectionEnum} from '../../../core/api/generated/model/viewerNavigateHitRequest';
+import {ViewerOpenResponse} from '../../../core/api/generated/model/viewerOpenResponse';
+import {ViewerSearchRequestMatchModeEnum} from '../../../core/api/generated/model/viewerSearchRequest';
 
 type ViewerRenderableKind = 'text' | 'html' | 'image' | 'pdf' | 'unsupported';
 

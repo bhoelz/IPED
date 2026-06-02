@@ -1,38 +1,19 @@
 package iped.engine.task;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.imageio.ImageIO;
-import javax.net.ssl.SSLContext;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import iped.configuration.Configurable;
+import iped.data.IHashValue;
+import iped.data.IItem;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.ImageThumbTaskConfig;
+import iped.engine.config.RemoteImageClassifierConfig;
+import iped.engine.config.VideoThumbsConfig;
+import iped.engine.preview.PreviewRepositoryManager;
+import iped.engine.task.index.IndexItem;
+import iped.parsers.util.MetadataUtil;
+import iped.properties.ExtraProperties;
+import iped.utils.ImageUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -55,25 +36,28 @@ import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import iped.configuration.Configurable;
-import iped.data.IHashValue;
-import iped.data.IItem;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.ImageThumbTaskConfig;
-import iped.engine.config.RemoteImageClassifierConfig;
-import iped.engine.config.VideoThumbsConfig;
-import iped.engine.preview.PreviewRepositoryManager;
-import iped.engine.task.index.IndexItem;
-import iped.parsers.util.MetadataUtil;
-import iped.properties.ExtraProperties;
-import iped.utils.ImageUtil;
+import javax.imageio.ImageIO;
+import javax.net.ssl.SSLContext;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Performs remote classification of image and video files.
- * 
+ *
  * @implNote Sends files in batches for improved performance (see 'batchSize' config property).
  *           Stores classification results in evidence's extra attributes.
  *           Attributes' names are controlled by the remote classifier (usually prefixed by 'AI').
@@ -93,7 +77,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
     private int batchSize;
     private int skipSize;
     private int skipDimension;
-    private boolean skipHashDBFiles;   
+    private boolean skipHashDBFiles;
     private boolean validateSSL;
     private double labelingThreshold;
     private int thumbSize = 0;
@@ -109,7 +93,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
 
     // AI-related attributes prefix
     private static final String aiPrefix = "ai:";
-    
+
     // AI classification extra attributes and values
     private static final String AI_CLASSIFICATION_STATUS_ATTR = aiPrefix + "classificationStatus";
     private static final String AI_CLASSIFICATION_SUCCESS = "success";
@@ -186,11 +170,11 @@ public class RemoteImageClassifierTask extends AbstractTask {
                 if (probs != null) {
                     value = TaskRuntime.invokeVideoScoreList("iped.engine.task.die.DIETask", probs,
                             probs.stream().mapToDouble(Double::doubleValue).max().orElse(0d));
-    
+
                     // Scale values from [0,1] to [0, 100] and
                     // limit them to 2 decimal digits.
                     value = Math.round(value * 10000) / 100.0;
-    
+
                     classesProb.put(classname, value);
                 }
             }
@@ -278,7 +262,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
         skipHashDBFiles = config.isSkipHashDBFiles();
         validateSSL = config.isValidateSSL();
         labelingThreshold = config.getLabelingThreshold();
-        
+
         requestConfig = RequestConfig.custom().setConnectTimeout(config.getConnectTimeout())
                 .setSocketTimeout(config.getSocketTimeout())
                 .build();
@@ -316,7 +300,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
             });
         }
         catch (UnknownHostException | HttpHostConnectException e) {
-            // Disable task in case of failure to connect to remote image classifier 
+            // Disable task in case of failure to connect to remote image classifier
             enabled = false;
             logger.error("Task disabled. Failed to connect to remote image classifier at '" + urlVersion + "': " + e.getMessage());
         }
@@ -338,7 +322,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
             return new DecimalFormat("#,##0.##").format((float) bytes / 1024.0) + " KB";
         } else if (bytes < 1024L * 1024 * 1024) {
             return new DecimalFormat("#,##0.##").format((float) bytes / (1024.0 * 1024)) + " MB";
-        } else 
+        } else
             return new DecimalFormat("#,##0.##").format((float) bytes / (1024.0 * 1024 * 1024)) + " GB";
     }
 
@@ -413,12 +397,12 @@ public class RemoteImageClassifierTask extends AbstractTask {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonResponse = objectMapper.readTree(responseStream);
         logger.debug("Server Response: {}", jsonResponse.toPrettyString());
-        
+
         // Queue to store 'name' of failed evidences
         Set<String> queueFail = new HashSet<>();
 
         // Get 'results' from response
-        JsonNode resultArray = jsonResponse.get("results");       
+        JsonNode resultArray = jsonResponse.get("results");
         Map<String,ResultItem> results = new TreeMap<>();
         if (resultArray != null && resultArray.isArray()) {
             // Process 'results'
@@ -483,7 +467,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                     }
                     else {
                         // No matching evidence found
-                        logger.warn("ClassificationFail::EvidenceNotFound: Invalid/missing 'class' field for filename: {}. No matching evidence found.", name);                        
+                        logger.warn("ClassificationFail::EvidenceNotFound: Invalid/missing 'class' field for filename: {}. No matching evidence found.", name);
                     }
                 }
             }
@@ -511,7 +495,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                     classificationSuccess.incrementAndGet();
                     // Add classification status
                     evidence.setExtraAttribute(AI_CLASSIFICATION_STATUS_ATTR, AI_CLASSIFICATION_SUCCESS);
-                    
+
                     // Classification classes as a String holding className=classProb pairs (used
                     // when retrieving cached classifications)
                     StringBuilder classes = new StringBuilder();
@@ -546,14 +530,14 @@ public class RemoteImageClassifierTask extends AbstractTask {
             // Store fail information for each evidence in queue
             for (IItem evidence : queue.values()) {
                 // Classification fail
-                classificationFail.incrementAndGet();                
+                classificationFail.incrementAndGet();
                 // Add classification status
                 evidence.setExtraAttribute(AI_CLASSIFICATION_STATUS_ATTR, AI_CLASSIFICATION_FAIL_NO_RESULTS);
             }
             logger.error("ClassificationFail::NoResults: 'results' array is missing in JSON response. Classification fail for a batch of {} files", queue.size());
         }
     }
-    
+
     private CloseableHttpClient getClient() {
         if (!validateSSL) {
             SSLContext sslContext;
@@ -603,7 +587,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
             return str;
         }
     }
-    
+
     private void sendZipFile(File zipFile) throws IOException {
         currentBatch = lastBatch.incrementAndGet();
         logger.info("Send ZIP file #{} (files: {})", currentBatch, zip.getFileCount());
@@ -676,8 +660,8 @@ public class RemoteImageClassifierTask extends AbstractTask {
                 if (retryCount == MAX_RETRY)
                     baseMsg = String.format(" Failed to upload ZIP file.");
                 if (retryCount > 0)
-                    baseMsg = String.format("retry#%d:", retryCount) + baseMsg; 
-                String msg = "";                    
+                    baseMsg = String.format("retry#%d:", retryCount) + baseMsg;
+                String msg = "";
                 if (e instanceof HttpResponseStatusException) {
                     HttpResponseStatusException eHTTP = (HttpResponseStatusException) e;
                     if (eHTTP.getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE)
@@ -691,7 +675,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                     msg += String.format("ClassificationFail::ConnectionProblem:%s Socket timeout occurred while connecting or reading from '%s': %s: %s", baseMsg, urlZip, e.getClass().getName(), e.getMessage());
                 else if (e instanceof ClientProtocolException)
                     msg += String.format("ClassificationFail::ConnectionProblem:%s HTTP protocol error while communicating with '%s': %s: %s", baseMsg, urlZip, e.getClass().getName(), e.getMessage());
-                else 
+                else
                     msg += String.format("ClassificationFail::IOProblem:%s I/O error occurred during HTTP request to '%s': %s: %s", baseMsg, urlZip, e.getClass().getName(), e.getMessage());
                 if (retryCount < MAX_RETRY) {
                     // Log warning and retry
@@ -796,11 +780,11 @@ public class RemoteImageClassifierTask extends AbstractTask {
             // Classification exists in classifications cache
             // Add classification status
             evidence.setExtraAttribute(AI_CLASSIFICATION_STATUS_ATTR, AI_CLASSIFICATION_SUCCESS);
-            // Add classification classes to the evidence 
+            // Add classification classes to the evidence
             String[] classesArray = classes.split(";");
             for (int i = 0; i < classesArray.length; i++) {
                 // classParts[0] will hold className and classParts[1] will hold classProb
-                String[] classParts = classesArray[i].split("="); 
+                String[] classParts = classesArray[i].split("=");
                 // Add classification class to the evidence
                 String key = classParts[0];
                 if (key.equals(AI_CLASSIFICATION_LABEL_ATTR)) {

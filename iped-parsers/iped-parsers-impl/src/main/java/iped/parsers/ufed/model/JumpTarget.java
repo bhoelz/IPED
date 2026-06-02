@@ -1,10 +1,10 @@
 package iped.parsers.ufed.model;
 
-import java.io.Serializable;
-import java.util.StringJoiner;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.io.Serializable;
+import java.util.StringJoiner;
 
 /**
  * Represents a <targetid> element within a <jumptargets> block.

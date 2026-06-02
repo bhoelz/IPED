@@ -16,15 +16,15 @@
  */
 package iped.parsers.util;
 
+import org.apache.tika.sax.ToTextContentHandler;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.tika.sax.ToTextContentHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 
 /**
  * SAX event handler that serializes the XML document to a character stream. The

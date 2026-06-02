@@ -1,32 +1,23 @@
 package iped.engine.task.transcript;
 
-import java.io.File;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.google.common.util.concurrent.AtomicDouble;
+import com.microsoft.cognitiveservices.speech.*;
+import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
+import iped.engine.CmdLineArgs;
+import iped.engine.config.ConfigurationManager;
+import iped.exception.IPEDException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import com.microsoft.cognitiveservices.speech.AutoDetectSourceLanguageConfig;
-import com.microsoft.cognitiveservices.speech.CancellationReason;
-import com.microsoft.cognitiveservices.speech.OutputFormat;
-import com.microsoft.cognitiveservices.speech.ProfanityOption;
-import com.microsoft.cognitiveservices.speech.PropertyId;
-import com.microsoft.cognitiveservices.speech.ResultReason;
-import com.microsoft.cognitiveservices.speech.SpeechConfig;
-import com.microsoft.cognitiveservices.speech.SpeechRecognizer;
-import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
-
-import iped.engine.CmdLineArgs;
-import iped.engine.config.ConfigurationManager;
-import iped.exception.IPEDException;
+import java.io.File;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MicrosoftTranscriptTask extends AbstractTranscriptTask {
 

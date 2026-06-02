@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,13 +18,11 @@
  */
 package iped.parsers.shareaza;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import iped.data.IItemReader;
+import iped.parsers.util.Messages;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -38,11 +36,12 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.util.Messages;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Parser para arquivo Library{1,2}.dat do Shareaza

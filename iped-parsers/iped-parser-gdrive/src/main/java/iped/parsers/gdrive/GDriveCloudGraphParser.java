@@ -1,21 +1,13 @@
 package iped.parsers.gdrive;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.parsers.sqlite.SQLite3DBParser;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.Messages;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -28,20 +20,22 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.sqlite.SQLite3DBParser;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ChildPornHashLookup;
-import iped.parsers.util.Messages;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Parser for cloud_graph.db Google Drive forensic artifact
  * This artifact contains information about the files that have been synced with the user’s Google Drive account.
  * Query adapted from https://github.com/kacos2000/Queries/blob/master/GDrive_cloudgraph.sql
- * 
+ *
  * @author Matheus Bichara de Assumpção <bda.matheus@gmail.com>
  */
 
@@ -101,7 +95,7 @@ public class GDriveCloudGraphParser extends SQLite3DBParser {
 
             int i = 0;
             for (CloudGraphEntry entry : entries) {
-                
+
                 List<String> hashSets = ChildPornHashLookup.lookupHash(entry.getMd5());
 
                 emitCloudGraphEntry(xHtmlOuput, entry, hashSets);
@@ -145,7 +139,7 @@ public class GDriveCloudGraphParser extends SQLite3DBParser {
         // These properties need to get a "Date" type as parameters, so it can correctly
         // show times in UTC
         metadataCloudGraphItem.set(TikaCoreProperties.MODIFIED, convertStringToDate(entry.getModified()));
-        
+
         metadataCloudGraphItem.add((BasicProps.LENGTH), "");
 
         // CloudGraph data
@@ -205,7 +199,7 @@ public class GDriveCloudGraphParser extends SQLite3DBParser {
                     	CloudGraphEntry entry = new CloudGraphEntry();
 
                         try {
-                        	
+
                             entry.setParent(rs.getString("parent"));
                             entry.setFilename(rs.getString("filename"));
                             entry.setSize(rs.getString("size"));
@@ -219,7 +213,7 @@ public class GDriveCloudGraphParser extends SQLite3DBParser {
                             entry.setDown_sample_status(rs.getString("down_sample_status"));
                             entry.setDoc_id(rs.getString("doc_id"));
                             entry.setParent_doc_id(rs.getString("parent_doc_id"));
-                            
+
                             entry.setPhotos_storage_policy(getStringIfExists(rs, "photos_storage_policy"));
 
                         } catch (SQLException e) {
@@ -265,7 +259,7 @@ public class GDriveCloudGraphParser extends SQLite3DBParser {
         xHandler.characters("Google Drive CloudGraph registries");
         xHandler.endElement("h2");
         xHandler.newline();
-        
+
         xHandler.startElement("p");
         xHandler.characters(Messages.getString("P2P.FoundInPedoHashDB"));
         xHandler.endElement("p");
@@ -380,7 +374,7 @@ public class GDriveCloudGraphParser extends SQLite3DBParser {
             xHandler.characters(hashSets.toString());
         }
         xHandler.endElement("td");
-        
+
 
         xHandler.endElement("tr");
 

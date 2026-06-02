@@ -1,20 +1,19 @@
 package iped.app.processing.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.Collections;
-
+import iped.engine.core.Statistics;
+import iped.engine.core.Worker;
+import iped.utils.LocalizedFormat;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.jline.utils.Status;
 
-import iped.engine.core.Statistics;
-import iped.engine.core.Worker;
-import iped.utils.LocalizedFormat;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Live TUI progress display for {@code --nogui} processing runs.

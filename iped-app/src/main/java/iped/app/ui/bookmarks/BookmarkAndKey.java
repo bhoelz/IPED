@@ -1,8 +1,7 @@
 package iped.app.ui.bookmarks;
 
+import javax.swing.*;
 import java.text.Collator;
-
-import javax.swing.KeyStroke;
 
 public class BookmarkAndKey implements Comparable<BookmarkAndKey> {
     private static final Collator collator;

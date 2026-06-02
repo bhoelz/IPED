@@ -1,19 +1,18 @@
 package iped.app.ui;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.BitSet;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.SortedDocValues;
-
 import iped.data.IItemId;
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.lucene.DocValuesUtil;
 import iped.engine.search.MultiSearchResult;
 import iped.engine.task.index.IndexItem;
 import iped.search.IMultiSearchResult;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.index.SortedDocValues;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.BitSet;
 
 public class DynamicDuplicateFilter {
 

@@ -1,7 +1,9 @@
 package iped.engine.webapi;
 
-import java.util.UUID;
-
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import iped.engine.webapi.json.CaseStatsJSON;
+import iped.engine.webapi.json.GlobalStatsJSON;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -9,10 +11,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import iped.engine.webapi.json.CaseStatsJSON;
-import iped.engine.webapi.json.GlobalStatsJSON;
+import java.util.UUID;
 
 @Api(value = "Statistics")
 @Path("stats")

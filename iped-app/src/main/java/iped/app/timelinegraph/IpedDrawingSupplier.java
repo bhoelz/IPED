@@ -1,11 +1,9 @@
 package iped.app.timelinegraph;
 
-import java.awt.Paint;
-import java.awt.Shape;
-import java.awt.Stroke;
-
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 import org.jfree.chart.plot.DrawingSupplier;
+
+import java.awt.*;
 
 public class IpedDrawingSupplier extends DefaultDrawingSupplier {
 

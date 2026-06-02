@@ -2,8 +2,6 @@ package iped.parsers.evtx.model;
 
 import java.nio.ByteBuffer;
 
-import iped.parsers.evtx.template.TemplateInstance;
-
 public class EvtxAttribute {
 
     private EvtxName name;

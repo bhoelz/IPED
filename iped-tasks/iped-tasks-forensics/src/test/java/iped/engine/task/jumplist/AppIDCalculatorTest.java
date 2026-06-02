@@ -1,11 +1,10 @@
 package iped.engine.task.jumplist;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
-import static iped.engine.task.jumplist.AppIDCalculator.*;
-
 import org.junit.Test;
+
+import static iped.engine.task.jumplist.AppIDCalculator.calculateAppIDs;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 
 public class AppIDCalculatorTest {
 

@@ -1,14 +1,18 @@
 package iped.engine.task.transcript;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import iped.configuration.IConfigurationDirectory;
+import iped.data.IItem;
+import iped.engine.config.AudioTranscriptConfig;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.core.Manager;
+import iped.engine.io.TimeoutException;
+import iped.engine.task.transcript.RemoteTranscriptionService.MESSAGES;
+import iped.exception.IPEDException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.tika.io.TemporaryResources;
+
+import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -22,19 +26,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.tika.io.TemporaryResources;
-
-import iped.configuration.IConfigurationDirectory;
-import iped.data.IItem;
-import iped.engine.config.AudioTranscriptConfig;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.core.Manager;
-import iped.engine.io.TimeoutException;
-import iped.engine.task.transcript.RemoteTranscriptionService.MESSAGES;
-import iped.exception.IPEDException;
 
 public class RemoteTranscriptionTask extends AbstractTranscriptTask {
 
@@ -86,7 +77,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
         if (!isEnabled()) {
             return;
         }
-        
+
         if (!servers.isEmpty()) {
             return;
         }
@@ -110,7 +101,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                 disable = true;
             }
         }
-        
+
         if (disable) {
             transcriptConfig.setEnabled(false);
             logger.warn("Remote transcription module disabled, service address not configured.");
@@ -189,7 +180,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
     /**
      * Returns a transcription server between the discovered ones using a simple
      * circular approach.
-     * 
+     *
      * @return Server instance to use
      */
     private static synchronized Server getServer() {
@@ -224,7 +215,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                     BufferedOutputStream bos = new BufferedOutputStream(serverSocket.getOutputStream())) {
 
                 numConnectErrors.set(0);
-                
+
                 int timeoutSecs = (int) (MIN_TIMEOUT + TIMEOUT_PER_MB * tmpFile.length() / (1 << 20));
                 serverSocket.setSoTimeout(1000 * timeoutSecs);
 

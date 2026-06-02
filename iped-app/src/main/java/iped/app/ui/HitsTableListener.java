@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,15 +18,12 @@
  */
 package iped.app.ui;
 
-import java.awt.Font;
-import java.awt.Rectangle;
+import iped.viewers.ATextViewer;
 
-import javax.swing.BorderFactory;
-import javax.swing.JTextPane;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import iped.viewers.ATextViewer;
+import java.awt.*;
 
 public class HitsTableListener implements ListSelectionListener {
 

@@ -1,25 +1,5 @@
 package iped.engine.task;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.io.input.TaggedInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.data.IItemReader;
@@ -39,6 +19,19 @@ import iped.properties.BasicProps;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
 import iped.utils.IOUtil;
+import org.apache.commons.io.input.TaggedInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EmbeddedDiskProcessTask extends AbstractTask {
 
@@ -59,7 +52,7 @@ public class EmbeddedDiskProcessTask extends AbstractTask {
     private static Set<File> exportedDisks = Collections.synchronizedSet(new HashSet<>());
 
     private static AtomicBoolean embeddedDiskBeingExpanded = new AtomicBoolean();
-    
+
     private static Object lock = new Object();
 
     private static boolean enabled = true;

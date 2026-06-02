@@ -18,6 +18,12 @@
  */
 package iped.app.ui;
 
+import iped.app.ui.utils.UiIconSize;
+import iped.engine.data.SimpleFilterNode;
+import iped.utils.QualityIcon;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.security.CodeSource;
@@ -25,13 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
-
-import iped.app.ui.utils.UiIconSize;
-import iped.engine.data.SimpleFilterNode;
-import iped.utils.QualityIcon;
 
 /**
  * Load icons to memory
@@ -774,7 +773,7 @@ public class IconManager {
     public static int getIconSize() {
         return currentIconSize;
     }
-    
+
     private static int smallSize(int size) {
         return (size - 16) / 4 + 16;
     }

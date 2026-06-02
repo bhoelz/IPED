@@ -1,20 +1,19 @@
 package iped.engine.task;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.sleuthkit.datamodel.Content;
-import org.sleuthkit.datamodel.FsContent;
-import org.sleuthkit.datamodel.SlackFile;
-import org.sleuthkit.datamodel.TskData.TSK_FS_TYPE_ENUM;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.FileSystemConfig;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
+import org.sleuthkit.datamodel.Content;
+import org.sleuthkit.datamodel.FsContent;
+import org.sleuthkit.datamodel.SlackFile;
+import org.sleuthkit.datamodel.TskData.TSK_FS_TYPE_ENUM;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class IgnoreHardLinkTask extends AbstractTask {
 

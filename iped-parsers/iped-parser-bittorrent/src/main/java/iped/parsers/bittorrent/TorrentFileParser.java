@@ -1,21 +1,15 @@
 package iped.parsers.bittorrent;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.IItemReader;
+import iped.parsers.util.IgnoreCorruptedCarved;
+import iped.parsers.util.Messages;
+import iped.parsers.util.MetadataUtil;
+import iped.parsers.util.P2PUtil;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.DateUtil;
+import iped.utils.LocalizedFormat;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.tika.exception.TikaException;
@@ -28,16 +22,14 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.util.IgnoreCorruptedCarved;
-import iped.parsers.util.Messages;
-import iped.parsers.util.MetadataUtil;
-import iped.parsers.util.P2PUtil;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.DateUtil;
-import iped.utils.LocalizedFormat;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Parser for Torrent Files
@@ -61,21 +53,21 @@ public class TorrentFileParser extends AbstractParser {
             Messages.getString("TorrentFileDatParser.SHA1"), //$NON-NLS-1$
             Messages.getString("TorrentFileDatParser.ED2K"), //$NON-NLS-1$
             Messages.getString("TorrentFileDatParser.FileFoundInCase"),
-            Messages.getString("TorrentFileDatParser.PathInCase") 
+            Messages.getString("TorrentFileDatParser.PathInCase")
     };
     private static final String strConfirmedPieces = Messages.getString("TorrentFileDatParser.ConfirmedPieces");
     private static final String strAtOffset = Messages.getString("TorrentFileDatParser.AtOffset");
 
     private static final String strYes = Messages.getString("TorrentFileDatParser.Yes");
-    
+
     private static final String padding = "_____padding_file";
-    
+
     private static final int maxPieceLength = 1 << 26;
     private static final long minFileLength = 1 << 16;
     private static final long maxFileLength = 1L << 34;
     private static final int maxHitsCheck = 64;
     private static final int minPiecesMultiFile = 8;
-    
+
     // Length of valid hex-encoded hashes
     private static final int md5Len = 32;
     private static final int sha1Len = 40;
@@ -197,7 +189,7 @@ public class TorrentFileParser extends AbstractParser {
                 e.printStackTrace();
             }
         }
-        
+
         // Set infoHash metadata
         if (info.infoHash != null && !info.infoHash.isBlank()) {
             metadata.set(TORRENT_INFO_HASH, info.infoHash);
@@ -227,7 +219,7 @@ public class TorrentFileParser extends AbstractParser {
                 // Ignore padding entries
                 continue;
             }
-            xhtml.startElement("tr", "class", row % 2 == 0 ? "ra" : "rb"); 
+            xhtml.startElement("tr", "class", row % 2 == 0 ? "ra" : "rb");
             String[] rowElements = new String[] { String.valueOf(++row), file.fullPath, Long.toString(file.length),
                     file.md5, file.sha1, file.ed2k, "", file.item == null ? "" : file.item.getPath() };
             for (int col = 0; col < rowElements.length; col++) {

@@ -1,13 +1,12 @@
 package iped.parsers.ufed.model;
 
+import iped.data.IItemReader;
+import iped.parsers.ufed.reference.ReferencedAccountable;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
 import java.util.Date;
 import java.util.Optional;
 import java.util.StringJoiner;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
-import iped.data.IItemReader;
-import iped.parsers.ufed.reference.ReferencedAccountable;
 
 /**
  * Represents a <model type="Party"> element.

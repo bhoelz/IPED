@@ -1,35 +1,26 @@
 package iped.app.ui.controls;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.EventObject;
-import java.util.function.Predicate;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTree;
-import javax.swing.event.CellEditorListener;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeCellEditor;
-
-import org.apache.tika.mime.MediaType;
-
 import iped.app.ui.App;
 import iped.app.ui.IconManager;
 import iped.engine.data.Category;
 import iped.viewers.api.IFilterer;
 import iped.viewers.api.IMiniaturizable;
+import org.apache.tika.mime.MediaType;
+
+import javax.swing.*;
+import javax.swing.event.CellEditorListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellEditor;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.EventObject;
+import java.util.function.Predicate;
 
 public class CheckBoxTreeCellRenderer extends DefaultTreeCellRenderer implements TreeCellEditor {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

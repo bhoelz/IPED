@@ -1,11 +1,6 @@
 package iped.viewers.web.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.EnumSet;
-import java.util.Set;
-
+import iped.viewers.web.*;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
@@ -13,14 +8,13 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.viewers.web.RenderRequest;
-import iped.viewers.web.RenditionKind;
-import iped.viewers.web.UnsupportedRenditionException;
-import iped.viewers.web.ViewerCapabilities;
-import iped.viewers.web.WebRenderer;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Serves PDFs as raw bytes (browser renders natively) and optionally renders

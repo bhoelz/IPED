@@ -1,21 +1,20 @@
 package iped.app.ui;
 
-import java.awt.Dialog.ModalityType;
-import java.io.IOException;
-import java.util.Set;
-
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.app.ui.columns.ColumnsManagerUI;
 import iped.engine.search.QueryBuilder;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.utils.LocalizedFormat;
 import iped.viewers.util.ProgressDialog;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Dialog.ModalityType;
+import java.io.IOException;
+import java.util.Set;
 
 public class UICaseSearchFilterListener implements CaseSearchFilterListener {
 

@@ -1,23 +1,13 @@
 package iped.parsers.registry;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.ICaseData;
+import iped.parsers.registry.model.RegistryFileException;
+import iped.parsers.standard.RawStringParser;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ItemInfo;
+import iped.properties.ExtraProperties;
+import iped.utils.IOUtil;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -34,19 +24,16 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.ICaseData;
-import iped.parsers.registry.model.RegistryFileException;
-import iped.parsers.standard.RawStringParser;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ItemInfo;
-import iped.properties.ExtraProperties;
-import iped.utils.IOUtil;
-import iped.utils.SimpleHTMLEncoder;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.*;
 
 public class RegRipperParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -121,7 +108,7 @@ public class RegRipperParser extends AbstractParser {
 
         XHTMLContentHandler xhtml = new XHTMLContentHandler(handler, metadata);
         xhtml.startDocument();
-        
+
         TemporaryResources tmp = new TemporaryResources();
         try {
             TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
@@ -130,7 +117,7 @@ public class RegRipperParser extends AbstractParser {
 
             // index raw strings (important because not all keys/values are extracted by regripper)
             rawParser.parse(tis, handler, metadata, context);
-            
+
             String filename = metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY);
             if (filename.matches(".*\\.LOG\\d?")) {
                 // skip parsing log files
@@ -152,12 +139,12 @@ public class RegRipperParser extends AbstractParser {
                 for (File child : directoryListing) {
                     command = new ArrayList<>(Arrays.asList(cmd));
                     command.addAll(Arrays.asList("-f", profiles + "/" + child.getName(), "-r", tempFile.getAbsolutePath()));
-                    
+
                     reportName = filename + "_" + child.getName().replace("_", "") + "_Report";
                     runCmdAndCreateReport(command, reportName, xhtml, extractor, tmp, metadata, context);
                 }
             }
-           
+
         } finally {
             xhtml.endDocument();
             tmp.close();
@@ -237,7 +224,7 @@ public class RegRipperParser extends AbstractParser {
             // ignores empty reports
             return;
         }
-        
+
         Metadata reportMetadata = new Metadata();
         reportMetadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, reportName);
         reportMetadata.set(StandardParser.INDEXER_CONTENT_TYPE, "application/x-windows-registry-report"); //$NON-NLS-1$

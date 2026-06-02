@@ -1,27 +1,20 @@
 package iped.app.graph;
 
-import java.awt.Cursor;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.Iterator;
-
-import javax.swing.SwingWorker;
-
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.app.ui.Messages;
 import iped.engine.graph.ExportLinksQuery;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.graph.LinkQueryListener;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.Iterator;
 
 public class ExportLinksWorker extends SwingWorker<Void, Void> implements LinkQueryListener {
 

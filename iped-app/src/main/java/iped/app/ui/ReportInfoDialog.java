@@ -1,30 +1,19 @@
 package iped.app.ui;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import iped.engine.data.ReportInfo;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.filechooser.FileFilter;
-
-import iped.engine.data.ReportInfo;
-
 public class ReportInfoDialog extends JDialog implements ActionListener {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

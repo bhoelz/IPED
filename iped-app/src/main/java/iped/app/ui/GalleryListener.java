@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,16 +18,15 @@
  */
 package iped.app.ui;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GalleryListener implements ListSelectionListener, MouseListener, KeyListener {
 

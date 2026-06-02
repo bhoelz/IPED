@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,13 +18,13 @@
  */
 package iped.parsers.shareaza;
 
+import org.apache.commons.codec.binary.Base32;
+import org.apache.commons.codec.binary.Base64;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
-
-import org.apache.commons.codec.binary.Base32;
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author Fabio Melo Pfeifer <pfeifer.fmp@pf.gov.br>

@@ -16,17 +16,14 @@
  */
 package iped.parsers.mail;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
+import iped.data.IItemReader;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.Messages;
+import iped.parsers.util.MetadataUtil;
+import iped.parsers.util.Util;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
@@ -34,13 +31,7 @@ import org.apache.james.mime4j.dom.address.Address;
 import org.apache.james.mime4j.dom.address.AddressList;
 import org.apache.james.mime4j.dom.address.Mailbox;
 import org.apache.james.mime4j.dom.address.MailboxList;
-import org.apache.james.mime4j.dom.field.AddressListField;
-import org.apache.james.mime4j.dom.field.ContentDispositionField;
-import org.apache.james.mime4j.dom.field.ContentTypeField;
-import org.apache.james.mime4j.dom.field.DateTimeField;
-import org.apache.james.mime4j.dom.field.MailboxListField;
-import org.apache.james.mime4j.dom.field.ParsedField;
-import org.apache.james.mime4j.dom.field.UnstructuredField;
+import org.apache.james.mime4j.dom.field.*;
 import org.apache.james.mime4j.field.LenientFieldParser;
 import org.apache.james.mime4j.parser.MimeStreamParser;
 import org.apache.james.mime4j.stream.BodyDescriptor;
@@ -63,14 +54,11 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.Messages;
-import iped.parsers.util.MetadataUtil;
-import iped.parsers.util.Util;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 /**
  * Uses apache-mime4j to parse emails. Each part is treated with the
@@ -78,7 +66,7 @@ import iped.search.IItemSearcher;
  * <p>
  * A MimeEntityConfig object can be passed in the parsing context to better
  * control the parsing process.
- * 
+ *
  * @author jnioche@digitalpebble.com
  * @author Nassif (better attachment handling and name decoding)
  */
@@ -119,7 +107,7 @@ public class RFC822Parser extends AbstractParser {
 
         parser.setContentHandler(mch);
         parser.setContentDecoding(true);
-        
+
         if (RFC822_MAC_MIME.toString().equals(metadata.get(StandardParser.INDEXER_CONTENT_TYPE))) {
             stream = new ReplacingInputStream(new ReplacingInputStream(stream, "\r\n", "\n"), "\r", "\n");
         }
@@ -267,7 +255,7 @@ public class RFC822Parser extends AbstractParser {
 
         /**
          * Header for the whole message or its parts
-         * 
+         *
          * @see http ://james.apache.org/mime4j/apidocs/org/apache/james/mime4j/parser /
          *      Field.html
          **/

@@ -16,26 +16,11 @@
  */
 package iped.parsers.compress;
 
-import static org.apache.tika.metadata.HttpHeaders.CONTENT_TYPE;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-
+import iped.io.IStreamSource;
+import iped.parsers.util.Util;
+import iped.properties.ExtraProperties;
 import org.apache.commons.compress.PasswordRequiredException;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveException;
-import org.apache.commons.compress.archivers.ArchiveInputStream;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.compress.archivers.StreamingNotSupportedException;
+import org.apache.commons.compress.archivers.*;
 import org.apache.commons.compress.archivers.ar.ArArchiveInputStream;
 import org.apache.commons.compress.archivers.arj.ArjArchiveInputStream;
 import org.apache.commons.compress.archivers.cpio.CpioArchiveInputStream;
@@ -43,14 +28,8 @@ import org.apache.commons.compress.archivers.dump.DumpArchiveInputStream;
 import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.archivers.zip.UnsupportedZipFeatureException;
+import org.apache.commons.compress.archivers.zip.*;
 import org.apache.commons.compress.archivers.zip.UnsupportedZipFeatureException.Feature;
-import org.apache.commons.compress.archivers.zip.X000A_NTFS;
-import org.apache.commons.compress.archivers.zip.X5455_ExtendedTimestamp;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-import org.apache.commons.compress.archivers.zip.ZipExtraField;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.tika.exception.EncryptedDocumentException;
@@ -68,16 +47,18 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.io.IStreamSource;
-import iped.parsers.util.Util;
-import iped.properties.ExtraProperties;
+import java.io.*;
+import java.util.*;
+import java.util.zip.ZipEntry;
+
+import static org.apache.tika.metadata.HttpHeaders.CONTENT_TYPE;
 
 /**
  * Parser for various packaging formats. Package entries will be written to the
  * XHTML event stream as &lt;div class="package-entry"&gt; elements that contain
  * the (optional) entry name as a &lt;h1&gt; element and the full structured
  * body content of the parsed entry.
- * 
+ *
  * @author Nassif (better handling of encrypted zips and processing of XPS and
  *         generic OOXML)
  */
@@ -401,7 +382,7 @@ public class PackageParser extends AbstractParser {
             if (!factory.canReadEntryData()) {
                 if (zae.getGeneralPurposeBit().usesEncryption())
                     entryEncrypted.bool = true;
-                
+
                 // do not write to the handler if UnsupportedZipFeatureException.Feature.DATA_DESCRIPTOR
                 // is met, we will catch this exception and read the zip archive once again
                 boolean usesDataDescriptor = zae.getGeneralPurposeBit().usesDataDescriptor();

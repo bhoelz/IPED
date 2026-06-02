@@ -1,15 +1,7 @@
 package iped.app.timelinegraph;
 
-import org.jfree.data.time.Day;
-import org.jfree.data.time.Hour;
-import org.jfree.data.time.Month;
-import org.jfree.data.time.Quarter;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimePeriod;
-import org.jfree.data.time.Week;
-import org.jfree.data.time.Year;
-
 import iped.jfextensions.model.Minute;
+import org.jfree.data.time.*;
 
 public class ChartTimePeriodConstraint {
     static double YEAR_UNIT_RANGE_SIZE = 365l * 24l * 60l * 60l * 1000l;// a week

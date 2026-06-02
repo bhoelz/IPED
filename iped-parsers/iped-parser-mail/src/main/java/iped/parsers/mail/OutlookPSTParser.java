@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,27 +18,14 @@
  */
 package iped.parsers.mail;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import com.pff.*;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.Messages;
+import iped.parsers.util.MetadataUtil;
+import iped.parsers.util.Util;
+import iped.properties.ExtraProperties;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.TikaException;
@@ -60,29 +47,23 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.pff.AutoCharsetDetector;
-import com.pff.PSTAttachment;
-import com.pff.PSTContact;
-import com.pff.PSTException;
-import com.pff.PSTFile;
-import com.pff.PSTFolder;
-import com.pff.PSTMessage;
-import com.pff.PSTObject;
-import com.pff.PSTRecipient;
-
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.Messages;
-import iped.parsers.util.MetadataUtil;
-import iped.parsers.util.Util;
-import iped.properties.ExtraProperties;
-import iped.utils.SimpleHTMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Parser para arquivos PST. Extrai emails, anexos, contatos, tarefas, etc. O
  * Outlook fragmenta o email em diversos objetos, então é gerado e extraído um
  * preview HTML do email.
- * 
+ *
  * @author Nassif
  *
  */
@@ -563,7 +544,7 @@ public class OutlookPSTParser extends AbstractParser {
                 extractor.parseEmbedded(stream, xhtml, metadata, true);
 
             stream.close();
-            
+
             /* Issue #65 - Store all email headers as metadata */
             String importanceMeta = Message.MESSAGE_PREFIX + "Importance"; //$NON-NLS-1$
             switch (email.getImportance()) {
@@ -580,9 +561,9 @@ public class OutlookPSTParser extends AbstractParser {
                     metadata.add(importanceMeta, Messages.getString("OutlookPSTParser.ImportanceNormal"));
                     break;
             }
-            
+
             populateMetadataWithEmailHeaders(email, metadata);
-            
+
             /* Issue #65 - End */
 
         } catch (Exception e) {
@@ -607,7 +588,7 @@ public class OutlookPSTParser extends AbstractParser {
             preview.append("</div>"); //$NON-NLS-1$
         }
     }
-    
+
     /* Issue #65 */
     private void populateMetadataWithEmailHeaders (PSTMessage email, Metadata metadata) {
         String headers = email.getTransportMessageHeaders();

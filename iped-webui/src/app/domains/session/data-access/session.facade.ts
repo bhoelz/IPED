@@ -1,9 +1,9 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import {computed, Injectable, signal} from '@angular/core';
+import {firstValueFrom} from 'rxjs';
 
-import { CasesService } from '../../../core/api/generated/api/cases.service';
-import { CaseMetadata } from '../../../core/api/generated/model/caseMetadata';
-import { CaseSession } from '../../../core/api/generated/model/caseSession';
+import {CasesService} from '../../../core/api/generated/api/cases.service';
+import {CaseMetadata} from '../../../core/api/generated/model/caseMetadata';
+import {CaseSession} from '../../../core/api/generated/model/caseSession';
 
 @Injectable({
   providedIn: 'root'

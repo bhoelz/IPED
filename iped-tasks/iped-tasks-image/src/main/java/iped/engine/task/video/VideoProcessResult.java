@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Wladimir Leite
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 package iped.engine.task.video;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;

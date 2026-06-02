@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,26 +18,6 @@
  */
 package iped.app.ui;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.text.Collator;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
-
-import javax.swing.SwingUtilities;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumn;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.highlight.TextFragment;
-import org.apache.lucene.util.BytesRef;
-
 import iped.app.ui.columns.ColumnsManager;
 import iped.app.ui.columns.ColumnsManagerUI;
 import iped.data.IItemId;
@@ -53,6 +33,19 @@ import iped.utils.DateUtil;
 import iped.utils.LocalizedFormat;
 import iped.viewers.ATextViewer;
 import iped.viewers.components.HitsTableModel;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.highlight.TextFragment;
+import org.apache.lucene.util.BytesRef;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.text.Collator;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ResultTableModel extends AbstractTableModel implements SearchResultTableModel {
 

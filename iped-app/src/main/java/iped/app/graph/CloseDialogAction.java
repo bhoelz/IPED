@@ -1,9 +1,7 @@
 package iped.app.graph;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.JDialog;
 
 public class CloseDialogAction extends AbstractAction {
 

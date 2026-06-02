@@ -1,20 +1,7 @@
 package iped.parsers.database;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Set;
-
+import iped.properties.ExtraProperties;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.tika.exception.TikaException;
@@ -33,13 +20,16 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.properties.ExtraProperties;
-import iped.utils.SimpleHTMLEncoder;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Set;
 
 public class EDBParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1938967091470933178L;
 

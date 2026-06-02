@@ -1,6 +1,6 @@
 /*
  * Copyright 2020-2020, João Vitor de Sá Hauck
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,21 +18,20 @@
  */
 package iped.parsers.telegram;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.List;
-
-import org.apache.tika.metadata.Metadata;
-
 import iped.data.IItemReader;
 import iped.parsers.util.Messages;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
 import iped.utils.EmojiUtil;
 import iped.utils.SimpleHTMLEncoder;
+import org.apache.tika.metadata.Metadata;
+
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class ReportGenerator {
 
@@ -43,7 +42,7 @@ public class ReportGenerator {
     private IItemSearcher searcher;
     private boolean firstFragment = true;
     private int currentMsg = 0;
-    
+
     private static final String emptyMD5 = "d41d8cd98f00b204e9800998ecf8427e";
 
     private String creatSpanTag(String text) {

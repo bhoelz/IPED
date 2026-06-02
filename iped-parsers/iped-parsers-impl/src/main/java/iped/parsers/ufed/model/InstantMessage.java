@@ -1,14 +1,9 @@
 package iped.parsers.ufed.model;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
-
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
 
 /**
  * Represents a <model type="InstantMessage"> element.

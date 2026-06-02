@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de EvidÃªncias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,15 +18,14 @@
  */
 package iped.engine.task;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.tika.mime.MediaType;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.CategoryConfig;
 import iped.engine.config.ConfigurationManager;
+import org.apache.tika.mime.MediaType;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Classe que carrega o mapeamento de mimeTypes para Categoria da aplicação.

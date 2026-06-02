@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2016, Wladimir Leite
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,60 +18,10 @@
  */
 package iped.engine.task;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import org.apache.tika.mime.MediaType;
-
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.Collator;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.CmdLineArgs;
-import iped.engine.config.Configuration;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.HtmlReportTaskConfig;
-import iped.engine.config.ImageThumbTaskConfig;
-import iped.engine.config.LocalConfig;
-import iped.engine.config.LocaleConfig;
+import iped.engine.config.*;
 import iped.engine.data.IPEDSource;
 import iped.engine.data.ReportInfo;
 import iped.engine.localization.CategoryLocalization;
@@ -88,6 +38,26 @@ import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.utils.LocalizedFormat;
 import iped.viewers.util.ImageMetadataUtil;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.Collator;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * Tarefa de geração de relatório no formato HTML do itens selecionados, gerado
@@ -106,7 +76,7 @@ public class HTMLReportTask extends AbstractTask {
     private static final String PROP_VALUE_PLACEHOLDER = "%PROPERTY_VALUE%";
 
     public static final File SELECTED_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".iped/reportProps.dat");
-    
+
     public static final List<String> basicReportProps = Arrays.asList(BasicProps.NAME, BasicProps.PATH, BasicProps.TYPE, BasicProps.LENGTH,
         BasicProps.CREATED, BasicProps.MODIFIED, BasicProps.ACCESSED, BasicProps.DELETED, BasicProps.CARVED,
         BasicProps.HASH, IndexItem.ID_IN_SOURCE);

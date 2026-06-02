@@ -16,17 +16,6 @@
  */
 package iped.parsers.fork;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.NotSerializableException;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.fork.ForkProxy;
 import org.apache.tika.fork.ParserFactoryFactory;
@@ -35,6 +24,11 @@ import org.apache.tika.parser.ParserFactory;
 import org.apache.tika.sax.ContentHandlerDecorator;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
 
 class ForkServer implements Runnable {
 
@@ -70,7 +64,7 @@ class ForkServer implements Runnable {
      * for communication with the parent process. Any attempts by stray code to read
      * from standard input or write to standard output is redirected to avoid
      * interfering with the communication channel.
-     * 
+     *
      * @param args
      *            command line arguments, ignored
      * @throws Exception

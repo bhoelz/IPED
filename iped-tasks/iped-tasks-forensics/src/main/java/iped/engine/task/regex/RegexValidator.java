@@ -1,18 +1,13 @@
 package iped.engine.task.regex;
 
-import java.io.File;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
+import iped.engine.task.regex.RegexTask.Regex;
+import iped.io.URLUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.engine.task.regex.RegexTask.Regex;
-import iped.io.URLUtil;
+import java.io.File;
+import java.net.URL;
+import java.util.*;
 
 public class RegexValidator {
 

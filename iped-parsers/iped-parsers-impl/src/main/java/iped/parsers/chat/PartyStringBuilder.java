@@ -1,8 +1,7 @@
 package iped.parsers.chat;
 
-import org.apache.commons.lang3.StringUtils;
-
 import iped.parsers.ufed.model.Party;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Abstract base class for building party strings for various chat applications.

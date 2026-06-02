@@ -1,22 +1,20 @@
 package iped.app.graph;
 
-import java.util.Collection;
-import java.util.HashSet;
-
-import javax.swing.SwingWorker;
-
-import org.kharon.Edge;
-import org.neo4j.graphdb.Relationship;
-
 import iped.app.ui.Messages;
 import iped.engine.graph.EdgeQueryListener;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
+import org.kharon.Edge;
+import org.neo4j.graphdb.Relationship;
+
+import javax.swing.*;
+import java.util.Collection;
+import java.util.HashSet;
 
 class AddRelationshipWorker extends SwingWorker<Void, Void> implements EdgeQueryListener {
 
     /**
-     * 
+     *
      */
     private final AppGraphAnalytics app;
     private Collection<Long> ids;

@@ -16,16 +16,6 @@
  */
 package iped.parsers.external;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.tika.config.ServiceLoader;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
@@ -33,9 +23,15 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.CompositeParser;
 import org.apache.tika.parser.Parser;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
+
 /**
  * Creates instances of ExternalParser based on XML configuration files.
- * 
+ *
  * @see ExternalParsersConfigReader
  */
 public class ExternalParsersFactory {

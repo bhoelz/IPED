@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,33 +18,14 @@
  */
 package iped.parsers.ocr;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.CharCountContentHandler;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.OCROutputFolder;
+import iped.parsers.util.PDFToImage;
+import iped.utils.ExternalImageConverter;
+import iped.utils.IOUtil;
+import iped.utils.ImageUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
@@ -61,28 +42,30 @@ import org.sqlite.SQLiteConfig.SynchronousMode;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.CharCountContentHandler;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.OCROutputFolder;
-import iped.parsers.util.PDFToImage;
-import iped.utils.ExternalImageConverter;
-import iped.utils.IOUtil;
-import iped.utils.ImageUtil;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.Files;
+import java.sql.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Parser OCR para imagens e PDFs via Tesseract. No caso de PDFs, é gerada uma
  * imagem para cada página. Outra opção seria extrair as imagens do PDF, mas
  * alguns softwares de digitalização geram várias imagens por página e algumas
  * linhas de texto são cortadas pelas bordas das imagens.
- * 
+ *
  * @author Nassif
  *
  */
 public class OCRParser extends AbstractParser implements AutoCloseable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -147,10 +130,10 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
     private static final Set<MediaType> nonImageSupportedTypes = getNonImageSupportedTypes();
 
     private static final Map<String,Set<MediaType>> librarySupportedTypes = getLibrarySupportedTypes();
-    
+
     private static final Set<MediaType> imageSupportedTypes = new HashSet<MediaType>();
     private static final Set<MediaType> allSupportedTypes = new HashSet<MediaType>();
-    
+
     // Root folder to store ocr results
     private File outputBase;
     private String[] command;
@@ -159,7 +142,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
     static {
         imageSupportedTypes.addAll(directSupportedTypes);
         imageSupportedTypes.addAll(nonStandardSupportedTypes);
-        
+
         allSupportedTypes.addAll(imageSupportedTypes);
         allSupportedTypes.addAll(nonImageSupportedTypes);
     }
@@ -170,7 +153,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
 
     private static Set<MediaType> getDirectSupportedTypes() {
         HashSet<MediaType> types = new HashSet<MediaType>();
-        
+
         types.add(MediaType.image("png")); //$NON-NLS-1$
         types.add(MediaType.image("jpeg")); //$NON-NLS-1$
         types.add(MediaType.image("tiff")); //$NON-NLS-1$
@@ -181,21 +164,21 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
 
         return types;
     }
-    
+
     private static Set<MediaType> getNonImageSupportedTypes() {
         HashSet<MediaType> types = new HashSet<MediaType>();
         types.add(MediaType.application("pdf")); //$NON-NLS-1$
         return types;
     }
-    
+
     private static Set<MediaType> getNonStandardSupportedTypes() {
         HashSet<MediaType> types = new HashSet<MediaType>();
-        
+
         types.add(MediaType.image("gif")); //$NON-NLS-1$
         types.add(MediaType.image("jp2")); //$NON-NLS-1$
         types.add(MediaType.image("jpx")); //$NON-NLS-1$
         types.add(MediaType.image("webp")); //$NON-NLS-1$
-        
+
         types.add(MediaType.image("aces")); //$NON-NLS-1$
         types.add(MediaType.image("emf")); //$NON-NLS-1$
         types.add(MediaType.image("heic")); //$NON-NLS-1$
@@ -213,13 +196,13 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
         types.add(MediaType.image("x-rgb")); //$NON-NLS-1$
         types.add(MediaType.image("x-xbitmap")); //$NON-NLS-1$
         types.add(MediaType.image("x-jbig2"));
-        
+
         return types;
     }
 
     private static Map<String, Set<MediaType>> getLibrarySupportedTypes() {
         Map<String, Set<MediaType>> libraryToTypes = new HashMap<String, Set<MediaType>>();
-        
+
         HashSet<MediaType> types = new HashSet<MediaType>();
         types.add(MediaType.image("gif")); //$NON-NLS-1$
         libraryToTypes.put("libgif", types); //$NON-NLS-1$
@@ -232,7 +215,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
         types = new HashSet<MediaType>();
         types.add(MediaType.image("webp")); //$NON-NLS-1$
         libraryToTypes.put("libwebp", types); //$NON-NLS-1$
-        
+
         return libraryToTypes;
     }
 
@@ -257,7 +240,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
             synchronized (checked) {
                 if (ENABLED && !checked.getAndSet(true)) {
                     List<String> info = checkVersionInfo(cmd[0], "-v"); //$NON-NLS-1$
-                    if (!info.isEmpty()) 
+                    if (!info.isEmpty())
                         tessVersion = info.get(0);
                     LOGGER = LoggerFactory.getLogger(OCRParser.class);
                     LOGGER.info("Detected Tesseract " + tessVersion); //$NON-NLS-1$
@@ -398,7 +381,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
                     } else if (nonStandardSupportedTypes.contains(MediaType.parse(mediaType))
                             || (mediaType.equals("image/bmp") && ImageUtil.isCompressedBMP(input))) {
                         parseNonStandard(xhtml, input, tmpOutput, mediaType, itemPath);
-                    
+
                     } else {
                         try {
                             if (mediaType.equals("image/tiff")) {
@@ -417,7 +400,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
                             }
                         }
                     }
-                    
+
                     byte[] bytes;
                     if (tmpOutput.exists()) {
                         bytes = Files.readAllBytes(tmpOutput.toPath());
@@ -503,11 +486,11 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
                     ImageReadParam params = reader.getDefaultReadParam();
                     int w0 = reader.getWidth(page);
                     int h0 = reader.getHeight(page);
-                    
+
                     int sampling = ImageUtil.getSamplingFactor(w0, h0, MAX_CONV_IMAGE_SIZE * 2);
                     int w1 = (int) Math.ceil((float) w0 / sampling);
                     int h1 = (int) Math.ceil((float) h0 / sampling);
-                    
+
                     BufferedImage image = reader.getImageTypes(page).next().createBufferedImage(w1, h1);
                     params.setDestination(image);
                     params.setSourceSubsampling(sampling, sampling, 0, 0);
@@ -518,7 +501,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
 
                     if (image.getWidth() > MAX_CONV_IMAGE_SIZE || image.getHeight() > MAX_CONV_IMAGE_SIZE)
                         image = ImageUtil.resizeImage(image, MAX_CONV_IMAGE_SIZE, MAX_CONV_IMAGE_SIZE, BufferedImage.TYPE_3BYTE_BGR);
-                    
+
                     imageFile = File.createTempFile("iped-ocr", "." + PDFToImage.EXT); //$NON-NLS-1$ //$NON-NLS-2$
                     ImageIO.write(image, PDFToImage.EXT, imageFile);
                     File imageText = new File(imageFile.getAbsolutePath() + ".txt"); //$NON-NLS-1$
@@ -556,11 +539,11 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
 
                 if (img.getWidth() > MAX_CONV_IMAGE_SIZE || img.getHeight() > MAX_CONV_IMAGE_SIZE)
                     img = ImageUtil.resizeImage(img, MAX_CONV_IMAGE_SIZE, MAX_CONV_IMAGE_SIZE, BufferedImage.TYPE_3BYTE_BGR);
-                
+
                 imageFile = File.createTempFile("iped-ocr", "." + PDFToImage.EXT); //$NON-NLS-1$ //$NON-NLS-2$
                 ImageIO.write(img, PDFToImage.EXT, imageFile);
 
-                if (imageFile.exists()) 
+                if (imageFile.exists())
                     parse(xhtml, imageFile, output, itemPath);
             }
         } finally {
@@ -568,7 +551,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
                 imageFile.delete();
         }
     }
-    
+
     private void parsePDF(XHTMLContentHandler xhtml, TemporaryResources tmp, File input, File output, String itemPath)
             throws IOException, SAXException, TikaException {
 
@@ -659,7 +642,7 @@ public class OCRParser extends AbstractParser implements AutoCloseable {
     }
 
     /**
-     * 
+     *
      * @param process
      *            process
      * @param stream

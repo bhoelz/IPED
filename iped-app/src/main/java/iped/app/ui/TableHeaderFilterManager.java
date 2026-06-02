@@ -1,16 +1,5 @@
 package iped.app.ui;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-
 import iped.app.metadata.MetadataSearch;
 import iped.app.metadata.ValueCount;
 import iped.app.metadata.ValueCountQueryFilter;
@@ -23,11 +12,13 @@ import iped.engine.task.index.IndexItem;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.search.IMultiSearchResult;
-import iped.viewers.api.IFilter;
-import iped.viewers.api.IQueryFilter;
-import iped.viewers.api.IQueryFilterer;
-import iped.viewers.api.IResultSetFilter;
-import iped.viewers.api.IResultSetFilterer;
+import iped.viewers.api.*;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+
+import java.io.IOException;
+import java.util.*;
 
 public class TableHeaderFilterManager implements IResultSetFilterer, IQueryFilterer {
 

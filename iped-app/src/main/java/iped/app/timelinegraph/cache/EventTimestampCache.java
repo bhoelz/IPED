@@ -1,11 +1,8 @@
 package iped.app.timelinegraph.cache;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
+import iped.app.timelinegraph.DateUtil;
+import iped.app.timelinegraph.IpedChartsPanel;
+import iped.viewers.api.IMultiSearchResultProvider;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
@@ -14,17 +11,13 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.UnicodeUtil;
-import org.jfree.data.time.Day;
-import org.jfree.data.time.Hour;
-import org.jfree.data.time.Month;
-import org.jfree.data.time.Quarter;
-import org.jfree.data.time.TimePeriod;
-import org.jfree.data.time.Week;
-import org.jfree.data.time.Year;
+import org.jfree.data.time.*;
 
-import iped.app.timelinegraph.DateUtil;
-import iped.app.timelinegraph.IpedChartsPanel;
-import iped.viewers.api.IMultiSearchResultProvider;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 public class EventTimestampCache implements Runnable {
     String eventType;

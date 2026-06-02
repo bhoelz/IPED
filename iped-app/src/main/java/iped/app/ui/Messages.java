@@ -1,13 +1,9 @@
 package iped.app.ui;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
 import iped.localization.LocaleResolver;
+
+import java.text.MessageFormat;
+import java.util.*;
 
 public class Messages {
 

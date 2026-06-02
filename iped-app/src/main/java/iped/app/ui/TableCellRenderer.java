@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,24 +18,19 @@
  */
 package iped.app.ui;
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.io.IOException;
-
-import javax.swing.Icon;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableModel;
-
-import org.apache.lucene.document.Document;
-
 import iped.app.ui.bookmarks.BookmarkCellRenderer;
 import iped.app.ui.bookmarks.BookmarkIcon;
 import iped.data.IItemId;
 import iped.data.IMultiBookmarks;
 import iped.engine.task.index.IndexItem;
 import iped.localization.LocalizedProperties;
+import org.apache.lucene.document.Document;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.io.IOException;
 
 public class TableCellRenderer extends DefaultTableCellRenderer {
 

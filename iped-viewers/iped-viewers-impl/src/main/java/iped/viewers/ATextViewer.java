@@ -1,10 +1,17 @@
 package iped.viewers;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Toolkit;
+import iped.io.IStreamSource;
+import iped.viewers.api.AbstractViewer;
+import iped.viewers.api.ITextParser;
+import iped.viewers.components.HitsTable;
+import iped.viewers.localization.Messages;
+import iped.viewers.util.LuceneSimpleHTMLEncoder;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.io.TemporaryResources;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
@@ -14,25 +21,10 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.table.AbstractTableModel;
-
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.io.TemporaryResources;
-
-import iped.io.IStreamSource;
-import iped.viewers.api.AbstractViewer;
-import iped.viewers.api.ITextParser;
-import iped.viewers.components.HitsTable;
-import iped.viewers.localization.Messages;
-import iped.viewers.util.LuceneSimpleHTMLEncoder;
-
 public abstract class ATextViewer extends AbstractViewer implements KeyListener {
 
     public static Font font = new Font(Font.MONOSPACED, Font.PLAIN, 11);
-    
+
     /**
      * Maximum number of text break lines to track/keep on memory.
      */

@@ -1,5 +1,13 @@
 package iped.parsers.evtx.template;
 
+import iped.parsers.evtx.model.BinXmlToken;
+import iped.parsers.evtx.model.EvtxFile;
+import iped.parsers.evtx.model.EvtxParseException;
+import iped.parsers.evtx.model.EvtxXmlFragment;
+import iped.parsers.evtx.windows.GUID;
+import iped.parsers.evtx.windows.SID;
+import org.apache.lucene.util.ArrayUtil;
+
 import java.math.BigInteger;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -7,15 +15,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-
-import org.apache.lucene.util.ArrayUtil;
-
-import iped.parsers.evtx.model.BinXmlToken;
-import iped.parsers.evtx.model.EvtxFile;
-import iped.parsers.evtx.model.EvtxParseException;
-import iped.parsers.evtx.model.EvtxXmlFragment;
-import iped.parsers.evtx.windows.GUID;
-import iped.parsers.evtx.windows.SID;
 
 public class TemplateData {
 

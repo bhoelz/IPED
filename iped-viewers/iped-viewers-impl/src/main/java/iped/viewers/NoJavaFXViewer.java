@@ -1,12 +1,11 @@
 package iped.viewers;
 
-import java.util.Set;
-
-import javax.swing.JLabel;
-
 import iped.io.IStreamSource;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
+
+import javax.swing.*;
+import java.util.Set;
 
 public class NoJavaFXViewer extends AbstractViewer {
 

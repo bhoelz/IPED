@@ -16,12 +16,12 @@
  */
 package iped.parsers.util;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.regex.Pattern;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * SAX event handler that writes content up to an write limit out to a character

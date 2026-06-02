@@ -1,10 +1,10 @@
 package iped.parsers.skype;
 
+import iped.search.IItemSearcher;
+
 import java.io.Closeable;
 import java.sql.Connection;
 import java.util.Collection;
-
-import iped.search.IItemSearcher;
 
 public interface SkypeStorage extends Closeable {
 

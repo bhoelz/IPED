@@ -1,28 +1,23 @@
 package iped.parsers.ufed.handler;
 
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_ID;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_NAME;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_PHONE;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_USERNAME;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.metadata.Metadata;
-import org.apache.commons.validator.routines.EmailValidator;
-import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IItemReader;
 import iped.parsers.chat.PartyStringBuilderFactory;
 import iped.parsers.ufed.model.Party;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
+import org.apache.tika.metadata.Metadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static iped.properties.ExtraProperties.*;
 
 public class PartyHandler extends BaseModelHandler<Party> {
 
@@ -72,7 +67,7 @@ public class PartyHandler extends BaseModelHandler<Party> {
             return;
         }
 
-        // in some cases we've seen weird identifiers like "________", "iciousContentF__t__�ȁ"��Z,", 
+        // in some cases we've seen weird identifiers like "________", "iciousContentF__t__�ȁ"��Z,",
         if (!isValidPartyIdentifier(identifier)) {
             cache.put(identifier, null);
             return;

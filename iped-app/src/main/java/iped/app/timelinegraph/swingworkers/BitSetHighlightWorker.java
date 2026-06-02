@@ -1,23 +1,21 @@
 package iped.app.timelinegraph.swingworkers;
 
-import java.awt.Dialog.ModalityType;
-import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
-
-import javax.swing.JTable;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.app.timelinegraph.IpedDateAxis;
 import iped.app.ui.App;
 import iped.app.ui.Messages;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.api.IMultiSearchResultProvider;
 import iped.viewers.util.ProgressDialog;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.roaringbitmap.RoaringBitmap;
+
+import javax.swing.*;
+import java.awt.Dialog.ModalityType;
+import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 /*
  * Worker that highlights list of docids setted in a bitset

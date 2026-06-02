@@ -1,17 +1,16 @@
 package iped.engine.webapi;
 
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import iped.engine.webapi.json.DataListJSON;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import iped.engine.webapi.json.DataListJSON;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Api(value = "Categories")
 @Path("categories")

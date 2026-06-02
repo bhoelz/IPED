@@ -1,23 +1,13 @@
 package iped.app.timelinegraph;
 
+import iped.app.ui.Messages;
+import iped.jfextensions.model.Minute;
+import org.jfree.data.time.*;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-
-import org.jfree.data.time.Day;
-import org.jfree.data.time.FixedMillisecond;
-import org.jfree.data.time.Hour;
-import org.jfree.data.time.Millisecond;
-import org.jfree.data.time.Month;
-import org.jfree.data.time.Quarter;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimePeriod;
-import org.jfree.data.time.Week;
-import org.jfree.data.time.Year;
-
-import iped.app.ui.Messages;
-import iped.jfextensions.model.Minute;
 
 public class DateUtil {
     static public String getTimezoneOffsetInformation(TimeZone tz) {

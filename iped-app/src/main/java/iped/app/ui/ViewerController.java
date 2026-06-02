@@ -1,27 +1,5 @@
 package iped.app.ui;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.KeyboardFocusManager;
-import java.awt.Window;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.apache.tika.Tika;
-import org.apache.tika.io.TikaInputStream;
-
 import bibliothek.extension.gui.dock.theme.eclipse.stack.EclipseTabPaneContent;
 import bibliothek.gui.dock.common.DefaultSingleCDockable;
 import bibliothek.gui.dock.common.action.CButton;
@@ -37,30 +15,26 @@ import iped.engine.task.index.IndexItem;
 import iped.io.IStreamSource;
 import iped.io.URLUtil;
 import iped.properties.ExtraProperties;
-import iped.viewers.ATextViewer;
-import iped.viewers.AudioViewer;
-import iped.viewers.CADViewer;
-import iped.viewers.EmailViewer;
-import iped.viewers.HexViewerPlus;
-import iped.viewers.HtmlLinkViewer;
-import iped.viewers.HtmlViewer;
-import iped.viewers.IcePDFViewer;
-import iped.viewers.ImageViewer;
-import iped.viewers.LibreOfficeViewer;
+import iped.viewers.*;
 import iped.viewers.LibreOfficeViewer.NotSupported32BitPlatformExcepion;
-import iped.viewers.MetadataViewer;
-import iped.viewers.MsgViewer;
-import iped.viewers.MultiViewer;
-import iped.viewers.ReferencedFileViewer;
-import iped.viewers.TiffViewer;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.components.HitsTable;
 import iped.viewers.util.LibreOfficeFinder;
+import org.apache.tika.Tika;
+import org.apache.tika.io.TikaInputStream;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.*;
+import java.util.List;
 
 /**
  * Central controller for all viewers. To add a new viewer it should be added in
  * createViewers() method.
- * 
+ *
  * @author Wladimir
  */
 public class ViewerController {

@@ -1,11 +1,10 @@
 package iped.parsers.ufed.model;
 
-import java.util.StringJoiner;
-
-import org.apache.commons.lang3.StringUtils;
-
 import iped.data.IItemReader;
 import iped.parsers.ufed.reference.ReferencedFile;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.StringJoiner;
 
 
 /**

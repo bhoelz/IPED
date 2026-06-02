@@ -1,14 +1,5 @@
 package iped.parsers.tor;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.detect.AutoDetectReader;
 import org.apache.tika.exception.TikaException;
@@ -19,6 +10,15 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Parses TC BUILT and EXTENDED Circuit Status Changes responses fragments on
  * pagefile.sys that are carved by TOR_CIRCUIT_STATUS carver. (Section 4.1.1 of
@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
 public class TorTcParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final MediaType TOR_TC_MIME = MediaType.application("x-tor-tc-fragment");

@@ -1,19 +1,14 @@
 package iped.app.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.JTable;
-
 import iped.data.IItemId;
 import iped.search.IMultiSearchResult;
 import iped.viewers.api.IFilterer;
 import iped.viewers.api.IItemRef;
 import iped.viewers.api.IQuantifiableFilter;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class FiltererMenu extends JPopupMenu implements ActionListener {
     private JMenuItem clearMenuitem;

@@ -1,15 +1,5 @@
 package iped.engine.task;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexNotFoundException;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.SortedDocValues;
-
 import iped.configuration.Configurable;
 import iped.data.IHashValue;
 import iped.data.IItem;
@@ -18,6 +8,11 @@ import iped.engine.config.EnableTaskProperty;
 import iped.engine.lucene.SlowCompositeReaderWrapper;
 import iped.engine.task.index.IndexItem;
 import iped.utils.HashValue;
+import org.apache.lucene.index.*;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Tarefa de verificação de arquivos duplicados. Ignora o arquivo caso

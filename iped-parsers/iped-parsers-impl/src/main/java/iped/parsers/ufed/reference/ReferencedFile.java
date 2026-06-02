@@ -1,15 +1,14 @@
 package iped.parsers.ufed.reference;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.metadata.XMPDM;
-
 import iped.data.IItemReader;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.HashUtils;
 import iped.properties.ExtraProperties;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.metadata.XMPDM;
+
+import java.util.Collections;
+import java.util.List;
 
 public class ReferencedFile extends AbstractReferencedItem {
 

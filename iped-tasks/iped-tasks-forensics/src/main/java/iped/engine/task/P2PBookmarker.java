@@ -1,24 +1,5 @@
 package iped.engine.task;
 
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_ID;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_NAME;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_PHONE;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_USERNAME;
-
-import java.awt.Color;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.document.Document;
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.ICaseData;
 import iped.engine.data.IPEDSource;
 import iped.engine.hash.HashAlgorithm;
@@ -44,6 +25,18 @@ import iped.parsers.whatsapp.WhatsAppParser;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.search.SearchResult;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.document.Document;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
+import java.io.File;
+import java.util.*;
+import java.util.List;
+
+import static iped.properties.ExtraProperties.*;
 
 public class P2PBookmarker {
 
@@ -94,7 +87,7 @@ public class P2PBookmarker {
         List<String> shareazaHashes = Arrays.asList(HashAlgorithm.MD5.toString(), HashAlgorithm.SHA1.toString(), HashAlgorithm.EDONKEY.toString());
         p2pPrograms.put(ShareazaLibraryDatParser.LIBRARY_DAT_MIME_TYPE,
                 new P2PProgram(shareazaHashes, "Shareaza", new Color(170, 20, 20)));
-       
+
         p2pPrograms.put(ShareazaDownloadParser.SHAREAZA_DOWNLOAD_META,
                 new P2PProgram(shareazaHashes, "Shareaza SD", new Color(170, 20, 20)));
 

@@ -1,8 +1,5 @@
 package iped.app.ui.controls;
 
-import java.awt.Color;
-import java.awt.Graphics;
-
 import bibliothek.extension.gui.dock.theme.eclipse.RoundRectButton;
 import bibliothek.gui.dock.control.focus.FocusAwareComponent;
 import bibliothek.gui.dock.themes.basic.action.BasicButtonModel;
@@ -13,6 +10,8 @@ import bibliothek.gui.dock.util.BackgroundComponent;
 import bibliothek.gui.dock.util.BackgroundPaint;
 import bibliothek.gui.dock.util.Transparency;
 import bibliothek.util.Colors;
+
+import java.awt.*;
 
 public class CustomButton extends RoundRectButton implements FocusAwareComponent {
     private static final long serialVersionUID = -6072450328234243332L;

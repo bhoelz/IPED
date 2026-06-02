@@ -1,21 +1,5 @@
 package iped.app.ui.filterdecisiontree;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.app.ui.App;
 import iped.app.ui.CaseSearcherFilter;
 import iped.app.ui.filterdecisiontree.OperandNode.Operand;
@@ -26,12 +10,12 @@ import iped.engine.search.MultiSearchResult;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.search.IMultiSearchResult;
-import iped.viewers.api.IFilter;
-import iped.viewers.api.IFilterChangeListener;
-import iped.viewers.api.IMutableFilter;
-import iped.viewers.api.IQueryFilter;
-import iped.viewers.api.IResultSetFilter;
-import iped.viewers.api.IResultSetFilterer;
+import iped.viewers.api.*;
+import org.roaringbitmap.RoaringBitmap;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class CombinedFilterer implements IResultSetFilterer, IFilterChangeListener {
     OperandNode rootNode = new OperandNode(Operand.OR);
@@ -70,7 +54,7 @@ public class CombinedFilterer implements IResultSetFilterer, IFilterChangeListen
      * Class that represents a future calculated bitset of a filter. When the filter
      * is added to Combined filter its bitset is calculated in background, so when
      * it is effectivelly calculated, it can be used to filter results.
-     * 
+     *
      * @author patrick.pdb
      */
     class FutureBitSetResult implements Future<RoaringBitmap[]> {

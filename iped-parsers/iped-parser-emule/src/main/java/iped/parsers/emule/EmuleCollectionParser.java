@@ -1,19 +1,9 @@
 package iped.parsers.emule;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import iped.parsers.emule.data.*;
+import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.Messages;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
@@ -28,18 +18,19 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import iped.parsers.emule.data.ECollection;
-import iped.parsers.emule.data.ECollectionFile;
-import iped.parsers.emule.data.ED2KURLCollection;
-import iped.parsers.emule.data.ED2KURLCollectionFile;
-import iped.parsers.emule.data.EmuleCollection;
-import iped.parsers.util.ChildPornHashLookup;
-import iped.parsers.util.Messages;
-import iped.properties.ExtraProperties;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
  * Emule collections are files with collections of links to emule urls to download.
- * 
+ *
  */
 
 public class EmuleCollectionParser extends AbstractParser {

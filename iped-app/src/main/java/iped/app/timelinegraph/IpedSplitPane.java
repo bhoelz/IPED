@@ -1,14 +1,8 @@
 package iped.app.timelinegraph;
 
-import java.awt.Component;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-
-import javax.swing.JSplitPane;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 public class IpedSplitPane extends JSplitPane {
 

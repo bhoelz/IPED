@@ -1,9 +1,9 @@
 package iped.engine.task.regex.validator;
 
+import iped.engine.task.regex.BasicAbstractRegexValidatorService;
+
 import java.io.File;
 import java.util.regex.Pattern;
-
-import iped.engine.task.regex.BasicAbstractRegexValidatorService;
 
 public abstract class AbstractDocRegexValidatorService extends BasicAbstractRegexValidatorService {
 

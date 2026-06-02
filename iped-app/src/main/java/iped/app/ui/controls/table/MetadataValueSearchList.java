@@ -1,24 +1,5 @@
 package iped.app.ui.controls.table;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
-
 import iped.app.metadata.MetadataSearch;
 import iped.app.metadata.ValueCount;
 import iped.app.ui.App;
@@ -27,6 +8,17 @@ import iped.app.ui.TableHeaderFilterManager;
 import iped.app.ui.controls.IPEDSearchList;
 import iped.app.ui.controls.ResizablePopupMenu;
 import iped.app.ui.popups.FieldValuePopupMenu;
+
+import javax.swing.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MetadataValueSearchList extends IPEDSearchList<ValueCount> {
     private static final long serialVersionUID = 7433141453098578420L;

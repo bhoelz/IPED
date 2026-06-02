@@ -1,9 +1,7 @@
 package iped.parsers.fork;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-
+import iped.parsers.standard.StandardParser;
+import iped.utils.IOUtil;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -19,8 +17,9 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import iped.parsers.standard.StandardParser;
-import iped.utils.IOUtil;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 public class ExternalParsingParserFactory extends ParserFactory {
 

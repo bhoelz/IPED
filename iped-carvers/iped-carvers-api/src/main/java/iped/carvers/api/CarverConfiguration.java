@@ -1,10 +1,10 @@
 package iped.carvers.api;
 
-import java.io.File;
-import java.util.HashMap;
-
 import org.apache.tika.mime.MediaType;
 import org.arabidopsis.ahocorasick.AhoCorasick;
+
+import java.io.File;
+import java.util.HashMap;
 
 public interface CarverConfiguration {
     /* returns the configured carverTypes */

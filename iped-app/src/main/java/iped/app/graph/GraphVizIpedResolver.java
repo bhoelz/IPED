@@ -1,16 +1,14 @@
 package iped.app.graph;
 
-import java.io.IOException;
-
-import javax.swing.JOptionPane;
-
-import org.kharon.layout.graphviz.GraphVizAlgorithm;
-import org.kharon.layout.graphviz.GraphVizResolver;
-
 import iped.app.ui.App;
 import iped.app.ui.Messages;
 import iped.engine.config.Configuration;
 import iped.utils.IOUtil;
+import org.kharon.layout.graphviz.GraphVizAlgorithm;
+import org.kharon.layout.graphviz.GraphVizResolver;
+
+import javax.swing.*;
+import java.io.IOException;
 
 public class GraphVizIpedResolver implements GraphVizResolver {
 

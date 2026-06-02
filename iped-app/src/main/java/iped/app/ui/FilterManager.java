@@ -1,45 +1,5 @@
 package iped.app.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import org.apache.lucene.search.Query;
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.data.IItemId;
 import iped.engine.config.AgeEstimationConfig;
 import iped.engine.config.ConfigurationManager;
@@ -53,13 +13,22 @@ import iped.localization.LocaleResolver;
 import iped.properties.ExtraProperties;
 import iped.search.IMultiSearchResult;
 import iped.utils.UTF8Properties;
-import iped.viewers.api.IFilter;
-import iped.viewers.api.IFilterer;
-import iped.viewers.api.IMutableFilter;
-import iped.viewers.api.IQueryFilter;
-import iped.viewers.api.IQueryFilterer;
-import iped.viewers.api.IResultSetFilter;
-import iped.viewers.api.IResultSetFilterer;
+import iped.viewers.api.*;
+import org.apache.lucene.search.Query;
+import org.roaringbitmap.RoaringBitmap;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class FilterManager implements ActionListener, ListSelectionListener {
     HashMap<IFilter, RoaringBitmap[]> cachedFilterBitsets = new HashMap<IFilter, RoaringBitmap[]>();

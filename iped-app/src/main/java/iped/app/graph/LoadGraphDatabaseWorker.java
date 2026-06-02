@@ -1,30 +1,22 @@
 package iped.app.graph;
 
+import iped.app.ui.App;
+import iped.app.ui.Messages;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.data.IPEDSource;
+import iped.engine.graph.*;
+import iped.engine.graph.GraphImportRunner.ImportListener;
+import iped.utils.IOUtil;
+import iped.viewers.api.CancelableWorker;
+import iped.viewers.util.ProgressDialog;
+import org.apache.commons.codec.digest.DigestUtils;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
-
-import org.apache.commons.codec.digest.DigestUtils;
-
-import iped.app.ui.App;
-import iped.app.ui.Messages;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.data.IPEDSource;
-import iped.engine.graph.GraphFileWriter;
-import iped.engine.graph.GraphGenerator;
-import iped.engine.graph.GraphImportRunner.ImportListener;
-import iped.engine.graph.GraphService;
-import iped.engine.graph.GraphServiceFactoryImpl;
-import iped.engine.graph.GraphTask;
-import iped.engine.graph.GraphTaskConfig;
-import iped.utils.IOUtil;
-import iped.viewers.api.CancelableWorker;
-import iped.viewers.util.ProgressDialog;
 
 class LoadGraphDatabaseWorker extends SwingWorker<Void, Void> {
 

@@ -1,27 +1,22 @@
 package iped.engine.task.transcript;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import java.nio.charset.StandardCharsets;
-
 import iped.configuration.IConfigurationDirectory;
 import iped.engine.config.AudioTranscriptConfig;
 import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.HardwareAbstractionLayer;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
 
@@ -44,7 +39,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
     protected static volatile Level logLevel = Level.forName("MSG", 250);
 
     private static volatile AtomicBoolean init = new AtomicBoolean();
-    
+
     static class Server {
         Process process;
         BufferedReader reader;
@@ -74,7 +69,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
         if (!isEnabled()) {
             return;
         }
-        
+
         String ipedRoot = System.getProperty(IConfigurationDirectory.IPED_ROOT);
         if (SystemUtils.IS_OS_WINDOWS && ipedRoot == null) {
             ipedRoot = Configuration.getInstance().appRoot;

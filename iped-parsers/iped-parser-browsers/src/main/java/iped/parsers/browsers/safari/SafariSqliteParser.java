@@ -1,18 +1,10 @@
 package iped.parsers.browsers.safari;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import iped.parsers.browsers.AbstractSqliteBrowserParser;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -29,11 +21,14 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.browsers.AbstractSqliteBrowserParser;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Parser para histórico do Safari - SQLite3
@@ -41,13 +36,13 @@ import iped.utils.EmptyInputStream;
  * http://2016.padjo.org/tutorials/sqlite-your-browser-history/
  * https://stackoverflow.com/questions/34167003/what-format-is-the-safari-history-db-history-visits-visit-time-in
  * http://az4n6.blogspot.com/2014/07/safari-and-iphone-internet-history.html
- * 
+ *
  * @author Paulo César Herrmann Wanner <herrmann.pchw@pf.gov.br>
  */
 public class SafariSqliteParser extends AbstractSqliteBrowserParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";

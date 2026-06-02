@@ -1,17 +1,16 @@
 package iped.engine.task;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.mime.MediaType;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.parsers.util.Util;
 import iped.properties.ExtraProperties;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.mime.MediaType;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Seta o tipo (extensão correta) dos itens com base no seu mediaType

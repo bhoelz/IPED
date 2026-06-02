@@ -1,8 +1,8 @@
 package iped.parsers.evtx.template;
 
-import java.nio.ByteBuffer;
-
 import iped.parsers.evtx.model.EvtxFile;
+
+import java.nio.ByteBuffer;
 
 public class TemplateDefinitionData {
 

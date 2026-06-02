@@ -1,15 +1,15 @@
-import { Component, computed, inject, signal, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {Component, computed, inject, OnDestroy, OnInit, signal} from '@angular/core';
+import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 
-import { ExportJobRequestFormatEnum } from '../../../core/api/generated/model/exportJobRequest';
-import { JobStatusStatusEnum } from '../../../core/api/generated/model/jobStatus';
-import { WebApiRuntimeConfigService } from '../../../core/config/web-api-runtime-config.service';
-import { ItemFacade } from '../../item/data-access/item.facade';
-import { JobFacade, TrackedJob } from '../../jobs/data-access/job.facade';
-import { SearchFacade } from '../../search/data-access/search.facade';
-import { SelectionFacade } from '../../selection/data-access/selection.facade';
-import { SessionFacade } from '../../session/data-access/session.facade';
-import { ViewerFacade } from '../../viewer/data-access/viewer.facade';
+import {ExportJobRequestFormatEnum} from '../../../core/api/generated/model/exportJobRequest';
+import {JobStatusStatusEnum} from '../../../core/api/generated/model/jobStatus';
+import {WebApiRuntimeConfigService} from '../../../core/config/web-api-runtime-config.service';
+import {ItemFacade} from '../../item/data-access/item.facade';
+import {JobFacade, TrackedJob} from '../../jobs/data-access/job.facade';
+import {SearchFacade} from '../../search/data-access/search.facade';
+import {SelectionFacade} from '../../selection/data-access/selection.facade';
+import {SessionFacade} from '../../session/data-access/session.facade';
+import {ViewerFacade} from '../../viewer/data-access/viewer.facade';
 
 export type SidebarTab = 'cat' | 'meta' | 'coll' | 'rep';
 export type MainView   = 'table' | 'gallery' | 'map' | 'timeline' | 'links';

@@ -1,16 +1,5 @@
 package iped.engine.task;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -23,6 +12,16 @@ import iped.parsers.python.PythonParser;
 import iped.utils.ImageUtil;
 import jep.Jep;
 import jep.JepException;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PythonTask extends AbstractTask {
 
@@ -137,7 +136,7 @@ public class PythonTask extends AbstractTask {
                 jep.eval(moduleName + "." + global + " = " + global);
             }
         }
-        
+
         // sets one PythonTask per worker per script
         String taskInstancePerWorker = moduleName + "_javaTaskPerWorker_" + workerId;
         jep.set(taskInstancePerWorker, this);
@@ -234,11 +233,11 @@ public class PythonTask extends AbstractTask {
         }
 
     }
-    
+
     public void sendToNextTaskSuper(IItem item) throws Exception {
         super.sendToNextTask(item);
     }
-    
+
     @Override
     protected void sendToNextTask(IItem item) throws Exception {
 
@@ -249,7 +248,7 @@ public class PythonTask extends AbstractTask {
         try {
             // Pass itself as a parameter to call the sendToNextTaskSuper in the correct instance (see issue #2598)
             callPythonModuleFunction(getJep(), "sendToNextTask", item);
-            
+
         }catch(JepException e) {
             if (e.toString().contains(" has no attribute 'sendToNextTask'")) {
                 sendToNextTaskExists = false;
@@ -291,18 +290,18 @@ public class PythonTask extends AbstractTask {
         }
     }
 
-    // This method is used to call a method in the script instance using the  
+    // This method is used to call a method in the script instance using the
     // PythonTaskInstancesHolder utility script to call the correct instance
     private Object callPythonModuleFunction(Jep jep, String strFunctionName, Object... args) throws JepException {
         int workerId = 0;
         if(this.worker!=null)
             workerId = this.worker.id;
-            
+
         if(args!=null && args.length == 1)
             return jep.invoke("PythonTaskInstancesHolder.callFunction", workerId, this.moduleName, strFunctionName, args[0]);
         else if(args!=null && args.length == 2)
             return jep.invoke("PythonTaskInstancesHolder.callFunction", workerId, this.moduleName, strFunctionName, args[0], args[1]);
-        
+
         return jep.invoke("PythonTaskInstancesHolder.callFunction", workerId, this.moduleName, strFunctionName);
     }
 

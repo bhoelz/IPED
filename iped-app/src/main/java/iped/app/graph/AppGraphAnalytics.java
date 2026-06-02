@@ -1,39 +1,11 @@
 package iped.app.graph;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.LayoutManager;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.UIManager;
-
-import org.kharon.Edge;
-import org.kharon.EdgeListener;
-import org.kharon.Graph;
-import org.kharon.GraphPane;
-import org.kharon.Node;
-import org.kharon.NodeAdapter;
-import org.kharon.StageAdapter;
-import org.kharon.StageMode;
+import iped.app.graph.renderers.*;
+import iped.app.ui.Messages;
+import iped.engine.data.ItemId;
+import iped.engine.graph.*;
+import iped.viewers.api.ClearFilterListener;
+import org.kharon.*;
 import org.kharon.layout.HistoryEnabledLayout;
 import org.kharon.layout.graphviz.GraphVizAlgorithm;
 import org.kharon.renderers.Renderers;
@@ -43,25 +15,16 @@ import org.neo4j.graphdb.Relationship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.app.graph.renderers.CarNodeRenderer;
-import iped.app.graph.renderers.CompanyNodeRenderer;
-import iped.app.graph.renderers.DocumentNodeRenderer;
-import iped.app.graph.renderers.EmailNodeRenderer;
-import iped.app.graph.renderers.MoneyBagNodeRenderer;
-import iped.app.graph.renderers.MoneyTransferNodeRenderer;
-import iped.app.graph.renderers.PeopleNodeRenderer;
-import iped.app.graph.renderers.PersonNodeRenderer;
-import iped.app.graph.renderers.PhoneNodeRenderer;
-import iped.app.ui.Messages;
-import iped.engine.data.ItemId;
-import iped.engine.graph.EdgeQueryListener;
-import iped.engine.graph.GraphConfiguration;
-import iped.engine.graph.GraphService;
-import iped.engine.graph.GraphServiceFactoryImpl;
-import iped.engine.graph.GraphTask;
-import iped.engine.graph.NodeEdgeQueryListener;
-import iped.engine.graph.PathQueryListener;
-import iped.viewers.api.ClearFilterListener;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AppGraphAnalytics extends JPanel implements ClearFilterListener {
 

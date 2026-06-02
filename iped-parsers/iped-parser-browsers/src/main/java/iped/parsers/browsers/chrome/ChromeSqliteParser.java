@@ -1,18 +1,10 @@
 package iped.parsers.browsers.chrome;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import iped.parsers.browsers.*;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -27,15 +19,14 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.browsers.AbstractSqliteBrowserParser;
-import iped.parsers.browsers.Download;
-import iped.parsers.browsers.ResumedVisit;
-import iped.parsers.browsers.Search;
-import iped.parsers.browsers.Visit;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Parser para histórico do Chrome
@@ -43,7 +34,7 @@ import iped.utils.EmptyInputStream;
  * https://www.forensicswiki.org/wiki/Google_Chrome
  * https://www.acquireforensics.com/blog/google-chrome-browser-forensics.html
  * http://paper.ijcsns.org/07_book/201609/20160919.pdf
- * 
+ *
  * @author Paulo César Herrmann Wanner <herrmann.pchw@pf.gov.br>
  */
 public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
@@ -62,7 +53,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
     // = downloads_url_chains.id;
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";

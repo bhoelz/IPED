@@ -1,10 +1,10 @@
 package iped.carvers.standard;
 
-import java.io.IOException;
-
 import iped.carvers.api.Hit;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
+
+import java.io.IOException;
 
 public class DefaultCarver extends AbstractCarver {
 

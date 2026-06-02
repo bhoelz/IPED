@@ -1,9 +1,9 @@
 package iped.viewers.localization;
 
+import iped.localization.LocaleResolver;
+
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-
-import iped.localization.LocaleResolver;
 
 public class Messages {
 

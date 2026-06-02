@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2016, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,14 +18,7 @@
  */
 package iped.parsers.browsers.ie;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Set;
-
+import iped.utils.IOUtil;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
@@ -39,19 +32,25 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.utils.IOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Parser para históricos index.dat do Internet Explorer 9 e anteriores. Utiliza
  * a libmsiecf para o parsing via execução de processo auxiliar.
- * 
+ *
  * @author Nassif
  *
  */
 public class IndexDatParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

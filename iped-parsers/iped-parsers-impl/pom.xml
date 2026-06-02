@@ -216,12 +216,7 @@
 			<artifactId>sevenzipjbinding-all-platforms</artifactId>
 			<version>16.02-2.01</version>
 		</dependency>
-        <dependency>
-            <groupId>com.dampcake</groupId>
-            <artifactId>bencode</artifactId>
-            <version>1.4.1</version>
-        </dependency>
-        <dependency>
+<dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.15.0</version>

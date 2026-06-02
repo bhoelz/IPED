@@ -1,20 +1,5 @@
 package iped.app.metadata;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.lucene.index.SortedDocValues;
-import org.apache.lucene.index.SortedSetDocValues;
-import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.NumericUtils;
-
 import iped.app.ui.App;
 import iped.app.ui.Messages;
 import iped.data.IItemId;
@@ -26,6 +11,15 @@ import iped.engine.task.regex.RegexTask;
 import iped.localization.LocalizedProperties;
 import iped.properties.BasicProps;
 import iped.search.IMultiSearchResult;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.lucene.index.SortedDocValues;
+import org.apache.lucene.index.SortedSetDocValues;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.NumericUtils;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class MetadataSearch extends MetadataSearchable {
     public static final String EVENT_SEPARATOR = Pattern.quote(IndexItem.EVENT_SEPARATOR);

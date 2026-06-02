@@ -1,21 +1,12 @@
 package iped.parsers.bittorrent;
 
-import java.io.EOFException;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidObjectException;
-import java.io.PushbackInputStream;
+import com.dampcake.bencode.Type;
+
+import java.io.*;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.dampcake.bencode.Type;
+import java.util.*;
 
 /**
  * InputStream for reading bencoded data. Adaptation from BencodeInputStream
@@ -55,7 +46,7 @@ public class BencodedIncompleteInputStream extends FilterInputStream {
      * @param useBytes controls coercion of dictionary values
      *
      * @throws NullPointerException if the {@link Charset} passed is null
-     * 
+     *
      * @since 1.3
      */
     public BencodedIncompleteInputStream(final InputStream in, final Charset charset, boolean useBytes) {
@@ -172,7 +163,7 @@ public class BencodedIncompleteInputStream extends FilterInputStream {
      *             if the end of the stream has been reached
      * @throws InvalidObjectException
      *             if the next type in the stream is not a String
-     * 
+     *
      * @since 1.3
      */
     public ByteBuffer readStringBytes() throws IOException {

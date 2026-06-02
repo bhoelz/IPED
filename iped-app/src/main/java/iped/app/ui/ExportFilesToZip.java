@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,19 +18,10 @@
  */
 package iped.app.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-
-import javax.swing.ProgressMonitor;
-import javax.swing.SwingWorker;
-
+import com.google.common.hash.Hashing;
+import com.google.common.hash.HashingOutputStream;
+import iped.data.IItem;
+import iped.engine.data.ItemId;
 import org.apache.commons.compress.archivers.zip.X000A_NTFS;
 import org.apache.commons.compress.archivers.zip.X5455_ExtendedTimestamp;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -38,11 +29,12 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.hash.Hashing;
-import com.google.common.hash.HashingOutputStream;
-
-import iped.data.IItem;
-import iped.engine.data.ItemId;
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.*;
+import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
 
 public class ExportFilesToZip extends SwingWorker<Boolean, Integer> implements PropertyChangeListener {
 

@@ -1,6 +1,6 @@
 package iped.engine.webapi;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ArchitectureImportsTest {
     @Test

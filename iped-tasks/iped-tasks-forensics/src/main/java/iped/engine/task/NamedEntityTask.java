@@ -1,26 +1,5 @@
 package iped.engine.task;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.ner.NamedEntityParser;
-import org.apache.tika.parser.ner.corenlp.CoreNLPNERecogniser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -30,6 +9,22 @@ import iped.exception.IPEDException;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.IgnoreContentHandler;
 import iped.utils.EmptyInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.ner.NamedEntityParser;
+import org.apache.tika.parser.ner.corenlp.CoreNLPNERecogniser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.Reader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NamedEntityTask extends AbstractTask {
 

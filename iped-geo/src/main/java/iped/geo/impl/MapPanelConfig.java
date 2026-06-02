@@ -1,5 +1,8 @@
 package iped.geo.impl;
 
+import iped.configuration.Configurable;
+import iped.utils.UTF8Properties;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
@@ -9,12 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import iped.configuration.Configurable;
-import iped.utils.UTF8Properties;
-
 public class MapPanelConfig implements Configurable<UTF8Properties> {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

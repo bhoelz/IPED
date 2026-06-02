@@ -1,18 +1,9 @@
 package iped.parsers.bittorrent;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.parsers.util.IgnoreCorruptedCarved;
+import iped.parsers.util.Messages;
+import iped.parsers.util.Util;
+import iped.utils.TimeConverter;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
@@ -24,10 +15,12 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.IgnoreCorruptedCarved;
-import iped.parsers.util.Messages;
-import iped.parsers.util.Util;
-import iped.utils.TimeConverter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class BitTorrentGenericDatParser extends AbstractParser {
     private static final long serialVersionUID = -5053923300569187504L;

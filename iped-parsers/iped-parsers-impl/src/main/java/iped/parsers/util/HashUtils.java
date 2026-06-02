@@ -1,11 +1,11 @@
 package iped.parsers.util;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
 
 public class HashUtils {
 

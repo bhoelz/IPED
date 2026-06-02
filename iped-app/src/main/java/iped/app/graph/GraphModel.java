@@ -1,23 +1,17 @@
 package iped.app.graph;
 
-import java.awt.Point;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import iped.engine.graph.GraphConfiguration;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
 import org.kharon.Node;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.NotFoundException;
 
-import iped.engine.graph.GraphConfiguration;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
+import java.awt.*;
+import java.awt.geom.Point2D;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GraphModel {
 

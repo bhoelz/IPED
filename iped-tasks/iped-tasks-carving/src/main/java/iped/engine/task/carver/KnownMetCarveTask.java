@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2016, Wladimir Leite
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,16 +18,6 @@
  */
 package iped.engine.task.carver;
 
-import java.io.BufferedInputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -36,6 +26,15 @@ import iped.io.SeekableInputStream;
 import iped.parsers.emule.KnownMetDecoder;
 import iped.parsers.emule.KnownMetEntry;
 import iped.utils.IOUtil;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedInputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tarefa específica para carving de arquivos known.met do e-Mule.

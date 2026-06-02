@@ -1,45 +1,20 @@
 package iped.app.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Image;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import iped.app.ui.controls.CheckBoxTreeCellRenderer;
+import iped.app.ui.filterdecisiontree.*;
+import iped.app.ui.filterdecisiontree.OperandNode.Operand;
+import iped.app.ui.filters.FilterTransferHandler;
+import iped.viewers.api.*;
+import org.apache.lucene.search.Query;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.*;
 import java.net.URL;
 import java.util.List;
 import java.util.function.Predicate;
-
-import javax.swing.DropMode;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreePath;
-
-import org.apache.lucene.search.Query;
-
-import iped.app.ui.controls.CheckBoxTreeCellRenderer;
-import iped.app.ui.filterdecisiontree.CombinedFilterer;
-import iped.app.ui.filterdecisiontree.DecisionNode;
-import iped.app.ui.filterdecisiontree.FilterNode;
-import iped.app.ui.filterdecisiontree.OperandNode;
-import iped.app.ui.filterdecisiontree.OperandNode.Operand;
-import iped.app.ui.filterdecisiontree.OperandPopupMenu;
-import iped.app.ui.filters.FilterTransferHandler;
-import iped.viewers.api.ClearFilterListener;
-import iped.viewers.api.IFilter;
-import iped.viewers.api.IFilterer;
-import iped.viewers.api.IMiniaturizable;
-import iped.viewers.api.IQueryFilterer;
 
 public class FiltersPanel extends JPanel implements ClearFilterListener, IQueryFilterer// internal combinedfilterer wrapper to reflect on panel color
 {

@@ -1,22 +1,22 @@
 package iped.engine.task.regex.validator.crypto;
 
+import iped.engine.task.regex.BasicAbstractRegexValidatorService;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import iped.engine.task.regex.BasicAbstractRegexValidatorService;
-
 public class LiteCoinAddressValidatorService extends BasicAbstractRegexValidatorService {
 
     private static final AltcoinBase58CheckValidator validator;
-    
+
     static {
         validator = new AltcoinBase58CheckValidator();
         validator.setVersionForPrefix("M", (byte) 50);
         validator.setVersionForPrefix("L", (byte) 48);
         validator.setVersionForPrefix("9", (byte) 22);
     }
-    
+
     private static int[] BECH32_CHARSET_REV = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, 15, -1, 10, 17, 21, 20, 26, 30, 7, 5, -1, -1, -1, -1, -1, -1, -1, 29, -1, 24, 13, 25, 9, 8, 23,

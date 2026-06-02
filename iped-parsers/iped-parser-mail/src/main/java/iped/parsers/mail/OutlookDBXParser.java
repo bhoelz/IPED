@@ -1,11 +1,6 @@
 package iped.parsers.mail;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import iped.parsers.standard.StandardParser;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -19,7 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.standard.StandardParser;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OutlookDBXParser extends AbstractParser {
 

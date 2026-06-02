@@ -1,29 +1,20 @@
 package iped.app.timelinegraph.cache;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import iped.app.timelinegraph.IpedChartsPanel;
+import iped.app.timelinegraph.cache.persistance.CachePersistance;
+import iped.engine.core.Manager;
+import iped.viewers.api.IMultiSearchResultProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jfree.data.time.TimePeriod;
 import org.roaringbitmap.RoaringBitmap;
 
-import iped.app.timelinegraph.IpedChartsPanel;
-import iped.app.timelinegraph.cache.persistance.CachePersistance;
-import iped.engine.core.Manager;
-import iped.viewers.api.IMultiSearchResultProvider;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IndexTimeStampCache implements TimeStampCache {
 

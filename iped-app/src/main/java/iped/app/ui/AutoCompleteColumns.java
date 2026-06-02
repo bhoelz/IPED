@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2016, Wladimir Luiz Caldas Leite
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,17 +18,16 @@
  */
 package iped.app.ui;
 
+import iped.app.ui.columns.ColumnsManager;
+import iped.localization.LocalizedProperties;
+
+import javax.swing.text.JTextComponent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.text.JTextComponent;
-
-import iped.app.ui.columns.ColumnsManager;
-import iped.localization.LocalizedProperties;
 
 public class AutoCompleteColumns {
     public AutoCompleteColumns(JTextComponent editor) {

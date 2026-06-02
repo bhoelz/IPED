@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -19,12 +19,12 @@
 package iped.parsers.compress;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeMap;
-
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
+import iped.parsers.util.Util;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -40,19 +40,17 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.github.junrar.Archive;
-import com.github.junrar.exception.RarException;
-import com.github.junrar.rarfile.FileHeader;
-
-import iped.parsers.util.Util;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * RAR file parser. No support for Rar5 format as of 2020-10-11 because of
  * junrar limitation. Currently this parser is disabled and SevenZipParser
  * handles RAR files.
- * 
+ *
  * @author Nassif
  *
  */
@@ -147,14 +145,14 @@ public class RARParser extends AbstractParser {
             Metadata entrydata = new Metadata();
             if (header.isDirectory())
                 entrydata.set(ExtraProperties.EMBEDDED_FOLDER, "true"); //$NON-NLS-1$
-            
+
             entrydata.set(TikaCoreProperties.RESOURCE_NAME_KEY, header.getFileNameString().replace("\\", "/")); //$NON-NLS-1$ //$NON-NLS-2$
             entrydata.set(TikaCoreProperties.CREATED, header.getCTime());
             entrydata.set(TikaCoreProperties.MODIFIED, header.getMTime());
             entrydata.set(ExtraProperties.ACCESSED, header.getATime());
             entrydata.set(ExtraProperties.ITEM_VIRTUAL_ID, header.getFileNameString());
             entrydata.set(ExtraProperties.PARENT_VIRTUAL_ID, parent);
-            
+
             if (extractor.shouldParseEmbedded(entrydata))
                 extractor.parseEmbedded(subFile, handler, entrydata, true);
 

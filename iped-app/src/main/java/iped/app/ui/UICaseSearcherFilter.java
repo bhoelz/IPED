@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,9 +18,8 @@
  */
 package iped.app.ui;
 
-import org.apache.lucene.search.Query;
-
 import iped.engine.search.IPEDSearcher;
+import org.apache.lucene.search.Query;
 
 public class UICaseSearcherFilter extends CaseSearcherFilter {
 

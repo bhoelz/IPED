@@ -1,44 +1,5 @@
 package iped.app.ui;
 
-import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.imageio.ImageIO;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.RowSorter;
-import javax.swing.RowSorter.SortKey;
-import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileFilter;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.ParseContext;
-import org.xml.sax.SAXException;
-
 import iped.data.IItem;
 import iped.data.IItemId;
 import iped.engine.config.AbstractTaskPropertiesConfig;
@@ -55,6 +16,24 @@ import iped.engine.task.index.IndexItem.KnnVector;
 import iped.parsers.util.IgnoreContentHandler;
 import iped.utils.FileInputStreamFactory;
 import iped.utils.ImageUtil;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+import org.xml.sax.SAXException;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 public class SimilarFacesFilterActions {
 
@@ -183,7 +162,7 @@ public class SimilarFacesFilterActions {
         if (newSimilarFacesRefItem != null) {
             app.similarFacesRefItem = newSimilarFacesRefItem;
             app.similarFacesSearchFilterer.setItem(itemId, app.similarFacesRefItem);
-    
+
             List<? extends SortKey> sortKeys = app.resultsTable.getRowSorter().getSortKeys();
             if (sortKeys == null || sortKeys.isEmpty() || sortKeys.get(0).getColumn() != 2) {
                 app.similarFacesPrevSortKeys = sortKeys;

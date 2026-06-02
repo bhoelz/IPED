@@ -1,5 +1,14 @@
 package iped.parsers.discord.cache;
 
+import com.google.common.collect.ImmutableList;
+import iped.data.IItemReader;
+import iped.parsers.browsers.chrome.ChromeCacheException;
+import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
+import org.apache.poi.hpsf.Filetime;
+import org.apache.poi.util.LittleEndianByteArrayInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,25 +18,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.poi.hpsf.Filetime;
-import org.apache.poi.util.LittleEndianByteArrayInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
-
-import iped.data.IItemReader;
-import iped.parsers.browsers.chrome.ChromeCacheException;
-import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
-
 /**
- * 
+ *
  * Class referring to the index file <br />
  * <b>Magic Number:</b> C3CA03C1 <br />
  * <b>Version:</b> 01000200
- * 
+ *
  * @author Campanini
- * 
+ *
  *
  */
 public class Index {
@@ -236,7 +234,7 @@ public class Index {
                         logger.warn("Entry in cache truncated or invalid.");
                         break;// avoid potential infinite loop
                     } catch (Exception e) {
-                        e.printStackTrace(); 
+                        e.printStackTrace();
                         break;
                     }
                 }

@@ -1,43 +1,5 @@
 package iped.parsers.misc;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.extractor.EmbeddedDocumentExtractor;
-import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.AbstractParser;
-import org.apache.tika.parser.ParseContext;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
 import com.webcohesion.ofx4j.domain.data.MessageSetType;
 import com.webcohesion.ofx4j.domain.data.ResponseEnvelope;
 import com.webcohesion.ofx4j.domain.data.ResponseMessageSet;
@@ -64,21 +26,45 @@ import com.webcohesion.ofx4j.domain.data.signon.FinancialInstitution;
 import com.webcohesion.ofx4j.domain.data.signon.SignonResponse;
 import com.webcohesion.ofx4j.io.AggregateUnmarshaller;
 import com.webcohesion.ofx4j.io.DefaultStringConversion;
-
 import iped.data.IItemReader;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.extractor.EmbeddedDocumentExtractor;
+import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AbstractParser;
+import org.apache.tika.parser.ParseContext;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
+import java.io.*;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Extract OFX info to xls file
- * 
+ *
  * @author guilherme.dutra
- * 
+ *
  *         Reference: http://moneymvps.org/faq/article/8.aspx
- * 
+ *
  **/
 
 public class OFXParser extends AbstractParser {
@@ -1209,7 +1195,7 @@ public class OFXParser extends AbstractParser {
             writer = new BufferedWriter(new OutputStreamWriter(bos, cs));
             String line = null;
             while ((line = reader.readLine()) != null) {
-                // Replace non-escaped ampersands 
+                // Replace non-escaped ampersands
                 line = line.replaceAll("&(?![A-Za-z]+;|#[0-9]+;|#x[0-9a-fA-F]+;)", "&amp;");
 
                 // Replace common non-standard transaction types (see #2430)

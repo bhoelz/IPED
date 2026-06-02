@@ -1,6 +1,6 @@
 /*
 	DBFWriter
-	Class for defining a DBF structure and addin data to that structure and 
+	Class for defining a DBF structure and addin data to that structure and
 	finally writing it to an OutputStream.
 
 	This file is part of JavaDBF packege.
@@ -12,13 +12,7 @@
  */
 package com.linuxense.javadbf;
 
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -26,7 +20,7 @@ import java.util.Vector;
 
 /**
  * An object of this class can create a DBF file.
- * 
+ *
  * Create an object, <br>
  * then define fields by creating DBFField objects and<br>
  * add them to the DBFWriter object<br>
@@ -52,7 +46,7 @@ public class DBFWriter extends DBFBase {
 
     /**
      * Creates a DBFWriter which can append to records to an existing DBF file.
-     * 
+     *
      * @param dbfFile
      *            . The file passed in shouls be a valid DBF file.
      * @exception Throws

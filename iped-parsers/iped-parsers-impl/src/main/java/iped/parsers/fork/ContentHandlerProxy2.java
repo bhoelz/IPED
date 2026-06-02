@@ -16,15 +16,15 @@
  */
 package iped.parsers.fork;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.apache.tika.fork.ForkProxy;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 class ContentHandlerProxy2 implements ContentHandler, ForkProxy {
 

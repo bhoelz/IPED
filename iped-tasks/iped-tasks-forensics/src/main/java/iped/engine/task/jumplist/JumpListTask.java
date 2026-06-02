@@ -1,14 +1,5 @@
 package iped.engine.task.jumplist;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.mime.MediaType;
-
-import org.apache.tika.metadata.Metadata;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -16,6 +7,13 @@ import iped.engine.search.QueryBuilder;
 import iped.engine.task.AbstractTask;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
 public class JumpListTask extends AbstractTask {
 

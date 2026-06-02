@@ -1,24 +1,13 @@
 package iped.app.ui.bookmarks;
 
-import java.awt.Color;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import iped.utils.IOUtil;
+
+import java.awt.*;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import iped.utils.IOUtil;
+import java.util.*;
 
 public class BookmarkColorsUtil {
     private static final String colorsMemoFile = System.getProperty("user.home") + "/.iped/bkmclr.dat";

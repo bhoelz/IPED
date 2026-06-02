@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,12 +18,11 @@
  */
 package iped.parsers.standard;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Map;
-
+import iped.io.IStreamSource;
+import iped.parsers.fork.ForkParser;
+import iped.parsers.util.*;
+import iped.properties.MediaTypes;
+import iped.utils.IOUtil;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.EncryptedDocumentException;
@@ -33,11 +32,7 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.CompositeParser;
-import org.apache.tika.parser.EmptyParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.ParserDecorator;
+import org.apache.tika.parser.*;
 import org.apache.tika.parser.csv.TextAndCSVParser;
 import org.apache.tika.parser.txt.TXTParser;
 import org.apache.tika.sax.ContentHandlerDecorator;
@@ -47,15 +42,11 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.io.IStreamSource;
-import iped.parsers.fork.ForkParser;
-import iped.parsers.util.CorruptedCarvedException;
-import iped.parsers.util.IgnoreCorruptedCarved;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.Messages;
-import iped.parsers.util.MetadataUtil;
-import iped.properties.MediaTypes;
-import iped.utils.IOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Parser padrão do IPED. Como o AutoDetectParser, detecta o tipo do arquivo e
@@ -95,7 +86,7 @@ public class StandardParser extends CompositeParser {
     private boolean printMetadata = true;
     private boolean ignoreStyle = true;
     private boolean canUseForkParser = false;
-    
+
     private static TikaConfig getTikaConfig() {
         if(tikaConfig == null) {
             synchronized(StandardParser.class) {

@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,11 +18,10 @@
  */
 package iped.app.ui;
 
-import java.awt.image.BufferedImage;
-
-import javax.swing.Icon;
-
 import iped.data.IItemId;
+
+import javax.swing.*;
+import java.awt.image.BufferedImage;
 
 public class GalleryValue {
 

@@ -1,12 +1,12 @@
 package iped.parsers.threema;
 
+import iped.data.IItemReader;
+
 import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
-import iped.data.IItemReader;
 
 /**
  *

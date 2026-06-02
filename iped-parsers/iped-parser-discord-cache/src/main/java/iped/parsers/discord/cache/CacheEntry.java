@@ -1,22 +1,17 @@
 package iped.parsers.discord.cache;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipException;
-
+import iped.data.IItemReader;
+import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
 import org.brotli.dec.BrotliInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.data.IItemReader;
-import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
 /**
  * @author PCF Campanini
@@ -109,7 +104,7 @@ public class CacheEntry {
     /**
      * Creation of Cache Entry as defined in:
      * https://forensicswiki.xyz/wiki/index.php?title=Chrome_Disk_Cache_Format
-     * 
+     *
      * @param is
      * @param dataFiles
      * @param externalFiles
@@ -170,7 +165,7 @@ public class CacheEntry {
     }
 
     /**
-     * 
+     *
      * @return state (NORMAL = 0; EVICTED = 1; DOOMED = 2;)
      */
     public int getState() {
@@ -244,7 +239,7 @@ public class CacheEntry {
 
     /**
      * This method gets the HTTP response data for the cache entry
-     * 
+     *
      * @return Returns HTTP response data organized in Map<String, String>
      * @throws IOException
      */
@@ -287,7 +282,7 @@ public class CacheEntry {
         } catch (Exception e) {
             String url = getRequestURL();
             String fileName = getName();
-            
+
             String contentType = "";
             if (httpResponse.containsKey("content-type")) {
                 contentType = httpResponse.get("content-type");
@@ -295,7 +290,7 @@ public class CacheEntry {
                 contentType = httpResponse.get("Content-Type");
             }
 
-            logger.warn("Truncated/invalid cache entry. File: {} | URL: {} | Content-Type: {}", 
+            logger.warn("Truncated/invalid cache entry. File: {} | URL: {} | Content-Type: {}",
                         fileName, url, contentType);
         }
 
@@ -303,15 +298,15 @@ public class CacheEntry {
     }
 
     public String readString(InputStream is) throws IOException {
-        
+
     	int length = Index.read4bytes(is);
-        
+
         if (length <= 0 || length > 1048576) {
             return "";
         }
-        
+
         byte[] data = is.readNBytes(length);
-        
+
         return new String(data);
     }
 

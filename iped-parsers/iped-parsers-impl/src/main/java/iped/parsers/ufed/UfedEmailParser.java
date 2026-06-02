@@ -1,21 +1,21 @@
 package iped.parsers.ufed;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import iped.data.IItemReader;
+import iped.localization.LocaleResolver;
+import iped.parsers.chat.EmailPartyStringBuilder;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.ufed.handler.AttachmentHandler;
+import iped.parsers.ufed.handler.EmailHandler;
+import iped.parsers.ufed.model.Attachment;
+import iped.parsers.ufed.model.Email;
+import iped.parsers.ufed.model.Party;
+import iped.parsers.util.Messages;
+import iped.parsers.util.MetadataUtil;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.properties.MediaTypes;
+import iped.search.IItemSearcher;
+import iped.utils.EmptyInputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,22 +42,15 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import iped.data.IItemReader;
-import iped.localization.LocaleResolver;
-import iped.parsers.chat.EmailPartyStringBuilder;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.ufed.handler.AttachmentHandler;
-import iped.parsers.ufed.handler.EmailHandler;
-import iped.parsers.ufed.model.Attachment;
-import iped.parsers.ufed.model.Email;
-import iped.parsers.ufed.model.Party;
-import iped.parsers.util.Messages;
-import iped.parsers.util.MetadataUtil;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.properties.MediaTypes;
-import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class UfedEmailParser extends AbstractParser {
 

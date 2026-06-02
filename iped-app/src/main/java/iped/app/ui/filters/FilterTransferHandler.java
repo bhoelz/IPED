@@ -1,17 +1,5 @@
 package iped.app.ui.filters;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.InputEvent;
-import java.io.IOException;
-
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JTree;
-import javax.swing.TransferHandler;
-import javax.swing.tree.TreePath;
-
 import iped.app.ui.App;
 import iped.app.ui.FiltersPanel;
 import iped.app.ui.Messages;
@@ -22,6 +10,14 @@ import iped.app.ui.filterdecisiontree.OperandNode;
 import iped.exception.QueryNodeException;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IFilterer;
+
+import javax.swing.*;
+import javax.swing.tree.TreePath;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.InputEvent;
+import java.io.IOException;
 
 public class FilterTransferHandler extends TransferHandler {
 

@@ -1,7 +1,22 @@
 package iped.app.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
+import iped.app.bootstrap.Bootstrap;
+import iped.app.processing.CmdLineArgsImpl;
+import iped.app.ui.bookmarks.BookmarkIcon;
+import iped.app.ui.columns.ColumnsSelectReportUI;
+import iped.data.IMultiBookmarks;
+import iped.io.URLUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -14,36 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.app.bootstrap.Bootstrap;
-import iped.app.processing.CmdLineArgsImpl;
-import iped.app.ui.bookmarks.BookmarkIcon;
-import iped.app.ui.columns.ColumnsSelectReportUI;
-import iped.data.IMultiBookmarks;
-import iped.io.URLUtil;
 
 public class ReportDialog implements ActionListener, TableModelListener {
 
@@ -243,7 +228,7 @@ public class ReportDialog implements ActionListener, TableModelListener {
         if (e.getSource() == infoButton) {
             caseInfo.setVisible(true);
         }
-        
+
         if (e.getSource() == propertiesButton) {
             ColumnsSelectReportUI.getInstance().setVisible();
         }

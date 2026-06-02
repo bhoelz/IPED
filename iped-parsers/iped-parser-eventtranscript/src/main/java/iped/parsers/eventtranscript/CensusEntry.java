@@ -1,11 +1,11 @@
 package iped.parsers.eventtranscript;
 
+import com.github.openjson.JSONObject;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-
-import com.github.openjson.JSONObject;
 
 public class CensusEntry {
     private Date timestamp;

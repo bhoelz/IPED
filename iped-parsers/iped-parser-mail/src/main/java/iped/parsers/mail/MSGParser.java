@@ -1,10 +1,6 @@
 package iped.parsers.mail;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Set;
-
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.metadata.Metadata;
@@ -14,12 +10,15 @@ import org.apache.tika.parser.microsoft.OfficeParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Set;
 
 public class MSGParser extends OfficeParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

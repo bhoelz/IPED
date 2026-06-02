@@ -1,10 +1,10 @@
 package iped.app.ui.ai;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
 import iped.engine.data.SimpleFilterNode;
 import iped.localization.LocaleResolver;
+
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 public class AIFiltersLocalization {
     private static final String bundleName = "iped-ai-filters";

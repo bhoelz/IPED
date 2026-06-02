@@ -1,19 +1,18 @@
 package iped.app.ui;
 
-import java.awt.Color;
+import iped.viewers.api.ClearFilterListener;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JButton;
-
-import iped.viewers.api.ClearFilterListener;
-
 public class ClearFilterButton extends JButton {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

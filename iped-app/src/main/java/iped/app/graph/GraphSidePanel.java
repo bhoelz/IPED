@@ -1,32 +1,20 @@
 package iped.app.graph;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.SwingWorker;
-import javax.swing.table.AbstractTableModel;
-
-import org.kharon.GraphPane;
-import org.kharon.GraphPreviewPane;
-import org.neo4j.graphdb.Node;
-
 import iped.app.ui.Messages;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.graph.NodeQueryListener;
+import org.kharon.GraphPane;
+import org.kharon.GraphPreviewPane;
+import org.neo4j.graphdb.Node;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class GraphSidePanel extends JPanel {
 

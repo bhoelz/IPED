@@ -1,9 +1,9 @@
 package iped.parsers.ufed.model;
 
-import java.util.StringJoiner;
-
 import iped.data.IItemReader;
 import iped.parsers.ufed.reference.ReferencedLocation;
+
+import java.util.StringJoiner;
 
 /**
  * Represents a <model type="Coordinate"> element.

@@ -1,18 +1,17 @@
 package iped.engine.webapi;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.Collections;
-
-import org.eclipse.jetty.server.Server;
-import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
-import org.glassfish.jersey.server.ResourceConfig;
-
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import iped.engine.Version;
+import org.eclipse.jetty.server.Server;
+import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Collections;
 
 /**
  * Main class.
@@ -22,7 +21,7 @@ public class Main {
     /**
      * Starts Jetty HTTP server exposing JAX-RS resources defined in this
      * application.
-     * 
+     *
      * @return Jetty HTTP server.
      * @throws IOException
      * @throws ParseException
@@ -51,7 +50,7 @@ public class Main {
 
     /**
      * Main method.
-     * 
+     *
      * @param args
      * @throws IOException
      */

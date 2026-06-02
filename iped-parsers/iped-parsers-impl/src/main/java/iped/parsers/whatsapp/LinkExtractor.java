@@ -1,34 +1,22 @@
 package iped.parsers.whatsapp;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.drew.lang.Charsets;
+import com.whatsapp.MediaData;
+import iped.parsers.sqlite.SQLite3DBParser;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
 
-import com.drew.lang.Charsets;
-import com.whatsapp.MediaData;
-
-import iped.parsers.sqlite.SQLite3DBParser;
+import java.io.*;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *

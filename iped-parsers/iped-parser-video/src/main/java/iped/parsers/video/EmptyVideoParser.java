@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,11 +18,6 @@
  */
 package iped.parsers.video;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -33,6 +28,11 @@ import org.apache.tika.parser.mp4.MP4Parser;
 import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Extrai conteúdo vazio para vídeos sem parser específico, enquanto nao é

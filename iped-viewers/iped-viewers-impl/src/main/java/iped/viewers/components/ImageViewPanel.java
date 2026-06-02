@@ -1,27 +1,14 @@
 package iped.viewers.components;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import iped.utils.ImageUtil;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
-
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.UIManager;
-
-import iped.utils.ImageUtil;
 
 /**
  * Painel especializado em exibição de uma imagem. Já inclui rolagem e zoom da
@@ -98,12 +85,12 @@ public class ImageViewPanel extends JPanel {
                     g2.drawImage(image, (getWidth() - w) / 2, (getHeight() - h) / 2, w, h, null);
                 }
             }
-            
+
             @Override
             public void updateUI() {
                 super.updateUI();
                 setBackground(UIManager.getColor("Viewer.background"));
-            }            
+            }
         };
         scrollPane = new JScrollPane(imgPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);

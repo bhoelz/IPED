@@ -1,17 +1,8 @@
 package iped.viewers;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Set;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
+import iped.io.IStreamSource;
+import iped.viewers.api.AbstractViewer;
+import iped.viewers.localization.Messages;
 import org.icepdf.core.pobjects.Catalog;
 import org.icepdf.core.pobjects.Document;
 import org.icepdf.core.pobjects.Page;
@@ -28,9 +19,12 @@ import org.icepdf.ri.util.ViewerPropertiesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.io.IStreamSource;
-import iped.viewers.api.AbstractViewer;
-import iped.viewers.localization.Messages;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Set;
 
 public class IcePDFViewer extends AbstractViewer {
 
@@ -73,7 +67,7 @@ public class IcePDFViewer extends AbstractViewer {
         System.setProperty("org.icepdf.core.screen.colorRender","VALUE_COLOR_RENDER_QUALITY"); //$NON-NLS-1$ //$NON-NLS-2$
         System.setProperty("org.icepdf.core.screen.interpolation","VALUE_INTERPOLATION_BILINEAR"); //$NON-NLS-1$ //$NON-NLS-2$
         System.setProperty("org.icepdf.core.screen.render","VALUE_RENDER_QUALITY"); //$NON-NLS-1$ //$NON-NLS-2$
-        
+
         // pode provocar crash da jvm
         // System.setProperty("org.icepdf.core.awtFontLoading", "true");
 
@@ -131,7 +125,7 @@ public class IcePDFViewer extends AbstractViewer {
         propManager.set(ViewerPropertiesManager.PROPERTY_HIDE_UTILITYPANE, "true"); //$NON-NLS-1$
         propManager.set(ViewerPropertiesManager.PROPERTY_DEFAULT_PAGEFIT, Integer.toString(fitMode));
         propManager.set(ViewerPropertiesManager.PROPERTY_SHOW_TOOLBAR_SEARCH, "false"); //$NON-NLS-1$
-        
+
 
         SwingViewBuilder factory = new SwingViewBuilder(pdfController, viewMode, fitMode);
         viewerPanel = factory.buildViewerPanel();
@@ -156,7 +150,7 @@ public class IcePDFViewer extends AbstractViewer {
             // Copy the current displayed page, with the current rotation applied.
             int currPage = pdfController.getDocumentViewController().getCurrentPageIndex();
             float currRot = pdfController.getDocumentViewController().getRotation();
-            float zoom = 2; // Use 2 for a better quality 
+            float zoom = 2; // Use 2 for a better quality
 
             Image image = pdfController.getDocument().getPageImage(currPage, GraphicsRenderingHints.PRINT,
                     Page.BOUNDARY_CROPBOX, currRot, zoom);

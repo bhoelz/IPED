@@ -1,12 +1,19 @@
 package iped.data;
 
-import java.io.*;
-import java.nio.channels.SeekableByteChannel;
-import java.util.*;
-import javax.imageio.stream.ImageInputStream;
 import iped.datasource.IDataSource;
 import iped.io.ISeekableInputStreamFactory;
 import iped.io.SeekableInputStream;
+
+import javax.imageio.stream.ImageInputStream;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.channels.SeekableByteChannel;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Minimal stub to verify IItem can be implemented.
@@ -114,4 +121,6 @@ class MinimalStub implements IItem {
     @Override public ImageInputStream getImageInputStream() { return null; }
     @Override public Date getModDate() { return null; }
     @Override public IDataSource getDataSource() { return null; }
+    @Override public void setSubitemId(Integer id) {}
+    @Override public void setOpenContainer(Object container) {}
 }

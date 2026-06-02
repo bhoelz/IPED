@@ -1,11 +1,10 @@
 package iped.app.ui.themes;
 
-import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.UIManager;
 
 public abstract class Theme {
     private final Map<Object, Object> uiMap = new HashMap<Object, Object>();

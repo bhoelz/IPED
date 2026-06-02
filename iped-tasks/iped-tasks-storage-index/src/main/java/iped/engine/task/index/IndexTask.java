@@ -1,15 +1,27 @@
 package iped.engine.task.index;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import iped.configuration.Configurable;
+import iped.data.IItem;
+import iped.engine.CmdLineArgs;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.IndexTaskConfig;
+import iped.engine.core.Worker.STATE;
+import iped.engine.data.IPEDSource;
+import iped.engine.data.Item;
+import iped.engine.index.IndexExtraAttributes;
+import iped.engine.index.IndexMetadata;
+import iped.engine.io.CloseFilterReader;
+import iped.engine.io.FragmentingReader;
+import iped.engine.io.ParsingReader;
+import iped.engine.task.AbstractTask;
+import iped.engine.task.ParsingTaskContextFactory;
+import iped.engine.task.ParsingTaskSupport;
+import iped.engine.task.SkipCommitedTaskSupport;
+import iped.engine.task.carver.BaseCarveTask;
+import iped.engine.util.Util;
+import iped.exception.IPEDException;
+import iped.parsers.standard.StandardParser;
+import iped.utils.IOUtil;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
@@ -21,28 +33,15 @@ import org.apache.tika.parser.ParseContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.configuration.Configurable;
-import iped.data.IItem;
-import iped.engine.CmdLineArgs;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.IndexTaskConfig;
-import iped.engine.core.Worker.STATE;
-import iped.engine.data.IPEDSource;
-import iped.engine.data.Item;
-import iped.engine.io.CloseFilterReader;
-import iped.engine.io.FragmentingReader;
-import iped.engine.io.ParsingReader;
-import iped.engine.index.IndexExtraAttributes;
-import iped.engine.index.IndexMetadata;
-import iped.engine.task.AbstractTask;
-import iped.engine.task.ParsingTaskContextFactory;
-import iped.engine.task.ParsingTaskSupport;
-import iped.engine.task.SkipCommitedTaskSupport;
-import iped.engine.task.carver.BaseCarveTask;
-import iped.engine.util.Util;
-import iped.exception.IPEDException;
-import iped.parsers.standard.StandardParser;
-import iped.utils.IOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Tarefa de indexação dos itens. Indexa apenas as propriedades, caso a
@@ -216,7 +215,7 @@ public class IndexTask extends AbstractTask {
                         return doc;
                     }
                 }
-                
+
             };
         }
 
@@ -244,7 +243,7 @@ public class IndexTask extends AbstractTask {
 
     @Override
     public void init(ConfigurationManager configurationManager) throws Exception {
-        
+
         indexConfig = configurationManager.findObject(IndexTaskConfig.class);
 
         CmdLineArgs args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());

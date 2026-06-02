@@ -2,12 +2,10 @@ package iped.app.ui.filters;
 
 import java.io.IOException;
 
-import org.apache.lucene.index.SortedSetDocValues;
-
 /**
  * A ValueFilter that checks in which docs the specified field is equal to the
  * provided string value.
- * 
+ *
  * @author Patrick Dalla Bernardina
  * @author Luís Nassif
  */

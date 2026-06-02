@@ -1,16 +1,9 @@
 package iped.parsers.misc;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
+import iped.io.IStreamSource;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ItemInfo;
+import iped.utils.IOUtil;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
@@ -28,21 +21,22 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.io.IStreamSource;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ItemInfo;
-import iped.utils.IOUtil;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Runs a list of parsers sequentially on a file.
- * 
+ *
  * @author Nassif
  *
  */
 public class MultipleParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -89,7 +83,7 @@ public class MultipleParser extends AbstractParser {
     @Override
     public void parse(InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
             throws IOException, SAXException, TikaException {
-        
+
         ItemInfo itemInfo = context.get(ItemInfo.class);
         IStreamSource source = context.get(IStreamSource.class);
         TemporaryResources tmp = new TemporaryResources();

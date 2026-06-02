@@ -1,67 +1,7 @@
 package iped.app.timelinegraph;
 
-import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Stroke;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.UIManager;
-
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.entity.AxisEntity;
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.entity.EntityCollection;
-import org.jfree.chart.entity.JFreeChartEntity;
-import org.jfree.chart.entity.PlotEntity;
-import org.jfree.chart.entity.XYItemEntity;
-import org.jfree.chart.event.PlotChangeEvent;
-import org.jfree.chart.plot.Plot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.PlotRenderingInfo;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.plot.Zoomable;
-import org.jfree.data.time.Hour;
-import org.jfree.data.time.Millisecond;
-import org.jfree.data.time.RegularTimePeriod;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimePeriod;
-
 import iped.app.timelinegraph.datasets.TimelineDataset;
-import iped.app.timelinegraph.popups.ChartPanelPopupMenu;
-import iped.app.timelinegraph.popups.DataItemPopupMenu;
-import iped.app.timelinegraph.popups.PlotPopupMenu;
-import iped.app.timelinegraph.popups.SeriesAxisPopupMenu;
-import iped.app.timelinegraph.popups.TimePeriodSelectionPopupMenu;
-import iped.app.timelinegraph.popups.TimelineFilterSelectionPopupMenu;
+import iped.app.timelinegraph.popups.*;
 import iped.app.timelinegraph.swingworkers.HighlightWorker;
 import iped.app.ui.App;
 import iped.app.ui.themes.Theme;
@@ -69,6 +9,24 @@ import iped.app.ui.themes.ThemeManager;
 import iped.jfextensions.chart.ChartPanel;
 import iped.jfextensions.model.Minute;
 import iped.utils.IconUtil;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.entity.*;
+import org.jfree.chart.event.PlotChangeEvent;
+import org.jfree.chart.plot.*;
+import org.jfree.data.time.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.List;
 
 public class IpedChartPanel extends ChartPanel implements KeyListener {
     private Rectangle2D filterIntervalRectangle; // represents the filter selection rectangle while drawing/defining a interval
@@ -490,25 +448,25 @@ public class IpedChartPanel extends ChartPanel implements KeyListener {
          * IMultiSearchResultProvider resultsProvider =
          * ipedChartsPanel.getResultsProvider(); LeafReader reader =
          * resultsProvider.getIPEDSource().getLeafReader();
-         * 
+         *
          * TreeSet<Integer> luceneIds = new TreeSet<Integer>();
-         * 
+         *
          * int[] selected = resultsTable.getSelectedRows(); for (int i = 0; i <
          * selected.length; i++) { int rowModel =
          * resultsTable.convertRowIndexToModel(selected[i]); IItemId item =
          * resultsProvider.getResults().getItem(rowModel);
-         * 
+         *
          * int luceneId = resultsProvider.getIPEDSource().getLuceneId(item);
          * luceneIds.add(luceneId); }
-         * 
+         *
          * SortedSetDocValues timeStampValues =
          * reader.getSortedSetDocValues(BasicProps.TIMESTAMP);
-         * 
+         *
          * for (Iterator iterator = luceneIds.iterator(); iterator.hasNext();) { Integer
          * docId = (Integer) iterator.next(); boolean adv = false; try { adv =
          * timeStampValues.advanceExact(docId); }catch (IllegalArgumentException e) {
          * adv = timeStampValues.advanceExact(docId); }
-         * 
+         *
          * long ord, prevOrd = -1; while (adv && (ord = timeStampValues.nextOrd()) !=
          * SortedSetDocValues.NO_MORE_ORDS) { if (prevOrd != ord) { Date d =
          * ipedChartsPanel.getDomainAxis().ISO8601DateParse(timeStampValues.lookupOrd(
@@ -517,7 +475,7 @@ public class IpedChartPanel extends ChartPanel implements KeyListener {
          * this.getScreenDataArea(), ipedChartsPanel.combinedPlot.getDomainAxisEdge());
          * double y = this.getScreenDataArea().getMinY();
          * g2.drawLine((int)x,(int)y,(int)x,(int)y-4); } prevOrd = ord; }
-         * 
+         *
          * } }catch(Exception e) { e.printStackTrace(); }
          */
     }
@@ -1012,11 +970,11 @@ public class IpedChartPanel extends ChartPanel implements KeyListener {
     public HashSet<String> getSelectedEvents() {
     	return selectedEvents;
     }
-    
+
     public void setSelectedEvents(HashSet<String> selectedEvents) {
     	this.selectedEvents = selectedEvents;
     }
-    
+
     @Override
     public void updateUI() {
         super.updateUI();

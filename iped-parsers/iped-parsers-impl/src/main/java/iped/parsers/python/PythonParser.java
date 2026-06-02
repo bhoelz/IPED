@@ -1,17 +1,9 @@
 package iped.parsers.python;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import iped.configuration.IConfigurationDirectory;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.Messages;
+import jep.*;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -22,20 +14,18 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.configuration.IConfigurationDirectory;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.Messages;
-import jep.Jep;
-import jep.JepConfig;
-import jep.JepException;
-import jep.MainInterpreter;
-import jep.PyConfig;
-import jep.SharedInterpreter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PythonParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

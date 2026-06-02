@@ -1,13 +1,12 @@
 package iped.app.ui;
 
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
 
 public class BookmarksTreeModel implements TreeModel {
 

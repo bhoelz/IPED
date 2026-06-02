@@ -1,59 +1,25 @@
 package iped.app.timelinegraph;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.font.TextAttribute;
-import java.awt.geom.Ellipse2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-
+import bibliothek.gui.dock.common.DefaultSingleCDockable;
+import bibliothek.gui.dock.common.event.CDockableLocationEvent;
+import bibliothek.gui.dock.common.event.CDockableLocationListener;
+import iped.app.timelinegraph.datasets.AsynchronousDataset;
+import iped.app.timelinegraph.datasets.IpedTimelineDatasetManager;
+import iped.app.timelinegraph.popups.LegendItemPopupMenu;
+import iped.app.timelinegraph.swingworkers.CheckWorker;
+import iped.app.timelinegraph.swingworkers.HighlightWorker;
+import iped.app.ui.App;
+import iped.app.ui.columns.ColumnsManager;
+import iped.app.ui.themes.ThemeManager;
+import iped.data.IItemId;
+import iped.engine.search.QueryBuilder;
+import iped.engine.task.index.IndexItem;
+import iped.exception.ParseException;
+import iped.exception.QueryNodeException;
+import iped.properties.BasicProps;
+import iped.utils.IconUtil;
+import iped.viewers.api.*;
+import iped.viewers.api.events.RowSorterTableDataChange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.index.LeafReader;
@@ -84,31 +50,24 @@ import org.jfree.data.xy.AbstractIntervalXYDataset;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYDataset;
 
-import bibliothek.gui.dock.common.DefaultSingleCDockable;
-import bibliothek.gui.dock.common.event.CDockableLocationEvent;
-import bibliothek.gui.dock.common.event.CDockableLocationListener;
-import iped.app.timelinegraph.datasets.AsynchronousDataset;
-import iped.app.timelinegraph.datasets.IpedTimelineDatasetManager;
-import iped.app.timelinegraph.popups.LegendItemPopupMenu;
-import iped.app.timelinegraph.swingworkers.CheckWorker;
-import iped.app.timelinegraph.swingworkers.HighlightWorker;
-import iped.app.ui.App;
-import iped.app.ui.columns.ColumnsManager;
-import iped.app.ui.themes.ThemeManager;
-import iped.data.IItemId;
-import iped.engine.search.QueryBuilder;
-import iped.engine.task.index.IndexItem;
-import iped.exception.ParseException;
-import iped.exception.QueryNodeException;
-import iped.properties.BasicProps;
-import iped.utils.IconUtil;
-import iped.viewers.api.GUIProvider;
-import iped.viewers.api.IFilter;
-import iped.viewers.api.IMultiSearchResultProvider;
-import iped.viewers.api.IQueryFilter;
-import iped.viewers.api.IQueryFilterer;
-import iped.viewers.api.ResultSetViewer;
-import iped.viewers.api.events.RowSorterTableDataChange;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import java.awt.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class IpedChartsPanel extends JPanel implements ResultSetViewer, TableModelListener, ListSelectionListener, IQueryFilterer, ComponentListener {
     JTable resultsTable;
@@ -1143,5 +1102,5 @@ public class IpedChartsPanel extends JPanel implements ResultSetViewer, TableMod
     public static String[] getOrdToEventName() {
         return ordToEventName;
     }
-    
+
 }

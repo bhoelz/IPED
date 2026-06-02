@@ -1,24 +1,23 @@
 package iped.app.timelinegraph.datasets;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.JOptionPane;
-
+import iped.app.timelinegraph.DateUtil;
+import iped.app.timelinegraph.IpedChartPanel;
+import iped.app.timelinegraph.IpedChartsPanel;
+import iped.app.timelinegraph.IpedDateAxis;
+import iped.app.timelinegraph.cache.*;
+import iped.app.timelinegraph.cache.persistance.CachePersistance;
+import iped.app.ui.App;
+import iped.app.ui.BookmarksTreeModel;
+import iped.app.ui.CaseSearcherFilter;
+import iped.app.ui.FilterManager;
+import iped.data.IItemId;
+import iped.engine.data.IPEDMultiSource;
+import iped.engine.data.IPEDSource;
+import iped.engine.data.MultiBitmapBookmarks;
+import iped.engine.search.MultiSearchResult;
+import iped.search.IMultiSearchResult;
+import iped.viewers.api.IMultiSearchResultProvider;
+import iped.viewers.api.IQueryFilterer;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
@@ -41,28 +40,13 @@ import org.jfree.data.xy.TableXYDataset;
 import org.jfree.data.xy.XYDomainInfo;
 import org.roaringbitmap.RoaringBitmap;
 
-import iped.app.timelinegraph.DateUtil;
-import iped.app.timelinegraph.IpedChartPanel;
-import iped.app.timelinegraph.IpedChartsPanel;
-import iped.app.timelinegraph.IpedDateAxis;
-import iped.app.timelinegraph.cache.CacheEventEntry;
-import iped.app.timelinegraph.cache.CacheTimePeriodEntry;
-import iped.app.timelinegraph.cache.EventTimestampCache;
-import iped.app.timelinegraph.cache.TimeIndexedMap;
-import iped.app.timelinegraph.cache.TimeStampCache;
-import iped.app.timelinegraph.cache.persistance.CachePersistance;
-import iped.app.ui.App;
-import iped.app.ui.BookmarksTreeModel;
-import iped.app.ui.CaseSearcherFilter;
-import iped.app.ui.FilterManager;
-import iped.data.IItemId;
-import iped.engine.data.IPEDMultiSource;
-import iped.engine.data.IPEDSource;
-import iped.engine.data.MultiBitmapBookmarks;
-import iped.engine.search.MultiSearchResult;
-import iped.search.IMultiSearchResult;
-import iped.viewers.api.IMultiSearchResultProvider;
-import iped.viewers.api.IQueryFilterer;
+import javax.swing.*;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class IpedTimelineDataset extends AbstractIntervalXYDataset implements Cloneable, PublicCloneable, IntervalXYDataset, DomainInfo, TimelineDataset, TableXYDataset, XYDomainInfo, AsynchronousDataset {
     private static final int CTITEMS_PER_THREAD = 500;
@@ -153,7 +137,7 @@ public class IpedTimelineDataset extends AbstractIntervalXYDataset implements Cl
     private RoaringBitmap[] unionsArray;
     private FilterManager filterManager;
     static String noBookmarksStr = BookmarksTreeModel.NO_BOOKMARKS_NAME;
-    
+
     // visible items
 
     public IpedTimelineDataset(IpedTimelineDatasetManager ipedTimelineDatasetManager, IMultiSearchResultProvider resultsProvider, String splitValue) throws Exception {
@@ -239,13 +223,13 @@ public class IpedTimelineDataset extends AbstractIntervalXYDataset implements Cl
                 App app = App.get();
                 Set<String> selectedBookmarks = app.getSelectedBookmarks();
                 IPEDMultiSource appcase = (IPEDMultiSource) app.getIPEDSource();
-                
+
                 for (int i = 0; i < threadCtsEnd; i++) {
                     CacheTimePeriodEntry ct = threadLocalCts[i];
                     for (CacheEventEntry ce : ct.getEvents()) {
                         if (ce.docIds != null) {
                             RoaringBitmap rb = RoaringBitmap.and(((MultiSearchResult) result).getDocIdBitSet(), ce.docIds);
-                            
+
                             Count count = new Count();
                             count.value = rb.getCardinality();
                             if (count.value > 0) {

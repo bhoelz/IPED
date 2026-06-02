@@ -1,11 +1,11 @@
 package iped.app.timelinegraph;
 
-import java.awt.Graphics2D;
-import java.awt.geom.RectangularShape;
-
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.ui.RectangleEdge;
+
+import java.awt.*;
+import java.awt.geom.RectangularShape;
 
 public class IpedXYBarPainter extends StandardXYBarPainter {
 

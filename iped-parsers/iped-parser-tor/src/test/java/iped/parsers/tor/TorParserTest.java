@@ -1,8 +1,5 @@
 package iped.parsers.tor;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -10,6 +7,9 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;

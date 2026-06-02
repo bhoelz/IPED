@@ -1,14 +1,12 @@
 package iped.parsers.bittorrent;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.IItemReader;
+import iped.parsers.util.Messages;
+import iped.parsers.util.P2PUtil;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.LocalizedFormat;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
@@ -21,13 +19,14 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.util.Messages;
-import iped.parsers.util.P2PUtil;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.LocalizedFormat;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TimeZone;
 
 public class BitTorrentResumeDatEntryParser extends AbstractParser {
     private static final long serialVersionUID = 9008710913652882111L;
@@ -35,7 +34,7 @@ public class BitTorrentResumeDatEntryParser extends AbstractParser {
             .singleton(MediaType.application("x-bittorrent-resume-dat-entry"));
     public static final String RESUME_DAT_ENTRY_MIME_TYPE = "application/x-bittorrent-resume-dat-entry";
 
-    private static final String[] header = new String[] { 
+    private static final String[] header = new String[] {
             Messages.getString("BitTorrentResumeDatParser.TorrentFile"),
             Messages.getString("BitTorrentResumeDatParser.RootDir"),
             Messages.getString("BitTorrentResumeDatParser.Path"),
@@ -50,7 +49,7 @@ public class BitTorrentResumeDatEntryParser extends AbstractParser {
             Messages.getString("BitTorrentResumeDatParser.RunTime"),
             Messages.getString("BitTorrentResumeDatParser.TorrentFoundInCase"),
             Messages.getString("BitTorrentResumeDatParser.FilesFoundInCase") };
-    
+
     private static final String strYes = Messages.getString("BitTorrentResumeDatParser.Yes");
 
     @Override
@@ -134,19 +133,19 @@ public class BitTorrentResumeDatEntryParser extends AbstractParser {
                     }
                 }
 
-                String[] rowElements = new String[] { 
-                        torrent, 
+                String[] rowElements = new String[] {
+                        torrent,
                         torrentDict.getString("rootdir"),
-                        torrentDict.getString("path"), 
+                        torrentDict.getString("path"),
                         infoHash,
                         LocalizedFormat.format(torrentDict.getLong("downloaded")),
-                        LocalizedFormat.format(torrentDict.getLong("uploaded")), 
+                        LocalizedFormat.format(torrentDict.getLong("uploaded")),
                         torrentDict.getDate("added_on"),
-                        torrentDict.getDate("completed_on"), 
+                        torrentDict.getDate("completed_on"),
                         torrentDict.getDate("time"),
                         torrentDict.getDate("last seen complete"),
                         LocalizedFormat.format(torrentDict.getLong("seedtime")),
-                        LocalizedFormat.format(torrentDict.getLong("runtime")), 
+                        LocalizedFormat.format(torrentDict.getLong("runtime")),
                         item != null ? strYes : "",
                         filesFoundInCase > 0 ? String.valueOf(filesFoundInCase) : "" };
 

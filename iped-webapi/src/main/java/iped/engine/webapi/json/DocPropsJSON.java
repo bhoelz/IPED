@@ -1,9 +1,9 @@
 package iped.engine.webapi.json;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.List;
 import java.util.Map;
-
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * DocPropsModel list properties of a document: { "source": "A", "id": 0,

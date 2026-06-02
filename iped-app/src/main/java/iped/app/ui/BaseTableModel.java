@@ -1,17 +1,5 @@
 package iped.app.ui;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.Query;
-
 import iped.app.ui.bookmarks.BookmarkIcon;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.search.LuceneSearchResult;
@@ -20,6 +8,15 @@ import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.properties.BasicProps;
 import iped.search.IMultiSearchResult;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.Query;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public abstract class BaseTableModel extends AbstractTableModel implements MouseListener, ListSelectionListener, SearchResultTableModel {
 

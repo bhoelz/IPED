@@ -1,16 +1,9 @@
 package iped.parsers.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-
+import iped.utils.IOUtil;
 import org.apache.tika.io.TemporaryResources;
 
-import iped.utils.IOUtil;
+import java.io.*;
 
 public class RawISOConverter {
 

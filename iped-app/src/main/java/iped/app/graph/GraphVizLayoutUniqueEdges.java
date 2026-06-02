@@ -1,19 +1,13 @@
 package iped.app.graph;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import org.kharon.Edge;
 import org.kharon.Graph;
 import org.kharon.Node;
 import org.kharon.layout.graphviz.GraphVizAlgorithm;
 import org.kharon.layout.graphviz.GraphVizLayout;
 import org.kharon.layout.graphviz.GraphVizResolver;
+
+import java.util.*;
 
 public class GraphVizLayoutUniqueEdges extends GraphVizLayout {
 

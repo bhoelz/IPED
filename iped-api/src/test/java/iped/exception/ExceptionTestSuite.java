@@ -1,9 +1,9 @@
 package iped.exception;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test suite for all exception classes in iped-api.
@@ -18,7 +18,7 @@ class ExceptionTestSuite {
     void parseException_defaultConstructor_shouldCreateInstance() {
         // When
         ParseException exception = new ParseException();
-        
+
         // Then
         assertNotNull(exception);
         assertNull(exception.getMessage());
@@ -29,7 +29,7 @@ class ExceptionTestSuite {
     void parseException_shouldBeStandardException() {
         // When
         ParseException exception = new ParseException();
-        
+
         // Then
         assertTrue(Exception.class.isAssignableFrom(exception.getClass()));
         assertFalse(RuntimeException.class.isAssignableFrom(exception.getClass()));
@@ -40,7 +40,7 @@ class ExceptionTestSuite {
     void parseException_shouldBeThrowable() throws ParseException {
         // Given
         ParseException exception = new ParseException();
-        
+
         // When/Then - verify it can be thrown and caught as checked exception
         try {
             throw exception;
@@ -64,10 +64,10 @@ class ExceptionTestSuite {
     void queryNodeException_withCause_shouldSetCause() {
         // Given
         Exception cause = new Exception("Original cause");
-        
+
         // When
         QueryNodeException exception = new QueryNodeException(cause);
-        
+
         // Then
         assertEquals(cause, exception.getCause());
     }
@@ -78,10 +78,10 @@ class ExceptionTestSuite {
         // Given
         String causeMessage = "Original cause";
         Exception cause = new Exception(causeMessage);
-        
+
         // When
         QueryNodeException exception = new QueryNodeException(cause);
-        
+
         // Then
         assertNotNull(exception.getMessage());
         // Message should contain or reference the cause
@@ -92,7 +92,7 @@ class ExceptionTestSuite {
     void queryNodeException_shouldBeStandardException() {
         // When
         QueryNodeException exception = new QueryNodeException(new Exception("cause"));
-        
+
         // Then
         assertTrue(Exception.class.isAssignableFrom(exception.getClass()));
         assertFalse(RuntimeException.class.isAssignableFrom(exception.getClass()));
@@ -103,7 +103,7 @@ class ExceptionTestSuite {
     void queryNodeException_shouldBeThrowable() throws QueryNodeException {
         // Given
         QueryNodeException exception = new QueryNodeException(new Exception("cause"));
-        
+
         // When/Then - verify it can be thrown and caught as checked exception
         try {
             throw exception;
@@ -118,10 +118,10 @@ class ExceptionTestSuite {
         // Given
         RuntimeException innerCause = new RuntimeException("Inner");
         Exception middleCause = new Exception("Middle", innerCause);
-        
+
         // When
         QueryNodeException exception = new QueryNodeException(middleCause);
-        
+
         // Then
         assertEquals(middleCause, exception.getCause());
         assertEquals(innerCause, exception.getCause().getCause());
@@ -154,7 +154,7 @@ class ExceptionTestSuite {
         IPEDException ipedEx = new IPEDException("test");
         ParseException parseEx = new ParseException();
         QueryNodeException queryEx = new QueryNodeException(new Exception("cause"));
-        
+
         // Then
         assertEquals("iped.exception", ipedEx.getClass().getPackage().getName());
         assertEquals("iped.exception", parseEx.getClass().getPackage().getName());
@@ -168,7 +168,7 @@ class ExceptionTestSuite {
         IPEDException ipedEx = new IPEDException("test");
         ParseException parseEx = new ParseException();
         QueryNodeException queryEx = new QueryNodeException(new Exception("cause"));
-        
+
         // Then
         assertTrue(RuntimeException.class.isAssignableFrom(ipedEx.getClass()));
         assertFalse(RuntimeException.class.isAssignableFrom(parseEx.getClass()));

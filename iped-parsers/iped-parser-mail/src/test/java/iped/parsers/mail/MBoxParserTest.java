@@ -1,13 +1,7 @@
 package iped.parsers.mail;
 
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import iped.parsers.util.AbstractPkgTest;
+import iped.properties.ExtraProperties;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
@@ -22,8 +16,13 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.AbstractPkgTest;
-import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
 
 public class MBoxParserTest extends AbstractPkgTest {
 

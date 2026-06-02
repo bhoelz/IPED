@@ -1,22 +1,17 @@
 package iped.engine.webapi;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import iped.engine.webapi.json.DocIDJSON;
 import iped.engine.webapi.json.SourceToIDsJSON;
 import iped.engine.webapi.spi.DocRef;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Api(value = "Selection")
 @Path("selection")

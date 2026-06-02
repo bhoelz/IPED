@@ -1,14 +1,13 @@
 package iped.app.timelinegraph;
 
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.geom.Rectangle2D;
-
 import org.jfree.chart.axis.AxisState;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.Range;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 public class IpedNumberAxis extends NumberAxis implements MouseResponsiveChartEntity {
 

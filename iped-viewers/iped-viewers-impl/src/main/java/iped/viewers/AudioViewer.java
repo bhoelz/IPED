@@ -1,19 +1,5 @@
 package iped.viewers;
 
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.Base64;
-import java.util.Set;
-
-import javax.imageio.ImageIO;
-import javax.swing.UIManager;
-
 import iped.data.IItemReader;
 import iped.io.IStreamSource;
 import iped.properties.BasicProps;
@@ -29,6 +15,18 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Base64;
+import java.util.Set;
 
 public class AudioViewer extends AbstractViewer {
     private static final String transcriptionAttr = ExtraProperties.TRANSCRIPT_ATTR;

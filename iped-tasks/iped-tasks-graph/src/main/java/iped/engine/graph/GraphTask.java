@@ -1,38 +1,11 @@
 package iped.engine.graph;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.tika.metadata.Message;
-import org.apache.tika.metadata.Metadata;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.RelationshipType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberMatch;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.Leniency;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.CmdLineArgs;
@@ -58,6 +31,19 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
+import org.apache.tika.metadata.Message;
+import org.apache.tika.metadata.Metadata;
+import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.RelationshipType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GraphTask extends AbstractTask {
 

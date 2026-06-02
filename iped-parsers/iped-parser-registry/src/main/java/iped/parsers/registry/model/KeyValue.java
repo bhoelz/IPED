@@ -1,5 +1,7 @@
 package iped.parsers.registry.model;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -7,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-
-import org.apache.commons.lang.ArrayUtils;
 
 public class KeyValue extends CellContent {
     int dataOffset;

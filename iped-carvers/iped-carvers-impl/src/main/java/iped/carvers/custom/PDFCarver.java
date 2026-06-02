@@ -1,12 +1,12 @@
 package iped.carvers.custom;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import iped.carvers.api.Hit;
 import iped.carvers.standard.DefaultCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class PDFCarver extends DefaultCarver {
     private Hit lastFooter;

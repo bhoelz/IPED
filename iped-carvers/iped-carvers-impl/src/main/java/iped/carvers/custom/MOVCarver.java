@@ -1,18 +1,17 @@
 package iped.carvers.custom;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.tika.mime.MediaType;
-
 import iped.carvers.api.CarverType;
 import iped.carvers.api.Hit;
 import iped.carvers.standard.AbstractCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
 import iped.utils.IOUtil;
+import org.apache.commons.codec.DecoderException;
+import org.apache.tika.mime.MediaType;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 
 public class MOVCarver extends AbstractCarver {
 

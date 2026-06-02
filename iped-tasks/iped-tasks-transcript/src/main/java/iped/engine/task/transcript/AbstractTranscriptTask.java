@@ -1,39 +1,5 @@
 package iped.engine.task.transcript;
 
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.NoRouteToHostException;
-import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-
-import org.apache.tika.io.TemporaryResources;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.utils.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sqlite.SQLiteConfig;
-import org.sqlite.SQLiteConfig.SynchronousMode;
-
-import org.apache.tika.metadata.Metadata;
-
 import iped.configuration.Configurable;
 import iped.configuration.IConfigurationDirectory;
 import iped.data.IItem;
@@ -45,6 +11,33 @@ import iped.engine.task.AbstractTask;
 import iped.exception.IPEDException;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
+import org.apache.tika.io.TemporaryResources;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.utils.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteConfig.SynchronousMode;
+
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.NoRouteToHostException;
+import java.nio.file.Files;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 public abstract class AbstractTranscriptTask extends AbstractTask {
     private static final String MPLAYER_WIN_PATH = "tools/mplayer/mplayer.exe"; //$NON-NLS-1$
@@ -376,7 +369,7 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
 
         if (evidence.getMetadataValue(ExtraProperties.TRANSCRIPT_ATTR) != null && evidence.getMetadataValue(ExtraProperties.CONFIDENCE_ATTR) != null)
             return;
-        
+
         String hash = evidence.getHash();
         if (hash == null || hash.isEmpty())
             return;

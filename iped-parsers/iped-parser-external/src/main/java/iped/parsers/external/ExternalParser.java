@@ -16,26 +16,8 @@
  */
 package iped.parsers.external;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Serializable;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import iped.io.URLUtil;
+import iped.utils.IOUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tika.exception.TikaException;
@@ -56,8 +38,17 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.io.URLUtil;
-import iped.utils.IOUtil;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parser that uses an external program (like catdoc or pdf2txt) to extract text
@@ -88,7 +79,7 @@ public class ExternalParser extends AbstractParser {
          */
         LineConsumer NULL = new LineConsumer() {
             /**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 

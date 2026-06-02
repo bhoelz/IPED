@@ -1,14 +1,13 @@
 package iped.geo.impl;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
-import javax.swing.JTable;
-
 import iped.data.IItemId;
 import iped.geo.MapSelectionListener;
 import iped.geo.kml.GetResultsKMLWorker;
 import iped.properties.BasicProps;
+
+import javax.swing.*;
+import java.util.Arrays;
+import java.util.HashSet;
 
 public class AppMapSelectionListener implements MapSelectionListener {
     AppMapPanel mapaPanel;

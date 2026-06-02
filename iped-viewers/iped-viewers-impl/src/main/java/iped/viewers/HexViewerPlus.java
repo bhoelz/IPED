@@ -1,101 +1,14 @@
 package iped.viewers;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.Rectangle2D;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ComboBoxEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
-import javax.swing.JRootPane;
-import javax.swing.JSeparator;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileView;
-
+import iped.io.IStreamSource;
+import iped.io.SeekableInputStream;
+import iped.utils.IOUtil;
+import iped.utils.SeekableFileInputStream;
+import iped.utils.UiUtil;
+import iped.viewers.api.AbstractViewer;
+import iped.viewers.localization.Messages;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
-import org.exbin.deltahex.CaretMovedListener;
-import org.exbin.deltahex.CaretPosition;
-import org.exbin.deltahex.CodeAreaLineNumberLength;
-import org.exbin.deltahex.CodeAreaUtils;
-import org.exbin.deltahex.CodeType;
-import org.exbin.deltahex.EditationAllowed;
-import org.exbin.deltahex.EditationMode;
-import org.exbin.deltahex.PositionCodeType;
-import org.exbin.deltahex.Section;
-import org.exbin.deltahex.SelectionChangedListener;
-import org.exbin.deltahex.SelectionRange;
-import org.exbin.deltahex.ViewMode;
+import org.exbin.deltahex.*;
 import org.exbin.deltahex.highlight.swing.HighlightCodeAreaPainter;
 import org.exbin.deltahex.swing.CodeArea;
 import org.exbin.deltahex.swing.CodeArea.BackgroundMode;
@@ -108,13 +21,22 @@ import org.exbin.utils.binary_data.OutOfBoundsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.io.IStreamSource;
-import iped.io.SeekableInputStream;
-import iped.utils.IOUtil;
-import iped.utils.SeekableFileInputStream;
-import iped.utils.UiUtil;
-import iped.viewers.api.AbstractViewer;
-import iped.viewers.localization.Messages;
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileView;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
+import java.awt.geom.Rectangle2D;
+import java.io.*;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.util.*;
+import java.util.List;
 
 /**
  *
@@ -1666,7 +1588,7 @@ public class HexViewerPlus extends AbstractViewer implements KeyListener, MouseL
         ActionMap aMap = rootPane.getActionMap();
         aMap.put("escape", new AbstractAction() {
             /**
-             * 
+             *
              */
             private static final long serialVersionUID = 1L;
 
@@ -2081,7 +2003,7 @@ public class HexViewerPlus extends AbstractViewer implements KeyListener, MouseL
         ActionMap aMap = rootPane.getActionMap();
         aMap.put("escape", new AbstractAction() {
             /**
-             * 
+             *
              */
             private static final long serialVersionUID = 1L;
 
@@ -2181,7 +2103,7 @@ public class HexViewerPlus extends AbstractViewer implements KeyListener, MouseL
         ActionMap aMap = rootPane.getActionMap();
         aMap.put("escape", new AbstractAction() {
             /**
-             * 
+             *
              */
             private static final long serialVersionUID = 1L;
 
@@ -2369,7 +2291,7 @@ public class HexViewerPlus extends AbstractViewer implements KeyListener, MouseL
         ActionMap aMap = rootPane.getActionMap();
         aMap.put("escape", new AbstractAction() {
             /**
-             * 
+             *
              */
             private static final long serialVersionUID = 1L;
 
@@ -2601,7 +2523,7 @@ public class HexViewerPlus extends AbstractViewer implements KeyListener, MouseL
         ActionMap aMap = rootPane.getActionMap();
         aMap.put("escape", new AbstractAction() {
             /**
-             * 
+             *
              */
             private static final long serialVersionUID = 1L;
 
@@ -2662,7 +2584,7 @@ class MyComboBoxEditor implements ComboBoxEditor {
 
 class HVPComboField extends JComboBox<String> {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private int base = 10;
@@ -2848,7 +2770,7 @@ class HVPComboField extends JComboBox<String> {
 
 class HVPTextField extends JTextField {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private int base = 10;
@@ -3136,7 +3058,7 @@ class ByteArraySeekData extends ByteArrayEditableData {
 class FilterComboBox extends JComboBox<String> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private List<String> entries;
@@ -3204,7 +3126,7 @@ class FilterComboBox extends JComboBox<String> {
 class HVPSettings implements Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -3380,7 +3302,7 @@ class customFileFilter extends javax.swing.filechooser.FileFilter {
 class RoundButton extends JButton {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     Shape shape;
@@ -3473,7 +3395,7 @@ class RoundButton extends JButton {
 class CursorComponent extends JComponent {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     CodeArea codeArea;
@@ -3785,11 +3707,11 @@ class CursorComponent extends JComponent {
 // Class that emulates java ResourceBundle - comment if needed
 /*
  * class Messages {
- * 
+ *
  * static Map<String,String> map = new HashMap<String,String>();
- * 
+ *
  * static {
- * 
+ *
  * map.put( "HexViewerPlus.TabName", "Hex" ); map.put( "HexViewerPlus.appName",
  * "Hex AbstractViewer Plus" ); map.put( "HexViewerPlus.HvpFileSettings",
  * "Arquivo de Configuração do Hex AbstractViewer Plus" ); map.put(
@@ -3863,15 +3785,15 @@ class CursorComponent extends JComponent {
  * "HexViewerPlus.showLineNumberBackground","Mesclar Cabeçalho com Layout" );
  * map.put( "HexViewerPlus.headerLineBackground","Cabeçalho e Linhas Numeradas:"
  * );
- * 
+ *
  * map.put( "HexSearcherImpl.hits", "ocorrências" ); map.put(
  * "HexSearcherImpl.hit", "Ocorrência" ); map.put( "HexSearcherImpl.of", "de" );
  * map.put( "HexSearcherImpl.timeLeft", "Tempo Restante" ); map.put(
  * "HexSearcherImpl.noHits", "Nenhum resultado encontrado" );
- * 
- * 
+ *
+ *
  * //English
- * 
+ *
  * map.put( "HexViewerPlus.TabName", "Hex" ); map.put( "HexViewerPlus.appName",
  * "Hex AbstractViewer Plus" ); map.put( "HexViewerPlus.HvpFileSettings",
  * "Hex AbstractViewer Plus File Settings" ); map.put( "HexViewerPlus.position",
@@ -3941,16 +3863,16 @@ class CursorComponent extends JComponent {
  * "HexViewerPlus.showLineNumberBackground","Merge Header and Line Column Background"
  * ); map.put(
  * "HexViewerPlus.headerLineBackground","Header and Line Number Column:" );
- * 
+ *
  * map.put( "HexSearcherImpl.hits", "Hits" ); map.put( "HexSearcherImpl.hit",
  * "Hit" ); map.put( "HexSearcherImpl.of", "of" ); map.put(
  * "HexSearcherImpl.timeLeft", "Time Left" ); map.put( "HexSearcherImpl.noHits",
  * "No results found" );
- * 
- * 
- * 
+ *
+ *
+ *
  * }
- * 
+ *
  * public static String getString(String key) { if ( map.containsKey( key ) ) {
  * return map.get(key); }else{ return "NOT FOUND MSG"; } } }
  */

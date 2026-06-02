@@ -1,13 +1,26 @@
 package iped.parsers.ufed;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import iped.data.IItem;
+import iped.data.IItemReader;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.ufed.handler.AttachmentHandler;
+import iped.parsers.ufed.handler.ChatActivityHandler;
+import iped.parsers.ufed.handler.ContactHandler;
+import iped.parsers.ufed.handler.InstantMessageHandler;
+import iped.parsers.ufed.model.Attachment;
+import iped.parsers.ufed.model.ChatActivity;
+import iped.parsers.ufed.model.Contact;
+import iped.parsers.ufed.model.InstantMessage;
+import iped.parsers.util.Messages;
+import iped.parsers.util.OmitEmptyArraysTypeAdapterFactory;
+import iped.properties.BasicProps;
+import iped.properties.MediaTypes;
+import iped.search.IItemSearcher;
+import iped.utils.EmptyInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -26,28 +39,13 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import iped.data.IItem;
-import iped.data.IItemReader;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.ufed.handler.AttachmentHandler;
-import iped.parsers.ufed.handler.ChatActivityHandler;
-import iped.parsers.ufed.handler.ContactHandler;
-import iped.parsers.ufed.handler.InstantMessageHandler;
-import iped.parsers.ufed.model.Attachment;
-import iped.parsers.ufed.model.ChatActivity;
-import iped.parsers.ufed.model.Contact;
-import iped.parsers.ufed.model.InstantMessage;
-import iped.parsers.util.Messages;
-import iped.parsers.util.OmitEmptyArraysTypeAdapterFactory;
-import iped.properties.BasicProps;
-import iped.properties.MediaTypes;
-import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class UfedMessageParser extends AbstractParser {
 

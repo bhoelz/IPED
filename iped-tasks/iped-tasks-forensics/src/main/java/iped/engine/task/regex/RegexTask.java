@@ -1,38 +1,6 @@
 package iped.engine.task.regex;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Reader;
-import java.io.Serializable;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.nustaq.serialization.FSTConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import dk.brics.automaton.Automaton;
-import dk.brics.automaton.AutomatonMatcher;
-import dk.brics.automaton.BasicOperations;
-import dk.brics.automaton.DatatypesAutomatonProvider;
-import dk.brics.automaton.RegExp;
-import dk.brics.automaton.RunAutomaton;
+import dk.brics.automaton.*;
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -47,6 +15,14 @@ import iped.engine.task.AbstractTask;
 import iped.engine.task.PhotoDNALookup;
 import iped.engine.task.index.IndexItem;
 import iped.properties.ExtraProperties;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.nustaq.serialization.FSTConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.util.*;
 
 public class RegexTask extends AbstractTask {
 
@@ -95,7 +71,7 @@ public class RegexTask extends AbstractTask {
     static class Regex implements Serializable {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 
@@ -291,7 +267,7 @@ public class RegexTask extends AbstractTask {
         }
 
         processRegex(evidence, new StringReader(evidence.getName()));
-        
+
         processRegex(evidence, getExtraAttributeReader(evidence));
     }
 

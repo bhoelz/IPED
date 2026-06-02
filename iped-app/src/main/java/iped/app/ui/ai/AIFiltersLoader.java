@@ -1,16 +1,5 @@
 package iped.app.ui.ai;
 
-import java.io.IOException;
-import java.text.Collator;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-
 import iped.app.ui.App;
 import iped.engine.config.AIFiltersConfig;
 import iped.engine.config.ConfigurationManager;
@@ -20,6 +9,16 @@ import iped.engine.data.SimpleFilterNode;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.search.LuceneSearchResult;
 import iped.engine.search.SimpleNodeFilterSearch;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+
+import java.io.IOException;
+import java.text.Collator;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AIFiltersLoader {
     public static void load() {

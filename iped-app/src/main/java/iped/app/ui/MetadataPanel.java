@@ -1,55 +1,7 @@
 package iped.app.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import javax.swing.Box;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.queryparser.complexPhrase.ComplexPhraseQueryParser;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.BooleanQuery.Builder;
-import org.apache.lucene.search.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import iped.app.metadata.*;
 import iped.app.ui.columns.ColumnsManager;
-import iped.app.metadata.CountComparator;
-import iped.app.metadata.MetadataSearch;
-import iped.app.metadata.MoneyCount;
-import iped.app.metadata.ValueCount;
-import iped.app.metadata.ValueCountQueryFilter;
 import iped.app.ui.controls.HintTextField;
 import iped.app.ui.controls.HoverButton;
 import iped.engine.search.MultiSearchResult;
@@ -68,6 +20,27 @@ import iped.utils.StringUtil;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IResultSetFilter;
 import iped.viewers.api.IResultSetFilterer;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.queryparser.complexPhrase.ComplexPhraseQueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BooleanQuery.Builder;
+import org.apache.lucene.search.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import javax.swing.event.*;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 public class MetadataPanel extends JPanel implements ActionListener, ListSelectionListener, ChangeListener, IResultSetFilterer {
 

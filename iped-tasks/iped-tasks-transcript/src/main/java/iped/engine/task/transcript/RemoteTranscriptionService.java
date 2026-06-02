@@ -1,15 +1,16 @@
 package iped.engine.task.transcript;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import iped.engine.config.AudioTranscriptConfig;
+import iped.engine.config.Configuration;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.LocalConfig;
+import iped.engine.task.transcript.AbstractTranscriptTask.TextAndScore;
+import iped.io.URLUtil;
+import iped.utils.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -25,17 +26,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.engine.config.AudioTranscriptConfig;
-import iped.engine.config.Configuration;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.LocalConfig;
-import iped.engine.task.transcript.AbstractTranscriptTask.TextAndScore;
-import iped.io.URLUtil;
-import iped.utils.IOUtil;
 
 public class RemoteTranscriptionService {
     // 30 minutos

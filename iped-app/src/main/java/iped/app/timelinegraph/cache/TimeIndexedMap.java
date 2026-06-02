@@ -1,21 +1,15 @@
 package iped.app.timelinegraph.cache;
 
+import iped.app.timelinegraph.cache.persistance.CachePersistance;
+import org.apache.pdfbox.io.RandomAccessInputStream;
+import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import org.apache.pdfbox.io.RandomAccessInputStream;
-import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
-
-import iped.app.timelinegraph.cache.persistance.CachePersistance;
+import java.util.*;
 
 public class TimeIndexedMap extends HashMap<String, Set<CacheTimePeriodEntry>> {
     HashMap<String, TreeMap<Long, Long>> upperPeriodIndex = new HashMap<String, TreeMap<Long, Long>>();

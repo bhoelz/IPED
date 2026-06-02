@@ -1,48 +1,22 @@
 package iped.viewers;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridLayout;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import iped.io.IStreamSource;
+import iped.utils.IOUtil;
+import iped.viewers.api.AbstractViewer;
+import iped.viewers.localization.Messages;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-
-import org.apache.pdfbox.io.MemoryUsageSetting;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.PDFRenderer;
-
-import iped.io.IStreamSource;
-import iped.utils.IOUtil;
-import iped.viewers.api.AbstractViewer;
-import iped.viewers.localization.Messages;
 
 public class PDFBoxViewer extends AbstractViewer {
 
@@ -95,7 +69,7 @@ public class PDFBoxViewer extends AbstractViewer {
 
         imgPanel = new JPanel() {
             /**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 

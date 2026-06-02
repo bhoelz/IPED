@@ -1,9 +1,8 @@
 package iped.app.graph;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
-
-import javax.swing.AbstractAction;
 
 public class SearchLinksAction extends AbstractAction {
 

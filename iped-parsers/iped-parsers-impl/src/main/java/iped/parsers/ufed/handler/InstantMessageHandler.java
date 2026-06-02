@@ -1,40 +1,20 @@
 package iped.parsers.ufed.handler;
 
-import static iped.properties.ExtraProperties.COMMUNICATION_DIRECTION;
-import static iped.properties.ExtraProperties.COMMUNICATION_FROM;
-import static iped.properties.ExtraProperties.COMMUNICATION_TO;
-import static iped.properties.ExtraProperties.MESSAGE_ATTACHMENT_COUNT;
-import static iped.properties.ExtraProperties.PARENT_VIEW_POSITION;
-import static iped.properties.ExtraProperties.UFED_COORDINATE_ID;
-import static iped.properties.ExtraProperties.UFED_ID;
-import static iped.properties.ExtraProperties.UFED_META_PREFIX;
-import static iped.properties.ExtraProperties.UFED_SOURCE_MODELS;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import iped.data.IItemReader;
+import iped.parsers.ufed.model.*;
+import iped.parsers.util.ConversationConstants;
+import iped.properties.BasicProps;
+import iped.search.IItemSearcher;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.Geographic;
 import org.apache.tika.metadata.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.data.IItemReader;
-import iped.parsers.ufed.model.Attachment;
-import iped.parsers.ufed.model.Contact;
-import iped.parsers.ufed.model.InstantMessage;
-import iped.parsers.ufed.model.JumpTarget;
-import iped.parsers.ufed.model.Party;
-import iped.parsers.ufed.model.QuotedMessageData;
-import iped.parsers.ufed.model.ReplyMessageData;
-import iped.parsers.util.ConversationConstants;
-import iped.properties.BasicProps;
-import iped.search.IItemSearcher;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static iped.properties.ExtraProperties.*;
 
 /**
  * Handles all processing logic for an InstantMessage model.

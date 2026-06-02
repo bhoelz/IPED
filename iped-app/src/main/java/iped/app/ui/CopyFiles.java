@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,26 +18,18 @@
  */
 package iped.app.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-
-import javax.swing.JFileChooser;
-import javax.swing.ProgressMonitor;
-import javax.swing.SwingWorker;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IItem;
 import iped.data.IItemId;
 import iped.engine.util.Util;
 import iped.utils.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.*;
+import java.util.ArrayList;
 
 public class CopyFiles extends SwingWorker<Boolean, Integer> implements PropertyChangeListener {
 

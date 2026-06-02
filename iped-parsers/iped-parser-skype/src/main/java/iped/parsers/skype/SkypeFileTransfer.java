@@ -1,9 +1,9 @@
 package iped.parsers.skype;
 
-import java.util.Date;
-
 import iped.data.IItemReader;
 import iped.parsers.util.Messages;
+
+import java.util.Date;
 
 /**
  * Representa uma troca de arquivos pelo Skype registrada no main.db

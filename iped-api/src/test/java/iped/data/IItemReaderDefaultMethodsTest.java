@@ -1,29 +1,19 @@
 package iped.data;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import iped.datasource.IDataSource;
+import iped.io.ISeekableInputStreamFactory;
+import iped.io.SeekableInputStream;
+import org.junit.jupiter.api.Test;
 
+import javax.imageio.stream.ImageInputStream;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import javax.imageio.stream.ImageInputStream;
-
-import org.junit.jupiter.api.Test;
-
-import iped.datasource.IDataSource;
-import iped.io.ISeekableInputStreamFactory;
-import iped.io.SeekableInputStream;
+import static org.junit.jupiter.api.Assertions.*;
 
 class IItemReaderDefaultMethodsTest {
 

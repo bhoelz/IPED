@@ -1,28 +1,5 @@
 package iped.app.ui.columns;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-
 import iped.app.ui.App;
 import iped.app.ui.Messages;
 import iped.app.ui.ResultTableModel;
@@ -31,6 +8,17 @@ import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.localization.LocalizedProperties;
 import iped.utils.StringUtil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ColumnsSelectUI extends ColumnsManagerUI {
 
@@ -127,7 +115,7 @@ public class ColumnsSelectUI extends ColumnsManagerUI {
     }
 
     protected Set<String> getDefaultProperties() {
-        return Set.of(ResultTableModel.BOOKMARK_COL, IndexItem.NAME, IndexItem.EXT, IndexItem.TYPE, IndexItem.LENGTH, IndexItem.DELETED, 
+        return Set.of(ResultTableModel.BOOKMARK_COL, IndexItem.NAME, IndexItem.EXT, IndexItem.TYPE, IndexItem.LENGTH, IndexItem.DELETED,
                 IndexItem.CATEGORY, IndexItem.CREATED, IndexItem.MODIFIED, IndexItem.ACCESSED, IndexItem.CHANGED, IndexItem.HASH, IndexItem.PATH);
     }
 

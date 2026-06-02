@@ -1,6 +1,6 @@
 /*
  * Copyright 2020-2020, João Vitor de Sá Hauck
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,10 +18,10 @@
  */
 package iped.parsers.telegram;
 
-import java.util.ArrayList;
-
 import dpf.ap.gpinf.interfacetelegram.ChatInterface;
 import dpf.ap.gpinf.interfacetelegram.ContactInterface;
+
+import java.util.ArrayList;
 
 public class Chat implements ChatInterface {
     private ArrayList<MessageMultiMedia> messages = new ArrayList<>();

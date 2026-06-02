@@ -1,23 +1,5 @@
 package iped.viewers;
 
-import java.awt.Desktop;
-import java.awt.GridLayout;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import iped.data.IItem;
 import iped.io.IStreamSource;
 import iped.parsers.util.Util;
@@ -36,6 +18,22 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class HtmlViewer extends AbstractViewer {
 
@@ -245,14 +243,14 @@ public class HtmlViewer extends AbstractViewer {
                                         isNavigableTree = nt.booleanValue();
                                     } catch (Exception e) {
                                     }
-    
+
                                     currentHit = -1;
                                     totalHits = 0;
                                     hits = new ArrayList<Object>();
                                     if (highlightTerms != null && highlightTerms.size() > 0) {
                                         highlightNode(doc, false, exec);
                                     }
-    
+
                                 } else if (tmpFile != null) {
                                     LOGGER.info("Null DOM to highlight!");
                                     queryTerms = highlightTerms.toArray(new String[0]);
@@ -311,7 +309,7 @@ public class HtmlViewer extends AbstractViewer {
                             highlightNode(doc, false, exec);
                             scrollToPosition();
                         }
-                        if (hitsUpdater != null) {                    
+                        if (hitsUpdater != null) {
                             hitsUpdater.updateHits(currentHit + 1, totalHits);
                         }
                     } catch(Exception e) {

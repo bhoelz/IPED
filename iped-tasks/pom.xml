@@ -17,14 +17,12 @@
         <module>iped-tasks-bom</module>
         <module>iped-tasks-core</module>
         <module>iped-tasks-transcript</module>
-        <module>iped-tasks-search</module>
         <module>iped-tasks-image</module>
         <module>iped-tasks-storage-index</module>
         <module>iped-tasks-carving</module>
         <module>iped-tasks-graph</module>
         <module>iped-tasks-report</module>
         <module>iped-tasks-forensics</module>
-        <module>iped-tasks-coverage</module>
     </modules>
 
     <dependencyManagement>

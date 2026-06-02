@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -17,17 +17,6 @@
  * along with IPED.  If not, see <http://www.gnu.org/licenses/>.
  */
 package iped.app.processing;
-
-import java.awt.GraphicsEnvironment;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import iped.app.bootstrap.Bootstrap;
 import iped.app.config.LogConfiguration;
@@ -46,6 +35,16 @@ import iped.engine.util.UIPropertyListenerProvider;
 import iped.exception.IPEDException;
 import iped.io.URLUtil;
 import iped.parsers.ocr.OCRParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.List;
 
 /**
  * Processing program entry point.
@@ -330,7 +329,7 @@ public class Main {
             }
 
             Configuration.getInstance().loadConfigurables(iped.configPath, true);
-            
+
             SystemOut.println(Bootstrap.SUB_PROCESS_TEMP_FOLDER + System.getProperty("java.io.tmpdir"));
 
             success = iped.execute();

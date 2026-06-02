@@ -1,6 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import {Injectable, signal} from '@angular/core';
 
-import { Configuration } from '../api/generated/configuration';
+import {Configuration} from '../api/generated/configuration';
 
 const STORAGE_KEY = 'iped.webui.api.basePath';
 const DEFAULT_BASE_PATH = 'http://localhost:8080';

@@ -1,21 +1,5 @@
 package iped.geo.kml;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.function.Consumer;
-
-import javax.swing.JProgressBar;
-import javax.swing.SortOrder;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.tika.metadata.Metadata;
-
 import iped.data.IItemId;
 import iped.geo.localization.Messages;
 import iped.properties.BasicProps;
@@ -25,6 +9,15 @@ import iped.search.IMultiSearchResult;
 import iped.utils.DateUtil;
 import iped.utils.SimpleHTMLEncoder;
 import iped.viewers.api.IMultiSearchResultProvider;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.tika.metadata.Metadata;
+
+import javax.swing.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Consumer;
 
 public class GetResultsKMLWorker extends iped.viewers.api.CancelableWorker<KMLResult, Integer> {
     IMultiSearchResultProvider app;

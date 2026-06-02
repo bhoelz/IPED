@@ -1,29 +1,19 @@
 package iped.engine.task.transcript;
 
+import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.speech.v1p1beta1.*;
+import com.google.cloud.speech.v1p1beta1.RecognitionConfig.Builder;
+import com.google.protobuf.ByteString;
+import iped.engine.config.ConfigurationManager;
+import iped.exception.IPEDException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.speech.v1p1beta1.LongRunningRecognizeMetadata;
-import com.google.cloud.speech.v1p1beta1.LongRunningRecognizeRequest;
-import com.google.cloud.speech.v1p1beta1.LongRunningRecognizeResponse;
-import com.google.cloud.speech.v1p1beta1.RecognitionAudio;
-import com.google.cloud.speech.v1p1beta1.RecognitionConfig;
-import com.google.cloud.speech.v1p1beta1.RecognitionConfig.Builder;
-import com.google.cloud.speech.v1p1beta1.SpeechClient;
-import com.google.cloud.speech.v1p1beta1.SpeechRecognitionAlternative;
-import com.google.cloud.speech.v1p1beta1.SpeechRecognitionResult;
-import com.google.protobuf.ByteString;
-
-import iped.engine.config.ConfigurationManager;
-import iped.exception.IPEDException;
 
 public class GoogleTranscriptTask extends AbstractTranscriptTask {
 
@@ -42,7 +32,7 @@ public class GoogleTranscriptTask extends AbstractTranscriptTask {
     public static final MediaType aac = MediaType.audio("x-aac");
     public static final MediaType speex = MediaType.audio("speex");
      */
-    
+
     private static Object lock = new Object();
     private static long lastTime = 0;
 
@@ -130,20 +120,20 @@ public class GoogleTranscriptTask extends AbstractTranscriptTask {
 
             /*
              * // Sample rate in Hertz of the audio data sent int sampleRateHertz = 48000;
-             * 
+             *
              * // Encoding of audio data sent. This sample sets this explicitly. // This
              * field is optional for FLAC and WAV audio formats.
              * RecognitionConfig.AudioEncoding encoding =
              * RecognitionConfig.AudioEncoding.MP3;
-             * 
+             *
              * boolean wavOrflac = false; if(evidence.getMediaType().equals(oggopus)) {
              * //does not work... //encoding = RecognitionConfig.AudioEncoding.OGG_OPUS;
-             * 
+             *
              * }else if(evidence.getMediaType().equals(flac)) { encoding =
              * RecognitionConfig.AudioEncoding.FLAC; wavOrflac = true; }else
              * if(evidence.getMediaType().equals(wav)) { encoding =
              * RecognitionConfig.AudioEncoding.LINEAR16; wavOrflac = true; }
-             * 
+             *
              * if(!wavOrflac) { builder.setEncoding(encoding);
              * builder.setSampleRateHertz(sampleRateHertz); }
              */

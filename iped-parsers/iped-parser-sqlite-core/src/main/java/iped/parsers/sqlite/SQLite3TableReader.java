@@ -16,29 +16,23 @@ package iped.parsers.sqlite;
  * limitations under the License.
  */
 
-import java.io.IOException;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
+import iped.parsers.jdbc.JDBCTableReader;
+import iped.parsers.util.Messages;
+import iped.utils.TimeConverter;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.jdbc.JDBCTableReader;
-import iped.parsers.util.Messages;
-import iped.utils.TimeConverter;
+import java.io.IOException;
+import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Concrete class for SQLLite table parsing. This overrides column type handling

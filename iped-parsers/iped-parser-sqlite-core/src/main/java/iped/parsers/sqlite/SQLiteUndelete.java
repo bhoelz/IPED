@@ -1,5 +1,11 @@
 package iped.parsers.sqlite;
 
+import fqlite.base.Base;
+import fqlite.base.Global;
+import fqlite.base.Job;
+import fqlite.base.SqliteRow;
+import fqlite.descriptor.TableDescriptor;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,12 +14,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-
-import fqlite.base.Base;
-import fqlite.base.Global;
-import fqlite.base.Job;
-import fqlite.base.SqliteRow;
-import fqlite.descriptor.TableDescriptor;
 
 public class SQLiteUndelete {
     private Path sqliteFile = null;
@@ -82,7 +82,7 @@ public class SQLiteUndelete {
         job.collectInternalRows = false;
         result = new HashMap<>();
 
-        
+
         if (job.processDB() == 0) {
             for (TableDescriptor td : job.headers.values()) {
                 if (td.columnnames != null) {
@@ -109,7 +109,7 @@ public class SQLiteUndelete {
         if (row.isDeletedRow()) {
             return true;
         }
-        
+
         if (!recoverOnlyDeletedRecords) {
             if (!tablesToRecoverOnlyDeleted.contains(tableName)) {
                 return true;

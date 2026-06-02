@@ -1,24 +1,17 @@
 package iped.app.ui;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Shape;
+import iped.data.IItem;
+import iped.viewers.api.ClearFilterListener;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-
-import javax.imageio.ImageIO;
-import javax.swing.JPanel;
-
-import iped.data.IItem;
-import iped.viewers.api.ClearFilterListener;
 
 public class SimilarImagesFilterPanel extends JPanel implements ClearFilterListener {
     private static final long serialVersionUID = -6323740427378842045L;

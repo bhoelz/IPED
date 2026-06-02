@@ -1,16 +1,12 @@
 package iped.app.ui.bookmarks;
 
-import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import iped.data.IMultiBookmarks;
+
+import java.awt.*;
 import java.awt.RenderingHints.Key;
-import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
-
-import iped.data.IMultiBookmarks;
 
 public class BookmarkCellRenderer {
     private static final RenderingHints renderingHints;

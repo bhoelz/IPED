@@ -1,11 +1,10 @@
 package iped.parsers.registry.keys;
 
-import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-
+import iped.parsers.registry.model.KeyNode;
+import iped.parsers.registry.model.KeyValue;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.EmbeddedParent;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -16,11 +15,11 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 
-import iped.parsers.registry.model.KeyNode;
-import iped.parsers.registry.model.KeyValue;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.EmbeddedParent;
-import iped.properties.ExtraProperties;
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class CertificateKeyParser extends HtmlKeyParser {
 

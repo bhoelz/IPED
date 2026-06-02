@@ -1,19 +1,17 @@
 package iped.viewers.util;
 
+import iped.utils.IOUtil;
+import iped.viewers.api.CancelableWorker;
+import iped.viewers.localization.Messages;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
-
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-
-import iped.utils.IOUtil;
-import iped.viewers.api.CancelableWorker;
-import iped.viewers.localization.Messages;
 
 /**
  *
@@ -73,7 +71,7 @@ public class LOExtractor extends CancelableWorker<Object, Object> {
 
                             if (progressMonitor != null) {
                                 progressMonitor.setProgress(progress);
-    
+
                                 if (progressMonitor.isCanceled())
                                     break;
                             }

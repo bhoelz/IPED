@@ -1,17 +1,11 @@
 package iped.parsers.ufed.handler;
 
-import static iped.properties.ExtraProperties.COMMUNICATION_DATE;
-import static iped.properties.ExtraProperties.MESSAGE_BODY;
-import static iped.properties.ExtraProperties.MESSAGE_SUBJECT;
-import static iped.properties.ExtraProperties.UFED_JUMP_TARGETS;
-import static iped.properties.ExtraProperties.UFED_META_PREFIX;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-
+import iped.data.IItem;
+import iped.data.IItemReader;
+import iped.parsers.ufed.model.BaseModel;
+import iped.parsers.util.HashUtils;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.Property;
@@ -20,12 +14,9 @@ import org.apache.tika.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.data.IItem;
-import iped.data.IItemReader;
-import iped.parsers.ufed.model.BaseModel;
-import iped.parsers.util.HashUtils;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
+import java.util.*;
+
+import static iped.properties.ExtraProperties.*;
 
 /**
  * Base handler for handling common operations on UFED models.

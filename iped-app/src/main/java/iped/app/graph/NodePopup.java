@@ -1,13 +1,11 @@
 package iped.app.graph;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-
+import iped.app.ui.Messages;
 import org.kharon.Node;
 
-import iped.app.ui.Messages;
+import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 public class NodePopup extends JPopupMenu implements PopupMenuListener {
 

@@ -1,17 +1,12 @@
 package iped.parsers.emule;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.IItemReader;
+import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.Messages;
+import iped.parsers.util.P2PUtil;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.LocalizedFormat;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -26,19 +21,19 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import iped.data.IItemReader;
-import iped.parsers.util.ChildPornHashLookup;
-import iped.parsers.util.Messages;
-import iped.parsers.util.P2PUtil;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.LocalizedFormat;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * e-Mule "part.met" files parser. These files store information about files
  * being downloaded, which in some case are not present in the main e-Mule
  * control file (known.met).
- * 
+ *
  * @author Wladimir
  */
 public class PartMetParser extends AbstractParser {
@@ -88,7 +83,7 @@ public class PartMetParser extends AbstractParser {
 
         metadata.add(ExtraProperties.SHARED_HASHES, e.getHash());
         metadata.set(ExtraProperties.P2P_REGISTRY_COUNT, String.valueOf(1));
-        
+
         IItemSearcher searcher = context.get(IItemSearcher.class);
 
         XHTMLContentHandler xhtml = new XHTMLContentHandler(handler, metadata);
@@ -121,7 +116,7 @@ public class PartMetParser extends AbstractParser {
 
         AttributesImpl attributes = new AttributesImpl();
         if (e.getHash() != null && !e.getHash().isEmpty())
-            attributes.addAttribute("", "name", "name", "CDATA", e.getHash().toUpperCase());    
+            attributes.addAttribute("", "name", "name", "CDATA", e.getHash().toUpperCase());
         xhtml.startElement("tr", attributes);
         xhtml.startElement("td", "class", "a");
         xhtml.characters(Messages.getString("KnownMetParser.Name"));
@@ -151,7 +146,7 @@ public class PartMetParser extends AbstractParser {
 
         if (hashDBHits > 0)
             metadata.set(ExtraProperties.CSAM_HASH_HITS, Integer.toString(hashDBHits));
-        
+
         xhtml.endElement("table");
         xhtml.endDocument();
     }

@@ -1,13 +1,13 @@
 package iped.parsers.browsers.chrome;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import iped.data.IItemReader;
+import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
+import iped.parsers.discord.cache.CacheEntry;
+import iped.parsers.discord.cache.Index;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.IOUtil;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -21,14 +21,13 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
-import iped.parsers.discord.cache.CacheEntry;
-import iped.parsers.discord.cache.Index;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.IOUtil;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class CacheIndexParser extends AbstractParser {
 

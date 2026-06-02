@@ -24,16 +24,10 @@ package iped.app.ui.parallelsorter;
  *
  *
  */
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
-import javax.swing.RowFilter;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
+import javax.swing.*;
+import java.text.Collator;
+import java.util.*;
 
 /**
  * An implementation of <code>RowSorter</code> that provides sorting and
@@ -1386,7 +1380,7 @@ public abstract class ParallelRowSorter<M, I> extends RowSorter<M> {
             modelIndex = index;
         }
     }
-    
+
     private static class RowComparator implements Comparator<Row> {
 
         private ParallelRowSorter sorter;

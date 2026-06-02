@@ -1,10 +1,10 @@
 package iped.engine.task.regex.validator.crypto;
 
+import iped.engine.task.regex.BasicAbstractRegexValidatorService;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-
-import iped.engine.task.regex.BasicAbstractRegexValidatorService;
 
 public class RippleAddressValidatorService extends BasicAbstractRegexValidatorService {
     private static final Base58CheckedValidator base58validator = new Base58CheckedValidator(

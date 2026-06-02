@@ -1,14 +1,15 @@
 package iped.parsers.registry;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.ICaseData;
+import iped.parsers.registry.keys.RegistryKeyParser;
+import iped.parsers.registry.keys.RegistryKeyParserManager;
+import iped.parsers.registry.model.KeyNode;
+import iped.parsers.registry.model.KeyValue;
+import iped.parsers.registry.model.RegistryFile;
+import iped.parsers.registry.model.RegistryFileException;
+import iped.parsers.util.EmbeddedItem;
+import iped.parsers.util.EmbeddedParent;
+import iped.parsers.util.ItemInfo;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
@@ -20,16 +21,10 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.ICaseData;
-import iped.parsers.registry.keys.RegistryKeyParser;
-import iped.parsers.registry.keys.RegistryKeyParserManager;
-import iped.parsers.registry.model.KeyNode;
-import iped.parsers.registry.model.KeyValue;
-import iped.parsers.registry.model.RegistryFile;
-import iped.parsers.registry.model.RegistryFileException;
-import iped.parsers.util.EmbeddedItem;
-import iped.parsers.util.EmbeddedParent;
-import iped.parsers.util.ItemInfo;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 public class RegistryParser extends AbstractParser {
 
@@ -162,7 +157,7 @@ public class RegistryParser extends AbstractParser {
             }
         }
     }
-    
+
     private void keyParser(KeyNode kn, boolean hasChildren, String keyPath, String parentPath, ContentHandler handler, Metadata metadata, ParseContext context, HashMap<String, EmbeddedParent> parentMap) throws TikaException {
         RegistryKeyParser parser = RegistryKeyParserManager.getRegistryKeyParserManager().getRegistryKeyParser(keyPath);
         if (parser != null) {

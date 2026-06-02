@@ -1,16 +1,14 @@
 package iped.app.graph;
 
-import java.util.Collection;
-import java.util.HashSet;
-
-import javax.swing.SwingWorker;
-
-import org.kharon.Node;
-
 import iped.app.ui.Messages;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.graph.NodeQueryListener;
+import org.kharon.Node;
+
+import javax.swing.*;
+import java.util.Collection;
+import java.util.HashSet;
 
 class AddNodeWorker extends SwingWorker<Void, Node> implements NodeQueryListener {
 

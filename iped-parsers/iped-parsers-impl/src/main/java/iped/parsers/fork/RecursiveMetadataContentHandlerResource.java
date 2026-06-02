@@ -16,10 +16,6 @@
  */
 package iped.parsers.fork;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.apache.tika.fork.ForkResource;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.sax.AbstractRecursiveParserWrapperHandler;
@@ -27,6 +23,10 @@ import org.apache.tika.sax.RecursiveParserWrapperHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 class RecursiveMetadataContentHandlerResource implements ForkResource {
 

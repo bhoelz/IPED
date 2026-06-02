@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,14 +18,9 @@
  */
 package iped.app.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.JProgressBar;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
+import java.awt.*;
 
 public class ProgressCellRenderer extends JProgressBar implements TableCellRenderer {
 

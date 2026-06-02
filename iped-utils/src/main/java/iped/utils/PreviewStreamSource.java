@@ -1,15 +1,15 @@
 package iped.utils;
 
+import iped.data.IItemReader;
+import iped.io.IStreamSource;
+import iped.io.SeekableInputStream;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-
-import iped.data.IItemReader;
-import iped.io.IStreamSource;
-import iped.io.SeekableInputStream;
 
 public class PreviewStreamSource implements IStreamSource {
 

@@ -1,9 +1,8 @@
 package iped.parsers.fork;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.Messages;
+import iped.properties.ExtraProperties;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
 import org.apache.tika.metadata.Metadata;
@@ -14,14 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.Messages;
-import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 
 public class EmbeddedDocumentParser implements EmbeddedDocumentExtractor, Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

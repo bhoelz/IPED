@@ -1,27 +1,5 @@
 package iped.engine.task;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexNotFoundException;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.SortedDocValues;
-import org.apache.lucene.util.BytesRef;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.CmdLineArgs;
@@ -35,13 +13,22 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
 import iped.utils.HashValue;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.*;
+import org.apache.lucene.util.BytesRef;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Task to ignore already commited files into index. Commited containers without
  * all their subitems commited are not ignored to be processed again. Redefines
  * ids and parentIds of incomming items to be equal of commited items if they
  * have same trackID.
- * 
+ *
  * @author Luis Nassif
  *
  */

@@ -1,21 +1,15 @@
 package iped.parsers.vcard;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import ezvcard.Ezvcard;
+import ezvcard.VCard;
+import ezvcard.io.chain.ChainingHtmlWriter;
+import ezvcard.property.*;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import iped.parsers.util.IndentityHtmlParser;
+import iped.parsers.util.Messages;
+import iped.properties.ExtraProperties;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.detect.AutoDetectReader;
 import org.apache.tika.exception.TikaException;
@@ -27,25 +21,10 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import ezvcard.Ezvcard;
-import ezvcard.VCard;
-import ezvcard.io.chain.ChainingHtmlWriter;
-import ezvcard.property.Address;
-import ezvcard.property.Email;
-import ezvcard.property.Organization;
-import ezvcard.property.Photo;
-import ezvcard.property.RawProperty;
-import ezvcard.property.StructuredName;
-import ezvcard.property.Telephone;
-import ezvcard.property.TextListProperty;
-import ezvcard.property.TextProperty;
-import ezvcard.property.VCardProperty;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import iped.parsers.util.IndentityHtmlParser;
-import iped.parsers.util.Messages;
-import iped.properties.ExtraProperties;
-import iped.utils.SimpleHTMLEncoder;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class VCardParser extends AbstractParser {
 

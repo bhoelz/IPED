@@ -1,6 +1,12 @@
 package iped.parsers.whatsapp;
 
-import static iped.parsers.whatsapp.Util.nullToEmpty;
+import fqlite.base.SqliteRow;
+import iped.parsers.sqlite.SQLite3DBParser;
+import iped.parsers.sqlite.SQLiteRecordValidator;
+import iped.parsers.sqlite.SQLiteUndelete;
+import iped.parsers.sqlite.SQLiteUndeleteTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.Connection;
@@ -8,23 +14,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fqlite.base.SqliteRow;
-import iped.parsers.sqlite.SQLite3DBParser;
-import iped.parsers.sqlite.SQLiteRecordValidator;
-import iped.parsers.sqlite.SQLiteUndelete;
-import iped.parsers.sqlite.SQLiteUndeleteTable;
+import static iped.parsers.whatsapp.Util.nullToEmpty;
 
 public abstract class WAContactsExtractorAndroid extends WAContactsExtractor {
-    
+
     private static Logger logger = LoggerFactory.getLogger(WAContactsExtractorAndroid.class);
 
     private static final String SELECT_CONTACT_NAMES = "SELECT * FROM wa_contacts"; //$NON-NLS-1$
 
     private static final String SELECT_VERIFIED_NAMES = "SELECT jid, verified_name FROM wa_vnames";
-    
+
     public WAContactsExtractorAndroid(File database, WAContactsDirectory directory, boolean recoverDeletedRecords) {
         super(database, directory, recoverDeletedRecords);
     }
@@ -33,9 +32,9 @@ public abstract class WAContactsExtractorAndroid extends WAContactsExtractor {
 
     @Override
     public void extractContactList() throws WAExtractorException {
-        
+
         SQLiteUndeleteTable undeletedContactsTable = null;
-        
+
         if (recoverDeletedRecords) {
             try {
                 SQLiteUndelete undelete = new SQLiteUndelete(databaseFile.toPath());
@@ -94,7 +93,7 @@ public abstract class WAContactsExtractorAndroid extends WAContactsExtractor {
             }
         }
     }
-    
+
     private static class WAAndroidContactValidator implements SQLiteRecordValidator {
 
         @Override
@@ -105,7 +104,7 @@ public abstract class WAContactsExtractorAndroid extends WAContactsExtractor {
                     return false;
                 }
                 return true;
-                
+
             } catch (Exception e) {
             }
             return false;

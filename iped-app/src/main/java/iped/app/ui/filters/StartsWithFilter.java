@@ -1,14 +1,13 @@
 package iped.app.ui.filters;
 
-import java.io.IOException;
-
-import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.util.BytesRef;
+
+import java.io.IOException;
 
 /**
  * A ValueFilter that checks in which docs the specified field starts with the
  * provided string value.
- * 
+ *
  * @author Patrick Dalla Bernardina
  * @author Luís Nassif
  */

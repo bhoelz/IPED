@@ -1,37 +1,23 @@
 package iped.parsers.discord;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.tika.sax.XHTMLContentHandler;
-import org.xml.sax.SAXException;
-
 import iped.data.IItemReader;
-import iped.parsers.discord.json.DiscordAttachment;
-import iped.parsers.discord.json.DiscordAuthor;
-import iped.parsers.discord.json.DiscordMention;
-import iped.parsers.discord.json.DiscordReaction;
-import iped.parsers.discord.json.DiscordRoot;
-import iped.parsers.discord.json.DiscordSticker;
+import iped.parsers.discord.json.*;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
 import iped.utils.IOUtil;
 import iped.utils.SimpleHTMLEncoder;
+import org.apache.tika.sax.XHTMLContentHandler;
+import org.xml.sax.SAXException;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /***
- * 
+ *
  * @author PCF Campanini
  *
  */

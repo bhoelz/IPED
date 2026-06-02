@@ -1,11 +1,5 @@
 package iped.app.timelinegraph;
 
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
-import java.util.HashSet;
-
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.plot.CrosshairState;
@@ -18,6 +12,11 @@ import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.general.Dataset;
 import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.data.xy.XYDataset;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class IpedStackedXYBarRenderer extends StackedXYBarRenderer {
     HashMap<Dataset, HashSet<Integer>> invisibleSeries = new HashMap<Dataset, HashSet<Integer>>();

@@ -16,6 +16,20 @@ package iped.parsers.sqlite;
  * limitations under the License.
  */
 
+import iped.data.IItemReader;
+import iped.parsers.jdbc.AbstractDBParser;
+import iped.parsers.jdbc.JDBCTableReader;
+import iped.parsers.util.DelegatingConnection;
+import iped.properties.BasicProps;
+import iped.search.IItemSearcher;
+import iped.utils.IOUtil;
+import org.apache.tika.io.TemporaryResources;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+import org.sqlite.SQLiteConfig;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,21 +43,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.tika.io.TemporaryResources;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.ParseContext;
-import org.sqlite.SQLiteConfig;
-
-import iped.data.IItemReader;
-import iped.parsers.jdbc.AbstractDBParser;
-import iped.parsers.jdbc.JDBCTableReader;
-import iped.parsers.util.DelegatingConnection;
-import iped.properties.BasicProps;
-import iped.search.IItemSearcher;
-import iped.utils.IOUtil;
 
 /**
  * This is the implementation of the db parser for SQLite.
@@ -126,11 +125,11 @@ public class SQLite3DBParser extends AbstractDBParser {
     private static File exportWalLog(File dbFile, ParseContext context, TemporaryResources tmp) {
         return exportRelatedFile(dbFile, "-wal", context, tmp);
     }
-    
+
     private static File exportRollbackJournal(File dbFile, ParseContext context, TemporaryResources tmp) {
         return exportRelatedFile(dbFile, "-journal", context, tmp);
     }
-    
+
     private static File exportRelatedFile(File theFile, String suffix, ParseContext context, TemporaryResources tmp) {
         IItemSearcher searcher = context.get(IItemSearcher.class);
         if (searcher != null) {
@@ -238,7 +237,7 @@ public class SQLite3DBParser extends AbstractDBParser {
         }
         return result;
     }
-    
+
     public static int getIntIfExists(ResultSet rs, String col) throws SQLException {
         int colIdx;
         int result = 0;

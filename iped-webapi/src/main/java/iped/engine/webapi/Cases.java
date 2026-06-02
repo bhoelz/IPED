@@ -1,23 +1,17 @@
 package iped.engine.webapi;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import iped.engine.webapi.json.CaseStatusJSON;
 import iped.engine.webapi.json.DataListJSON;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Api(value = "Cases")
 @Path("cases")

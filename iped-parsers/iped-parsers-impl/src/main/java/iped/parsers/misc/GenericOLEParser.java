@@ -1,20 +1,11 @@
 package iped.parsers.misc;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Set;
-
+import iped.parsers.standard.RawStringParser;
+import iped.utils.IOUtil;
 import org.apache.poi.hpsf.Property;
 import org.apache.poi.hpsf.PropertySet;
 import org.apache.poi.hpsf.Section;
-import org.apache.poi.poifs.filesystem.DirectoryEntry;
-import org.apache.poi.poifs.filesystem.DocumentEntry;
-import org.apache.poi.poifs.filesystem.DocumentInputStream;
-import org.apache.poi.poifs.filesystem.Entry;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.poifs.filesystem.*;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -29,13 +20,13 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.standard.RawStringParser;
-import iped.utils.IOUtil;
+import java.io.*;
+import java.util.Set;
 
 public class GenericOLEParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static Set<MediaType> SUPPORTED_MIMES = MediaType.set("application/x-tika-msoffice");

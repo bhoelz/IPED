@@ -1,10 +1,5 @@
 package iped.engine.task;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.tika.mime.MediaType;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -14,11 +9,15 @@ import iped.engine.datasource.SleuthkitReader;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.util.TextCache;
 import iped.parsers.standard.StandardParser;
+import org.apache.tika.mime.MediaType;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Breaks large binary files (indexed by strings) into smaller pieces to be
  * indexed.
- * 
+ *
  * @author Nassif
  *
  */
@@ -56,7 +55,7 @@ public class FragmentLargeBinaryTask extends BaseCarveTask {
 
     @Override
     protected void process(IItem evidence) throws Exception {
-        
+
         boolean hasSpecificParser = ParsingTask.hasSpecificParser(autoParser, evidence);
         boolean hadParserException = Boolean.valueOf(evidence.getMetadataValue(StandardParser.PARSER_EXCEPTION));
 

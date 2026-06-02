@@ -1,9 +1,8 @@
 package iped.utils;
 
+import iped.data.IHashValue;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-
-import iped.data.IHashValue;
 
 public class HashValue extends IHashValue {
 

@@ -1,16 +1,15 @@
 package iped.parsers.mail.win10.tables;
 
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
+import iped.parsers.browsers.edge.EsedbLibrary;
+import iped.parsers.mail.win10.ColumnCodes;
+import iped.parsers.mail.win10.EsedbManager;
+import iped.parsers.mail.win10.entries.AttachmentEntry;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.PointerByReference;
-
-import iped.parsers.browsers.edge.EsedbLibrary;
-import iped.parsers.mail.win10.ColumnCodes;
-import iped.parsers.mail.win10.entries.AttachmentEntry;
-import iped.parsers.mail.win10.EsedbManager;
 
 public class AttachmentTable extends AbstractTable {
 
@@ -54,7 +53,7 @@ public class AttachmentTable extends AbstractTable {
             messageAttachments.add(attachment);
         }
     }
-    
+
     public ArrayList<AttachmentEntry> getAttachments() {
         return attachmentList;
     }
@@ -107,5 +106,5 @@ public class AttachmentTable extends AbstractTable {
 
         return attachment;
     }
-    
+
 }

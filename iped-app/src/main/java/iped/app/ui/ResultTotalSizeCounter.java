@@ -1,15 +1,13 @@
 package iped.app.ui;
 
-import java.io.IOException;
-
-import javax.swing.SwingUtilities;
-
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.NumericDocValues;
-
 import iped.data.IItemId;
 import iped.engine.task.index.IndexItem;
 import iped.search.IMultiSearchResult;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.index.NumericDocValues;
+
+import javax.swing.*;
+import java.io.IOException;
 
 public class ResultTotalSizeCounter {
 

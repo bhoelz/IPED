@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,6 +18,14 @@
  */
 package iped.app.ui;
 
+import iped.data.IItemId;
+import iped.engine.lucene.analysis.CategoryTokenizer;
+import iped.engine.task.index.IndexItem;
+import iped.engine.util.Util;
+import iped.utils.DateUtil;
+import org.apache.lucene.document.Document;
+
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -27,17 +35,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.TimeZone;
 
-import javax.swing.ProgressMonitor;
-import javax.swing.SwingWorker;
-
-import org.apache.lucene.document.Document;
-
-import iped.data.IItemId;
-import iped.engine.lucene.analysis.CategoryTokenizer;
-import iped.engine.task.index.IndexItem;
-import iped.engine.util.Util;
-import iped.utils.DateUtil;
-
 public class CopyProperties extends SwingWorker<Boolean, Integer> implements PropertyChangeListener {
 
     ArrayList<Integer> uniqueIds;
@@ -45,7 +42,7 @@ public class CopyProperties extends SwingWorker<Boolean, Integer> implements Pro
     ProgressMonitor progressMonitor;
     File file;
     int total;
-    
+
     public CopyProperties(File file, ArrayList<Integer> uniqueIds, ArrayList<String> fields) {
         this.file = file;
         this.uniqueIds = uniqueIds;

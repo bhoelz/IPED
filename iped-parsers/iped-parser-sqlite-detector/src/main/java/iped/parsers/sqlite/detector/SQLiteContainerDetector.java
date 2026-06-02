@@ -1,19 +1,6 @@
 package iped.parsers.sqlite.detector;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
+import iped.utils.IOUtil;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -21,18 +8,25 @@ import org.apache.tika.mime.MediaType;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteOpenMode;
 
-import iped.utils.IOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.sql.*;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Detects subtypes of SQLite based on table names.
- * 
+ *
  * @author Nassif
  *
  */
 public class SQLiteContainerDetector implements Detector {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -182,11 +176,11 @@ public class SQLiteContainerDetector implements Detector {
         if (tableNames.contains("events_persisted") && tableNames.contains("tag_descriptions")
                 && tableNames.contains("provider_groups"))
             return EVENT_TRANSCRIPT;
-        
+
         if (tableNames.contains("cloud_graph_entry") &&
                 tableNames.contains("cloud_relations"))
             return GDRIVE_CLOUD_GRAPH;
-        
+
         if (tableNames.contains("cloud_entry") &&
                 tableNames.contains("mapping") &&
                 tableNames.contains("cloud_relations") &&
@@ -194,7 +188,7 @@ public class SQLiteContainerDetector implements Detector {
                 tableNames.contains("local_relations") &&
                 tableNames.contains("volume_info"))
             return GDRIVE_SNAPSHOT;
-        
+
         if (tableNames.contains("global_preferences") ||
                 tableNames.contains("data"))
             return GDRIVE_ACCOUNT_INFO;
@@ -204,7 +198,7 @@ public class SQLiteContainerDetector implements Detector {
                 && (tableNames.contains("media") || tableNames.contains("media_v2") || tableNames.contains("media_v3")
                         || tableNames.contains("media_v4")))
             return TELEGRAM_DB;
-        
+
         // detection for Telegram iOS DB
         if (tableNames.contains("t0") && tableNames.contains("t2") && tableNames.contains("t6")
                 && tableNames.contains("t7") && tableNames.contains("t9")) {
@@ -271,7 +265,7 @@ public class SQLiteContainerDetector implements Detector {
                 return MediaType.application("x-ios-locations-db");
             }
         }
-        
+
         if (tableNames.contains("ZCONVERSATION") && tableNames.contains("ZMESSAGE") && tableNames.contains("ZCONTACT") && tableNames.contains("ZFILEDATA") && tableNames.contains("ZIMAGEDATA")) {
             return THREEMA_CHAT_STORAGE;
         }

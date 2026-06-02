@@ -1,15 +1,5 @@
 package iped.viewers;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Set;
-
-import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
-
-import org.apache.tika.Tika;
-import org.apache.tika.metadata.Metadata;
-
 import iped.data.IItem;
 import iped.io.IStreamSource;
 import iped.parsers.ares.AresParser;
@@ -29,6 +19,13 @@ import iped.utils.PreviewStreamSource;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.api.AttachmentSearcher;
 import iped.viewers.localization.Messages;
+import org.apache.tika.Tika;
+import org.apache.tika.metadata.Metadata;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Set;
 
 public class ReferencedFileViewer extends AbstractViewer {
 

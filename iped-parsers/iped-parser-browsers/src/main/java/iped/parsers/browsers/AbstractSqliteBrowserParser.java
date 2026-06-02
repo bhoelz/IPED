@@ -1,13 +1,12 @@
 package iped.parsers.browsers;
 
-import org.apache.tika.config.Field;
-
 import iped.parsers.sqlite.SQLite3DBParser;
+import org.apache.tika.config.Field;
 
 public abstract class AbstractSqliteBrowserParser extends SQLite3DBParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

@@ -3,7 +3,6 @@ package iped.webkit.utils;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLStreamHandler;
 
 public class KMLURLConnection extends URLConnection {
 

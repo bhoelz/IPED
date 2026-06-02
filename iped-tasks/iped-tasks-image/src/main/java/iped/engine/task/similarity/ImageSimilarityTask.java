@@ -1,24 +1,22 @@
 package iped.engine.task.similarity;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.imageio.ImageIO;
-
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
 import iped.engine.task.AbstractTask;
 import iped.parsers.util.MetadataUtil;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Image Similarity task.
@@ -69,7 +67,7 @@ public class ImageSimilarityTask extends AbstractTask {
 
                 checkDependency("iped.engine.task.HashTask");
                 checkDependency("iped.engine.task.ImageThumbTask");
-                
+
                 logger.info("Task enabled."); //$NON-NLS-1$
                 init.set(true);
             }

@@ -1,14 +1,7 @@
 package iped.parsers.database;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
+import iped.parsers.util.RepoToolDownloader;
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -20,7 +13,13 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.RepoToolDownloader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 public class EDBParserTest {
     private static String testRoot = System.getProperty("user.dir") + "/src/test";
@@ -43,7 +42,7 @@ public class EDBParserTest {
         }
     }
 
-    
+
     @Test
     public void testEDBParser() throws IOException, SAXException, TikaException {
         Metadata metadata = new Metadata();

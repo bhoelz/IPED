@@ -1,20 +1,12 @@
 package iped.parsers.winx;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.parsers.sqlite.SQLite3DBParser;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.parsers.sqlite.detector.SQLiteContainerDetector;
+import iped.parsers.standard.StandardParser;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -29,25 +21,28 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.sqlite.SQLite3DBParser;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.sqlite.detector.SQLiteContainerDetector;
-import iped.parsers.standard.StandardParser;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Parser for the Windows 10 Timeline feature (v1803/1809/1903+)
- * 
+ *
  * Timeline is like a browser history, but for the whole computer: - websites
  * visited, documents edited, images viewed, programs executed etc
- * 
+ *
  * https://cclgroupltd.com/2018/05/03/windows-10-timeline-forensic-artefacts/
- * 
+ *
  * The SQLite query to parse the "ActivitiesCache.db" file was adapted from:
  * https://github.com/kacos2000/WindowsTimeline
- * 
+ *
  * @author Matheus Bichara de Assumpção <bda.matheus@gmail.com>
  */
 
@@ -94,7 +89,7 @@ public class WinXTimelineParser extends SQLite3DBParser {
 
         EmbeddedDocumentExtractor extractor = context.get(EmbeddedDocumentExtractor.class,
                 new ParsingEmbeddedDocumentExtractor(context));
-        
+
         try (TemporaryResources tmp = new TemporaryResources()){
 
             if (!(stream instanceof TikaInputStream)) {
@@ -151,7 +146,7 @@ public class WinXTimelineParser extends SQLite3DBParser {
 
             }
         }
-        
+
     }
 
     private Metadata getEntryMetadata(TimelineEntry entry, int i) throws ParseException {
@@ -598,7 +593,7 @@ public class WinXTimelineParser extends SQLite3DBParser {
      * https://github.com/kacos2000/WindowsTimeline/blob/master/WindowsTimeline.sql
      * Works with Windows 10 v1803/1809/1903+
      */
-    
+
     private String WINX_TIMELINE_QUERY = " SELECT " + " ActivityOperation.ETag as 'Etag', "
             + " ActivityOperation.OperationOrder as 'Order', " + " case "
             + " when ActivityOperation.ActivityType in (2,3,11,12,15)  "

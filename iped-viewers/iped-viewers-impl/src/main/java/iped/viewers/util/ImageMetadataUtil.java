@@ -1,13 +1,5 @@
 package iped.viewers.util;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.imaging.jpeg.JpegSegmentMetadataReader;
@@ -19,6 +11,13 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifReader;
 import com.drew.metadata.exif.ExifThumbnailDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
 
 public class ImageMetadataUtil {
     private static int TAG_THUMBNAIL_DATA = 0x10000;

@@ -1,8 +1,8 @@
 package iped.app.ui.controls;
 
-import javax.swing.Icon;
-
 import bibliothek.gui.dock.common.action.CButton;
+
+import javax.swing.*;
 
 public class CSelButton extends CButton {
     private boolean isSelected;
@@ -17,7 +17,7 @@ public class CSelButton extends CButton {
     public boolean isSelected() {
         return isSelected;
     }
-    
+
     public void toggle() {
         setSelected(!isSelected);
     }

@@ -1,24 +1,18 @@
 package iped.parsers.jdbc;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import iped.parsers.util.Messages;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.Messages;
-import iped.utils.SimpleHTMLEncoder;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class TableReportGenerator {
 

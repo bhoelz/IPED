@@ -1,22 +1,20 @@
 package iped.parsers.mail.win10.tables;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
+import iped.parsers.browsers.edge.EsedbLibrary;
+import iped.parsers.mail.win10.ColumnCodes;
+import iped.parsers.mail.win10.EsedbManager;
+import iped.parsers.mail.win10.entries.StoreEntry;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.PointerByReference;
-
-import iped.parsers.browsers.edge.EsedbLibrary;
-import iped.parsers.mail.win10.ColumnCodes;
-import iped.parsers.mail.win10.entries.StoreEntry;
-import iped.parsers.mail.win10.EsedbManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StoreTable extends AbstractTable {
 
@@ -178,7 +176,7 @@ public class StoreTable extends AbstractTable {
         xhtmlStore.characters(storeEntry.getCalendarServer());
         xhtmlStore.endElement("td");
 
-        xhtmlStore.endElement("tr");   
+        xhtmlStore.endElement("tr");
     }
 
     public static void endStoreEntries(XHTMLContentHandler xhtmlStore) throws SAXException {

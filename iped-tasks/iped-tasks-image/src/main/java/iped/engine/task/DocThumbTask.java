@@ -1,37 +1,5 @@
 package iped.engine.task;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.imageio.ImageIO;
-
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
@@ -46,6 +14,23 @@ import iped.parsers.util.Util;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.viewers.util.LibreOfficeFinder;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DocThumbTask extends ThumbTask {
 
@@ -176,11 +161,11 @@ public class DocThumbTask extends ThumbTask {
 
     @Override
     protected void process(IItem item) throws Exception {
-        if (!isEnabled() 
+        if (!isEnabled()
                 || !item.isToAddToCase()
                 || ((externalParsingEnabled || !docThumbsConfig.isPdfEnabled() || !isPdfType((MediaType) item.getMediaType()))
                         && (!docThumbsConfig.isLoEnabled() || !isLibreOfficeType((MediaType) item.getMediaType())))
-                || item.getHashValue() == null 
+                || item.getHashValue() == null
                 || item.getThumb() != null
                 || item.getExtraAttribute(BaseCarveTask.FILE_FRAGMENT) != null) {
             return;

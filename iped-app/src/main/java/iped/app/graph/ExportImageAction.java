@@ -1,11 +1,9 @@
 package iped.app.graph;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
-
 import iped.app.ui.App;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 public class ExportImageAction extends AbstractAction {
 

@@ -1,14 +1,11 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import {computed, Injectable, signal} from '@angular/core';
+import {firstValueFrom} from 'rxjs';
 
-import { SearchService } from '../../../core/api/generated/api/search.service';
-import { FacetResult } from '../../../core/api/generated/model/facetResult';
-import {
-  FilterClause,
-  FilterClauseOpEnum
-} from '../../../core/api/generated/model/filterClause';
-import { SearchCreateRequest } from '../../../core/api/generated/model/searchCreateRequest';
-import { SearchResultsPage } from '../../../core/api/generated/model/searchResultsPage';
+import {SearchService} from '../../../core/api/generated/api/search.service';
+import {FacetResult} from '../../../core/api/generated/model/facetResult';
+import {FilterClause, FilterClauseOpEnum} from '../../../core/api/generated/model/filterClause';
+import {SearchCreateRequest} from '../../../core/api/generated/model/searchCreateRequest';
+import {SearchResultsPage} from '../../../core/api/generated/model/searchResultsPage';
 
 const DEFAULT_FACET_FIELDS = ['mediaType', 'sourceId'];
 

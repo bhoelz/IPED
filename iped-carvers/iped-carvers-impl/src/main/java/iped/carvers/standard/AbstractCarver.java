@@ -1,22 +1,17 @@
 package iped.carvers.standard;
 
+import iped.carvers.api.*;
+import iped.carvers.api.Signature.SignatureType;
+import iped.data.IItem;
+import iped.properties.ExtraProperties;
+import iped.properties.MediaTypes;
+import org.apache.tika.metadata.Metadata;
+
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import org.apache.tika.metadata.Metadata;
-
-import iped.carvers.api.CarvedItemListener;
-import iped.carvers.api.Carver;
-import iped.carvers.api.CarverType;
-import iped.carvers.api.Hit;
-import iped.carvers.api.InvalidCarvedObjectException;
-import iped.carvers.api.Signature.SignatureType;
-import iped.data.IItem;
-import iped.properties.ExtraProperties;
-import iped.properties.MediaTypes;
 
 public abstract class AbstractCarver implements Carver {
     protected CarverType[] carverTypes = null;
@@ -153,7 +148,7 @@ public abstract class AbstractCarver implements Carver {
 
         return null;
     }
-    
+
     /**
      * @return The prefix to be used in carved item name. Use a function to allow
      *         overriding.
@@ -169,7 +164,7 @@ public abstract class AbstractCarver implements Carver {
     protected String getCarvedNameSuffix() {
         return "";
     }
-    
+
     public boolean isValid(IItem parentEvidence, Hit headerOffset, long length) {
         try {
             // tenta parsear o conteudo
@@ -204,7 +199,7 @@ public abstract class AbstractCarver implements Carver {
     public void notifyHit(IItem parentEvidence, Hit hit) throws IOException {
 
         CarverType type = hit.getSignature().getCarverType();
-        
+
         // se é um cabeçalho de um carvertype sem footer
         if (hit.getSignature().isHeader() && !type.hasFooter()) {
             if (!type.hasLengthRef()) {

@@ -1,15 +1,14 @@
 package iped.app.metadata;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.lucene.search.Query;
-
 import iped.app.ui.App;
 import iped.engine.search.QueryBuilder;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.viewers.api.IQueryFilter;
+import org.apache.lucene.search.Query;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ValueCountQueryFilter implements IQueryFilter {
     StringBuffer queryStr = null;

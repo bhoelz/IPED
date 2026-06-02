@@ -1,16 +1,12 @@
 package iped.utils;
 
+import iped.io.SeekableInputStream;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-
-import iped.io.SeekableInputStream;
+import java.nio.file.*;
 
 public class FileInputStreamFactory extends SeekableInputStreamFactory {
 

@@ -1,36 +1,5 @@
 package iped.app.graph;
 
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingWorker;
-import javax.swing.WindowConstants;
-
-import org.neo4j.graphdb.Node;
-
 import iped.app.graph.CheckboxListCellRenderer.CheckboxListItem;
 import iped.app.graph.CheckboxListCellRenderer.CheckboxSelectionMouseAdapter;
 import iped.app.ui.App;
@@ -42,6 +11,14 @@ import iped.engine.graph.NodeQueryListener;
 import iped.engine.graph.links.SearchLinksQuery;
 import iped.engine.graph.links.SearchLinksQueryProvider;
 import iped.localization.LocaleResolver;
+import org.neo4j.graphdb.Node;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.util.*;
+import java.util.List;
+import java.util.Map.Entry;
 
 public class SearchLinksDialog extends JDialog {
 

@@ -1,10 +1,6 @@
 package iped.parsers.plist;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
+import com.dd.plist.NSObject;
 import org.apache.tika.detect.apple.BPListDetector;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
@@ -12,7 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.dd.plist.NSObject;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PListParser extends AbstractPListParser<Void> {
 

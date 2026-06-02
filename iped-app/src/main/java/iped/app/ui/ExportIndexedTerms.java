@@ -1,21 +1,19 @@
 package iped.app.ui;
 
+import iped.engine.task.index.IndexItem;
+import iped.viewers.api.CancelableWorker;
+import iped.viewers.util.ProgressDialog;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-
-import javax.swing.JFileChooser;
-
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-
-import iped.engine.task.index.IndexItem;
-import iped.viewers.api.CancelableWorker;
-import iped.viewers.util.ProgressDialog;
 
 public class ExportIndexedTerms extends CancelableWorker<Boolean, Integer> implements PropertyChangeListener {
 
@@ -59,10 +57,10 @@ public class ExportIndexedTerms extends CancelableWorker<Boolean, Integer> imple
              * atomicReader = atomicContext.reader(); Fields fields = atomicReader.fields();
              * for (String f : field) { Terms terms = fields.terms(f); total +=
              * (int)terms.size(); } } this.firePropertyChange("total", 0, total);
-             * 
+             *
              * for(AtomicReaderContext atomicContext: reader.leaves()){ AtomicReader
              * atomicReader = atomicContext.reader(); Fields fields = atomicReader.fields();
-             * 
+             *
              * for (String f : field) { Terms terms = fields.terms(f); TermsEnum termsEnum =
              * terms.iterator(null); while (termsEnum.next() != null) {
              * writer.write(termsEnum.term().utf8ToString()); writer.write("\r\n");

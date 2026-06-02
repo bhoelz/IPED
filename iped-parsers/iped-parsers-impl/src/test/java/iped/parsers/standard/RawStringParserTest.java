@@ -1,9 +1,8 @@
 package iped.parsers.standard;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
+import iped.parsers.util.LimitedContentHandler;
+import iped.parsers.util.ToCSVContentHandler;
+import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -12,9 +11,9 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.LimitedContentHandler;
-import iped.parsers.util.ToCSVContentHandler;
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class RawStringParserTest extends TestCase {
 

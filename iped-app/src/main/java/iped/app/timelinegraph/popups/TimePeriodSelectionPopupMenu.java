@@ -1,5 +1,15 @@
 package iped.app.timelinegraph.popups;
 
+import iped.app.timelinegraph.ChartTimePeriodConstraint;
+import iped.app.timelinegraph.DateUtil;
+import iped.app.timelinegraph.IpedChartsPanel;
+import iped.app.ui.Messages;
+import iped.jfextensions.model.Minute;
+import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.data.Range;
+import org.jfree.data.time.*;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
@@ -7,30 +17,6 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JMenu;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-
-import org.jfree.chart.ui.RectangleEdge;
-import org.jfree.data.Range;
-import org.jfree.data.time.DateRange;
-import org.jfree.data.time.Day;
-import org.jfree.data.time.Hour;
-import org.jfree.data.time.Month;
-import org.jfree.data.time.Quarter;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimePeriod;
-import org.jfree.data.time.Week;
-import org.jfree.data.time.Year;
-
-import iped.app.timelinegraph.ChartTimePeriodConstraint;
-import iped.app.timelinegraph.DateUtil;
-import iped.app.timelinegraph.IpedChartsPanel;
-import iped.app.ui.Messages;
-import iped.jfextensions.model.Minute;
 
 public class TimePeriodSelectionPopupMenu extends JPopupMenu implements ActionListener {
     static HashMap<String, SimpleDateFormat> sdfMap = null;

@@ -1,6 +1,6 @@
 package iped.app.ui.bookmarks;
 
-import java.awt.Color;
+import java.awt.*;
 
 public class BookmarkStandardColors {
     static final Color defaultColor = new Color(180, 180, 240);

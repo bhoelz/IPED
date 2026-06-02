@@ -1,18 +1,10 @@
 package iped.parsers.registry.keys;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import iped.parsers.registry.model.KeyNode;
+import iped.parsers.registry.model.KeyValue;
+import iped.parsers.util.EmbeddedItem;
+import iped.parsers.util.EmbeddedParent;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -22,11 +14,13 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.registry.model.KeyNode;
-import iped.parsers.registry.model.KeyValue;
-import iped.parsers.util.EmbeddedItem;
-import iped.parsers.util.EmbeddedParent;
-import iped.properties.ExtraProperties;
+import java.io.*;
+import java.math.BigInteger;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UserAssistKeyParser extends HtmlKeyParser {
     static HashMap<String, String> knownFolders = new HashMap<String, String>();

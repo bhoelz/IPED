@@ -1,14 +1,10 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import {computed, Injectable, signal} from '@angular/core';
+import {firstValueFrom} from 'rxjs';
 
-import { JobsService } from '../../../core/api/generated/api/jobs.service';
-import {
-  ExportJobRequestFormatEnum
-} from '../../../core/api/generated/model/exportJobRequest';
-import {
-  JobAcceptedResponseStatusEnum
-} from '../../../core/api/generated/model/jobAcceptedResponse';
-import { JobStatus, JobStatusStatusEnum } from '../../../core/api/generated/model/jobStatus';
+import {JobsService} from '../../../core/api/generated/api/jobs.service';
+import {ExportJobRequestFormatEnum} from '../../../core/api/generated/model/exportJobRequest';
+import {JobAcceptedResponseStatusEnum} from '../../../core/api/generated/model/jobAcceptedResponse';
+import {JobStatus, JobStatusStatusEnum} from '../../../core/api/generated/model/jobStatus';
 
 const JOB_POLL_INTERVAL_MS = 3_000;
 const TERMINAL_JOB_STATUSES = new Set<JobStatusStatusEnum>([

@@ -1,8 +1,8 @@
 package iped.engine.webapi.json.v2;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.List;
 
 public class ViewerOpenResponseJSON {
     private String viewerSessionId;

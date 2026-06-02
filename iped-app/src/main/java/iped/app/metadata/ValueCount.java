@@ -1,10 +1,10 @@
 package iped.app.metadata;
 
-import java.text.NumberFormat;
-
 import iped.app.ui.Messages;
 import iped.engine.localization.CategoryLocalization;
 import iped.utils.LocalizedFormat;
+
+import java.text.NumberFormat;
 
 public class ValueCount {
     LookupOrd lo;

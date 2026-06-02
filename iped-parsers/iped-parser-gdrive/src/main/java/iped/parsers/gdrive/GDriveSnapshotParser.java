@@ -1,5 +1,25 @@
 package iped.parsers.gdrive;
 
+import iped.parsers.sqlite.SQLite3DBParser;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.Messages;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
+import org.apache.tika.config.Field;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.extractor.EmbeddedDocumentExtractor;
+import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.sax.XHTMLContentHandler;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,32 +33,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.tika.config.Field;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.extractor.EmbeddedDocumentExtractor;
-import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.sax.XHTMLContentHandler;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
-import iped.parsers.sqlite.SQLite3DBParser;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ChildPornHashLookup;
-import iped.parsers.util.Messages;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
-
 /**
  * Parser for snapshot.db Google Drive forensic artifact
  * This artifact contains information about the files that have been synced with the user’s Google Drive account.
  * Query adapted from https://github.com/kacos2000/Queries/blob/master/GDrive_snapshot.sql
- *  
+ *
  * @author Matheus Bichara de Assumpção <bda.matheus@gmail.com>
  */
 
@@ -92,7 +91,7 @@ public class GDriveSnapshotParser extends SQLite3DBParser {
                 String md5 = entry.getMd5();
                 if(md5 == null) md5 = entry.getLocalMd5();
                 List<String> hashSets = ChildPornHashLookup.lookupHash(md5);
-                
+
                 emitSnapshotEntry(xHtmlOuput, entry, hashSets);
 
                 /**
@@ -134,7 +133,7 @@ public class GDriveSnapshotParser extends SQLite3DBParser {
         // These properties need to get a "Date" type as parameters, so it can correctly
         // show times in UTC
         metadataSnapshotItem.set(TikaCoreProperties.MODIFIED, GDriveCloudGraphParser.convertStringToDate(entry.getModified()));
-        
+
         //.add(TikaCoreProperties.TITLE, h.getTitle());
         metadataSnapshotItem.add((BasicProps.LENGTH), "");
 
@@ -205,7 +204,7 @@ public class GDriveSnapshotParser extends SQLite3DBParser {
                     	SnapshotEntry entry = new SnapshotEntry();
 
                         try {
-                        	
+
                             entry.setAclRole(rs.getString("acl_role"));
                             entry.setDocType(rs.getString("doc_type"));
                             entry.setParent(rs.getString("parent"));
@@ -223,12 +222,12 @@ public class GDriveSnapshotParser extends SQLite3DBParser {
                             entry.setLocalModified(rs.getString("local_modified"));
                             entry.setMd5Check(rs.getString("md5_check"));
                             entry.setCloudLocalDatesCheck(rs.getString("cloud_local_dates_check"));
-                            
+
                             entry.setOriginalSize(getStringIfExists(rs, "original_size"));
                             entry.setVolume(getStringIfExists(rs, "volume"));
                             entry.setChildVolume(getStringIfExists(rs, "child_volume"));
                             entry.setParentVolume(getStringIfExists(rs, "parent_volume"));
-                            
+
                         } catch (SQLException e) {
                             throw new RuntimeException(e);
                         }
@@ -272,7 +271,7 @@ public class GDriveSnapshotParser extends SQLite3DBParser {
         xHandler.characters("Google Drive Snapshot registries");
         xHandler.endElement("h2");
         xHandler.newline();
-        
+
         xHandler.startElement("p");
         xHandler.characters(Messages.getString("P2P.FoundInPedoHashDB"));
         xHandler.endElement("p");
@@ -349,7 +348,7 @@ public class GDriveSnapshotParser extends SQLite3DBParser {
         xHandler.characters("Found in CSAM Alert Hash Set");
         xHandler.endElement("th");
 
-        
+
         xHandler.endElement("tr");
 
         return xHandler;
@@ -458,8 +457,8 @@ public class GDriveSnapshotParser extends SQLite3DBParser {
             }
         } catch (SQLException ignore) {
         }
-        
-        
+
+
         return " select  "
     		+ " 	case cloud_entry.acl_role "
     		+ " 		when 2 then 'Can View' "

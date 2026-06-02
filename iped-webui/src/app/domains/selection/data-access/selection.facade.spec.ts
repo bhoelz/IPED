@@ -1,6 +1,6 @@
-import { TestBed } from '@angular/core/testing';
+import {TestBed} from '@angular/core/testing';
 
-import { SelectionFacade } from './selection.facade';
+import {SelectionFacade} from './selection.facade';
 
 describe('SelectionFacade', () => {
   beforeEach(() => {

@@ -1,23 +1,5 @@
 package iped.parsers.whatsapp;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Supplier;
-
-import org.apache.commons.text.StringSubstitutor;
-import org.apache.commons.text.lookup.StringLookup;
-import org.apache.commons.text.lookup.StringLookupFactory;
-
 import iped.data.IItemReader;
 import iped.parsers.util.Messages;
 import iped.parsers.vcard.VCardParser;
@@ -26,6 +8,19 @@ import iped.properties.ExtraProperties;
 import iped.utils.EmojiUtil;
 import iped.utils.LocalizedFormat;
 import iped.utils.SimpleHTMLEncoder;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookup;
+import org.apache.commons.text.lookup.StringLookupFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Supplier;
 
 /**
  *
@@ -1627,7 +1622,7 @@ public class ReportGenerator {
                 if (contact != null) {
                     name = contact.getName();
                     if (number.endsWith(WAContact.lidSuffix)) {
-                        number = contact.getId(); 
+                        number = contact.getId();
                     }
                 }
                 if (number.endsWith(WAContact.waSuffix)) {

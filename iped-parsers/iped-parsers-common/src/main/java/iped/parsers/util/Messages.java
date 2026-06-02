@@ -1,11 +1,10 @@
 package iped.parsers.util;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
 import iped.localization.LocaleResolver;
 
 import java.text.MessageFormat;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 public class Messages {
 
@@ -34,5 +33,5 @@ public class Messages {
         if (args != null)
             value = MessageFormat.format(value, args);
         return value;
-    }    
+    }
 }

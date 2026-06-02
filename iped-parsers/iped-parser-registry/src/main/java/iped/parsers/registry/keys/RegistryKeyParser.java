@@ -1,12 +1,11 @@
 package iped.parsers.registry.keys;
 
+import iped.parsers.registry.model.KeyNode;
+import iped.parsers.util.EmbeddedParent;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
-
-import iped.parsers.registry.model.KeyNode;
-import iped.parsers.util.EmbeddedParent;
 
 public interface RegistryKeyParser {
 

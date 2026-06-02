@@ -1,19 +1,14 @@
 package iped.parsers.whatsapp;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-
-import org.apache.commons.io.FileUtils;
 
 public class LinkDownloader {
     private String urlStr;

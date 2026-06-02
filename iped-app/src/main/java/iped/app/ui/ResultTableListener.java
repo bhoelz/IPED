@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,33 +18,6 @@
  */
 package iped.app.ui;
 
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.text.Collator;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import javax.swing.JTable;
-import javax.swing.RowSorter.SortKey;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.app.ui.popups.FieldValuePopupMenu;
 import iped.data.IItem;
 import iped.data.IItemId;
@@ -53,6 +26,23 @@ import iped.engine.search.MultiSearchResult;
 import iped.viewers.ATextViewer;
 import iped.viewers.components.HitsTableModel;
 import iped.viewers.util.ProgressDialog;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.*;
+import java.text.Collator;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class ResultTableListener implements ListSelectionListener, MouseListener, KeyListener {
 

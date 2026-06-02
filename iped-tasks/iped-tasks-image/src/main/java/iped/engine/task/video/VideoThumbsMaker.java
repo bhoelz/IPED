@@ -1,16 +1,14 @@
 package iped.engine.task.video;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import iped.utils.ImageUtil;
+
+import javax.imageio.ImageIO;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -18,13 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-import iped.utils.ImageUtil;
 
 
 /**
@@ -191,7 +182,7 @@ public class VideoThumbsMaker {
         if (frequency < 1) {
             frequency = 1;
         }
-        
+
         if (numFramesEquation != null) {
             int newMaxThumbs = getNumFramesFromJSEquation(result.getVideoDuration() / 1000) + 1;
             if (newMaxThumbs > maxThumbs) {
@@ -208,7 +199,7 @@ public class VideoThumbsMaker {
         } else {
             targetDimension = getTargetDimension(maxSize, result.getDimension());
         }
-        
+
 
         String scale = "scale=" + targetDimension.width + ":" + targetDimension.height; //$NON-NLS-1$ //$NON-NLS-2$
 

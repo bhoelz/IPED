@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,25 +18,6 @@
  */
 package iped.app.ui;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.TreeMap;
-
-import org.apache.commons.io.input.CountingInputStream;
-import org.apache.lucene.search.highlight.TextFragment;
-import org.apache.tika.io.TemporaryResources;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.io.ParsingReader;
@@ -52,6 +33,19 @@ import iped.viewers.api.CancelableWorker;
 import iped.viewers.api.IProgressMonitor;
 import iped.viewers.api.ITextParser;
 import iped.viewers.util.ProgressDialog;
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.lucene.search.highlight.TextFragment;
+import org.apache.tika.io.TemporaryResources;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class TextParser extends CancelableWorker implements ITextParser {
 
@@ -206,7 +200,7 @@ public class TextParser extends CancelableWorker implements ITextParser {
         }
 
         @Override
-        protected synchronized void afterRead(final int n) throws IOException {
+        protected synchronized void afterRead(final int n) {
             super.afterRead(n);
             progressMonitor.setProgress(this.getByteCount());
         }

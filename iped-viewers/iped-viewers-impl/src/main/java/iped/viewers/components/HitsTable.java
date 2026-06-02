@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,11 +18,9 @@
  */
 package iped.viewers.components;
 
-import java.awt.Dimension;
-
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 
 public class HitsTable extends JTable {
 

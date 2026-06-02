@@ -1,46 +1,7 @@
 package iped.engine.task;
 
-import org.apache.tika.metadata.Metadata;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.zip.Deflater;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.tika.Tika;
-import org.apache.tika.io.TemporaryResources;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.minio.BucketExistsArgs;
-import io.minio.GetObjectArgs;
-import io.minio.GetObjectResponse;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
+import io.minio.*;
 import io.minio.PutObjectArgs.Builder;
-import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
 import iped.configuration.Configurable;
 import iped.data.ICaseData;
@@ -53,13 +14,31 @@ import iped.engine.task.index.ElasticSearchIndexTask;
 import iped.io.SeekableInputStream;
 import iped.utils.SeekableFileInputStream;
 import iped.utils.SeekableInputStreamFactory;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.tika.Tika;
+import org.apache.tika.io.TemporaryResources;
+import org.apache.tika.metadata.Metadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.zip.Deflater;
 
 /**
  * Task to export files to MinIO object storage service.
- * 
+ *
  * TODO: This and @ExportFileTask should extend a common abstract class, and the
  * implementation should be chosen depending on configuration.
- * 
+ *
  * @author Nassif
  *
  */

@@ -1,46 +1,21 @@
 package iped.viewers;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.imageio.ImageIO;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sun.star.awt.FontUnderline;
-import com.sun.star.awt.FontWeight;
-import com.sun.star.awt.XBitmap;
-import com.sun.star.awt.XDevice;
-import com.sun.star.awt.XDisplayBitmap;
-import com.sun.star.awt.XGraphics;
-import com.sun.star.awt.XWindow;
+import ag.ion.bion.officelayer.NativeView;
+import ag.ion.bion.officelayer.application.IOfficeApplication;
+import ag.ion.bion.officelayer.application.OfficeApplicationException;
+import ag.ion.bion.officelayer.application.OfficeApplicationRuntime;
+import ag.ion.bion.officelayer.desktop.DesktopException;
+import ag.ion.bion.officelayer.desktop.IFrame;
+import ag.ion.bion.officelayer.document.DocumentDescriptor;
+import ag.ion.bion.officelayer.document.IDocument;
+import ag.ion.bion.officelayer.event.DocumentAdapter;
+import ag.ion.bion.officelayer.presentation.IPresentationDocument;
+import ag.ion.bion.officelayer.spreadsheet.ISpreadsheetDocument;
+import ag.ion.bion.officelayer.text.ITextDocument;
+import ag.ion.bion.officelayer.text.ITextRange;
+import ag.ion.noa.search.ISearchResult;
+import ag.ion.noa.search.SearchDescriptor;
+import com.sun.star.awt.*;
 import com.sun.star.beans.XPropertySet;
 import com.sun.star.container.XIndexAccess;
 import com.sun.star.drawing.XDrawPage;
@@ -62,27 +37,32 @@ import com.sun.star.util.XSearchDescriptor;
 import com.sun.star.util.XSearchable;
 import com.sun.star.view.DocumentZoomType;
 import com.sun.star.view.XSelectionSupplier;
-
-import ag.ion.bion.officelayer.NativeView;
-import ag.ion.bion.officelayer.application.IOfficeApplication;
-import ag.ion.bion.officelayer.application.OfficeApplicationException;
-import ag.ion.bion.officelayer.application.OfficeApplicationRuntime;
-import ag.ion.bion.officelayer.desktop.DesktopException;
-import ag.ion.bion.officelayer.desktop.IFrame;
-import ag.ion.bion.officelayer.document.DocumentDescriptor;
-import ag.ion.bion.officelayer.document.IDocument;
-import ag.ion.bion.officelayer.event.DocumentAdapter;
-import ag.ion.bion.officelayer.presentation.IPresentationDocument;
-import ag.ion.bion.officelayer.spreadsheet.ISpreadsheetDocument;
-import ag.ion.bion.officelayer.text.ITextDocument;
-import ag.ion.bion.officelayer.text.ITextRange;
-import ag.ion.noa.search.ISearchResult;
-import ag.ion.noa.search.SearchDescriptor;
 import iped.io.IStreamSource;
 import iped.utils.IOUtil;
 import iped.utils.ProcessUtil;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LibreOfficeViewer extends AbstractViewer {
 
@@ -466,7 +446,7 @@ public class LibreOfficeViewer extends AbstractViewer {
         /*
          * try { officeApplication.dispose();
          * officeApplication.getDesktopService().terminate();
-         * 
+         *
          * } catch (NOAException | OfficeApplicationException e1) {
          * e1.printStackTrace(); }
          */

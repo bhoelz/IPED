@@ -1,37 +1,12 @@
 package iped.utils;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import iped.data.IItemReader;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageTypeSpecifier;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
+import javax.imageio.*;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.spi.IIORegistry;
@@ -39,13 +14,12 @@ import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import iped.data.IItemReader;
+import java.awt.*;
+import java.awt.color.ColorSpace;
+import java.awt.image.*;
+import java.io.*;
+import java.util.*;
+import java.util.List;
 
 public class ImageUtil {
     private static final int[] orientations = new int[] { 1, 6, 3, 8 };
@@ -700,7 +674,7 @@ public class ImageUtil {
         jpgWriter.setOutput(new MemoryCacheImageOutputStream(baos));
         IIOImage outputImage = new IIOImage(img, null, null);
         jpgWriter.write(null, outputImage, jpgWriteParam);
-        jpgWriter.dispose();        
+        jpgWriter.dispose();
     }
 
     /**

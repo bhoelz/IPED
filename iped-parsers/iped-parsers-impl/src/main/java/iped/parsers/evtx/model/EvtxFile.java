@@ -1,5 +1,10 @@
 package iped.parsers.evtx.model;
 
+import iped.parsers.evtx.template.TemplateData;
+import org.apache.lucene.util.ArrayUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,12 +12,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import org.apache.lucene.util.ArrayUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.parsers.evtx.template.TemplateData;
 
 public class EvtxFile {
 

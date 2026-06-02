@@ -1,9 +1,9 @@
 package iped.engine.webapi;
 
-import java.util.ServiceLoader;
-
 import iped.engine.webapi.spi.WebApiServices;
 import iped.engine.webapi.spi.WebApiServicesFactory;
+
+import java.util.ServiceLoader;
 
 final class WebApiServicesLocator {
     private static final WebApiServices SERVICES = load();

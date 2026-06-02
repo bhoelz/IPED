@@ -1,27 +1,5 @@
 package iped.geo.js;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
-import java.util.function.Consumer;
-
-import javax.swing.JProgressBar;
-import javax.swing.SortOrder;
-
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.tika.metadata.Metadata;
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.data.IItemId;
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
@@ -35,6 +13,20 @@ import iped.search.IIPEDSearcher;
 import iped.search.IMultiSearchResult;
 import iped.utils.SimpleHTMLEncoder;
 import iped.viewers.api.IMultiSearchResultProvider;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.tika.metadata.Metadata;
+import org.roaringbitmap.RoaringBitmap;
+
+import javax.swing.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.function.Consumer;
 
 public class GetResultsJSWorker extends iped.viewers.api.CancelableWorker<KMLResult, Integer> {
     IMultiSearchResultProvider app;
@@ -178,7 +170,7 @@ public class GetResultsJSWorker extends iped.viewers.api.CancelableWorker<KMLRes
                     sem.release();
                     continue;
                 }
-                final int finalMapOrder = maporder; 
+                final int finalMapOrder = maporder;
                 maporder++;
 
                 Runnable r = new Runnable() {

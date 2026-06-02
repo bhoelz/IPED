@@ -1,14 +1,19 @@
 package iped.parsers.ufed;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
+import iped.data.IItem;
+import iped.data.IItemReader;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.ufed.handler.BaseModelHandler;
+import iped.parsers.ufed.handler.ChatActivityHandler;
+import iped.parsers.ufed.handler.ChatHandler;
+import iped.parsers.ufed.handler.InstantMessageHandler;
+import iped.parsers.ufed.model.Chat;
+import iped.parsers.ufed.model.ChatActivity;
+import iped.parsers.ufed.model.InstantMessage;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -24,20 +29,14 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItem;
-import iped.data.IItemReader;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.ufed.handler.BaseModelHandler;
-import iped.parsers.ufed.handler.ChatActivityHandler;
-import iped.parsers.ufed.handler.ChatHandler;
-import iped.parsers.ufed.handler.InstantMessageHandler;
-import iped.parsers.ufed.model.Chat;
-import iped.parsers.ufed.model.ChatActivity;
-import iped.parsers.ufed.model.InstantMessage;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UfedChatParser extends AbstractParser {
 

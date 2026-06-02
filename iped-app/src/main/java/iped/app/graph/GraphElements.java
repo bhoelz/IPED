@@ -1,10 +1,10 @@
 package iped.app.graph;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.kharon.Edge;
 import org.kharon.Node;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class GraphElements {
 

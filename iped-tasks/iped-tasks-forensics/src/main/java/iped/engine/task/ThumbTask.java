@@ -1,17 +1,17 @@
 package iped.engine.task;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.HtmlReportTaskConfig;
 import iped.engine.localization.Messages;
 import iped.engine.preview.ThumbConstants;
 import iped.engine.util.Util;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public abstract class ThumbTask extends AbstractTask {
 

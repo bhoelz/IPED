@@ -1,15 +1,9 @@
 package iped.app.config;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import iped.exception.IPEDException;
+import iped.utils.XMLUtil;
+import iped.viewers.api.ResultSetViewer;
+import iped.viewers.api.ResultSetViewerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
@@ -18,17 +12,20 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import iped.engine.task.ExportFileTask;
-import iped.exception.IPEDException;
-import iped.utils.XMLUtil;
-import iped.viewers.api.ResultSetViewer;
-import iped.viewers.api.ResultSetViewerConfiguration;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class XMLResultSetViewerConfiguration implements ResultSetViewerConfiguration {
 
     Document doc;
     List<ResultSetViewer> viewers = null;
-    private static Logger LOGGER = LoggerFactory.getLogger(XMLResultSetViewerConfiguration.class);    
+    private static Logger LOGGER = LoggerFactory.getLogger(XMLResultSetViewerConfiguration.class);
 
     public XMLResultSetViewerConfiguration(File xmlFile) throws IPEDException {
         try {

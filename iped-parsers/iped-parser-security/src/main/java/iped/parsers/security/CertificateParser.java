@@ -1,26 +1,5 @@
 package iped.parsers.security;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.cert.CertPath;
-import java.security.cert.CertificateFactory;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.bind.DatatypeConverter;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
@@ -32,18 +11,22 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.*;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.xml.bind.DatatypeConverter;
+import java.io.*;
+import java.security.cert.CertPath;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.util.*;
+
 public class CertificateParser extends AbstractParser {
     /**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 	public static final MediaType PEM_MIME = MediaType.application("x-pem-file");
@@ -58,7 +41,7 @@ public class CertificateParser extends AbstractParser {
     public static final String SUBJECT = "certificate:subject"; //$NON-NLS-1$
     public static final Property ISSUBJECTAUTHORITY = Property.internalBoolean("certificate:subjectIsCertAuthority"); //$NON-NLS-1$
     public static final String NOALTNAMES = "This certificate has no alternative names.";
-    
+
     @Override
     public Set<MediaType> getSupportedTypes(ParseContext arg0) {
         if (SUPPORTED_TYPES == null) {

@@ -1,9 +1,8 @@
 package iped.viewers.api;
 
-import javax.swing.JPanel;
-import javax.swing.JTable;
-
 import bibliothek.gui.dock.common.DefaultSingleCDockable;
+
+import javax.swing.*;
 
 /*
  * Defines a viewer for a set of results controlled by a MultiSearchResultProvider

@@ -1,18 +1,16 @@
 package iped.parsers.browsers.firefox;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.github.openjson.JSONObject;
+import iped.parsers.browsers.AbstractSqliteBrowserParser;
+import iped.parsers.browsers.Download;
+import iped.parsers.browsers.ResumedVisit;
+import iped.parsers.browsers.Visit;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -27,31 +25,27 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.github.openjson.JSONObject;
-
-import iped.parsers.browsers.AbstractSqliteBrowserParser;
-import iped.parsers.browsers.Download;
-import iped.parsers.browsers.ResumedVisit;
-import iped.parsers.browsers.Visit;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Parser para histórico do Firefox
  *
  * https://developer.mozilla.org/en-US/docs/Mozilla/Tech/Places/Database
  * https://forensicswiki.org/wiki/Mozilla_Firefox
- * 
+ *
  * @author Paulo César Herrmann Wanner <herrmann.pchw@pf.gov.br>
  */
 public class FirefoxSqliteParser extends AbstractSqliteBrowserParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";

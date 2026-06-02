@@ -1,26 +1,5 @@
 package iped.engine.task;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.imageio.ImageIO;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import br.dpf.sepinf.photodna.api.PhotoDNA;
 import iped.configuration.Configurable;
 import iped.data.IItem;
@@ -31,6 +10,17 @@ import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PhotoDNATask extends AbstractTask {
 
@@ -106,7 +96,7 @@ public class PhotoDNATask extends AbstractTask {
     private void processImage(IItem evidence) throws Exception {
         if (evidence.getExtraAttribute(PHOTO_DNA) != null)
             return;
-        
+
         byte[] thumb = evidence.getThumb();
         if (thumb == null)
             return;

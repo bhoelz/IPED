@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import ConfigurationPanel from './components/ConfigurationPanel';
 import SchemaSelector from './components/SchemaSelector';
 import InfoPanel from './components/InfoPanel';
 import Toast from './components/Toast';
-import { configAPI } from './api/configAPI';
+import {configAPI} from './api/configAPI';
 
 function App() {
   const [selectedSchema, setSelectedSchema] = useState(null);

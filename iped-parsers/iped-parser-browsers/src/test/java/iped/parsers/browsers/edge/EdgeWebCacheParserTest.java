@@ -1,15 +1,7 @@
 package iped.parsers.browsers.edge;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
+import iped.parsers.util.ItemInfo;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -23,8 +15,15 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.ItemInfo;
-import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
 
 public class EdgeWebCacheParserTest {
 

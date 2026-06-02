@@ -1,14 +1,13 @@
 package iped.app.ui;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import iped.viewers.api.IFilterer;
 
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-
-import iped.viewers.api.IFilterer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public class FiltersTreeModel implements TreeModel {
 

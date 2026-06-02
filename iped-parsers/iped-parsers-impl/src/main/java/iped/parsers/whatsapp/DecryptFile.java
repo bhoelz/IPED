@@ -1,17 +1,16 @@
 package iped.parsers.whatsapp;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 /**
  *

@@ -1,14 +1,14 @@
 package iped.carvers.custom;
 
-import java.io.IOException;
-import java.util.ArrayDeque;
-
 import iped.carvers.api.CarverType;
 import iped.carvers.api.Hit;
 import iped.carvers.standard.FromFarthestHeaderCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
 import iped.utils.IOUtil;
+
+import java.io.IOException;
+import java.util.ArrayDeque;
 
 /*
  * Author: Patrick Dalla Bernardina

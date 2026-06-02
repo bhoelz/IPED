@@ -1,10 +1,10 @@
 package iped.parsers.evtx.model;
 
+import iped.parsers.evtx.template.TemplateInstance;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import iped.parsers.evtx.template.TemplateInstance;
 
 public class EvtxElement {
     byte mode;

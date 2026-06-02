@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,21 +18,6 @@
  */
 package iped.app.ui;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.SwingUtilities;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.StoredField;
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IItem;
 import iped.engine.data.DataSource;
 import iped.engine.data.IPEDSource;
@@ -49,6 +34,19 @@ import iped.utils.FileInputStreamFactory;
 import iped.viewers.ImageViewer;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.api.IFileProcessor;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StoredField;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class FileProcessor extends CancelableWorker<Void, Void> implements IFileProcessor {
     private static Logger LOGGER = LoggerFactory.getLogger(FileProcessor.class);

@@ -16,20 +16,8 @@
  */
 package iped.parsers.fork;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-
+import iped.io.URLUtil;
+import iped.utils.IOUtil;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.fork.ParserFactoryFactory;
@@ -45,8 +33,13 @@ import org.apache.tika.sax.AbstractRecursiveParserWrapperHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.io.URLUtil;
-import iped.utils.IOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.*;
 
 public class ForkParser extends AbstractParser {
 
@@ -177,7 +170,7 @@ public class ForkParser extends AbstractParser {
 
     /**
      * <b>EXPERT</b>
-     * 
+     *
      * @param tikaBin
      *            directory containing the tika-app.jar or similar -- full jar
      *            including tika-core and all desired parsers and dependencies
@@ -250,7 +243,7 @@ public class ForkParser extends AbstractParser {
      * Returns the command used to start the forked server process.
      * <p/>
      * Returned list is unmodifiable.
-     * 
+     *
      * @return java command line args
      */
     public List<String> getJavaCommandAsList() {
@@ -264,7 +257,7 @@ public class ForkParser extends AbstractParser {
      * is {"java", "-Xmx32m"}.
      * <p/>
      * Creates a defensive copy.
-     * 
+     *
      * @param java
      *            java command line
      */
@@ -512,7 +505,7 @@ public class ForkParser extends AbstractParser {
      * The maximum amount of time allowed for the server to wait for a new request
      * to parse a file. The server will shutdown after this amount of time, and a
      * new server will have to be started by a new client.
-     * 
+     *
      * @param serverWaitTimeoutMillis
      */
     public void setServerWaitTimeoutMillis(long serverWaitTimeoutMillis) {

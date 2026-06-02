@@ -1,19 +1,5 @@
 package iped.viewers;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import iped.parsers.threema.ThreemaParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
 import iped.data.IItem;
 import iped.data.IItemId;
 import iped.data.SelectionListener;
@@ -23,6 +9,7 @@ import iped.parsers.mail.win10.Win10MailParser;
 import iped.parsers.shareaza.ShareazaDownloadParser;
 import iped.parsers.skype.SkypeParser;
 import iped.parsers.telegram.TelegramParser;
+import iped.parsers.threema.ThreemaParser;
 import iped.parsers.util.Util;
 import iped.parsers.whatsapp.WhatsAppParser;
 import iped.utils.IOUtil;
@@ -33,6 +20,16 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import netscape.javascript.JSObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Visualizador Html específico que abre links apontando para arquivos do caso,

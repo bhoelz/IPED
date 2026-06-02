@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,13 +18,19 @@
  */
 package iped.engine.task;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import iped.configuration.Configurable;
+import iped.data.IItem;
+import iped.engine.CmdLineArgs;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.EnableTaskProperty;
+import iped.engine.hash.HashAlgorithm;
+import iped.engine.localization.Messages;
+import iped.engine.lucene.analysis.CategoryTokenizer;
+import iped.engine.util.Util;
+import iped.utils.HashValue;
+import iped.utils.IOUtil;
+
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,19 +39,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-
-import iped.configuration.Configurable;
-import iped.data.IItem;
-import iped.engine.CmdLineArgs;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.EnableTaskProperty;
-import iped.engine.hash.HashAlgorithm;
-import iped.engine.localization.Messages;
-import iped.engine.task.SkipCommitDataKeys;
-import iped.engine.lucene.analysis.CategoryTokenizer;
-import iped.engine.util.Util;
-import iped.utils.HashValue;
-import iped.utils.IOUtil;
 
 /**
  * Responsável por gerar arquivo CSV com as propriedades dos itens processados.
@@ -336,7 +329,7 @@ public class ExportCSVTask extends AbstractTask {
             Files.deleteIfExists(commitFile.toPath());
             Files.deleteIfExists(csvFile.toPath());
         }
-        
+
         tmp = new File(csvFile.getAbsolutePath() + ".tmp");
         Files.deleteIfExists(tmp.toPath());
 

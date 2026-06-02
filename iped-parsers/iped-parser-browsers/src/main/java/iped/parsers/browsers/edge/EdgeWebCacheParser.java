@@ -1,18 +1,17 @@
 package iped.parsers.browsers.edge;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.Platform;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
+import com.sun.jna.ptr.PointerByReference;
+import iped.parsers.database.EDBParser;
+import iped.parsers.util.ItemInfo;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
+import iped.utils.TimeConverter;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -31,24 +30,15 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.LongByReference;
-import com.sun.jna.ptr.PointerByReference;
-
-import iped.parsers.database.EDBParser;
-import iped.parsers.util.ItemInfo;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
-import iped.utils.TimeConverter;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 public class EdgeWebCacheParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String INDEXER_CONTENT_TYPE = "Indexer-Content-Type";

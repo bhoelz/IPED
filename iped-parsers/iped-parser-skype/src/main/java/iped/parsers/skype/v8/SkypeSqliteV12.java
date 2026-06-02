@@ -1,33 +1,17 @@
 package iped.parsers.skype.v8;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-
+import iped.parsers.skype.*;
+import iped.search.IItemSearcher;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import iped.parsers.skype.SkypeAccount;
-import iped.parsers.skype.SkypeContact;
-import iped.parsers.skype.SkypeConversation;
-import iped.parsers.skype.SkypeFileTransfer;
-import iped.parsers.skype.SkypeMessage;
-import iped.parsers.skype.SkypeParserException;
-import iped.parsers.skype.SkypeStorage;
-import iped.search.IItemSearcher;
+import java.io.File;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Date;
 
 public class SkypeSqliteV12 implements SkypeStorage {
     private File mainDb;

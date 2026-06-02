@@ -1,33 +1,22 @@
 package iped.engine.task;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
-import iped.engine.config.Configuration;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.HashDBLookupConfig;
-import iped.engine.config.HashTaskConfig;
-import iped.engine.config.LocalConfig;
+import iped.engine.config.*;
 import iped.engine.hashdb.HashDB;
 import iped.engine.hashdb.HashDBDataSource;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.ChildPornHashLookup.LookupProvider;
 import iped.properties.ExtraProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class HashDBLookupTask extends AbstractTask {
 
@@ -232,7 +221,7 @@ public class HashDBLookupTask extends AbstractTask {
                         }
                     }
                 }
-                //NSRL specific: set item status based on product name  
+                //NSRL specific: set item status based on product name
                 if (nsrlProductName != null) {
                     boolean modified = false;
                     boolean productFound = false;

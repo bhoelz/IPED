@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,20 +18,12 @@
  */
 package iped.app.ui;
 
+import iped.viewers.ATextViewer;
+import iped.viewers.util.LuceneSimpleHTMLEncoder;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.highlight.Encoder;
-import org.apache.lucene.search.highlight.Fragmenter;
-import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.search.highlight.NullFragmenter;
-import org.apache.lucene.search.highlight.QueryScorer;
-import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-import org.apache.lucene.search.highlight.TextFragment;
-import org.apache.lucene.search.highlight.TokenSources;
-
-import iped.viewers.ATextViewer;
-import iped.viewers.util.LuceneSimpleHTMLEncoder;
+import org.apache.lucene.search.highlight.*;
 
 public class TextHighlighter {
 

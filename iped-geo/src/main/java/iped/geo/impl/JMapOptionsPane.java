@@ -1,13 +1,13 @@
 package iped.geo.impl;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.HeadlessException;
-import java.awt.Window;
+import iped.engine.config.ConfigurationManager;
+import iped.geo.localization.Messages;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -22,28 +22,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import iped.engine.config.ConfigurationManager;
-import iped.geo.localization.Messages;
-
 public class JMapOptionsPane extends JOptionPane {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     static final String BING_URL = "http://r{s}.ortho.tiles.virtualearth.net/tiles/r{quad}.png?g=1";

@@ -16,30 +16,12 @@
  */
 package iped.parsers.fork;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.NotSerializableException;
-import java.io.Serializable;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
-
+import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler;
+import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler.MemoryURLConnection;
+import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler.MemoryURLStreamRecord;
+import iped.parsers.util.ComputeThumb;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.OCROutputFolder;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -55,12 +37,17 @@ import org.apache.tika.utils.ProcessUtils;
 import org.apache.tika.utils.SystemUtils;
 import org.xml.sax.ContentHandler;
 
-import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler;
-import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler.MemoryURLConnection;
-import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler.MemoryURLStreamRecord;
-import iped.parsers.util.ComputeThumb;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.OCROutputFolder;
+import java.io.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 class ForkClient {
     private static AtomicInteger CLIENT_COUNTER = new AtomicInteger(0);

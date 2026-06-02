@@ -1,17 +1,12 @@
 package iped.parsers.ufed.model;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-
 import iped.data.IItemReader;
 import iped.parsers.ufed.reference.ReferencedAccountable;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Represents a <model type="Chat"> element. This is the root object.

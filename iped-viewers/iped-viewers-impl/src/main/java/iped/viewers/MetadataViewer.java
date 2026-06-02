@@ -1,29 +1,5 @@
 package iped.viewers;
 
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
-import javax.swing.UIManager;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-
 import iped.data.IItemReader;
 import iped.io.IStreamSource;
 import iped.localization.LocalizedProperties;
@@ -31,11 +7,7 @@ import iped.parsers.util.MetadataUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
-import iped.utils.DateUtil;
-import iped.utils.EmojiUtil;
-import iped.utils.LocalizedFormat;
-import iped.utils.SimpleHTMLEncoder;
-import iped.utils.UiUtil;
+import iped.utils.*;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
 import javafx.application.Platform;
@@ -47,6 +19,21 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
 
 public abstract class MetadataViewer extends AbstractViewer {
 
@@ -56,7 +43,7 @@ public abstract class MetadataViewer extends AbstractViewer {
     private TabPane tabPane;
     private JFXPanel jfxPanel;
     private List<HtmlViewer> htmlViewers = new ArrayList<>();
-    
+
     private static final int minLenToCollapse = 128;
     private static final int collapsedSubstringLen = 32;
 
@@ -191,7 +178,7 @@ public abstract class MetadataViewer extends AbstractViewer {
     }
 
     private String generatePreview(IItemReader item, int tabIndex) {
-        Color color1 = new Color(0xD7D7D7); 
+        Color color1 = new Color(0xD7D7D7);
         Color color2 = new Color(0xF2F2F2);
         Color color3 = new Color(0xF2F2F2);
         Color background = UIManager.getColor("Viewer.background"); //$NON-NLS-1$
@@ -204,7 +191,7 @@ public abstract class MetadataViewer extends AbstractViewer {
         Color foreground = UIManager.getColor("Viewer.foreground"); //$NON-NLS-1$
         if (foreground != null && background != null)
             borderColor = UiUtil.getHexRGB(UiUtil.mix(background, foreground, 0.5));
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append("<!DOCTYPE html>\n"); //$NON-NLS-1$
         sb.append("<html>\n"); //$NON-NLS-1$
@@ -222,9 +209,9 @@ public abstract class MetadataViewer extends AbstractViewer {
         sb.append("</style></head>\n"); //$NON-NLS-1$
         sb.append("<body style=\"");//$NON-NLS-1$
 
-        if (background != null)  
+        if (background != null)
             sb.append("background-color:").append(UiUtil.getHexRGB(background)).append(";"); //$NON-NLS-1$  //$NON-NLS-2$
-        if (foreground != null)  
+        if (foreground != null)
             sb.append("color:").append(UiUtil.getHexRGB(foreground)).append(";"); //$NON-NLS-1$  //$NON-NLS-2$
         sb.append("\">\n"); //$NON-NLS-1$
 
@@ -366,7 +353,7 @@ public abstract class MetadataViewer extends AbstractViewer {
             sb.append("</td></tr>");
         }
     }
-    
+
     private void appendCollapsibleString(StringBuilder sb, String str) {
         if (str.length() >= minLenToCollapse) {
             sb.append("<details tabindex=\"-1\"><summary><b>[");

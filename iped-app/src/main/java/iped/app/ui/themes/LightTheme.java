@@ -1,8 +1,8 @@
 package iped.app.ui.themes;
 
-import java.awt.Color;
-
 import iped.app.ui.Messages;
+
+import java.awt.*;
 
 public class LightTheme extends Theme {
     public LightTheme() {

@@ -1,13 +1,12 @@
 package iped.app.timelinegraph.swingworkers;
 
-import javax.swing.JTable;
-
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.app.timelinegraph.IpedDateAxis;
 import iped.app.ui.BookmarksController;
 import iped.app.ui.Messages;
 import iped.viewers.api.IMultiSearchResultProvider;
+import org.roaringbitmap.RoaringBitmap;
+
+import javax.swing.*;
 
 /*
  * Extends BitSetSelectWorker to check (instead of highlight) docids setted in bitset

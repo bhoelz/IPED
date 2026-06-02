@@ -1,13 +1,12 @@
 package iped.parsers.vlc;
 
-import java.io.InputStream;
-
+import junit.framework.TestCase;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.ToTextContentHandler;
 import org.junit.Test;
 
-import junit.framework.TestCase;
+import java.io.InputStream;
 
 public class VLCIniParserTest extends TestCase {
 

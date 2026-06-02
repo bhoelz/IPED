@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,36 +18,23 @@
  */
 package iped.parsers.whatsapp;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
+import iped.data.IItem;
+import iped.data.IItemReader;
+import iped.io.SeekableInputStream;
+import iped.parsers.plist.detector.PListDetector;
+import iped.parsers.sqlite.SQLite3DBParser;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.PhoneParsingConfig;
+import iped.parsers.vcard.VCardParser;
+import iped.parsers.whatsapp.LinkDownloader.URLnotFound;
+import iped.parsers.whatsapp.Message.MessageType;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.EmptyInputStream;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.config.Field;
@@ -67,23 +54,18 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItem;
-import iped.data.IItemReader;
-import iped.io.SeekableInputStream;
-import iped.parsers.plist.detector.PListDetector;
-import iped.parsers.sqlite.SQLite3DBParser;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.PhoneParsingConfig;
-import iped.parsers.vcard.VCardParser;
-import iped.parsers.whatsapp.LinkDownloader.URLnotFound;
-import iped.parsers.whatsapp.Message.MessageType;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
-import iped.utils.SimpleHTMLEncoder;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Parser para banco de dados do WhatsApp
@@ -131,7 +113,7 @@ public class WhatsAppParser extends SQLite3DBParser {
 
     public static final String DOWNLOAD_MEDIA_FILES_PROP = "downloadWhatsAppMediaProp";
 
-    // TODO: Once #2286 is merged, use some property to identify WhatsApp Status chats/messages 
+    // TODO: Once #2286 is merged, use some property to identify WhatsApp Status chats/messages
     // private static final String STATUS_PROP = ExtraProperties.COMMUNICATION_PREFIX + "isStatus";
 
     private static final AtomicBoolean hashDependenciesChecked = new AtomicBoolean();
@@ -292,7 +274,7 @@ public class WhatsAppParser extends SQLite3DBParser {
             ParseContext context) throws Exception {
 
         // Expand broadcast chat, from a single chat to one per contact
-        expandBroadcastChat(chatList, contacts);        
+        expandBroadcastChat(chatList, contacts);
 
         int chatVirtualId = 0;
         HashMap<String, String> cache = new HashMap<>();
@@ -1306,7 +1288,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                 ReportGenerator reportGenerator = new ReportGenerator();
                 for (WAContact c : waExtractor.getContactsDirectory().contacts()) {
                     if (c.getFullId().equals(WAContact.waStatusBroadcast)) {
-                        // Skip status@broadcast 
+                        // Skip status@broadcast
                         continue;
                     }
                     Metadata cMetadata = new Metadata();
@@ -1824,7 +1806,7 @@ public class WhatsAppParser extends SQLite3DBParser {
     /**
      * Check it the media file is padded with zeros (check if all bytes beyond
      * mediaSize are zeros)
-     * 
+     *
      * @param item
      * @param mediaSize
      * @return

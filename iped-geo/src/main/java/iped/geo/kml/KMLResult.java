@@ -1,19 +1,18 @@
 package iped.geo.kml;
 
-import java.awt.FileDialog;
+import iped.data.IItemId;
+import iped.geo.localization.Messages;
+import iped.viewers.api.GUIProvider;
+import iped.viewers.api.IMultiSearchResultProvider;
+import org.apache.commons.lang.ArrayUtils;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import org.apache.commons.lang.ArrayUtils;
-
-import iped.data.IItemId;
-import iped.geo.localization.Messages;
-import iped.viewers.api.GUIProvider;
-import iped.viewers.api.IMultiSearchResultProvider;
 
 public class KMLResult {
     private static FileDialog fDialog;

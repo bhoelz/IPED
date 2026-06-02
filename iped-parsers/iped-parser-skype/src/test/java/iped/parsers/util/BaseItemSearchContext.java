@@ -1,30 +1,5 @@
 package iped.parsers.util;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.URISyntaxException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.ParseContext;
-
 import iped.data.IHashValue;
 import iped.data.IItem;
 import iped.data.IItemReader;
@@ -34,6 +9,21 @@ import iped.io.SeekableInputStream;
 import iped.search.IItemSearcher;
 import iped.utils.SeekableFileInputStream;
 import junit.framework.TestCase;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.sql.SQLException;
+import java.util.*;
 
 public abstract class BaseItemSearchContext extends TestCase {
 
@@ -684,6 +674,14 @@ public abstract class BaseItemSearchContext extends TestCase {
             public void setChangeDate(Date changeDate) {
                 // TODO Auto-generated method stub
 
+            }
+
+            @Override
+            public void setSubitemId(Integer id) {
+            }
+
+            @Override
+            public void setOpenContainer(Object container) {
             }
         };
 

@@ -1,17 +1,17 @@
 package iped.app.graph.renderers;
 
-import java.awt.Shape;
-import java.awt.geom.GeneralPath;
-
 import org.kharon.Node;
 import org.kharon.renderers.RenderContext;
 import org.kharon.renderers.ShapeNodeRenderer;
+
+import java.awt.*;
+import java.awt.geom.GeneralPath;
 
 /**
  * This class was generated using
  * <a href="http://ebourg.github.io/flamingo-svg-transcoder/">Flamingo SVG
  * transcoder</a>.
- * 
+ *
  * Icon based on <a href=
  * "https://www.flaticon.com/free-icon/car-front_60738#term=car&page=1&position=32">Material
  * Design</a>.

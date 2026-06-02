@@ -1,6 +1,6 @@
 /*
  * Copyright 2020-2020, João Vitor de Sá Hauck
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,11 +18,11 @@
  */
 package iped.parsers.telegram;
 
-import java.util.List;
-
 import dpf.ap.gpinf.interfacetelegram.ContactInterface;
 import dpf.ap.gpinf.interfacetelegram.DecoderTelegramInterface;
 import dpf.ap.gpinf.interfacetelegram.PhotoData;
+
+import java.util.List;
 
 public class Contact implements ContactInterface {
     private long id;

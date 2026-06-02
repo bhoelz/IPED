@@ -1,10 +1,6 @@
 package iped.parsers.emule;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Set;
-
+import iped.parsers.util.Messages;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -14,7 +10,10 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.Messages;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Set;
 
 public class PreferencesDatParser extends AbstractParser {
 
@@ -22,8 +21,8 @@ public class PreferencesDatParser extends AbstractParser {
     private static final Set<MediaType> SUPPORTED_TYPES = Collections
             .singleton(MediaType.parse(EMULE_PREFERENCES_MIME_TYPE));
 
-    /** 
-     * 
+    /**
+     *
      */
     private static final long serialVersionUID = 1L;
 

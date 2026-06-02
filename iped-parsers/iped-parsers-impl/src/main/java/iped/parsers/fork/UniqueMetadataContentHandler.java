@@ -16,12 +16,12 @@
  */
 package iped.parsers.fork;
 
-import java.util.HashSet;
-
 import org.apache.tika.metadata.Metadata;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import java.util.HashSet;
 
 class UniqueMetadataContentHandler extends DefaultHandler {
 

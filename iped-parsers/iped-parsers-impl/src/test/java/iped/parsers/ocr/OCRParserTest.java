@@ -1,14 +1,11 @@
 package iped.parsers.ocr;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.SQLException;
-import java.util.List;
-
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.OCROutputFolder;
+import iped.parsers.util.PDFToImage;
+import iped.parsers.util.RepoToolDownloader;
+import iped.utils.ExternalImageConverter;
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -24,12 +21,14 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.OCROutputFolder;
-import iped.parsers.util.PDFToImage;
-import iped.parsers.util.RepoToolDownloader;
-import iped.utils.ExternalImageConverter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 public class OCRParserTest {
     private static String testRoot = System.getProperty("user.dir") + "/src/test";
@@ -112,12 +111,12 @@ public class OCRParserTest {
         metadata.add(StandardParser.INDEXER_CONTENT_TYPE, "application/pdf");
         context.set(OCROutputFolder.class, new OCROutputFolder(new File(OCR_OUTPUT_FOLDER_NAME)));
         System.setProperty(OCRParser.LANGUAGE_PROP, "por");
-        
+
         String hts = "";
         try (OCRParser parser = new OCRParser();
             InputStream stream = this.getClass().getResourceAsStream("/test-files/test_OCR.pdf")) {
             assumeTrue(parser.isEnabled());
-            
+
             parser.parse(stream, handler, metadata, context);
             hts = handler.toString();
 
@@ -148,7 +147,7 @@ public class OCRParserTest {
         // assertPDFParsing();
     }
 
-    
+
     @Test
     public void testOCRParserTIFF() throws IOException, SAXException, TikaException, SQLException {
         Metadata metadata = new Metadata();

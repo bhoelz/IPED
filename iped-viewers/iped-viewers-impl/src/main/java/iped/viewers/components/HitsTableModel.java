@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,12 +18,11 @@
  */
 package iped.viewers.components;
 
-import java.nio.ByteBuffer;
-
-import javax.swing.table.AbstractTableModel;
-
 import iped.viewers.ATextViewer;
 import iped.viewers.localization.Messages;
+
+import javax.swing.table.AbstractTableModel;
+import java.nio.ByteBuffer;
 
 public class HitsTableModel extends AbstractTableModel {
 
@@ -36,7 +35,7 @@ public class HitsTableModel extends AbstractTableModel {
     // bug, it may be removed when it is fixed there. See issue #2102.
     public static final String htmlStartTag = "<html><p style=\"width:4000px;\">";
     public static final String htmlEndTag = "</p></html>";
-    
+
     public HitsTableModel(ATextViewer textViewer) {
         this.textViewer = textViewer;
         textViewer.setHitsModel(this);

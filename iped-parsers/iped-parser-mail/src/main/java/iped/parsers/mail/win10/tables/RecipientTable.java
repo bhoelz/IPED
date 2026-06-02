@@ -1,17 +1,16 @@
 package iped.parsers.mail.win10.tables;
 
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
+import iped.parsers.browsers.edge.EsedbLibrary;
+import iped.parsers.mail.win10.ColumnCodes;
+import iped.parsers.mail.win10.EsedbManager;
+import iped.parsers.mail.win10.entries.RecipientEntry;
+import iped.parsers.mail.win10.entries.RecipientEntry.RecipientType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.PointerByReference;
-
-import iped.parsers.browsers.edge.EsedbLibrary;
-import iped.parsers.mail.win10.ColumnCodes;
-import iped.parsers.mail.win10.entries.RecipientEntry;
-import iped.parsers.mail.win10.entries.RecipientEntry.RecipientType;
-import iped.parsers.mail.win10.EsedbManager;
 
 public class RecipientTable extends AbstractTable {
 
@@ -27,14 +26,14 @@ public class RecipientTable extends AbstractTable {
         this.errorPointer = errorPointer;
         this.numRecords = numRecords;
         this.filePath = filePath;
-    
+
         rowIdPos = EsedbManager.getColumnPosition(esedbLibrary, ColumnCodes.ROW_ID, errorPointer, tablePointer, filePath);
         messageIdPos = EsedbManager.getColumnPosition(esedbLibrary, ColumnCodes.MESSAGE_ID, errorPointer, tablePointer, filePath);
         displayNamePos = EsedbManager.getColumnPosition(esedbLibrary, ColumnCodes.DISPLAY_NAME_1, errorPointer, tablePointer, filePath);
         displayNamePos2 = EsedbManager.getColumnPosition(esedbLibrary, ColumnCodes.DISPLAY_NAME_2, errorPointer, tablePointer, filePath);
         emailAddressPos = EsedbManager.getColumnPosition(esedbLibrary, ColumnCodes.EMAIL_ADDRESS, errorPointer, tablePointer, filePath);
         recipientTypePos = EsedbManager.getColumnPosition(esedbLibrary, ColumnCodes.RECIPIENT_TYPE, errorPointer, tablePointer, filePath);
-    
+
     }
 
     public void addRecipient(Long messageId, RecipientEntry recipient) {

@@ -1,23 +1,17 @@
 package iped.engine.webapi;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URISyntaxException;
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.StreamingOutput;
-
-import org.apache.commons.io.IOUtils;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import iped.data.IIPEDSource;
 import iped.data.IItem;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.StreamingOutput;
+import org.apache.commons.io.IOUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 
 @Api(value = "Documents")
 @Path("sources/{sourceID}/docs/{id}/thumb")

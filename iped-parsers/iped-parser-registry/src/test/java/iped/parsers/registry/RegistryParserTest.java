@@ -1,11 +1,10 @@
 package iped.parsers.registry;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-
+import iped.parsers.registry.model.HiveCell;
+import iped.parsers.registry.model.KeyNode;
+import iped.parsers.registry.model.RegistryFile;
+import iped.parsers.util.ItemInfo;
+import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -15,11 +14,11 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.registry.model.HiveCell;
-import iped.parsers.registry.model.KeyNode;
-import iped.parsers.registry.model.RegistryFile;
-import iped.parsers.util.ItemInfo;
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class RegistryParserTest extends TestCase {
 

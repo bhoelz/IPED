@@ -1,26 +1,6 @@
 package iped.engine.task.carver;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeMap;
-
-import org.apache.tika.mime.MediaType;
-import org.arabidopsis.ahocorasick.AhoCorasick;
-import org.arabidopsis.ahocorasick.SearchResult;
-import org.arabidopsis.ahocorasick.Searcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.carvers.api.CarvedItemListener;
-import iped.carvers.api.Carver;
-import iped.carvers.api.CarverType;
-import iped.carvers.api.Hit;
-import iped.carvers.api.Signature;
+import iped.carvers.api.*;
 import iped.carvers.standard.JSCarver;
 import iped.configuration.Configurable;
 import iped.data.IItem;
@@ -29,6 +9,17 @@ import iped.engine.config.FileSystemConfig;
 import iped.engine.data.Item;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
+import org.apache.tika.mime.MediaType;
+import org.arabidopsis.ahocorasick.AhoCorasick;
+import org.arabidopsis.ahocorasick.SearchResult;
+import org.arabidopsis.ahocorasick.Searcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * Classe responsável pelo Data Carving. Utiliza o algoritmo aho-corasick, o

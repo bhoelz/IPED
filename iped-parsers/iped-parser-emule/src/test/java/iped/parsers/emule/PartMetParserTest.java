@@ -1,14 +1,7 @@
 package iped.parsers.emule;
 
-import static org.junit.Assert.assertThrows;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
-
+import iped.parsers.util.BaseItemSearchContext;
+import iped.parsers.util.Messages;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -17,11 +10,17 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.BaseItemSearchContext;
-import iped.parsers.util.Messages;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
+import static org.junit.Assert.assertThrows;
 
 public class PartMetParserTest extends BaseItemSearchContext {
-    
+
     @Test
     public void testPartMetParsing() throws IOException, SAXException, TikaException {
 

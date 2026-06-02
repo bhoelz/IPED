@@ -1,13 +1,13 @@
 package iped.parsers.bittorrent;
 
+import iped.parsers.util.BaseItemSearchContext;
+import junit.framework.TestCase;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-
-import iped.parsers.util.BaseItemSearchContext;
-import junit.framework.TestCase;
 
 public abstract class TorrentTestCase extends TestCase {
     protected File getFile(String name) throws IOException {

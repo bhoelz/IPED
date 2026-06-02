@@ -1,30 +1,18 @@
 package iped.viewers.api;
 
-import java.awt.Component;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.LayoutManager;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.Set;
-
-import javax.swing.JPanel;
-
+import iped.io.IStreamSource;
+import iped.properties.MediaTypes;
+import iped.viewers.search.HitsUpdater;
 import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.io.IStreamSource;
-import iped.properties.MediaTypes;
-import iped.viewers.search.HitsUpdater;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * Classe base para todas as interfaces gráficas de visualizadores.
@@ -38,7 +26,7 @@ public abstract class AbstractViewer {
     protected static final String resPath = "/iped/viewers/res/";
 
     private JPanel panel;
-    
+
     private Window owner;
 
     protected int currentHit, totalHits;
@@ -54,12 +42,12 @@ public abstract class AbstractViewer {
     }
 
     public AbstractViewer(Window owner) {
-        this.owner = owner; 
+        this.owner = owner;
         panel = new JPanel();
     }
 
     public AbstractViewer(Window owner, LayoutManager layout) {
-        this.owner = owner; 
+        this.owner = owner;
         panel = new JPanel(layout);
     }
 
@@ -68,7 +56,7 @@ public abstract class AbstractViewer {
     }
 
     abstract public String getName();
-    
+
     public Window getOwner() {
         return owner;
     }
@@ -127,10 +115,10 @@ public abstract class AbstractViewer {
         // Default behavior ignores wrapping and the updater
         scrollToNextHit(forward, false, null);
     }
-    
+
     /**
      * May be overridden when hits navigation is not supported.
-     * 
+     *
      * @return -1: no support 0: default, has support, external control when there
      *         are hits 1: has support, always enable as hits control is internal in
      *         the viewer
@@ -141,7 +129,7 @@ public abstract class AbstractViewer {
 
     /**
      * May be overridden when the viewer has a tool bar (that may be hidden).
-     * 
+     *
      * @return -1 (never), 0 (currently no tool bar), 1 (has tool bar)
      */
     public int getToolbarSupported() {

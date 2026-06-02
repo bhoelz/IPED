@@ -81,7 +81,7 @@
             <artifactId>kharon</artifactId>
             <version>0.1.6</version>
         </dependency>
-		<!-- https://mvnrepository.com/artifact/com.toedter/jcalendar -->
+<!-- https://mvnrepository.com/artifact/com.toedter/jcalendar -->
 		<dependency>
 		    <groupId>com.toedter</groupId>
 		    <artifactId>jcalendar</artifactId>

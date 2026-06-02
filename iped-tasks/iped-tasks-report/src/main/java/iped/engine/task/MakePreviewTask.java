@@ -1,30 +1,5 @@
 package iped.engine.task;
 
-import java.io.File;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.extractor.EmbeddedDocumentExtractor;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.sax.ContentHandlerDecorator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
-import org.apache.tika.mime.MediaType;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.data.IItemReader;
@@ -49,6 +24,25 @@ import iped.search.IItemSearcher;
 import iped.utils.IOUtil;
 import iped.utils.LockManager;
 import iped.viewers.HtmlLinkViewer;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.extractor.EmbeddedDocumentExtractor;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.sax.ContentHandlerDecorator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MakePreviewTask extends AbstractTask {
 

@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,8 +18,10 @@
  */
 package iped.app.ui;
 
-import javax.swing.ListSelectionModel;
-
+import iped.data.IItem;
+import iped.engine.task.index.IndexItem;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.index.Term;
@@ -28,10 +30,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
-import iped.data.IItem;
-import iped.engine.task.index.IndexItem;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
+import javax.swing.*;
 
 
 public class ParentTableModel extends BaseTableModel {

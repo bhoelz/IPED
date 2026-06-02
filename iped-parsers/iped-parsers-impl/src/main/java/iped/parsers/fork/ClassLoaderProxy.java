@@ -16,21 +16,15 @@
  */
 package iped.parsers.fork;
 
+import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler;
+import org.apache.tika.fork.ForkProxy;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.tika.fork.ForkProxy;
-
-import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler;
+import java.util.*;
 
 class ClassLoaderProxy extends ClassLoader implements ForkProxy {
 

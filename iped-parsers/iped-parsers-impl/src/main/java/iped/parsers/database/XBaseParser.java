@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,13 +18,7 @@
  */
 package iped.parsers.database;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Set;
-
+import com.linuxense.javadbf.DBFReader;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -34,7 +28,12 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.linuxense.javadbf.DBFReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Set;
 
 /**
  * Parser para arquivos xBase (DBF)

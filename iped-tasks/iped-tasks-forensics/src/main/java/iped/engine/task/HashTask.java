@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,6 +18,15 @@
  */
 package iped.engine.task;
 
+import iped.configuration.Configurable;
+import iped.data.IItem;
+import iped.engine.config.ConfigurationManager;
+import iped.engine.config.HashTaskConfig;
+import iped.engine.hash.HashAlgorithm;
+import iped.parsers.whatsapp.WhatsAppParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,16 +39,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.configuration.Configurable;
-import iped.data.IItem;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.HashTaskConfig;
-import iped.engine.hash.HashAlgorithm;
-import iped.parsers.whatsapp.WhatsAppParser;
 
 /**
  * Classe para calcular e manipular hashes.

@@ -1,26 +1,20 @@
 package iped.parsers.registry.model;
 
+import iped.parsers.registry.keys.RegistryKeyParserFilter;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
-
-import iped.parsers.registry.keys.RegistryKeyParserFilter;
+import java.util.*;
 
 /*
  * Esta biblioteca foi implementada seguindo a especificação publicada em:
- * 
+ *
  * https://github.com/msuhanov/regf/blob/master/Windows%20registry%20file%20format%20specification.md
- * 
+ *
  */
 
 public class RegistryFile {

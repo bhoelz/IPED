@@ -1,13 +1,13 @@
 package iped.carvers.custom;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import iped.carvers.api.Hit;
 import iped.carvers.standard.DefaultCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
 import iped.utils.IOUtil;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 public class OpusCarver extends DefaultCarver {
     private static final char[] keyOggs = { 'O', 'g', 'g', 'S', 0 };

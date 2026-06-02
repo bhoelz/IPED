@@ -1,24 +1,17 @@
 package iped.app.timelinegraph.cache;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import iped.app.timelinegraph.cache.persistance.CachePersistance;
+import iped.app.timelinegraph.cache.persistance.CachePersistance.CacheFileIterator;
+import iped.app.timelinegraph.datasets.IpedTimelineDatasetManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jfree.data.time.TimePeriod;
 
-import iped.app.timelinegraph.cache.persistance.CachePersistance;
-import iped.app.timelinegraph.cache.persistance.CachePersistance.CacheFileIterator;
-import iped.app.timelinegraph.datasets.IpedTimelineDatasetManager;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PersistedArrayList implements Set<CacheTimePeriodEntry> {
     int docCount = 0;

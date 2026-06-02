@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,13 +18,11 @@
  */
 package iped.app.ui;
 
-import java.awt.Component;
-
-import javax.swing.Icon;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
-
 import iped.engine.localization.CategoryLocalization;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import java.awt.*;
 
 public class CategoryTreeCellRenderer extends DefaultTreeCellRenderer {
 

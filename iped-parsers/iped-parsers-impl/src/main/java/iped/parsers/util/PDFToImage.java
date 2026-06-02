@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,15 +18,8 @@
  */
 package iped.parsers.util;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
-import javax.imageio.ImageIO;
-
+import iped.io.URLUtil;
+import iped.utils.IOUtil;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
@@ -42,13 +35,18 @@ import org.icepdf.core.util.GraphicsRenderingHints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.io.URLUtil;
-import iped.utils.IOUtil;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * Classe utilitária para converter páginas de arquivos PDF para arquivos de
  * imagem.
- * 
+ *
  * @author Nassif
  *
  */

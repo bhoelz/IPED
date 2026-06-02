@@ -1,27 +1,25 @@
 package iped.parsers.mail.win10;
 
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.Platform;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
+import com.sun.jna.ptr.PointerByReference;
+import com.sun.jna.ptr.ShortByReference;
+import iped.parsers.browsers.edge.EsedbLibrary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
-import com.sun.jna.ptr.PointerByReference;
-import com.sun.jna.Memory;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.LongByReference;
-import com.sun.jna.ptr.ShortByReference;
-
-import iped.parsers.browsers.edge.EsedbLibrary;
-
 public class EsedbManager {
     private static EsedbLibrary esedbLibrary;
-    private static boolean loadFailed = false;    
+    private static boolean loadFailed = false;
 
     private static Logger LOGGER = LoggerFactory.getLogger(EsedbManager.class);
 
@@ -61,7 +59,7 @@ public class EsedbManager {
     public static EsedbLibrary getEsedbLibrary() {
         return esedbLibrary;
     }
-    
+
     public static boolean loadFailed() {
         return loadFailed;
     }
@@ -154,9 +152,9 @@ public class EsedbManager {
                     errorPointer);
             if (result < 0)
                 printError("Record Get FileTime Data", result, filePath, errorPointer);
-            
+
             Date date = new Date((recordValueData.getValue() - 116444736000000000L)/10000);
-            
+
             return date;
         }
         return null;
@@ -222,7 +220,7 @@ public class EsedbManager {
                 tableNameSize.getValue(), errorPointer);
             if (result < 0)
                 EsedbManager.printError("Table Get UTF8 Name", result, filePath, errorPointer);
-    
+
             String tableName = tableNameRef.getString(0);
             LOGGER.warn("While decoding '" + filePath + "': Column '" + columnCode + "' not found in table '" + tableName + "'");
         }

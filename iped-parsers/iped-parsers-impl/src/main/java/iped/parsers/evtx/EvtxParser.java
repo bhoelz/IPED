@@ -1,16 +1,11 @@
 package iped.parsers.evtx;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import iped.parsers.evtx.model.*;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.MetadataUtil;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -27,19 +22,14 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.evtx.model.EvtxElement;
-import iped.parsers.evtx.model.EvtxFile;
-import iped.parsers.evtx.model.EvtxParseException;
-import iped.parsers.evtx.model.EvtxRecord;
-import iped.parsers.evtx.model.EvtxRecordConsumer;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.MetadataUtil;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.Map.Entry;
 
 /*
- * Parser that extract event records grouped by EventID  
+ * Parser that extract event records grouped by EventID
  */
 public class EvtxParser extends AbstractParser {
     private static Logger LOGGER = LoggerFactory.getLogger(EvtxParser.class);

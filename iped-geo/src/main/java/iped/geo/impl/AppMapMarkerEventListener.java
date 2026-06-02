@@ -1,13 +1,12 @@
 package iped.geo.impl;
 
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-
-import javax.swing.JTable;
-
 import iped.data.IItemId;
 import iped.geo.MarkerEventListener;
 import iped.geo.kml.GetResultsKMLWorker;
+
+import javax.swing.*;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public class AppMapMarkerEventListener implements MarkerEventListener {
     AppMapPanel mapaPanel;

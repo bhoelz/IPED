@@ -1,23 +1,5 @@
 package iped.app.ui;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
-
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.BooleanQuery.Builder;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-
 import iped.engine.data.Category;
 import iped.engine.search.QueryBuilder;
 import iped.engine.task.index.IndexItem;
@@ -26,6 +8,22 @@ import iped.exception.QueryNodeException;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IQueryFilter;
 import iped.viewers.api.IQueryFilterer;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BooleanQuery.Builder;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 public class CategoryTreeListener implements TreeSelectionListener, TreeExpansionListener, IQueryFilterer {
 

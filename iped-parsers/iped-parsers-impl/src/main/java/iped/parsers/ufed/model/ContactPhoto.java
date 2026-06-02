@@ -1,10 +1,10 @@
 package iped.parsers.ufed.model;
 
-import java.util.Optional;
-import java.util.StringJoiner;
-
 import iped.data.IItemReader;
 import iped.parsers.ufed.reference.ReferencedFile;
+
+import java.util.Optional;
+import java.util.StringJoiner;
 
 /**
  * Represents a <model type="ContactPhoto"> element.

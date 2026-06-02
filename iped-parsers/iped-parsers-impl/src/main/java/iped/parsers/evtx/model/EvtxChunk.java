@@ -1,10 +1,9 @@
 package iped.parsers.evtx.model;
 
+import org.apache.lucene.util.ArrayUtil;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Date;
-
-import org.apache.lucene.util.ArrayUtil;
 
 public class EvtxChunk {
     byte[] src;

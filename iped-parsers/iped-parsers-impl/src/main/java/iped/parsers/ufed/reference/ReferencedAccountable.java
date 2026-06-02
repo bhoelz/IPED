@@ -1,8 +1,8 @@
 package iped.parsers.ufed.reference;
 
-import static iped.parsers.ufed.util.UfedUtils.readUfedMetadata;
-
 import iped.data.IItemReader;
+
+import static iped.parsers.ufed.util.UfedUtils.readUfedMetadata;
 
 public class ReferencedAccountable extends AbstractReferencedItem {
 

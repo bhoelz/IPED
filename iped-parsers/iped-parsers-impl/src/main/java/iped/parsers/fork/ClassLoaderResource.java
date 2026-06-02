@@ -16,14 +16,14 @@
  */
 package iped.parsers.fork;
 
+import org.apache.tika.fork.ForkResource;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
-
-import org.apache.tika.fork.ForkResource;
 
 class ClassLoaderResource implements ForkResource {
 

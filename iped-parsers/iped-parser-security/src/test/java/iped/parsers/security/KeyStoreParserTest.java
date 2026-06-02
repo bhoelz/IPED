@@ -1,8 +1,7 @@
 package iped.parsers.security;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import iped.parsers.standard.StandardParser;
+import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -12,8 +11,8 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.standard.StandardParser;
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class KeyStoreParserTest extends TestCase {
 

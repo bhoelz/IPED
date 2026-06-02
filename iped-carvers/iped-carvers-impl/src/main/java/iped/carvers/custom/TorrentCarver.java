@@ -1,16 +1,15 @@
 package iped.carvers.custom;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-
 import com.dampcake.bencode.BencodeInputStream;
-
 import iped.carvers.api.Hit;
 import iped.carvers.standard.DefaultCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
 import iped.utils.IOUtil;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 public class TorrentCarver extends DefaultCarver {
     @Override

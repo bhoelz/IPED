@@ -1,24 +1,13 @@
 package iped.parsers.mail;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
-
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.Messages;
+import iped.parsers.util.MetadataUtil;
+import iped.parsers.util.Util;
+import iped.properties.ExtraProperties;
+import iped.utils.IOUtil;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -39,23 +28,22 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.Messages;
-import iped.parsers.util.MetadataUtil;
-import iped.parsers.util.Util;
-import iped.properties.ExtraProperties;
-import iped.utils.IOUtil;
-import iped.utils.SimpleHTMLEncoder;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class LibpffPSTParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     /**
-     * 
+     *
      */
     private static Logger LOGGER = LoggerFactory.getLogger(LibpffPSTParser.class);
     private static Set<MediaType> SUPPORTED_TYPES = Collections.singleton(MediaType.application("vnd.ms-outlook-pst")); //$NON-NLS-1$

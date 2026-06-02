@@ -1,8 +1,6 @@
 package iped.parsers.sqlite.detector;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -10,7 +8,8 @@ import org.apache.tika.mime.MediaType;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class SQLiteContainerDetectorTest extends TestCase {
     private static final String GDRIVE_ACCOUNT_INFO = "application/x-gdrive-account-info";

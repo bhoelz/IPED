@@ -1,9 +1,8 @@
 package iped.app.graph;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
 import iped.app.ui.Messages;
+
+import javax.swing.*;
 
 public class StagePopup extends JPopupMenu {
 

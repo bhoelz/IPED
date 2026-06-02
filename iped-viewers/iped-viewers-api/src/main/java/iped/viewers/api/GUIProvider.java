@@ -1,10 +1,10 @@
 package iped.viewers.api;
 
-import java.awt.FileDialog;
+import java.awt.*;
 import java.util.Set;
 
 /*
- *  Provides and creates some GUI resources to be used by the viewers. *  
+ *  Provides and creates some GUI resources to be used by the viewers. *
  */
 
 public interface GUIProvider {

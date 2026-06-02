@@ -1,28 +1,15 @@
 package iped.utils;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.imageio.ImageIO;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.concurrent.*;
 
 public class ExternalImageConverter implements Closeable {
     private static Logger logger = LoggerFactory.getLogger(ExternalImageConverter.class);
@@ -74,7 +61,7 @@ public class ExternalImageConverter implements Closeable {
 
     /**
      * Must be instantiated lazily, so command line adjustment will use the configured system properties.
-     * 
+     *
      */
     public ExternalImageConverter(ExecutorService executorService) {
         this(executorService, false);
@@ -82,7 +69,7 @@ public class ExternalImageConverter implements Closeable {
 
     /**
      * Must be instantiated lazily, so command line adjustment will use the configured system properties.
-     * 
+     *
      */
     public ExternalImageConverter() {
         this(Executors.newCachedThreadPool(), true);
@@ -90,7 +77,7 @@ public class ExternalImageConverter implements Closeable {
 
     /**
      * Must be instantiated lazily, so command line adjustment will use the configured system properties.
-     * 
+     *
      */
     private ExternalImageConverter(ExecutorService executorService, boolean ownsExecutor) {
         super();
@@ -262,7 +249,7 @@ public class ExternalImageConverter implements Closeable {
             ignoreErrorStream(p);
             Future<BufferedImage> resultFuture = getResultFuture(p);
             int timeout = getTotalTimeout(imageSize);
-            if (highRes) 
+            if (highRes)
                 timeout *= 2;
             try {
                 if (sendFuture != null)

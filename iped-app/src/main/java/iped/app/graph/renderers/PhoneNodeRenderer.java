@@ -1,17 +1,17 @@
 package iped.app.graph.renderers;
 
-import java.awt.Shape;
-import java.awt.geom.GeneralPath;
-
 import org.kharon.Node;
 import org.kharon.renderers.RenderContext;
 import org.kharon.renderers.ShapeNodeRenderer;
+
+import java.awt.*;
+import java.awt.geom.GeneralPath;
 
 /**
  * This class was generated using
  * <a href="http://ebourg.github.io/flamingo-svg-transcoder/">Flamingo SVG
  * transcoder</a>.
- * 
+ *
  * Icon based on <a href=
  * "https://www.flaticon.com/free-icon/phone-symbol-of-an-auricular-inside-a-circle_34067#term=phone&page=1&position=14">Simple
  * Collection</a>.

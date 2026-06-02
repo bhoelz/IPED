@@ -1,8 +1,8 @@
 package iped.app.ui.themes;
 
-import java.awt.Color;
-
 import iped.app.ui.Messages;
+
+import java.awt.*;
 
 public class DarkTheme extends Theme {
     public DarkTheme() {

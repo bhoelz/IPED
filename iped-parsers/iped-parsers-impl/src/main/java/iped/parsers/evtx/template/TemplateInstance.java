@@ -1,11 +1,11 @@
 package iped.parsers.evtx.template;
 
-import java.nio.ByteBuffer;
-
 import iped.parsers.evtx.model.BinXmlToken;
 import iped.parsers.evtx.model.EvtxFile;
 import iped.parsers.evtx.model.EvtxParseException;
 import iped.parsers.evtx.model.EvtxXmlFragment;
+
+import java.nio.ByteBuffer;
 
 public class TemplateInstance {
     TemplateDefinition tdefinition;

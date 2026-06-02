@@ -1,18 +1,16 @@
 package iped.parsers.shareaza;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import iped.parsers.util.BaseItemSearchContext;
-import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
-import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.sax.ToTextContentHandler;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ShareazaDownloadParserTest extends BaseItemSearchContext {
     @Test

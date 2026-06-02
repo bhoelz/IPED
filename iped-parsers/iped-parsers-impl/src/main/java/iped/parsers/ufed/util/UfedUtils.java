@@ -1,12 +1,11 @@
 package iped.parsers.ufed.util;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.tika.metadata.Metadata;
-
 import iped.data.IItemReader;
 import iped.properties.ExtraProperties;
+import org.apache.tika.metadata.Metadata;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class UfedUtils {
 

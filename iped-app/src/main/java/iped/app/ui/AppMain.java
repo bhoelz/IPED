@@ -1,17 +1,5 @@
 package iped.app.ui;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.app.bootstrap.Bootstrap;
 import iped.app.config.LogConfiguration;
 import iped.app.ui.splash.StartUpControlClient;
@@ -24,6 +12,15 @@ import iped.engine.core.Manager;
 import iped.engine.util.Util;
 import iped.io.URLUtil;
 import iped.utils.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class AppMain {
 

@@ -1,9 +1,5 @@
 package iped.app.timelinegraph;
 
-import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-
 import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.axis.AxisSpace;
 import org.jfree.chart.axis.DateAxis;
@@ -14,6 +10,10 @@ import org.jfree.chart.plot.PlotState;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYDataset;
+
+import java.awt.*;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 public class IpedCombinedDomainXYPlot extends CombinedDomainXYPlot {
 

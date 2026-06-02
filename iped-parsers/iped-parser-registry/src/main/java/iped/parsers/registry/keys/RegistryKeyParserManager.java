@@ -1,12 +1,9 @@
 package iped.parsers.registry.keys;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Iterator;
-import java.util.Set;
+import iped.configuration.IConfigurationDirectory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -14,12 +11,9 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import iped.configuration.IConfigurationDirectory;
+import java.io.*;
+import java.util.Iterator;
+import java.util.Set;
 
 public class RegistryKeyParserManager implements RegistryKeyParserFilter {
 

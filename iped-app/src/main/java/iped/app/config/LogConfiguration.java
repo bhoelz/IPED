@@ -1,5 +1,11 @@
 package iped.app.config;
 
+import iped.app.processing.Main;
+import iped.engine.io.FilterOutputStream;
+import iped.utils.IOUtil;
+import org.apache.logging.log4j.LogManager;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,13 +13,6 @@ import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import org.apache.logging.log4j.LogManager;
-import org.slf4j.bridge.SLF4JBridgeHandler;
-
-import iped.app.processing.Main;
-import iped.engine.io.FilterOutputStream;
-import iped.utils.IOUtil;
 
 public class LogConfiguration {
 

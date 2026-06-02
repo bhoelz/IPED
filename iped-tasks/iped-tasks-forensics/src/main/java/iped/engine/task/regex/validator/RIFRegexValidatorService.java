@@ -1,12 +1,12 @@
 package iped.engine.task.regex.validator;
 
+import iped.engine.task.regex.BasicAbstractRegexValidatorService;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import iped.engine.task.regex.BasicAbstractRegexValidatorService;
 
 public class RIFRegexValidatorService extends BasicAbstractRegexValidatorService {
 

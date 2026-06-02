@@ -1,13 +1,5 @@
 package iped.parsers.fork;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.NotSerializableException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.fork.ForkProxy;
@@ -16,10 +8,14 @@ import org.apache.tika.metadata.Metadata;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
 public class EmbeddedDocumentExtractorProxy implements EmbeddedDocumentExtractor, ForkProxy {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

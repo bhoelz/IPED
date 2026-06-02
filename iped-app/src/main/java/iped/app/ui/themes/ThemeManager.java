@@ -1,32 +1,20 @@
 package iped.app.ui.themes;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Window;
+import bibliothek.extension.gui.dock.theme.EclipseTheme;
+import bibliothek.extension.gui.dock.theme.eclipse.EclipseColorScheme;
+import iped.app.ui.App;
+
+import javax.swing.*;
+import javax.swing.UIManager.LookAndFeelInfo;
+import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-
-import javax.swing.Painter;
-import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.UnsupportedLookAndFeelException;
-
-import bibliothek.extension.gui.dock.theme.EclipseTheme;
-import bibliothek.extension.gui.dock.theme.eclipse.EclipseColorScheme;
-import iped.app.ui.App;
 
 public class ThemeManager {
     private static final ThemeManager instance = new ThemeManager();
@@ -170,7 +158,7 @@ public class ThemeManager {
     private static class TreeIconPainter implements Painter {
         private final boolean expanded;
         private final boolean selected;
-        private static final Color defaultColor = new Color(100,100,101); 
+        private static final Color defaultColor = new Color(100,100,101);
 
         public TreeIconPainter(boolean expanded, boolean selected) {
             this.expanded = expanded;

@@ -16,22 +16,7 @@ package iped.parsers.jdbc;
  * limitations under the License.
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.text.html.HTMLEditorKit.Parser;
-
+import iped.utils.IOUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
@@ -52,7 +37,13 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import iped.utils.IOUtil;
+import javax.swing.text.html.HTMLEditorKit.Parser;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * General base class to iterate through rows of a JDBC table
@@ -208,7 +199,7 @@ public class JDBCTableReader {
         // EmbeddedDocumentExtractor ex =
         // AbstractDBParser.getEmbeddedDocumentExtractor(context);
         ex.parseEmbedded(new ByteArrayInputStream(s.getBytes("UTF-8")), handler, m, false); //$NON-NLS-1$
-        
+
         return name;
     }
 

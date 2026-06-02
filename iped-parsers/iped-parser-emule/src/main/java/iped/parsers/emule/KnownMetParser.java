@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Wladimir Leite
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,19 +18,13 @@
  */
 package iped.parsers.emule;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.IItemReader;
+import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.Messages;
+import iped.parsers.util.P2PUtil;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.LocalizedFormat;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
@@ -44,19 +38,18 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import iped.data.IItemReader;
-import iped.parsers.util.ChildPornHashLookup;
-import iped.parsers.util.Messages;
-import iped.parsers.util.P2PUtil;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.LocalizedFormat;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Parser para arquivos known.met do e-Mule, que armazena arquivos conhecidos,
  * com dados de compartilhamento e transmissão.
- * 
+ *
  * @author Wladimir
  */
 public class KnownMetParser extends AbstractParser {
@@ -219,7 +212,7 @@ public class KnownMetParser extends AbstractParser {
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute("", "class", "class", "CDATA", trClass);
             if (e != null && e.getHash() != null && !e.getHash().isEmpty()) {
-                attributes.addAttribute("", "name", "name", "CDATA", e.getHash().toUpperCase());    
+                attributes.addAttribute("", "name", "name", "CDATA", e.getHash().toUpperCase());
             }
             xhtml.startElement("tr", attributes);
             for (int j = 0; j < cells.size(); j++) {

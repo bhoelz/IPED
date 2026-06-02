@@ -16,20 +16,6 @@
  */
 package iped.parsers.external;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
-
-import javax.xml.parsers.DocumentBuilder;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypeException;
@@ -44,12 +30,19 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+
 /**
  * Builds up ExternalParser instances based on XML file(s) which define what to
  * run, for what, and how to process any output metadata. Typically used to
  * configure up a series of external programs (like catdoc or pdf2txt) to
  * extract text content from documents.
- * 
+ *
  * <pre>
  *  TODO XML DTD Here
  * </pre>

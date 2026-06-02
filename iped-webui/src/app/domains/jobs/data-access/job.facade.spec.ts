@@ -1,13 +1,11 @@
-import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
-import { vi } from 'vitest';
+import {TestBed} from '@angular/core/testing';
+import {of} from 'rxjs';
+import {vi} from 'vitest';
 
-import { JobsService } from '../../../core/api/generated/api/jobs.service';
-import {
-  ExportJobRequestFormatEnum
-} from '../../../core/api/generated/model/exportJobRequest';
-import { JobStatusStatusEnum } from '../../../core/api/generated/model/jobStatus';
-import { JobFacade } from './job.facade';
+import {JobsService} from '../../../core/api/generated/api/jobs.service';
+import {ExportJobRequestFormatEnum} from '../../../core/api/generated/model/exportJobRequest';
+import {JobStatusStatusEnum} from '../../../core/api/generated/model/jobStatus';
+import {JobFacade} from './job.facade';
 
 describe('JobFacade', () => {
   it('should reject export when no item is selected', async () => {

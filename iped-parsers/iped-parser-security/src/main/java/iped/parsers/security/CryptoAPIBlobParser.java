@@ -1,11 +1,6 @@
 package iped.parsers.security;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Set;
-
+import iped.parsers.security.capi.CapiBlob;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
@@ -17,7 +12,11 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.security.capi.CapiBlob;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Set;
 
 public class CryptoAPIBlobParser extends AbstractParser {
 

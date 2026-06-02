@@ -1,67 +1,18 @@
 package iped.parsers.whatsapp;
 
-import static iped.parsers.whatsapp.Message.MessageType.AUDIO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.BUSINESS_CHAT;
-import static iped.parsers.whatsapp.Message.MessageType.CONTACT_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.DELETED_BY_ADMIN;
-import static iped.parsers.whatsapp.Message.MessageType.DELETED_BY_SENDER;
-import static iped.parsers.whatsapp.Message.MessageType.DELETED_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.DOC_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.ENCRYPTION_KEY_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.GIF_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CREATED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_DESCRIPTION_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_ICON_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.IMAGE_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.LOCATION_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.MESSAGES_ENCRYPTED;
-import static iped.parsers.whatsapp.Message.MessageType.MESSAGES_NOW_ENCRYPTED;
-import static iped.parsers.whatsapp.Message.MessageType.MISSED_VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.MISSED_VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.SHARE_LOCATION_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.STICKER_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.SUBJECT_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.TEXT_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.UNKNOWN_MEDIA_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.UNKNOWN_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.USER_ADDED_TO_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.USER_JOINED_GROUP_FROM_LINK;
-import static iped.parsers.whatsapp.Message.MessageType.USER_LEFT_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.USER_REMOVED_FROM_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.VIDEO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.WAITING_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.YOU_ADMIN;
-
-import java.io.File;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import fqlite.base.SqliteRow;
+import iped.parsers.sqlite.*;
+import iped.parsers.whatsapp.Message.MessageQuotedType;
+import iped.parsers.whatsapp.Message.MessageStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fqlite.base.SqliteRow;
-import iped.parsers.sqlite.SQLite3DBParser;
-import iped.parsers.sqlite.SQLiteRecordValidator;
-import iped.parsers.sqlite.SQLiteUndelete;
-import iped.parsers.sqlite.SQLiteUndeleteTable;
-import iped.parsers.sqlite.SQLiteUndeleteTableResultSetAdapter;
-import iped.parsers.whatsapp.Message.MessageQuotedType;
-import iped.parsers.whatsapp.Message.MessageStatus;
+import java.io.File;
+import java.sql.*;
+import java.util.*;
+import java.util.Date;
+
+import static iped.parsers.whatsapp.Message.MessageType.*;
 
 /**
  *
@@ -97,7 +48,7 @@ public abstract class ExtractorAndroid extends Extractor {
         SQLiteUndeleteTable undeleteChatTable = null;
         SQLiteUndeleteTable undeleteChatListTable = null;
         SQLiteUndeleteTable undeleteJIDTable = null;
-        
+
         // control retry parsing database in case of corrupted db
         // if database is corrupted, maybe recovering deleted data can
         // retrieve partial data
@@ -155,7 +106,7 @@ public abstract class ExtractorAndroid extends Extractor {
                     hasMediaCaptionCol = SQLite3DBParser.checkIfColumnExists(conn, "messages", "media_caption"); //$NON-NLS-1$ //$NON-NLS-2$
                     hasMediaDurationCol = SQLite3DBParser.checkIfColumnExists(conn, "messages", "media_duration"); //$NON-NLS-1$ //$NON-NLS-2$
                     hasForwardedCol = SQLite3DBParser.checkIfColumnExists(conn, "messages", "forwarded"); //$NON-NLS-1$ //$NON-NLS-2$
-                    hasQuoteCol = SQLite3DBParser.checkIfColumnExists(conn, "messages", "quoted_row_id"); 
+                    hasQuoteCol = SQLite3DBParser.checkIfColumnExists(conn, "messages", "quoted_row_id");
                     if (!hasChatView) {
                         hasSubjectCol = SQLite3DBParser.checkIfColumnExists(conn, "chat_list", "subject"); //$NON-NLS-1$ //$NON-NLS-2$
                     }
@@ -265,10 +216,10 @@ public abstract class ExtractorAndroid extends Extractor {
     private List<Chat> undeleteChats(SQLiteUndeleteTable undeleteChatListTable,
             SQLiteUndeleteTable undeleteChatTable, SQLiteUndeleteTable undeleteJIDTable, WAContactsDirectory contacts) {
         List<Chat> result = new ArrayList<>();
-        
+
         if (undeleteChatListTable != null && undeleteChatListTable.getTableRows() != null && !undeleteChatListTable.getTableRows().isEmpty()) {
             // this is the case of a database with the table "chat_list"
-            
+
             for (SqliteRow row : undeleteChatListTable.getTableRows()) {
                 String contactId = row.getTextValue("key_remote_jid"); //$NON-NLS-1$
                 WAContact contact = contacts.getContact(contactId);
@@ -283,7 +234,7 @@ public abstract class ExtractorAndroid extends Extractor {
             if (undeleteJIDTable != null && undeleteJIDTable.getTableRows() != null && !undeleteJIDTable.getTableRows().isEmpty()) {
                 // this is the case of a database with the view chat_view, that joins the tables chat and jid
                 // in this case the join has to be done in java, instead of SQL
-                
+
                 var jid_rows = undeleteJIDTable.getTableRowsGroupedByLongCol("_id"); //$NON-NLS-1$
                 for (SqliteRow row : undeleteChatTable.getTableRows()) {
                     long jid_row_id = row.getIntValue("jid_row_id"); //$NON-NLS-1$
@@ -301,7 +252,7 @@ public abstract class ExtractorAndroid extends Extractor {
                 }
             }
         }
-        
+
         return result;
     }
 
@@ -331,12 +282,12 @@ public abstract class ExtractorAndroid extends Extractor {
             Map<String, List<SqliteRow>> undeletedMessages, SQLiteUndeleteTable undeleteTable, boolean hasThumbTable,
             boolean hasEditVersionCol, boolean firstTry) throws SQLException {
         List<Message> messages = new ArrayList<>();
-        
+
         boolean recoverDeleted = undeleteTable != null && !undeletedMessages.isEmpty();
 
         String id = remote.getId();
         id += isGroupChat ? "@g.us" : WAContact.waSuffix;
-        
+
         Set<MessageWrapperForDuplicateRemoval> activeMessages = new HashSet<>();
         Map<Long, Message> activeMessageIds = new HashMap<>();
 
@@ -353,7 +304,7 @@ public abstract class ExtractorAndroid extends Extractor {
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         Message m = createMessageFromDBRow(rs, remote, isGroupChat, false, hasThumbTable, hasEditVersionCol);
-                        messagesQuotes.add(m);   
+                        messagesQuotes.add(m);
                     }
                 }
             } catch (SQLException e) {
@@ -382,7 +333,7 @@ public abstract class ExtractorAndroid extends Extractor {
                     messagesMapIdQuote.put(m.getIdQuote(),m);
                     if (m.getUuid() != null && !m.getUuid().isEmpty()) {
                         messagesMapUuid.put(m.getUuid(), m);
-                    }                    
+                    }
                     messages.add(m);
                 }
             }
@@ -412,7 +363,7 @@ public abstract class ExtractorAndroid extends Extractor {
                             messagesMapIdQuote.put(m.getIdQuote(),m);
                             if (m.getUuid() != null && !m.getUuid().isEmpty()) {
                                 messagesMapUuid.put(m.getUuid(), m);
-                            }                            
+                            }
                             messages.add(m);
                         }
                     }}
@@ -422,7 +373,7 @@ public abstract class ExtractorAndroid extends Extractor {
                     logger.warn("Error creating undeleted message", e); //$NON-NLS-1$
                 }
             }
-    
+
             Message.sort(messages);
         }
 
@@ -696,7 +647,7 @@ public abstract class ExtractorAndroid extends Extractor {
 
     private static final String SELECT_CHAT_VIEW = "SELECT _id as id, raw_string_jid AS contact," //$NON-NLS-1$
             + " subject, created_timestamp as creation, sort_timestamp FROM chat_view ORDER BY sort_timestamp DESC"; //$NON-NLS-1$
-    
+
     private static final String SELECT_CHAT_LIST_NO_SUBJECT = "SELECT _id as id,key_remote_jid AS contact, " //$NON-NLS-1$
             + " null as subject, 1230768000000 as creation FROM chat_list"; //$NON-NLS-1$
 
@@ -771,8 +722,8 @@ public abstract class ExtractorAndroid extends Extractor {
             + "media_duration, " //$NON-NLS-1$
             + "media_caption as mediaCaption, " //$NON-NLS-1$
             + "(forwarded & 1) as forwarded, " //$NON-NLS-1$
-            + "quoted_row_id, messages.key_id, " //$NON-NLS-1$          
-            + "media_hash as mediaHash, thumbnail as thumbData FROM " //$NON-NLS-1$          
+            + "quoted_row_id, messages.key_id, " //$NON-NLS-1$
+            + "media_hash as mediaHash, thumbnail as thumbData FROM " //$NON-NLS-1$
             + "messages LEFT JOIN message_thumbnails ON (messages.key_id = message_thumbnails.key_id " //$NON-NLS-1$
             + "AND messages.key_remote_jid = message_thumbnails.key_remote_jid " //$NON-NLS-1$
             + "AND messages.key_from_me = message_thumbnails.key_from_me) " //$NON-NLS-1$
@@ -789,8 +740,8 @@ public abstract class ExtractorAndroid extends Extractor {
             + "mq.edit_version, "
             + "mq.media_duration, "
             + "mq.media_caption as mediaCaption, "
-            + "null as forwarded, " //$NON-NLS-1$            
-            + "mq.quoted_row_id, mq.key_id, "         
+            + "null as forwarded, " //$NON-NLS-1$
+            + "mq.quoted_row_id, mq.key_id, "
             + "mq.media_hash as mediaHash, mq.raw_data as rawData FROM messages_quotes mq "
             + "WHERE remoteId=? and mq.status!=-1 ORDER BY mq.timestamp";
 
@@ -802,9 +753,9 @@ public abstract class ExtractorAndroid extends Extractor {
             + "mq.edit_version, " //$NON-NLS-1$
             + "mq.media_duration, " //$NON-NLS-1$
             + "mq.media_caption as mediaCaption, " //$NON-NLS-1$
-            + "null as forwarded, " //$NON-NLS-1$             
-            + "mq.quoted_row_id, mq.key_id, " //$NON-NLS-1$          
-            + "mq.media_hash as mediaHash, thumbnail as thumbData FROM messages_quotes mq " //$NON-NLS-1$         
+            + "null as forwarded, " //$NON-NLS-1$
+            + "mq.quoted_row_id, mq.key_id, " //$NON-NLS-1$
+            + "mq.media_hash as mediaHash, thumbnail as thumbData FROM messages_quotes mq " //$NON-NLS-1$
             + "LEFT JOIN message_thumbnails ON (mq.key_id = message_thumbnails.key_id " //$NON-NLS-1$
             + "AND mq.key_remote_jid = message_thumbnails.key_remote_jid " //$NON-NLS-1$
             + "AND mq.key_from_me = message_thumbnails.key_from_me) " //$NON-NLS-1$
@@ -859,9 +810,9 @@ public abstract class ExtractorAndroid extends Extractor {
         }
 
     }
-    
+
     private static class WAAndroidChatListValidator implements SQLiteRecordValidator {
- 
+
         @Override
         public boolean validateRecord(SqliteRow row) {
             try {
@@ -891,9 +842,9 @@ public abstract class ExtractorAndroid extends Extractor {
         }
 
     }
-    
+
     private static class WAAndroidChatValidator implements SQLiteRecordValidator {
-        
+
         @Override
         public boolean validateRecord(SqliteRow row) {
             try {
@@ -923,9 +874,9 @@ public abstract class ExtractorAndroid extends Extractor {
         }
 
     }
-    
+
     private static class WAAndroidJIDValidator implements SQLiteRecordValidator {
-        
+
         @Override
         public boolean validateRecord(SqliteRow row) {
             try {

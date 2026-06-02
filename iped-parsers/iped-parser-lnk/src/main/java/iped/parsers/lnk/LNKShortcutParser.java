@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Gabriel Francisco
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,19 +18,12 @@
  */
 package iped.parsers.lnk;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.IItemReader;
+import iped.parsers.util.Messages;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.tika.exception.TikaException;
@@ -47,12 +40,12 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.util.Messages;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.DateUtil;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Parser para arquivos de atalho (LNK) do Windows Referencias utilizadas sobre
@@ -61,7 +54,7 @@ import iped.utils.DateUtil;
  * (Windows Shortcut File LNK)
  * https://github.com/libyal/libfwsi/blob/master/documentation/Windows%20Shell%20Item%20format.asciidoc#extension_block_0xbeef0017
  * (Windows Shell Item Format)
- * 
+ *
  * @author Gabriel
  */
 public class LNKShortcutParser extends AbstractParser {
@@ -267,11 +260,11 @@ public class LNKShortcutParser extends AbstractParser {
 
     /**
      * Looks up items using a relative path specified in a LNK shortcut object.
-     * 
+     *
      * <br/>
      * It constructs an absolute target path by normalizing the the parent directory
      * of {@code lnkItem}'s path combined with the LNK relative path.
-     * 
+     *
      * <br/>
      * In the end it is checked if results path exactly matches with the constructed
      * absolute path.
@@ -299,7 +292,7 @@ public class LNKShortcutParser extends AbstractParser {
      * Attempts to find the file targeted by the LNK object ({@code lnkObj}) within
      * the case. Identification primarily relies on the NTFS file reference (MFT
      * entry index and sequence number) obtained from the {@code lnkObj}.
-     * 
+     *
      * <br/>
      * A file is considered the target if its NTFS file reference matches that from
      * the {@code lnkObj}, and, additionally, the creation timestamp of the target

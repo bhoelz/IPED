@@ -1,21 +1,20 @@
 package iped.app.timelinegraph.swingworkers;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.entity.EntityCollection;
-import org.jfree.chart.entity.XYItemEntity;
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.app.timelinegraph.IpedDateAxis;
 import iped.app.timelinegraph.datasets.IpedTimelineDataset;
 import iped.data.IItemId;
 import iped.engine.data.IPEDSource;
 import iped.engine.search.MultiSearchResult;
 import iped.viewers.api.IMultiSearchResultProvider;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.entity.XYItemEntity;
+import org.roaringbitmap.RoaringBitmap;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 /*
  *  Extends BitSetHighlightWorker, so the bitset of docids is mounted based on date interval. This bitset is used internally to highlight the docids.

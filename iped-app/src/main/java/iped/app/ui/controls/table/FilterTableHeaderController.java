@@ -1,10 +1,9 @@
 package iped.app.ui.controls.table;
 
+import javax.swing.table.JTableHeader;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
-
-import javax.swing.table.JTableHeader;
 
 public class FilterTableHeaderController {
     private static MouseListener[] headerMouseListeners;

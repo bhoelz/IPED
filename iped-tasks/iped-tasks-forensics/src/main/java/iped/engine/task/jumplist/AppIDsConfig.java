@@ -1,5 +1,7 @@
 package iped.engine.task.jumplist;
 
+import iped.engine.config.AbstractTaskConfig;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,8 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import iped.engine.config.AbstractTaskConfig;
 
 public class AppIDsConfig extends AbstractTaskConfig<ConcurrentMap<String, String>> {
 

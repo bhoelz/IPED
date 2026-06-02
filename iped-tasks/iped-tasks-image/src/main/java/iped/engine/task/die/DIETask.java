@@ -1,26 +1,6 @@
 package iped.engine.task.die;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.imageio.ImageIO;
-
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.util.concurrent.AtomicDouble;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.Configuration;
@@ -35,6 +15,19 @@ import iped.utils.ExternalImageConverter;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.viewers.util.ImageMetadataUtil;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Explicit Image Detection (DIE) Task .
@@ -46,7 +39,7 @@ public class DIETask extends AbstractTask {
     private static Logger logger = LoggerFactory.getLogger(DIETask.class);
 
     /**
-     * Object responsible for predicting if an image is explicit (i.e. contains nudity). 
+     * Object responsible for predicting if an image is explicit (i.e. contains nudity).
      * It uses a binary classifier that returns a double value from 0 (normal image) to 1 (explicit).
      */
     private static RandomForestPredictor predictor;
@@ -88,10 +81,10 @@ public class DIETask extends AbstractTask {
     private static final AtomicBoolean finished = new AtomicBoolean(false);
 
     /**
-     * Map to store videos scores, to avoid processing duplicated videos. 
+     * Map to store videos scores, to avoid processing duplicated videos.
      */
     private static final HashMap<String, Short> videoResults = new HashMap<String, Short>();
-    
+
     // Static counters for the number of images/videos successfully processed/failed, and the total processing time.
     private static final AtomicLong totalImagesProcessed = new AtomicLong();
     private static final AtomicLong totalVideosProcessed = new AtomicLong();
@@ -196,7 +189,7 @@ public class DIETask extends AbstractTask {
     }
 
     /**
-     * Main task processing method. Check if the evidence should be processed (image or video) and then calls detection method itself (DIE). 
+     * Main task processing method. Check if the evidence should be processed (image or video) and then calls detection method itself (DIE).
      */
     @Override
     protected void process(IItem evidence) throws Exception {
@@ -300,7 +293,7 @@ public class DIETask extends AbstractTask {
     }
 
     /**
-     * Combine the score of each video frame into a single score. 
+     * Combine the score of each video frame into a single score.
      * It uses a weighted average, with higher weights for higher scores.
      */
     public static double videoScore(List<Double> p) {
@@ -338,7 +331,7 @@ public class DIETask extends AbstractTask {
         evidence.setExtraAttribute(DIE_CLASS, classe);
         evidence.setTempAttribute(DIE_RAW_SCORE, prediction);
     }
-    
+
     /**
      * Get an image from the evidence, possibly reusing its thumb.
      */

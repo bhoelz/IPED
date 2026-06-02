@@ -1,14 +1,8 @@
 package iped.parsers.python;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
+import iped.configuration.IConfigurationDirectory;
+import iped.parsers.standard.StandardParser;
+import iped.utils.IOUtil;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -19,9 +13,14 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.configuration.IConfigurationDirectory;
-import iped.parsers.standard.StandardParser;
-import iped.utils.IOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 public class PythonParserTest {
     private static String userDir = System.getProperty("user.dir");
@@ -34,7 +33,7 @@ public class PythonParserTest {
         if (osName.startsWith("windows")) {
             String targetReleasePath = userDir + "/../../target/release/";
             assumeTrue(new File(targetReleasePath).exists());
-            String ipedName = new File(targetReleasePath).listFiles()[0].getName(); 
+            String ipedName = new File(targetReleasePath).listFiles()[0].getName();
             testRoot = targetReleasePath + ipedName;
 
             System.setProperty(IConfigurationDirectory.IPED_ROOT, testRoot);

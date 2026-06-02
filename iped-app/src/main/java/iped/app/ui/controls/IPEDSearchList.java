@@ -1,6 +1,10 @@
 package iped.app.ui.controls;
 
-import java.awt.BorderLayout;
+import iped.app.metadata.ValueCount;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -8,18 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.table.AbstractTableModel;
-
-import iped.app.metadata.ValueCount;
 
 public class IPEDSearchList<E> extends JPanel {
     private static final long serialVersionUID = -6552496361510386212L;
@@ -42,7 +34,7 @@ public class IPEDSearchList<E> extends JPanel {
     private class TableModel extends AbstractTableModel {
 
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 

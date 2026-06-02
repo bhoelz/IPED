@@ -1,9 +1,9 @@
-import { Injectable, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import {Injectable, signal} from '@angular/core';
+import {firstValueFrom} from 'rxjs';
 
-import { ItemsService } from '../../../core/api/generated/api/items.service';
-import { ItemDetails } from '../../../core/api/generated/model/itemDetails';
-import { ItemRelationships } from '../../../core/api/generated/model/itemRelationships';
+import {ItemsService} from '../../../core/api/generated/api/items.service';
+import {ItemDetails} from '../../../core/api/generated/model/itemDetails';
+import {ItemRelationships} from '../../../core/api/generated/model/itemRelationships';
 
 @Injectable({
   providedIn: 'root'

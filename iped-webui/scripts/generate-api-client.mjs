@@ -1,6 +1,6 @@
-import { existsSync, readdirSync, rmSync } from 'node:fs';
-import { delimiter, join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import {existsSync, readdirSync, rmSync} from 'node:fs';
+import {delimiter, join, resolve} from 'node:path';
+import {spawnSync} from 'node:child_process';
 
 const workspaceRoot = resolve(import.meta.dirname, '..');
 const specPath = resolve(workspaceRoot, '../specs/84-phase-1-openapi-initial.yaml');

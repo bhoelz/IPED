@@ -1,15 +1,15 @@
 package iped.parsers.fork;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.fork.ForkProxy;
 import org.apache.tika.fork.ForkResource;
 import org.apache.tika.metadata.Metadata;
 import org.xml.sax.ContentHandler;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class EmbeddedDocumentExtractorResource implements ForkResource {
 

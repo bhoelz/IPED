@@ -1,12 +1,12 @@
 package iped.parsers.threema;
 
+import iped.utils.IOUtil;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Base64;
-
-import iped.utils.IOUtil;
 
 /**
  *

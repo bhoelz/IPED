@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,21 +18,19 @@
  */
 package iped.parsers.shareaza;
 
+import iped.data.IItemReader;
+import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.P2PUtil;
+import iped.search.IItemSearcher;
+import org.apache.tika.sax.XHTMLContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.tika.sax.XHTMLContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
-import iped.data.IItemReader;
-import iped.parsers.util.ChildPornHashLookup;
-import iped.parsers.util.P2PUtil;
-import iped.search.IItemSearcher;
 
 /**
  * @author Fabio Melo Pfeifer <pfeifer.fmp@dpf.gov.br>

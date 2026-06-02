@@ -1,12 +1,12 @@
 package iped.parsers.lnk;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class LNKShortcut {
 

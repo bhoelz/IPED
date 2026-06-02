@@ -1,13 +1,5 @@
 package iped.app.ui;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
 import iped.data.IItemId;
 import iped.engine.data.ItemIdSet;
 import iped.engine.search.IPEDSearcher;
@@ -15,6 +7,12 @@ import iped.engine.search.MultiSearchResult;
 import iped.engine.util.Util;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.util.ProgressDialog;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 
 public class KeywordListImporter extends CancelableWorker {
 

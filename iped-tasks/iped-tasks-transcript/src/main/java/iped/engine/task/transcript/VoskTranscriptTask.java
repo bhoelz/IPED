@@ -1,14 +1,8 @@
 package iped.engine.task.transcript;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
-
+import iped.engine.config.Configuration;
+import iped.engine.config.ConfigurationManager;
+import iped.exception.IPEDException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -19,9 +13,13 @@ import org.vosk.LibVosk;
 import org.vosk.Model;
 import org.vosk.Recognizer;
 
-import iped.engine.config.Configuration;
-import iped.engine.config.ConfigurationManager;
-import iped.exception.IPEDException;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class VoskTranscriptTask extends AbstractTranscriptTask {
 

@@ -1,26 +1,24 @@
 package iped.app.ui.ai;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
-
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.BooleanQuery.Builder;
-import org.apache.lucene.search.Query;
-
 import iped.app.ui.App;
 import iped.engine.data.SimpleFilterNode;
 import iped.engine.search.SimpleNodeFilterSearch;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IQueryFilter;
 import iped.viewers.api.IQueryFilterer;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BooleanQuery.Builder;
+import org.apache.lucene.search.Query;
+
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 public class AIFiltersTreeListener implements TreeSelectionListener, TreeExpansionListener, IQueryFilterer {
 

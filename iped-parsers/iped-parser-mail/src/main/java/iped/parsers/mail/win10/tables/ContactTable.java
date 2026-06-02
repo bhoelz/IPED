@@ -1,18 +1,17 @@
 package iped.parsers.mail.win10.tables;
 
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
+import iped.parsers.browsers.edge.EsedbLibrary;
+import iped.parsers.mail.win10.ColumnCodes;
+import iped.parsers.mail.win10.EsedbManager;
+import iped.parsers.mail.win10.entries.ContactEntry;
+import iped.parsers.mail.win10.entries.FolderEntry;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.sun.jna.ptr.PointerByReference;
-import com.sun.jna.ptr.IntByReference;
-
-import iped.parsers.browsers.edge.EsedbLibrary;
-import iped.parsers.mail.win10.ColumnCodes;
-import iped.parsers.mail.win10.entries.ContactEntry;
-import iped.parsers.mail.win10.entries.FolderEntry;
-import iped.parsers.mail.win10.EsedbManager;
 
 public class ContactTable extends AbstractTable {
 
@@ -123,5 +122,5 @@ public class ContactTable extends AbstractTable {
         }
         return childContacts;
     }
-    
+
 }

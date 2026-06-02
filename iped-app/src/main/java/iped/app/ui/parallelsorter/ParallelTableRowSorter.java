@@ -24,23 +24,22 @@
  */
 package iped.app.ui.parallelsorter;
 
-import java.text.Collator;
-import java.util.Comparator;
-
 import javax.swing.table.TableModel;
 import javax.swing.table.TableStringConverter;
+import java.text.Collator;
+import java.util.Comparator;
 
 /**
  * An implementation of <code>RowSorter</code> that provides sorting and
  * filtering using a <code>TableModel</code>. The following example shows adding
  * sorting to a <code>JTable</code>:
- * 
+ *
  * <pre>
  * TableModel myModel = createMyTableModel();
  * JTable table = new JTable(myModel);
  * table.setRowSorter(new TableRowSorter(myModel));
  * </pre>
- * 
+ *
  * This will do all the wiring such that when the user does the appropriate
  * gesture, such as clicking on the column header, the table will visually sort.
  * <p>
@@ -48,17 +47,17 @@ import javax.swing.table.TableStringConverter;
  * model refer to the view and not the underlying model. Therefore, it is
  * necessary to convert between the two. For example, to get the selection in
  * terms of <code>myModel</code> you need to convert the indices:
- * 
+ *
  * <pre>
  * int[] selection = table.getSelectedRows();
  * for (int i = 0; i &lt; selection.length; i++) {
  *     selection[i] = table.convertRowIndexToModel(selection[i]);
  * }
  * </pre>
- * 
+ *
  * Similarly to select a row in <code>JTable</code> based on a coordinate from
  * the underlying model do the inverse:
- * 
+ *
  * <pre>
  * table.setRowSelectionInterval(table.convertRowIndexToView(row), table.convertRowIndexToView(row));
  * </pre>
@@ -89,7 +88,7 @@ import javax.swing.table.TableStringConverter;
  * In addition to sorting <code>TableRowSorter</code> provides the ability to
  * filter. A filter is specified using the <code>setFilter</code> method. The
  * following example will only show rows containing the string "foo":
- * 
+ *
  * <pre>
  * TableModel myModel = createMyTableModel();
  * TableRowSorter sorter = new TableRowSorter(myModel);

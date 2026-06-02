@@ -1,29 +1,24 @@
 package iped.parsers.mail.win10;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
-
+import com.sun.jna.Memory;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
+import com.sun.jna.ptr.PointerByReference;
+import iped.data.IItemReader;
+import iped.parsers.browsers.edge.EsedbLibrary;
+import iped.parsers.database.EDBParser;
+import iped.parsers.mail.OutlookPSTParser;
+import iped.parsers.mail.win10.entries.*;
+import iped.parsers.mail.win10.tables.*;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.*;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.EmptyInputStream;
+import iped.utils.IOUtil;
+import iped.utils.ImageUtil;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.io.input.ReaderInputStream;
@@ -47,45 +42,15 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.sun.jna.Memory;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.LongByReference;
-import com.sun.jna.ptr.PointerByReference;
-
-import iped.data.IItemReader;
-import iped.parsers.browsers.edge.EsedbLibrary;
-import iped.parsers.database.EDBParser;
-import iped.parsers.mail.OutlookPSTParser;
-import iped.parsers.mail.win10.entries.AbstractEntry;
-import iped.parsers.mail.win10.entries.AppointmentEntry;
-import iped.parsers.mail.win10.entries.AttachmentEntry;
-import iped.parsers.mail.win10.entries.ContactEntry;
-import iped.parsers.mail.win10.entries.FolderEntry;
-import iped.parsers.mail.win10.entries.MessageEntry;
-import iped.parsers.mail.win10.entries.RecipientEntry;
-import iped.parsers.mail.win10.entries.StoreEntry;
-import iped.parsers.mail.win10.tables.AbstractTable;
-import iped.parsers.mail.win10.tables.AppointmentTable;
-import iped.parsers.mail.win10.tables.AttachmentTable;
-import iped.parsers.mail.win10.tables.ContactTable;
-import iped.parsers.mail.win10.tables.FolderTable;
-import iped.parsers.mail.win10.tables.MessageTable;
-import iped.parsers.mail.win10.tables.RecipientTable;
-import iped.parsers.mail.win10.tables.StoreTable;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.mail.win10.EsedbManager;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.Messages;
-import iped.parsers.util.MetadataUtil;
-import iped.parsers.util.ToXMLContentHandler;
-import iped.parsers.util.Util;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
-import iped.utils.IOUtil;
-import iped.utils.ImageUtil;
-import iped.utils.SimpleHTMLEncoder;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
    * Parses Windows Mail App store.vol edb file. Extracts folders, emails, attachments, and appointments from the database.
@@ -853,7 +818,7 @@ public class Win10MailParser extends AbstractParser {
                 // return the more restrictive query to avoid false positives
                 return new ImmutablePair<>(null, pathParentSizeQuery);
         }
-        
+
         IItemReader item = null;
         if (items.size() == 1) {
             item = items.get(0);
@@ -882,12 +847,12 @@ public class Win10MailParser extends AbstractParser {
 
     /**
      * Handle cid images, changing the src value to the attachment base64 image
-     * 
+     *
      * @param body
      *            email body to replace inline images
      * @param attachments
      *            list of email attachments
-     * 
+     *
      * @return new body that handles cid images with associated attachments
      */
     private String handleInlineImages(String body, ArrayList<AttachmentEntry> attachments, MessageEntry email, Parameters params) {

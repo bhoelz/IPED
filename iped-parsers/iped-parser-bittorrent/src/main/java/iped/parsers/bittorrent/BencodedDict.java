@@ -1,23 +1,17 @@
 package iped.parsers.bittorrent;
 
+import com.dampcake.bencode.BencodeInputStream;
+import com.dampcake.bencode.BencodeOutputStream;
+import iped.parsers.util.Util;
+import org.apache.commons.codec.binary.Hex;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.codec.binary.Hex;
-
-import com.dampcake.bencode.BencodeInputStream;
-import com.dampcake.bencode.BencodeOutputStream;
-
-import iped.parsers.util.Util;
+import java.util.*;
 
 /**
  * Helper class for decoding bencoded streams
@@ -144,7 +138,7 @@ public class BencodedDict {
     /**
      * Returns a list of all String objects in list. Ignore elements that are not
      * Strings.
-     * 
+     *
      * @param key
      * @return
      */

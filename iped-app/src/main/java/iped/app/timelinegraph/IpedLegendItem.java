@@ -1,14 +1,11 @@
 package iped.app.timelinegraph;
 
-import java.awt.Font;
-import java.awt.Paint;
-import java.awt.Shape;
-import java.awt.font.TextAttribute;
-import java.awt.geom.AffineTransform;
-import java.util.Map;
-
 import org.jfree.chart.LegendItem;
 import org.jfree.chart.title.LegendTitle;
+
+import java.awt.*;
+import java.awt.font.TextAttribute;
+import java.util.Map;
 
 public class IpedLegendItem extends LegendItem {
     IpedCombinedDomainXYPlot plot;

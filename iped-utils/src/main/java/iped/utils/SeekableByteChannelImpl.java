@@ -1,10 +1,10 @@
 package iped.utils;
 
+import iped.io.SeekableInputStream;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
-
-import iped.io.SeekableInputStream;
 
 public class SeekableByteChannelImpl implements SeekableByteChannel {
 

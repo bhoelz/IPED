@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,22 +18,15 @@
  */
 package iped.viewers.util;
 
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Dialog.ModalityType;
-import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
-
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.api.IProgressMonitor;
 import iped.viewers.localization.Messages;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.Dialog.ModalityType;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class ProgressDialog implements ActionListener, Runnable, IProgressMonitor {
 

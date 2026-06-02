@@ -1,11 +1,8 @@
 package iped.utils;
 
-import java.io.File;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
 public class SelectImagePathWithDialog implements Runnable {
 

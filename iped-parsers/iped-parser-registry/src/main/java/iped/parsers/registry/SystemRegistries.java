@@ -1,10 +1,10 @@
 package iped.parsers.registry;
 
+import iped.parsers.registry.model.RegistryFile;
+
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import iped.parsers.registry.model.RegistryFile;
 
 /*
  * Class used to represent a repository of registry files found in the case processing.

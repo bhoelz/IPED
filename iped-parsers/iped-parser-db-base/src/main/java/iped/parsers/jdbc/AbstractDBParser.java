@@ -16,14 +16,7 @@ package iped.parsers.jdbc;
  * limitations under the License.
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Set;
-
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -38,7 +31,13 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract class that handles iterating through tables within a database.
@@ -227,7 +226,7 @@ public abstract class AbstractDBParser extends AbstractParser {
      * <p>
      * Include any optimization settings, user name, password, etc.
      * <p>
-     * 
+     *
      * @param stream
      *            stream for processing
      * @param metadata
@@ -242,7 +241,7 @@ public abstract class AbstractDBParser extends AbstractParser {
 
     /**
      * JDBC class name, e.g. org.sqlite.JDBC
-     * 
+     *
      * @return jdbc class name
      */
     abstract protected String getJDBCClassName();

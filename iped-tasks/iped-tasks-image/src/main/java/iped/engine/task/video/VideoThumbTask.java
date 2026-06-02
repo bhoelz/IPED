@@ -18,43 +18,6 @@
  */
 package iped.engine.task.video;
 
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-
-import iped.engine.hashdb.PhotoDNAConstants;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.metadata.XMP;
-import org.apache.tika.metadata.XMPDM;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.Configuration;
@@ -63,7 +26,7 @@ import iped.engine.config.VideoThumbsConfig;
 import iped.engine.core.Statistics;
 import iped.engine.core.Worker.ProcessTime;
 import iped.engine.data.Item;
-
+import iped.engine.hashdb.PhotoDNAConstants;
 import iped.engine.preview.PreviewRepository;
 import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.task.ExportFileTask;
@@ -74,6 +37,30 @@ import iped.parsers.util.ISO6709Converter;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
 import iped.utils.ImageUtil;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.metadata.XMP;
+import org.apache.tika.metadata.XMPDM;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Tarefa de geração de imagem com miniaturas (thumbs) de cenas extraídas de

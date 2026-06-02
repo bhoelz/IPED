@@ -1,30 +1,5 @@
 package iped.engine.task;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.imageio.ImageIO;
-
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.Configuration;
@@ -40,6 +15,19 @@ import iped.utils.ExternalImageConverter;
 import iped.utils.ImageUtil;
 import iped.utils.ImageUtil.BooleanWrapper;
 import iped.viewers.util.ImageMetadataUtil;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ImageThumbTask extends ThumbTask {
 
@@ -96,7 +84,7 @@ public class ImageThumbTask extends ThumbTask {
                 System.setProperty(ExternalImageConverter.magickAreaLimitProp, String.valueOf(imgThumbConfig.getMaxMPixelsInMemory()));
                 System.setProperty(ExternalImageConverter.minTimeoutProp, String.valueOf(imgThumbConfig.getMinTimeout()));
                 System.setProperty(ExternalImageConverter.timeoutPerMBProp, String.valueOf(imgThumbConfig.getTimeoutPerMB()));
-                
+
                 if (System.getProperty("os.name").toLowerCase().startsWith("windows")) { //$NON-NLS-1$ //$NON-NLS-2$
                     System.setProperty(ExternalImageConverter.winToolPathPrefixProp,
                             Configuration.getInstance().appRoot);
@@ -301,7 +289,7 @@ public class ImageThumbTask extends ThumbTask {
     private void createImageThumb(IItem evidence, File thumbFile) {
         try {
             if (evidence.getLength() != null && evidence.getLength().longValue() == 0) {
-                // If evidence length is zero, don't even try to create a thumb 
+                // If evidence length is zero, don't even try to create a thumb
                 saveThumb(evidence, thumbFile);
                 return;
             }
@@ -326,7 +314,7 @@ public class ImageThumbTask extends ThumbTask {
                 performanceStats[img == null ? 6 : 4]++;
                 performanceStats[img == null ? 7 : 5] += System.currentTimeMillis() - t;
             }
-            
+
             boolean isView = false;
             if (img == null) {
                 // External Conversion

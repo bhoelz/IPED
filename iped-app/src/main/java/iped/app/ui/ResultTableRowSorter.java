@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,22 +18,20 @@
  */
 package iped.app.ui;
 
-import java.awt.Dialog;
+import iped.app.ui.parallelsorter.ParallelTableRowSorter;
+import iped.viewers.api.CancelableWorker;
+import iped.viewers.api.events.RowSorterTableDataChange;
+import iped.viewers.util.ProgressDialog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.swing.RowSorter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.app.ui.parallelsorter.ParallelTableRowSorter;
-import iped.viewers.api.CancelableWorker;
-import iped.viewers.api.events.RowSorterTableDataChange;
-import iped.viewers.util.ProgressDialog;
 
 public class ResultTableRowSorter extends ParallelTableRowSorter<ResultTableSortModel> {
 
@@ -43,7 +41,7 @@ public class ResultTableRowSorter extends ParallelTableRowSorter<ResultTableSort
 
     private static volatile Map<Integer, RowComparator> comparatorCache = new LinkedHashMap<Integer, RowComparator>(16, 0.75f, true) {
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 

@@ -1,16 +1,15 @@
 package iped.parsers.compress;
 
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
+import iped.parsers.util.AbstractPkgTest;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.sax.BodyContentHandler;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 
-import iped.parsers.util.AbstractPkgTest;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class RARParserTest extends AbstractPkgTest {
 

@@ -1,15 +1,7 @@
 package iped.parsers.mail;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-
-import java.io.IOException;
-import java.io.InputStream;
-
+import iped.properties.ExtraProperties;
+import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.DublinCore;
 import org.apache.tika.metadata.Metadata;
@@ -23,8 +15,12 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import iped.properties.ExtraProperties;
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 public class RFC822ParserTest extends TestCase {
 

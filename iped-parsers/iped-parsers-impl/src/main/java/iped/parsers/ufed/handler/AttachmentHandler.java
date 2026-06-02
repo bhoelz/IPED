@@ -1,21 +1,20 @@
 package iped.parsers.ufed.handler;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IItemReader;
 import iped.io.ISeekableInputStreamFactory;
 import iped.parsers.ufed.model.Attachment;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 public class AttachmentHandler extends BaseModelHandler<Attachment> {
 

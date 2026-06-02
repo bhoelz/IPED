@@ -1,25 +1,20 @@
 package iped.viewers.util;
 
+import iped.io.URLUtil;
+import iped.viewers.HtmlViewer;
+
 import java.net.SocketPermission;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLPermission;
-import java.security.CodeSource;
-import java.security.Permission;
-import java.security.PermissionCollection;
-import java.security.Permissions;
-import java.security.Policy;
-import java.security.ProtectionDomain;
+import java.security.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import iped.io.URLUtil;
-import iped.viewers.HtmlViewer;
 
 /**
  * Custom application policy to block Internet access from html and other
  * viewers.
- * 
+ *
  * @author Nassif
  *
  */

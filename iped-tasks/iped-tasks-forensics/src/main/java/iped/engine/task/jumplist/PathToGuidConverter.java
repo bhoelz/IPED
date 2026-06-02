@@ -1,21 +1,20 @@
 package iped.engine.task.jumplist;
 
-import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableList;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang3.StringUtils;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableList;
 
 public class PathToGuidConverter {
 
     // Map of known path "keys" (which can be env variables or composite paths) to lists of GUIDs.
-    // The comparator ensures that more specific keys (e.g., "%USERPROFILE%\DOWNLOADS") 
+    // The comparator ensures that more specific keys (e.g., "%USERPROFILE%\DOWNLOADS")
     // are checked before less specific keys (e.g., "%USERPROFILE%").
     private final Map<String, List<String>> guidsMap = new TreeMap<>((e1, e2) -> {
         int ret = Integer.compare(e2.length(), e1.length());
@@ -60,7 +59,7 @@ public class PathToGuidConverter {
         commonProgramFilesGuids.add("{DE974D24-D9C6-4D3E-BF91-F4455120B917}"); // FOLDERID_ProgramFilesCommonX86
         commonProgramFilesGuids.add("{6365D5A7-0F0D-45E5-87F6-0DA56B6A4F7D}"); // FOLDERID_ProgramFilesCommonX64
         guidsMap.put("%COMMONPROGRAMFILES%", unmodifiableList(commonProgramFilesGuids));
-        
+
         // For "%COMMONPROGRAMFILES(X86)%"
         List<String> commonProgramFilesX86Guids = new ArrayList<>();
         commonProgramFilesX86Guids.add("{F7F1ED05-9F6D-47A2-AAAE-29D317C6F066}"); // FOLDERID_ProgramFilesCommon
@@ -105,7 +104,7 @@ public class PathToGuidConverter {
      * variable or a composite path such as "%PUBLIC%\Downloads"), returns a list of
      * possible paths with the key replaced by corresponding Known Folder GUIDs.
      *
-     * @param genericPath The generic path string, e.g., "%PROGRAMFILES%\My App\app.exe" 
+     * @param genericPath The generic path string, e.g., "%PROGRAMFILES%\My App\app.exe"
      * or "%PUBLIC%\Downloads\installer.exe".
      * @return A list of strings with GUID-based paths. Returns an empty list if no mapped path key is found at the beginning of the path, or if the
      *         input path is null/empty.

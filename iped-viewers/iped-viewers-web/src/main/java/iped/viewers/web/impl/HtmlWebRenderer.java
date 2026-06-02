@@ -1,17 +1,13 @@
 package iped.viewers.web.impl;
 
+import iped.viewers.web.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.Set;
-
-import iped.viewers.web.RenderRequest;
-import iped.viewers.web.RenditionKind;
-import iped.viewers.web.UnsupportedRenditionException;
-import iped.viewers.web.ViewerCapabilities;
-import iped.viewers.web.WebRenderer;
 
 /**
  * Serves HTML/XHTML items as-is and generates HTML for known chat/link formats.

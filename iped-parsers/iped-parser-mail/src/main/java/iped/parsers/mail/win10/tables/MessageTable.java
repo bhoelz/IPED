@@ -1,18 +1,14 @@
 package iped.parsers.mail.win10.tables;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
 import iped.parsers.browsers.edge.EsedbLibrary;
 import iped.parsers.mail.win10.ColumnCodes;
+import iped.parsers.mail.win10.EsedbManager;
 import iped.parsers.mail.win10.entries.FolderEntry;
 import iped.parsers.mail.win10.entries.MessageEntry;
-import iped.parsers.mail.win10.EsedbManager;
+
+import java.util.*;
 
 
 public class MessageTable extends AbstractTable {

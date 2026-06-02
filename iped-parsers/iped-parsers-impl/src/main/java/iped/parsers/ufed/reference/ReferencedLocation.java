@@ -1,9 +1,9 @@
 package iped.parsers.ufed.reference;
 
-import static iped.parsers.ufed.util.UfedUtils.readUfedMetadata;
-
 import iped.data.IItemReader;
 import iped.properties.ExtraProperties;
+
+import static iped.parsers.ufed.util.UfedUtils.readUfedMetadata;
 
 public class ReferencedLocation extends AbstractReferencedItem {
 

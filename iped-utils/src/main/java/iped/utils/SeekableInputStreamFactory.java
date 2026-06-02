@@ -1,10 +1,10 @@
 package iped.utils;
 
-import java.io.IOException;
-import java.net.URI;
-
 import iped.io.ISeekableInputStreamFactory;
 import iped.io.SeekableInputStream;
+
+import java.io.IOException;
+import java.net.URI;
 
 public abstract class SeekableInputStreamFactory implements ISeekableInputStreamFactory {
 

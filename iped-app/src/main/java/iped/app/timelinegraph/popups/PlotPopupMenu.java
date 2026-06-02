@@ -1,19 +1,16 @@
 package iped.app.timelinegraph.popups;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
-import org.jfree.chart.entity.XYItemEntity;
-
 import iped.app.timelinegraph.IpedChartPanel;
 import iped.app.timelinegraph.dialog.IntervalDefinitionDialog;
 import iped.app.ui.Messages;
 import iped.viewers.api.IMultiSearchResultProvider;
+import org.jfree.chart.entity.XYItemEntity;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class PlotPopupMenu extends JPopupMenu implements ActionListener {
     XYItemEntity chartEntity;

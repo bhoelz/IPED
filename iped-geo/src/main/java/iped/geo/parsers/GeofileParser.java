@@ -1,21 +1,12 @@
 package iped.geo.parsers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.datatype.DatatypeFactory;
-
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import iped.geo.parsers.kmlstore.FeatureListFactoryRegister;
+import iped.geo.parsers.kmlstore.Folder;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -33,19 +24,17 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
-
-import iped.geo.parsers.kmlstore.FeatureListFactoryRegister;
-import iped.geo.parsers.kmlstore.Folder;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
+import javax.xml.datatype.DatatypeFactory;
+import java.io.*;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class GeofileParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     public static final MediaType GPX_MIME = MediaType.application("gpx");

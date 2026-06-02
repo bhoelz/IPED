@@ -1,36 +1,5 @@
 package iped.app.ui.columns;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dialog.ModalityType;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.table.TableColumn;
-
 import iped.app.ui.App;
 import iped.app.ui.Messages;
 import iped.app.ui.ProgressCellRenderer;
@@ -43,6 +12,19 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.StringUtil;
 import iped.viewers.util.ProgressDialog;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.TableColumn;
+import java.awt.*;
+import java.awt.Dialog.ModalityType;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ColumnsManagerUI implements ActionListener {
 
@@ -78,7 +60,7 @@ public class ColumnsManagerUI implements ActionListener {
         dialog.setVisible(true);
         combo.requestFocus();
     }
-    
+
     public void setPinnedColumns(int firstColsToPin) {
         this.firstColsToPin = firstColsToPin;
     }
@@ -99,7 +81,7 @@ public class ColumnsManagerUI implements ActionListener {
 
         listPanel = new JPanel() {
             private static final long serialVersionUID = -4882872614411133375L;
-            
+
             @Override
             public void updateUI() {
                 super.updateUI();

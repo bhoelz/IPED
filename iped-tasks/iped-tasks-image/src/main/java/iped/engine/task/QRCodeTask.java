@@ -1,21 +1,5 @@
 package iped.engine.task;
 
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.imageio.ImageIO;
-
-import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.Result;
@@ -23,12 +7,21 @@ import com.google.zxing.ResultPoint;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
 import iped.parsers.util.MetadataUtil;
+import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class QRCodeTask extends AbstractTask {
 
@@ -177,7 +170,7 @@ public class QRCodeTask extends AbstractTask {
                     // detection doesn't work with multiple qrcodes detection
                     // evidence.setExtraAttribute(QRCODE_TYPE, types);
                     evidence.setExtraAttribute(QRCODE_POINTS, points);
-                    
+
                     logger.info("Found {} qrcode(s) in file {} ({} bytes)", results.length, evidence.getPath(),
                             evidence.getLength());
 

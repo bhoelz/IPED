@@ -1,6 +1,6 @@
 /*
  * Copyright 2020-2020, João Vitor de Sá Hauck
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,9 +18,9 @@
  */
 package iped.parsers.telegram;
 
-import java.util.HashMap;
-
 import iped.parsers.util.Messages;
+
+import java.util.HashMap;
 
 public class MapTypeMSG {
 
@@ -97,7 +97,7 @@ public class MapTypeMSG {
         msg.put("TL_messageActionChatEditTitle", 5);
 
         msg.put("TL_messageActionPinMessage", 6);
-        
+
         msg.put("TL_messageActionChatMigrateTo", 9);
 
         msg.put("TL_messageActionChatJoinedByLink", 7);
@@ -113,7 +113,7 @@ public class MapTypeMSG {
         msg.put("TL_messageActionPhoneCall", 14);
 
         msg.put("TL_messageActionInviteToGroupCall", 23);
-        
+
         msg.put("TL_messageActionGroupCall", 22);
 
         msg.put("TL_messageActionPaymentSent", 15);
@@ -127,7 +127,7 @@ public class MapTypeMSG {
         msg.put("TL_messageActionUserJoined", 19);
 
         msg.put("TL_messageActionChatJoinedByRequest", 25);
-        
+
         msg.put("TL_messageActionSetChatTheme", 24);
 
         msg.put("TL_messageActionGeoProximityReached", 21);

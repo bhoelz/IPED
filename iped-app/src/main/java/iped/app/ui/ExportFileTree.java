@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,29 +18,8 @@
  */
 package iped.app.ui;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.lucene.document.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
-
 import iped.app.ui.TreeViewModel.Node;
 import iped.data.IIPEDSource;
 import iped.data.IItem;
@@ -54,6 +33,18 @@ import iped.search.IIPEDSearcher;
 import iped.search.IMultiSearchResult;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.util.ProgressDialog;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.lucene.document.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ExportFileTree extends CancelableWorker {
 
@@ -379,7 +370,7 @@ public class ExportFileTree extends CancelableWorker {
             // original, ele era sobrescrito silenciosamente.
             JFileChooser fileChooser = new JFileChooser() {
                 /**
-                 * 
+                 *
                  */
                 private static final long serialVersionUID = 1L;
 

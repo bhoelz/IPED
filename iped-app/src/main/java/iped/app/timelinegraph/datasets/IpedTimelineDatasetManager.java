@@ -1,34 +1,22 @@
 package iped.app.timelinegraph.datasets;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jfree.data.time.Day;
-import org.jfree.data.time.Hour;
-import org.jfree.data.time.Month;
-import org.jfree.data.time.Quarter;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimePeriod;
-import org.jfree.data.time.Week;
-import org.jfree.data.time.Year;
-import org.jfree.data.xy.AbstractIntervalXYDataset;
-
 import iped.app.timelinegraph.IpedChartsPanel;
 import iped.app.timelinegraph.cache.IndexTimeStampCache;
 import iped.app.timelinegraph.cache.TimeStampCache;
 import iped.jfextensions.model.Minute;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jfree.data.time.*;
+import org.jfree.data.xy.AbstractIntervalXYDataset;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.*;
 
 /*
- * Implements the method to choose timeline dataset object that represents. 
- * 
+ * Implements the method to choose timeline dataset object that represents.
+ *
  * Obs.: Currently it checks if there is an available cache. If not use a dataset with direct access to lucene resultset.
  */
 public class IpedTimelineDatasetManager {

@@ -1,19 +1,5 @@
 package iped.app.graph;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.kharon.Edge;
-import org.kharon.Graph;
-import org.kharon.OverlappedEdges;
-
 import iped.app.ui.App;
 import iped.data.IItemId;
 import iped.engine.data.IPEDSource;
@@ -25,6 +11,13 @@ import iped.search.IMultiSearchResult;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IResultSetFilter;
 import iped.viewers.api.IResultSetFilterer;
+import org.apache.commons.lang.ArrayUtils;
+import org.kharon.Edge;
+import org.kharon.Graph;
+import org.kharon.OverlappedEdges;
+
+import java.io.IOException;
+import java.util.*;
 
 public class FilterSelectedEdges implements IResultSetFilterer {
 

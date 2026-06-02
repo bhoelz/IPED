@@ -1,12 +1,12 @@
 package iped.engine.task.video;
 
-import java.io.File;
-
 import iped.engine.config.VideoThumbsConfig;
+
+import java.io.File;
 
 /*
  * Copyright 2015-2015, Wladimir Leite
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify

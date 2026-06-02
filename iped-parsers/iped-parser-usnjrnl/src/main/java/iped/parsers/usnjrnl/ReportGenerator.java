@@ -1,23 +1,14 @@
 package iped.parsers.usnjrnl;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
+import iped.utils.SimpleHTMLEncoder;
+import org.apache.tika.io.TemporaryResources;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.List;
-
-import org.apache.tika.io.TemporaryResources;
-
-import iped.utils.SimpleHTMLEncoder;
 
 public class ReportGenerator {
 

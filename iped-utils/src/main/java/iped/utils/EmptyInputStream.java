@@ -1,8 +1,8 @@
 package iped.utils;
 
-import java.io.IOException;
-
 import iped.io.SeekableInputStream;
+
+import java.io.IOException;
 
 public class EmptyInputStream extends SeekableInputStream {
 

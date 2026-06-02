@@ -1,14 +1,13 @@
 package iped.parsers.misc;
 
-import java.io.InputStream;
-
+import junit.framework.TestCase;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.junit.Test;
 import org.xml.sax.ContentHandler;
 
-import junit.framework.TestCase;
+import java.io.InputStream;
 
 public class XMLParserTest extends TestCase {
 

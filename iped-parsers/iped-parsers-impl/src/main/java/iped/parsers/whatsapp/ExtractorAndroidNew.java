@@ -1,120 +1,15 @@
 package iped.parsers.whatsapp;
 
-import static iped.parsers.whatsapp.Message.MessageType.ADVANCED_PRIVACY_ON;
-import static iped.parsers.whatsapp.Message.MessageType.AI_THIRD_PARTY;
-import static iped.parsers.whatsapp.Message.MessageType.ANY_COMMUNITY_MEMBER_CAN_JOIN_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.AUDIO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.BLOCKED_CONTACT;
-import static iped.parsers.whatsapp.Message.MessageType.BUSINESS_CHAT;
-import static iped.parsers.whatsapp.Message.MessageType.BUSINESS_META_SECURE_SERVICE;
-import static iped.parsers.whatsapp.Message.MessageType.BUSINESS_OFFICIAL;
-import static iped.parsers.whatsapp.Message.MessageType.CALL_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.CHANGED_DEVICE;
-import static iped.parsers.whatsapp.Message.MessageType.CHANGED_NUMBER_TO;
-import static iped.parsers.whatsapp.Message.MessageType.CHANNEL_ADDED_PRIVACY;
-import static iped.parsers.whatsapp.Message.MessageType.CHANNEL_CREATED;
-import static iped.parsers.whatsapp.Message.MessageType.CHAT_ADDED_PRIVACY;
-import static iped.parsers.whatsapp.Message.MessageType.CHAT_STARTED_FROM_AD;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_MANAGEMENT_ACTION;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_RENAMED;
-import static iped.parsers.whatsapp.Message.MessageType.COMMUNITY_WELCOME;
-import static iped.parsers.whatsapp.Message.MessageType.CONTACTED_FIND_BUSINESSES;
-import static iped.parsers.whatsapp.Message.MessageType.CONTACT_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.DELETED_BY_ADMIN;
-import static iped.parsers.whatsapp.Message.MessageType.DELETED_BY_SENDER;
-import static iped.parsers.whatsapp.Message.MessageType.DELETED_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.DOC_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.ENCRYPTION_KEY_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.EPHEMERAL_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.EPHEMERAL_DEFAULT;
-import static iped.parsers.whatsapp.Message.MessageType.EPHEMERAL_DURATION_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.EPHEMERAL_SAVE;
-import static iped.parsers.whatsapp.Message.MessageType.EPHEMERAL_SETTINGS_NOT_APPLIED;
-import static iped.parsers.whatsapp.Message.MessageType.GIF_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_ADDED_TO_COMMUNITY;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ADMIN_APPROVAL_OFF;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ALL_MEMBERS_CAN_ADD;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ALL_MEMBERS_CAN_EDIT;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ALL_MEMBERS_CAN_SEND;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ONLY_ADMINS_CAN_ADD;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ONLY_ADMINS_CAN_EDIT;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CHANGED_ONLY_ADMINS_CAN_SEND;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_CREATED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_DESCRIPTION_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_ICON_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_INVITE;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_ONLY_ADMINS_CAN_SEND;
-import static iped.parsers.whatsapp.Message.MessageType.GROUP_REMOVED_FROM_COMMUNITY;
-import static iped.parsers.whatsapp.Message.MessageType.IGNORE_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.IMAGE_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.LOCATION_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.MESSAGE_ASSOCIATION;
-import static iped.parsers.whatsapp.Message.MessageType.MESSAGES_ENCRYPTED;
-import static iped.parsers.whatsapp.Message.MessageType.MESSAGES_NOW_ENCRYPTED;
-import static iped.parsers.whatsapp.Message.MessageType.MISSED_VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.MISSED_VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.NEW_PARTICIPANTS_NEED_ADMIN_APPROVAL;
-import static iped.parsers.whatsapp.Message.MessageType.ORDER_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.OVER_256_MEMBERS_ONLY_ADMINS_CAN_EDIT;
-import static iped.parsers.whatsapp.Message.MessageType.PINNED_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.POLL_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.PRODUCT_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.REFUSED_VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.REFUSED_VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.RESET_GROUP_LINK;
-import static iped.parsers.whatsapp.Message.MessageType.SECURITY_NOTIFICATIONS_NO_LONGER_AVAILABLE;
-import static iped.parsers.whatsapp.Message.MessageType.SENDER_IN_CONTACTS;
-import static iped.parsers.whatsapp.Message.MessageType.SHARE_LOCATION_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.STANDARD_CHAT;
-import static iped.parsers.whatsapp.Message.MessageType.STICKER_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.SUBJECT_CHANGED;
-import static iped.parsers.whatsapp.Message.MessageType.TEMPLATE_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.TEMPLATE_QUOTE;
-import static iped.parsers.whatsapp.Message.MessageType.TEXT_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.UI_ELEMENTS;
-import static iped.parsers.whatsapp.Message.MessageType.UI_ELEMENTS_QUOTE;
-import static iped.parsers.whatsapp.Message.MessageType.UNAVAILABLE_VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.UNAVAILABLE_VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.UNBLOCKED_CONTACT;
-import static iped.parsers.whatsapp.Message.MessageType.UNKNOWN_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.UNKNOWN_VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.UNKNOWN_VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.USER_ADDED_TO_COMMUNITY;
-import static iped.parsers.whatsapp.Message.MessageType.USER_ADDED_TO_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.USER_COMMUNITY_ADMIN;
-import static iped.parsers.whatsapp.Message.MessageType.USER_JOINED_GROUP_FROM_COMMUNITY;
-import static iped.parsers.whatsapp.Message.MessageType.USER_JOINED_GROUP_FROM_INVITATION;
-import static iped.parsers.whatsapp.Message.MessageType.USER_JOINED_GROUP_FROM_LINK;
-import static iped.parsers.whatsapp.Message.MessageType.USER_JOINED_WHATSAPP;
-import static iped.parsers.whatsapp.Message.MessageType.USER_LEFT_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.USER_REMOVED_FROM_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.USER_REQUEST_TO_ADD_TO_GROUP;
-import static iped.parsers.whatsapp.Message.MessageType.VIDEO_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.VIDEO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VIEW_ONCE_AUDIO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VIEW_ONCE_IMAGE_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VIEW_ONCE_VIDEO_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.VOICE_CALL;
-import static iped.parsers.whatsapp.Message.MessageType.WAITING_MESSAGE;
-import static iped.parsers.whatsapp.Message.MessageType.YOU_ADMIN;
-import static iped.parsers.whatsapp.Message.MessageType.YOU_NOT_ADMIN;
-
-import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import iped.parsers.sqlite.SQLite3DBParser;
 import iped.parsers.whatsapp.Message.MessageQuotedType;
 import iped.parsers.whatsapp.Message.MessageStatus;
+
+import java.io.File;
+import java.sql.*;
+import java.util.*;
+import java.util.Date;
+
+import static iped.parsers.whatsapp.Message.MessageType.*;
 
 /**
  *
@@ -473,12 +368,12 @@ public abstract class ExtractorAndroidNew extends Extractor {
                 int actionType = rs.getInt("actionType");
                 m.setMessageType(decodeMessageType(type, status, edit_version, caption, actionType,
                         rs.getInt("bizStateId"), rs.getInt("privacyType"),  m.getMediaMime()));
-                
+
                 if (m.getMessageType() == EPHEMERAL_SETTINGS_NOT_APPLIED || m.getMessageType() == IGNORE_MESSAGE) {
                     // Ignore these type of message, as they do nothing and are not visible in the application itself.
                     continue;
                 }
-                
+
                 m.setDuration(rs.getInt("media_duration")); //$NON-NLS-1$
                 if (m.getMessageType() == CONTACT_MESSAGE) {
                     m.setVcards(Arrays.asList(new String[] { Util.getUTF8String(rs, "vcard") }));
@@ -870,14 +765,14 @@ public abstract class ExtractorAndroidNew extends Extractor {
                             result = MESSAGES_ENCRYPTED;
                         } else {
                             result = BUSINESS_META_SECURE_SERVICE;
-                        }                        
+                        }
                         break;
                     case 70:
                         result = CALL_MESSAGE;
                         break;
                     case 76:
                         result = CONTACTED_FIND_BUSINESSES;
-                        break;                        
+                        break;
                     case 75:
                     case 108:
                         result = GROUP_ADDED_TO_COMMUNITY;
@@ -1129,7 +1024,7 @@ public abstract class ExtractorAndroidNew extends Extractor {
     private static final String SELECT_TEMPLATE = "SELECT content_text_data as content, footer_text_data as footer FROM message_template where message_row_id=?";
 
     private static final String SELECT_USERS_GROUP_ACTION = "select raw_string from message_system_chat_participant inner join jid on user_jid_row_id = jid._id where message_row_id=? order by _id";
-    
+
     private static final String SELECT_SYSTEM_NUMBER_CHANGE = "select old.raw_string as oldUser, new.raw_string as newUser from message_system_number_change left join jid old on old_jid_row_id = old._id left join jid new on new_jid_row_id = new._id where message_row_id=?";
 
     private static final String SELECT_REVOKED = "select raw_string as admin from message_revoked left join jid on admin_jid_row_id = jid._id where message_row_id=?";
@@ -1137,19 +1032,19 @@ public abstract class ExtractorAndroidNew extends Extractor {
     private static final String SELECT_ORDER = "select raw_string as seller, order_title as title,"
             + " item_count as count, currency_code as currency, total_amount_1000 as amount, message as description"
             + " from message_order left join jid on seller_jid = jid._id where message_row_id=?";
-    
+
     private static final String SELECT_PRODUCT = "select raw_string as seller, title,"
             + " currency_code as currency, amount_1000 as amount, description"
             + " from message_product left join jid on business_owner_jid = jid._id where message_row_id=?";
 
     private static final String SELECT_QUOTED_PRODUCT = "select raw_string as seller, title,"
             + " currency_code as currency, amount_1000 as amount, description"
-            + " from message_quoted_product left join jid on business_owner_jid = jid._id where message_row_id=?";    
+            + " from message_quoted_product left join jid on business_owner_jid = jid._id where message_row_id=?";
 
     private static final String SELECT_POLL_OPTION = "SELECT option_name as name, vote_total as total FROM message_poll_option where message_row_id=? order by _id";
 
     private static final String SELECT_EPHEMERAL_SETTING = "SELECT setting_duration as duration FROM message_ephemeral_setting where message_row_id=?";
-    
+
     private static final String SELECT_TEMPLATE_BUTTON = "SELECT text_data as text, extra_data as extra FROM message_template_button where message_row_id=? order by _id";
 
     private static String getSelectMessagesQuery(Connection conn) throws SQLException {
@@ -1244,7 +1139,7 @@ public abstract class ExtractorAndroidNew extends Extractor {
         if (SQLite3DBParser.containsTable("message_edit_info", conn)) {
             editCol = "mei.message_row_id as edit_row_id,";
             editTableJoin = " left join message_edit_info mei on mei.original_key_id=mq.key_id";
-        }                
+        }
         return "select mq.message_row_id as id,mq.chat_row_id as chatId, chatJid.raw_string as remoteId,"
                 + " jid.raw_string as remoteResource, mv.vcard, mq.text_data, mq.parent_message_chat_row_id,"
                 + " mq.from_me as fromMe, mq.timestamp as timestamp, message_url as mediaUrl,"

@@ -1,18 +1,18 @@
 package iped.parsers.fork;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.tika.fork.ForkProxy;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.html.HtmlMapper;
 import org.apache.tika.parser.html.IdentityHtmlMapper;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
 public class ParseContextProxy extends ParseContext implements ForkProxy {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

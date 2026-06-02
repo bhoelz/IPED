@@ -16,14 +16,6 @@
  */
 package iped.parsers.fork;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-
 import org.apache.tika.fork.ForkProxy;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -31,6 +23,8 @@ import org.apache.tika.sax.ContentHandlerFactory;
 import org.apache.tika.sax.RecursiveParserWrapperHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.io.*;
 
 /**
  * <p>

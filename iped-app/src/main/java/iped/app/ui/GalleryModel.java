@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -17,29 +17,6 @@
  * along with IPED.  If not, see <http://www.gnu.org/licenses/>.
  */
 package iped.app.ui;
-
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
-import javax.swing.table.AbstractTableModel;
-
-import org.apache.commons.io.input.CloseShieldInputStream;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.util.BytesRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import iped.app.ui.controls.ErrorIcon;
 import iped.data.IItemId;
@@ -59,6 +36,26 @@ import iped.utils.ExternalImageConverter;
 import iped.utils.HashValue;
 import iped.utils.ImageUtil;
 import iped.viewers.util.ImageMetadataUtil;
+import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.util.BytesRef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GalleryModel extends AbstractTableModel {
 

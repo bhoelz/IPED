@@ -1,21 +1,15 @@
 package iped.engine.webapi;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 @Api(value = "Renditions")
 @Path("sources/{sourceID}/docs/{id}/renditions")

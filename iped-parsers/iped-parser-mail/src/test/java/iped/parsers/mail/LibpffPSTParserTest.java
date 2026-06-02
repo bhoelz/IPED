@@ -1,12 +1,9 @@
 package iped.parsers.mail;
 
 
-import static org.junit.Assume.assumeFalse;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
+import iped.parsers.mail.OutlookPSTParserTest.EmbeddedPSTParser;
+import iped.parsers.util.AbstractPkgTest;
+import iped.parsers.util.RepoToolDownloader;
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -19,9 +16,11 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import iped.parsers.mail.OutlookPSTParserTest.EmbeddedPSTParser;
-import iped.parsers.util.AbstractPkgTest;
-import iped.parsers.util.RepoToolDownloader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.junit.Assume.assumeFalse;
 
 public class LibpffPSTParserTest extends AbstractPkgTest {
     private static String testRoot = System.getProperty("user.dir") + "/src/test";

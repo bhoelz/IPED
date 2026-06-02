@@ -1,17 +1,8 @@
 package iped.parsers.compress;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.util.Collections;
-import java.util.Set;
-
+import com.github.horrorho.ragingmoose.LZFSEDecoderException;
+import com.github.horrorho.ragingmoose.LZFSEInputStream;
+import iped.utils.IOUtil;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -25,15 +16,14 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.github.horrorho.ragingmoose.LZFSEDecoderException;
-import com.github.horrorho.ragingmoose.LZFSEInputStream;
-
-import iped.utils.IOUtil;
+import java.io.*;
+import java.util.Collections;
+import java.util.Set;
 
 public class LZFSEParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final MediaType LZFSE_MIME = MediaType.application("x-lzfse");
@@ -70,7 +60,7 @@ public class LZFSEParser extends AbstractParser {
             if (bos != null) {
                 bos.close();
             }
-            
+
             Metadata subMeta = new Metadata();
             subMeta.set(TikaCoreProperties.RESOURCE_NAME_KEY, metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY));
 
@@ -81,7 +71,7 @@ public class LZFSEParser extends AbstractParser {
 
             EmbeddedDocumentExtractor extractor = context.get(EmbeddedDocumentExtractor.class, new ParsingEmbeddedDocumentExtractor(context));
             extractor.parseEmbedded(subitemStream, handler, subMeta, false);
-            
+
         } catch (LZFSEDecoderException e) {
             throw new TikaException("Error decoding LZFSE file", e);
         } finally {

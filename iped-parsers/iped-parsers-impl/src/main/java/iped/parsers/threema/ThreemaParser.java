@@ -18,21 +18,18 @@
  */
 package iped.parsers.threema;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import iped.data.IItemReader;
+import iped.parsers.plist.detector.PListDetector;
+import iped.parsers.sqlite.SQLite3DBParser;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.threema.Message.MessageType;
+import iped.parsers.util.ItemInfo;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.EmptyInputStream;
+import iped.utils.SimpleHTMLEncoder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -49,18 +46,10 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.plist.detector.PListDetector;
-import iped.parsers.sqlite.SQLite3DBParser;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.threema.Message.MessageType;
-import iped.parsers.util.ItemInfo;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
-import iped.utils.SimpleHTMLEncoder;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Parser para banco de dados do Threema Secure Messenger

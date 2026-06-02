@@ -1,18 +1,13 @@
 package iped.engine.webapi;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.WebApplicationException;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.StreamingOutput;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import java.io.IOException;
+import java.io.OutputStream;
 
 @Api(value = "Documents")
 @Path("/sources/{sourceID}/docs/{id}/text")

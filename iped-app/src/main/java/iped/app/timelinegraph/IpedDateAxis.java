@@ -1,32 +1,9 @@
 package iped.app.timelinegraph;
 
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.geom.Rectangle2D;
-import java.lang.reflect.Method;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-
-import javax.swing.JOptionPane;
-
-import org.jfree.chart.axis.AxisState;
-import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.axis.DateTick;
-import org.jfree.chart.axis.DateTickMarkPosition;
-import org.jfree.chart.axis.DateTickUnit;
-import org.jfree.chart.axis.DateTickUnitType;
-import org.jfree.chart.axis.Tick;
-import org.jfree.chart.axis.TickType;
+import iped.app.timelinegraph.datasets.AsynchronousDataset;
+import iped.app.ui.Messages;
+import iped.jfextensions.model.Minute;
+import org.jfree.chart.axis.*;
 import org.jfree.chart.event.AxisChangeEvent;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
@@ -34,23 +11,18 @@ import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.TextAnchor;
 import org.jfree.chart.util.Args;
 import org.jfree.data.Range;
-import org.jfree.data.time.DateRange;
-import org.jfree.data.time.Day;
-import org.jfree.data.time.FixedMillisecond;
-import org.jfree.data.time.Hour;
-import org.jfree.data.time.Millisecond;
-import org.jfree.data.time.Month;
-import org.jfree.data.time.Quarter;
-import org.jfree.data.time.RegularTimePeriod;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimePeriod;
-import org.jfree.data.time.Week;
-import org.jfree.data.time.Year;
+import org.jfree.data.time.*;
 import org.jfree.data.xy.XYDataset;
 
-import iped.app.timelinegraph.datasets.AsynchronousDataset;
-import iped.app.ui.Messages;
-import iped.jfextensions.model.Minute;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
 
 public class IpedDateAxis extends DateAxis implements MouseResponsiveChartEntity {
     volatile SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");

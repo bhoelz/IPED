@@ -1,23 +1,13 @@
 package iped.app.ui.controls;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.RenderingHints.Key;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 public class ResizablePopupMenu extends JPopupMenu {
     private static final long serialVersionUID = 4807545296165600782L;

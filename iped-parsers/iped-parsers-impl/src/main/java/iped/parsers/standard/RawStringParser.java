@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,12 +18,7 @@
  */
 package iped.parsers.standard;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
-import java.util.Set;
-
+import iped.utils.RandomFilterInputStream;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -33,7 +28,11 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.utils.RandomFilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Parser que extrai strings brutas de um arquivo qualquer. Útil para binários,
@@ -136,7 +135,7 @@ public class RawStringParser extends AbstractParser {
     /**
      * Cria nova instancia para cada parsing para evitar acesso concorrente às
      * mesmas variáveis locais no caso de parsing concorrente com mesma instancia
-     * 
+     *
      * @see org.apache.tika.parser.Parser#parse(java.io.InputStream,
      *      org.xml.sax.ContentHandler, org.apache.tika.metadata.Metadata,
      *      org.apache.tika.parser.ParseContext)

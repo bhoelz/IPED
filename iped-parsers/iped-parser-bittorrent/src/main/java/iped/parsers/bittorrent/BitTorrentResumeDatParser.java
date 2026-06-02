@@ -1,13 +1,13 @@
 package iped.parsers.bittorrent;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.IItemReader;
+import iped.parsers.util.IgnoreCorruptedCarved;
+import iped.parsers.util.Messages;
+import iped.parsers.util.P2PUtil;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.search.IItemSearcher;
+import iped.utils.LocalizedFormat;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
@@ -20,14 +20,13 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItemReader;
-import iped.parsers.util.IgnoreCorruptedCarved;
-import iped.parsers.util.Messages;
-import iped.parsers.util.P2PUtil;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.search.IItemSearcher;
-import iped.utils.LocalizedFormat;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * Parser for BitTorrent Client Artifacts
@@ -147,7 +146,7 @@ public class BitTorrentResumeDatParser extends AbstractParser {
                 xhtml.startElement("tr", "class", a ? "ra" : "rb"); //$NON-NLS-1$ $NON-NLS-2$ $NON-NLS-3$ $NON-NLS-4$
                 String[] rowElements = new String[] {
                         String.valueOf(++numEntries),
-                        torrent, 
+                        torrent,
                         torrentDict.getString("rootdir"), //$NON-NLS-1$
                         torrentDict.getString("path"), //$NON-NLS-1$
                         infoHash,

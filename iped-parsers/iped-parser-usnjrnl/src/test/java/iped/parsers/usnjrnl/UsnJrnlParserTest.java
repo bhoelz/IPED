@@ -1,5 +1,12 @@
 package iped.parsers.usnjrnl;
 
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.sax.ToTextContentHandler;
+import org.junit.Test;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -8,13 +15,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.sax.ToTextContentHandler;
-import org.junit.Test;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 public class UsnJrnlParserTest extends AbstractPkgTest {
 

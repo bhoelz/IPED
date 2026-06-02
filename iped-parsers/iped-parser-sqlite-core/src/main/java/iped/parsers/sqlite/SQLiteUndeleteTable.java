@@ -1,11 +1,11 @@
 package iped.parsers.sqlite;
 
+import fqlite.base.SqliteRow;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import fqlite.base.SqliteRow;
 
 public class SQLiteUndeleteTable {
     private String tableName;

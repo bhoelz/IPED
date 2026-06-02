@@ -1,22 +1,18 @@
 package iped.app.ui;
 
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridLayout;
-import java.awt.RenderingHints;
-import java.awt.Stroke;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import iped.data.IItem;
+import iped.engine.preview.PreviewRepository;
+import iped.engine.preview.PreviewRepositoryManager;
+import iped.engine.search.SimilarFacesSearch;
+import iped.io.SeekableInputStream;
+import iped.utils.ExternalImageConverter;
+import iped.utils.ImageUtil;
+import org.apache.commons.io.IOUtils;
+import org.apache.tika.mime.MediaType;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -26,36 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.tika.mime.MediaType;
-
-import iped.data.IItem;
-import iped.engine.preview.PreviewRepository;
-import iped.engine.preview.PreviewRepositoryManager;
-import iped.engine.search.SimilarFacesSearch;
-import iped.io.SeekableInputStream;
-import iped.utils.ExternalImageConverter;
-import iped.utils.ImageUtil;
 
 public class SimilarFacesOptionsDialog extends JDialog {
     private static final long serialVersionUID = 1;

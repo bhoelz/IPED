@@ -1,25 +1,20 @@
 package iped.engine.task.transcript;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import iped.configuration.IConfigurationDirectory;
 import iped.engine.config.AudioTranscriptConfig;
 import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
 import iped.exception.IPEDException;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WhisperTranscriptTask extends Wav2Vec2TranscriptTask {
 

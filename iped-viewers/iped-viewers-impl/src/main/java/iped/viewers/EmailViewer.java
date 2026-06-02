@@ -1,31 +1,18 @@
 package iped.viewers;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.text.Collator;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
-
+import iped.data.IItem;
+import iped.data.IItemReader;
+import iped.io.IStreamSource;
+import iped.parsers.mail.RFC822Parser;
+import iped.parsers.util.Util;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.FileContentSource;
+import iped.utils.IOUtil;
+import iped.utils.SimpleHTMLEncoder;
+import iped.viewers.api.AttachmentSearcher;
+import iped.viewers.localization.Messages;
+import iped.viewers.util.LuceneSimpleHTMLEncoder;
 import org.apache.james.mime4j.MimeException;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.codec.DecoderUtil;
@@ -33,14 +20,7 @@ import org.apache.james.mime4j.dom.address.Address;
 import org.apache.james.mime4j.dom.address.AddressList;
 import org.apache.james.mime4j.dom.address.Mailbox;
 import org.apache.james.mime4j.dom.address.MailboxList;
-import org.apache.james.mime4j.dom.field.AddressListField;
-import org.apache.james.mime4j.dom.field.ContentDispositionField;
-import org.apache.james.mime4j.dom.field.ContentIdField;
-import org.apache.james.mime4j.dom.field.ContentTypeField;
-import org.apache.james.mime4j.dom.field.DateTimeField;
-import org.apache.james.mime4j.dom.field.MailboxListField;
-import org.apache.james.mime4j.dom.field.ParsedField;
-import org.apache.james.mime4j.dom.field.UnstructuredField;
+import org.apache.james.mime4j.dom.field.*;
 import org.apache.james.mime4j.field.LenientFieldParser;
 import org.apache.james.mime4j.parser.ContentHandler;
 import org.apache.james.mime4j.parser.MimeStreamParser;
@@ -56,19 +36,14 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.parser.ParseContext;
 
-import iped.data.IItem;
-import iped.data.IItemReader;
-import iped.io.IStreamSource;
-import iped.parsers.mail.RFC822Parser;
-import iped.parsers.util.Util;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.FileContentSource;
-import iped.utils.IOUtil;
-import iped.utils.SimpleHTMLEncoder;
-import iped.viewers.api.AttachmentSearcher;
-import iped.viewers.localization.Messages;
-import iped.viewers.util.LuceneSimpleHTMLEncoder;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.text.Collator;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class EmailViewer extends HtmlLinkViewer {
 
@@ -272,7 +247,7 @@ public class EmailViewer extends HtmlLinkViewer {
             writer.write(
                     "<body style=\"background-color:white;text-align:left;font-family:arial;color:black;font-size:14px;margin:0px;\">"); //$NON-NLS-1$
             writer.write("<div class=\"ipedtheme\">");
-            
+
             String[][] names = {
                     { ExtraProperties.MESSAGE_SUBJECT, Messages.getString("EmailViewer.Subject") }, //$NON-NLS-1$
                     { Message.MESSAGE_FROM, Messages.getString("EmailViewer.From") }, //$NON-NLS-1$
@@ -469,7 +444,7 @@ public class EmailViewer extends HtmlLinkViewer {
         private boolean isMixedInAlternative() {
             if (multiParts.size() < 2) return false;
             String lastPart = multiParts.getLast().getSubType();
-            if (lastPart != null) lastPart = lastPart.toLowerCase(); 
+            if (lastPart != null) lastPart = lastPart.toLowerCase();
             return ("mixed".equals(lastPart) || "related".equals(lastPart)) && "alternative".equalsIgnoreCase(multiParts.get(multiParts.size() - 2).getSubType());
         }
 

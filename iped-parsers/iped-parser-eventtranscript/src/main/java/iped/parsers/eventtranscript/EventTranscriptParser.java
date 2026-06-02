@@ -1,19 +1,16 @@
 package iped.parsers.eventtranscript;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Set;
-
+import iped.parsers.sqlite.SQLite3DBParser;
+import iped.parsers.sqlite.SQLite3Parser;
+import iped.parsers.sqlite.detector.SQLiteContainerDetector;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.IgnoreContentHandler;
+import iped.parsers.util.MetadataUtil;
+import iped.parsers.util.ToXMLContentHandler;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.DateUtil;
+import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -28,32 +25,28 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.sqlite.SQLite3DBParser;
-import iped.parsers.sqlite.SQLite3Parser;
-import iped.parsers.sqlite.detector.SQLiteContainerDetector;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.IgnoreContentHandler;
-import iped.parsers.util.MetadataUtil;
-import iped.parsers.util.ToXMLContentHandler;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.DateUtil;
-import iped.utils.EmptyInputStream;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Set;
 
 /**
  * Parser for the EventTranscript.db file in Windows 10
- * 
+ *
  * Data collected:
- * 
+ *
  * Browser History through HJ_HistoryAddUrl and HJ_HistoryAddUrlEx events
- * 
+ *
  * Inventory Applications (Installed apps state)
  * https://docs.microsoft.com/en-us/windows/privacy/basic-level-windows-diagnostic-events-and-fields-1709#microsoftwindowsinventorycoreinventoryapplicationadd
  *
  * Devices (PNP and Container)
  * https://docs.microsoft.com/en-us/windows/privacy/basic-level-windows-diagnostic-events-and-fields-1709#microsoftwindowsinventorycoreinventorydevicepnpadd
  * https://docs.microsoft.com/en-us/windows/privacy/basic-level-windows-diagnostic-events-and-fields-1709#microsoftwindowsinventorycoreinventorydevicecontaineradd
- * 
+ *
  * App Interactivity
  * https://docs.microsoft.com/en-us/windows/privacy/enhanced-diagnostic-data-windows-analytics-events-and-fields#win32ktraceloggingappinteractivitysummary
  *

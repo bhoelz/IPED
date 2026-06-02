@@ -1,15 +1,12 @@
 package iped.app.graph;
 
+import iped.app.ui.Messages;
+import iped.engine.graph.ExportLinksQuery;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-
-import iped.app.ui.Messages;
-import iped.engine.graph.ExportLinksQuery;
 
 public class ExportLinksAction extends AbstractAction {
 

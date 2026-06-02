@@ -1,13 +1,11 @@
 package iped.app.timelinegraph.swingworkers;
 
-import java.util.Date;
-
-import javax.swing.JTable;
-
 import iped.app.timelinegraph.IpedDateAxis;
-import iped.app.ui.App;
 import iped.app.ui.BookmarksController;
 import iped.viewers.api.IMultiSearchResultProvider;
+
+import javax.swing.*;
+import java.util.Date;
 
 /*
  *  Extends SelectWorker, so the bitset of docids is mounted based on date interval. This bitset is used internally to check the docids.

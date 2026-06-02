@@ -1,14 +1,7 @@
 package iped.parsers.eventtranscript;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import iped.parsers.standard.StandardParser;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -23,8 +16,14 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.standard.StandardParser;
-import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class EventTranscriptParserTest {
 
@@ -64,7 +63,7 @@ public class EventTranscriptParserTest {
         assertTrue(tracker.histEventNames.contains("HJ_HistoryAddUrl") || tracker.histEventNames.contains("HJ_HistoryAddUrlEx"));
         assertTrue(tracker.pageTitles.contains("Search · \"eventtranscript.db\" \"query\""));
         assertTrue(tracker.urls.contains("https://github.com/search?q=%22eventtranscript.db%22&type=issues"));
-        
+
         assertEquals("https://slo-tech.com/forum/t743895", tracker.urls.get(12));
         assertEquals("Windows Diagnostics Data Viewer @ Slo-Tech", tracker.pageTitles.get(12));
         assertEquals("2022-08-25T17:15:39Z", tracker.visitDates.get(12));

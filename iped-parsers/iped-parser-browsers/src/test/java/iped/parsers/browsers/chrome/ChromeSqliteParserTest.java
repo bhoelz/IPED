@@ -1,8 +1,6 @@
 package iped.parsers.browsers.chrome;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import iped.parsers.browsers.AbstractPkgTest;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -12,7 +10,8 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.browsers.AbstractPkgTest;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ChromeSqliteParserTest extends AbstractPkgTest {
 

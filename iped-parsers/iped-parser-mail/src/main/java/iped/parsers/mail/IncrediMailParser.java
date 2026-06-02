@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Gabriel de Munno Francisco
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,15 +18,8 @@
  */
 package iped.parsers.mail;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.Set;
-
+import iped.parsers.util.IgnoreContentHandler;
+import iped.parsers.util.Messages;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -41,12 +34,13 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.IgnoreContentHandler;
-import iped.parsers.util.Messages;
+import java.io.*;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Parser para arquivos do IncrediMail.
- * 
+ *
  * @author Gabriel
  *
  */

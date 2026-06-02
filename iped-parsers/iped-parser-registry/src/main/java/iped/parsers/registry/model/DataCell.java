@@ -1,6 +1,5 @@
 package iped.parsers.registry.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class DataCell extends CellContent {

@@ -16,11 +16,6 @@ package iped.parsers.sqlite;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.Set;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -30,6 +25,12 @@ import org.apache.tika.parser.ParseContext;
 import org.sqlite.SQLiteConfig;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * This is the main class for parsing SQLite3 files. When {@link #parse} is

@@ -4,11 +4,7 @@ import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class DateUtil {
@@ -83,7 +79,7 @@ public class DateUtil {
 
     /**
      * Thread-safe method internally synchronized
-     * 
+     *
      * @param val
      * @return
      */

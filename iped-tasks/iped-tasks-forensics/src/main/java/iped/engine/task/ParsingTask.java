@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,50 +18,11 @@
  */
 package iped.engine.task;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.extractor.EmbeddedDocumentExtractor;
-import org.apache.tika.io.TemporaryResources;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.Property;
-import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.EmptyParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.html.HtmlMapper;
-import org.apache.tika.parser.html.IdentityHtmlMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
 import iped.configuration.Configurable;
 import iped.data.ICaseData;
 import iped.data.IItem;
 import iped.data.IItemReader;
-import iped.engine.config.CategoryToExpandConfig;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.ExternalParsersConfig;
-import iped.engine.config.OCRConfig;
-import iped.engine.config.ParsersConfig;
-import iped.engine.config.ParsingTaskConfig;
-import iped.engine.config.SplitLargeBinaryConfig;
+import iped.engine.config.*;
 import iped.engine.core.Manager;
 import iped.engine.core.Statistics;
 import iped.engine.core.Worker;
@@ -90,13 +51,7 @@ import iped.parsers.ocr.OCRParser;
 import iped.parsers.python.PythonParser;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.telegram.TelegramParser;
-import iped.parsers.util.ComputeThumb;
-import iped.parsers.util.EmbeddedItem;
-import iped.parsers.util.EmbeddedParent;
-import iped.parsers.util.IgnoreCorruptedCarved;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.MetadataUtil;
-import iped.parsers.util.OCROutputFolder;
+import iped.parsers.util.*;
 import iped.parsers.whatsapp.WhatsAppParser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
@@ -104,6 +59,32 @@ import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
 import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.extractor.EmbeddedDocumentExtractor;
+import org.apache.tika.io.TemporaryResources;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.Property;
+import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.EmptyParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.html.HtmlMapper;
+import org.apache.tika.parser.html.IdentityHtmlMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * TAREFA DE PARSING DE ALGUNS TIPOS DE ARQUIVOS. ARMAZENA O TEXTO EXTRAÍDO,

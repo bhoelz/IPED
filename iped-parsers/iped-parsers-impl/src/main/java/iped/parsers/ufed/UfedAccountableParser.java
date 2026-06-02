@@ -1,14 +1,16 @@
 package iped.parsers.ufed;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import iped.data.IItem;
+import iped.data.IItemReader;
+import iped.parsers.ufed.handler.AccountableHandler;
+import iped.parsers.ufed.handler.BaseModelHandler;
+import iped.parsers.ufed.handler.ContactHandler;
+import iped.parsers.ufed.handler.UserAccountHandler;
+import iped.parsers.ufed.model.*;
+import iped.parsers.ufed.reference.ReferencedFile;
+import iped.properties.MediaTypes;
+import iped.search.IItemSearcher;
+import iped.utils.DateUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -26,22 +28,14 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.data.IItem;
-import iped.data.IItemReader;
-import iped.parsers.ufed.handler.AccountableHandler;
-import iped.parsers.ufed.handler.BaseModelHandler;
-import iped.parsers.ufed.handler.ContactHandler;
-import iped.parsers.ufed.handler.UserAccountHandler;
-import iped.parsers.ufed.model.Accountable;
-import iped.parsers.ufed.model.BaseModel;
-import iped.parsers.ufed.model.Contact;
-import iped.parsers.ufed.model.ContactEntry;
-import iped.parsers.ufed.model.ContactPhoto;
-import iped.parsers.ufed.model.UserAccount;
-import iped.parsers.ufed.reference.ReferencedFile;
-import iped.properties.MediaTypes;
-import iped.search.IItemSearcher;
-import iped.utils.DateUtil;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class UfedAccountableParser extends AbstractParser {
 

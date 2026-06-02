@@ -1,8 +1,8 @@
 package iped.engine.webapi.json;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.List;
 
 /**
  * DocIDGroupModel lists IDs of a single source: { "source": "A", "ids":[0,1,2]

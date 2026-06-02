@@ -1,12 +1,5 @@
 package iped.engine.task;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.CmdLineArgs;
@@ -15,6 +8,12 @@ import iped.engine.config.LocalConfig;
 import iped.engine.config.TempFileTaskConfig;
 import iped.engine.data.Item;
 import iped.utils.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tarefa para geração de arquivos temporários para os itens antes do

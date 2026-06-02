@@ -1,21 +1,20 @@
 package iped.carvers.custom;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.tika.mime.MediaType;
-
 import iped.carvers.api.CarverType;
 import iped.carvers.api.Hit;
 import iped.carvers.api.InvalidCarvedObjectException;
 import iped.carvers.standard.AbstractCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
+import org.apache.commons.codec.DecoderException;
+import org.apache.tika.mime.MediaType;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 
 public class DERCarver extends AbstractCarver {
 

@@ -1,8 +1,8 @@
 package iped.engine.webapi.json.v2;
 
-import java.util.Map;
-
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Map;
 
 public class EventEnvelopeJSON {
     private String eventType;

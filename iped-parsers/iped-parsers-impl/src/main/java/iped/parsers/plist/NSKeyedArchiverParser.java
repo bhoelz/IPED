@@ -1,19 +1,12 @@
 package iped.parsers.plist;
 
-import static iped.parsers.plist.PListHelper.METADATA_KEY_SEPARATOR;
-import static iped.parsers.plist.PListHelper.appendPath;
-import static iped.parsers.plist.PListHelper.getUIDInteger;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.dd.plist.*;
+import iped.data.IItemReader;
+import iped.parsers.plist.detector.PListDetector;
+import iped.parsers.standard.StandardParser;
+import iped.properties.BasicProps;
+import iped.utils.DateUtil;
+import iped.utils.EmptyInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.exception.TikaException;
@@ -26,19 +19,12 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.dd.plist.NSArray;
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSNumber;
-import com.dd.plist.NSObject;
-import com.dd.plist.NSString;
-import com.dd.plist.UID;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.Map.Entry;
 
-import iped.data.IItemReader;
-import iped.parsers.plist.detector.PListDetector;
-import iped.parsers.standard.StandardParser;
-import iped.properties.BasicProps;
-import iped.utils.DateUtil;
-import iped.utils.EmptyInputStream;
+import static iped.parsers.plist.PListHelper.*;
 
 public class NSKeyedArchiverParser extends AbstractPListParser<NSKeyedArchiverParser.Extra> {
 

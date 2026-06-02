@@ -1,21 +1,16 @@
 package iped.app.graph;
 
-import java.awt.Insets;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JToolBar;
-
+import iped.app.ui.Messages;
 import org.kharon.history.GraphAction;
 import org.kharon.history.GraphHistory;
 import org.kharon.history.GraphHistoryListener;
 import org.kharon.layout.graphviz.GraphVizAlgorithm;
 
-import iped.app.ui.Messages;
+import javax.swing.*;
+import java.awt.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GraphToolBar extends JToolBar implements GraphHistoryListener {
 

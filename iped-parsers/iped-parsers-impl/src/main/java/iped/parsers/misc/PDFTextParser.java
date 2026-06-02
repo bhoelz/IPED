@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,20 +18,12 @@
  */
 package iped.parsers.misc;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-
+import iped.parsers.ocr.OCRParser;
+import iped.parsers.util.CharCountContentHandler;
+import iped.parsers.util.ComputeThumb;
+import iped.parsers.util.ItemInfo;
+import iped.parsers.util.PDFToThumb;
+import iped.properties.ExtraProperties;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
@@ -53,18 +45,24 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.ocr.OCRParser;
-import iped.parsers.util.CharCountContentHandler;
-import iped.parsers.util.ComputeThumb;
-import iped.parsers.util.ItemInfo;
-import iped.parsers.util.PDFToThumb;
-import iped.properties.ExtraProperties;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Parser para arquivos PDF. Chama o parser OCR caso habilitado se o PDF tiver
  * pouco texto, provavelmente por conter imagens digitalizadas. Também permite
  * processar o PDF com e sem ordenação dos caracteres ao mesmo tempo.
- * 
+ *
  * @author Nassif
  *
  */
@@ -128,14 +126,14 @@ public class PDFTextParser extends PDFParser {
     public Set<MediaType> getSupportedTypes(ParseContext arg0) {
         return SUPPORTED_TYPES;
     }
-    
+
 
     @Override
     public void parse(InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
             throws IOException, SAXException, TikaException {
 
         metadata.set(HttpHeaders.CONTENT_TYPE, "application/pdf"); //$NON-NLS-1$
-        
+
         ItemInfo itemInfo = context.get(ItemInfo.class);
 
         handler.startDocument();
@@ -215,7 +213,7 @@ public class PDFTextParser extends PDFParser {
                     tis.close();
                 }
             }
-            
+
             if (createThumb) {
                 byte[] thumb = null;
                 try (PDFToThumb pdfToThumb = new PDFToThumb()) {

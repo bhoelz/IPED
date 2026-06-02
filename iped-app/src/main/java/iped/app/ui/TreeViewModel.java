@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,24 +18,22 @@
  */
 package iped.app.ui;
 
+import iped.engine.search.IPEDSearcher;
+import iped.engine.search.LuceneSearchResult;
+import iped.engine.search.MultiSearchResult;
+import iped.engine.task.index.IndexItem;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StoredField;
+
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
-
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.StoredField;
-
-import iped.engine.search.IPEDSearcher;
-import iped.engine.search.LuceneSearchResult;
-import iped.engine.search.MultiSearchResult;
-import iped.engine.task.index.IndexItem;
 
 public class TreeViewModel implements TreeModel {
 
@@ -46,7 +44,7 @@ public class TreeViewModel implements TreeModel {
     /*
      * private RowComparator getComparator1() { return new
      * RowComparator(IndexItem.NAME) {
-     * 
+     *
      * @Override public int compare(Integer a, Integer b) { return sdv.getOrd(a) -
      * sdv.getOrd(b); } }; }
      */

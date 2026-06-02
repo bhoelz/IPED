@@ -1,14 +1,14 @@
 package iped.geo.openstreet;
 
-import java.awt.event.MouseEvent;
-import java.util.Date;
-import java.util.StringTokenizer;
-
 import iped.geo.MapSelectionListener;
 import iped.geo.MarkerCheckBoxListener;
 import iped.geo.MarkerEventListener;
 import iped.geo.webkit.JSInterfaceFunctions;
 import netscape.javascript.JSObject;
+
+import java.awt.event.MouseEvent;
+import java.util.Date;
+import java.util.StringTokenizer;
 
 public class JSInterfaceFunctionsOpenStreet implements JSInterfaceFunctions {
 

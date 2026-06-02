@@ -1,19 +1,13 @@
 package iped.parsers.mail.win10.tables;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
-
 import iped.parsers.browsers.edge.EsedbLibrary;
 import iped.parsers.mail.win10.ColumnCodes;
-import iped.parsers.mail.win10.entries.FolderEntry;
 import iped.parsers.mail.win10.EsedbManager;
+import iped.parsers.mail.win10.entries.FolderEntry;
+
+import java.util.*;
 
 public class FolderTable extends AbstractTable {
 

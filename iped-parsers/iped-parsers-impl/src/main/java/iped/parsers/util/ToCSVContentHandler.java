@@ -1,11 +1,11 @@
 package iped.parsers.util;
 
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-
 import org.apache.tika.sax.ToTextContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 public class ToCSVContentHandler extends ToTextContentHandler {
 

@@ -1,18 +1,11 @@
 package iped.parsers.registry.keys;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.script.Invocable;
-import javax.script.ScriptException;
-
+import iped.parsers.registry.model.KeyNode;
+import iped.parsers.registry.model.KeyValue;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.EmbeddedParent;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -21,12 +14,13 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 
-import iped.parsers.registry.model.KeyNode;
-import iped.parsers.registry.model.KeyValue;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.EmbeddedParent;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
+import javax.script.Invocable;
+import javax.script.ScriptException;
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HtmlKeyParser implements RegistryKeyParser {
 

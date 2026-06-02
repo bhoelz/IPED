@@ -1,10 +1,9 @@
 package iped.app.graph;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-
 import org.kharon.layout.HistoryEnabledLayout;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 public class ApplyGraphLayoutAction extends AbstractAction {
 

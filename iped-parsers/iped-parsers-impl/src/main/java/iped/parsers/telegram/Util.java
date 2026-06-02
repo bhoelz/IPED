@@ -1,6 +1,6 @@
 /*
  * Copyright 2020-2020, João Vitor de Sá Hauck
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,12 +18,12 @@
  */
 package iped.parsers.telegram;
 
+import iped.utils.IOUtil;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
-
-import iped.utils.IOUtil;
 
 public class Util {
 

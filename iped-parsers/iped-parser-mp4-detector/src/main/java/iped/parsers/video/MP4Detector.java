@@ -1,10 +1,12 @@
 package iped.parsers.video;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
+import com.drew.imaging.mp4.Mp4Reader;
+import com.drew.metadata.mp4.Mp4BoxHandler;
+import com.drew.metadata.mp4.Mp4Directory;
+import com.drew.metadata.mp4.media.Mp4SoundDirectory;
+import com.drew.metadata.mp4.media.Mp4VideoDirectory;
+import iped.parsers.util.IgnoreContentHandler;
+import iped.utils.SimpleInputStreamFactory;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
@@ -13,14 +15,10 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.mp4.TikaMp4BoxHandler;
 import org.apache.tika.sax.XHTMLContentHandler;
 
-import com.drew.imaging.mp4.Mp4Reader;
-import com.drew.metadata.mp4.Mp4BoxHandler;
-import com.drew.metadata.mp4.Mp4Directory;
-import com.drew.metadata.mp4.media.Mp4SoundDirectory;
-import com.drew.metadata.mp4.media.Mp4VideoDirectory;
-
-import iped.parsers.util.IgnoreContentHandler;
-import iped.utils.SimpleInputStreamFactory;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class MP4Detector implements Detector {
 

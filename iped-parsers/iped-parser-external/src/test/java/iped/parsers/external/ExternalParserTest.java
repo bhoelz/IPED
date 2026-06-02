@@ -1,20 +1,7 @@
 package iped.parsers.external;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeNotNull;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
+import iped.parsers.util.ExternalParserConfigGenerator;
+import iped.parsers.util.RepoToolDownloader;
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -28,8 +15,19 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.ExternalParserConfigGenerator;
-import iped.parsers.util.RepoToolDownloader;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeNotNull;
 
 
 public class ExternalParserTest implements ExternalParsersConfigReaderMetKeys {
@@ -82,7 +80,7 @@ public class ExternalParserTest implements ExternalParsersConfigReaderMetKeys {
         }
 
         // add SuperFetch parser configuration to xml file
-        ExternalParserConfigGenerator superfetchConfigGenerator = createExternalParserConfig("SuperFetchParser", tmpPath + "libagdb/", 
+        ExternalParserConfigGenerator superfetchConfigGenerator = createExternalParserConfig("SuperFetchParser", tmpPath + "libagdb/",
             "agdbinfo -V", "agdbinfo ${INPUT}", "x-superfetch", 0, "ISO-8859-1");
         superfetchConfigGenerator.writeDocumentToFile(XMLFile);
 

@@ -1,14 +1,13 @@
 package iped.parsers.ufed.handler;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IItemReader;
 import iped.parsers.ufed.model.ContactPhoto;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class ContactPhotoHandler extends BaseModelHandler<ContactPhoto> {
 

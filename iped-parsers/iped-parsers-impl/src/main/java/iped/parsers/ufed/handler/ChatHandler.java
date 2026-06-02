@@ -1,30 +1,5 @@
 package iped.parsers.ufed.handler;
 
-import static iped.properties.ExtraProperties.CONVERSATION_ACCOUNT;
-import static iped.properties.ExtraProperties.CONVERSATION_ADMINS;
-import static iped.properties.ExtraProperties.CONVERSATION_ID;
-import static iped.properties.ExtraProperties.CONVERSATION_IS_OWNER_ADMIN;
-import static iped.properties.ExtraProperties.CONVERSATION_MESSAGES_COUNT;
-import static iped.properties.ExtraProperties.CONVERSATION_NAME;
-import static iped.properties.ExtraProperties.CONVERSATION_PARTICIPANTS;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_ID;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_NAME;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_PHONE;
-import static iped.properties.ExtraProperties.CONVERSATION_SUFFIX_USERNAME;
-import static iped.properties.ExtraProperties.CONVERSATION_TYPE;
-import static iped.properties.ExtraProperties.UFED_META_PREFIX;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.data.IItemReader;
 import iped.parsers.ufed.model.Chat;
 import iped.parsers.ufed.model.ContactPhoto;
@@ -33,6 +8,14 @@ import iped.parsers.util.Messages;
 import iped.parsers.whatsapp.WAContact;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.metadata.Metadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+
+import static iped.properties.ExtraProperties.*;
 
 /**
  * Handles all processing logic for a Chat model.

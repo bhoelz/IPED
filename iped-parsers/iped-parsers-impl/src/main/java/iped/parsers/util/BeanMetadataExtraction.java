@@ -1,22 +1,11 @@
 package iped.parsers.util;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.data.ICaseData;
+import iped.parsers.standard.StandardParser;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
+import iped.utils.DateUtil;
+import iped.utils.EmptyInputStream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,12 +23,13 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.xml.sax.ContentHandler;
 
-import iped.data.ICaseData;
-import iped.parsers.standard.StandardParser;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
-import iped.utils.DateUtil;
-import iped.utils.EmptyInputStream;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class BeanMetadataExtraction {
 

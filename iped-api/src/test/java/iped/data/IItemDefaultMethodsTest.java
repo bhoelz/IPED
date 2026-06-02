@@ -1,27 +1,17 @@
 package iped.data;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.nio.channels.SeekableByteChannel;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import javax.imageio.stream.ImageInputStream;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-
 import iped.datasource.IDataSource;
 import iped.io.ISeekableInputStreamFactory;
 import iped.io.SeekableInputStream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import javax.imageio.stream.ImageInputStream;
+import java.io.*;
+import java.nio.channels.SeekableByteChannel;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for IItem interface default methods.
@@ -411,6 +401,8 @@ class IItemDefaultMethodsTest {
         @Override public ImageInputStream getImageInputStream() { return null; }
         @Override public Date getModDate() { return null; }
         @Override public IDataSource getDataSource() { return null; }
+        @Override public void setSubitemId(Integer id) {}
+        @Override public void setOpenContainer(Object container) {}
     }
 
     /**
@@ -520,6 +512,8 @@ class IItemDefaultMethodsTest {
         @Override public ImageInputStream getImageInputStream() { return null; }
         @Override public Date getModDate() { return null; }
         @Override public IDataSource getDataSource() { return null; }
+        @Override public void setSubitemId(Integer id) {}
+        @Override public void setOpenContainer(Object container) {}
     }
 
     /**
@@ -629,5 +623,7 @@ class IItemDefaultMethodsTest {
         @Override public ImageInputStream getImageInputStream() { return null; }
         @Override public Date getModDate() { return null; }
         @Override public IDataSource getDataSource() { return null; }
+        @Override public void setSubitemId(Integer id) {}
+        @Override public void setOpenContainer(Object container) {}
     }
 }

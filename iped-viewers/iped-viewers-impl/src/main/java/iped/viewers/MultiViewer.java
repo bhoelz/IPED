@@ -1,24 +1,17 @@
 package iped.viewers;
 
-import java.awt.CardLayout;
-import java.awt.Dimension;
+import iped.io.IStreamSource;
+import iped.viewers.api.AbstractViewer;
+import iped.viewers.localization.Messages;
+import iped.viewers.search.*;
+
+import javax.swing.*;
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
-import iped.io.IStreamSource;
-import iped.viewers.api.AbstractViewer;
-import iped.viewers.localization.Messages;
-import iped.viewers.search.CenterTopLayoutManager;
-import iped.viewers.search.HitsUpdater;
-import iped.viewers.search.SearchEvent;
-import iped.viewers.search.SearchListener;
-import iped.viewers.search.SearchPanel;
 
 public class MultiViewer extends AbstractViewer {
 

@@ -1,14 +1,13 @@
 package iped.parsers.discord.json;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import iped.parsers.util.ChildPornHashLookup;
+
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import iped.parsers.util.ChildPornHashLookup;
-
 /***
- * 
+ *
  * @author PCF Campanini
  *
  */

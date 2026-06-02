@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,12 +18,11 @@
  */
 package iped.app.ui;
 
-import java.io.File;
-import java.io.Serializable;
+import iped.engine.data.Bookmarks;
 
 import javax.swing.filechooser.FileFilter;
-
-import iped.engine.data.Bookmarks;
+import java.io.File;
+import java.io.Serializable;
 
 public class SearchStateFilter extends FileFilter implements Serializable {
 

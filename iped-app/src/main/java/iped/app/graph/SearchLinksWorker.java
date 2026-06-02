@@ -1,28 +1,22 @@
 package iped.app.graph;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-
-import javax.swing.SwingWorker;
-
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.app.ui.Messages;
 import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.graph.PathQueryListener;
 import iped.engine.graph.links.SearchLinksQuery;
 import iped.engine.graph.links.SearchLinksQueryProvider;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.util.*;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class SearchLinksWorker extends SwingWorker<Void, Void> implements PathQueryListener {
 

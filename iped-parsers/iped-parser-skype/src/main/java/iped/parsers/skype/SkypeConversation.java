@@ -1,9 +1,9 @@
 package iped.parsers.skype;
 
+import iped.parsers.util.Messages;
+
 import java.util.Date;
 import java.util.List;
-
-import iped.parsers.util.Messages;
 
 /**
  * Classe que representa uma conversa registrada no arquivo main.db.

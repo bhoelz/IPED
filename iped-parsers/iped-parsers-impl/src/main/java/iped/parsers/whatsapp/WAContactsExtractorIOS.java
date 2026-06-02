@@ -1,6 +1,11 @@
 package iped.parsers.whatsapp;
 
-import static iped.parsers.whatsapp.Util.nullToEmpty;
+import fqlite.base.SqliteRow;
+import iped.parsers.sqlite.SQLiteRecordValidator;
+import iped.parsers.sqlite.SQLiteUndelete;
+import iped.parsers.sqlite.SQLiteUndeleteTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.Connection;
@@ -8,16 +13,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fqlite.base.SqliteRow;
-import iped.parsers.sqlite.SQLiteRecordValidator;
-import iped.parsers.sqlite.SQLiteUndelete;
-import iped.parsers.sqlite.SQLiteUndeleteTable;
+import static iped.parsers.whatsapp.Util.nullToEmpty;
 
 public abstract class WAContactsExtractorIOS extends WAContactsExtractor {
-    
+
     private static Logger logger = LoggerFactory.getLogger(WAContactsExtractorIOS.class);
 
     private static final String SELECT_CONTACT_NAMES = "SELECT * FROM ZWAADDRESSBOOKCONTACT WHERE ZWHATSAPPID IS NOT NULL"; //$NON-NLS-1$
@@ -34,9 +33,9 @@ public abstract class WAContactsExtractorIOS extends WAContactsExtractor {
 
     @Override
     public void extractContactList() throws WAExtractorException {
-        
+
         SQLiteUndeleteTable undeletedContactsTable = null;
-        
+
         if (recoverDeletedRecords) {
             try {
                 SQLiteUndelete undelete = new SQLiteUndelete(databaseFile.toPath());
@@ -47,7 +46,7 @@ public abstract class WAContactsExtractorIOS extends WAContactsExtractor {
                 logger.warn("Error recovering deleted records from IOS WhatsApp Contacts Database", e);
             }
         }
-        
+
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
 
             ResultSet rs;
@@ -80,7 +79,7 @@ public abstract class WAContactsExtractorIOS extends WAContactsExtractor {
         } catch (SQLException ex) {
             throw new WAExtractorException(ex);
         }
-        
+
         if (undeletedContactsTable != null) {
             for (var row : undeletedContactsTable.getTableRows()) {
                 var id = row.getTextValue("ZWHATSAPPID");
@@ -93,7 +92,7 @@ public abstract class WAContactsExtractorIOS extends WAContactsExtractor {
                     c.setDisplayName(nullToEmpty(row.getTextValue("ZFULLNAME"))); //$NON-NLS-1$
                     c.setNickName(nullToEmpty(row.getTextValue("ZNICKNAME"))); //$NON-NLS-1$
                     String given_name = row.getTextValue("ZGIVENNAME"); //$NON-NLS-1$
-                    if (given_name == null) 
+                    if (given_name == null)
                         given_name = row.getTextValue("ZFIRSTNAME"); //$NON-NLS-1$
                     c.setGivenName(nullToEmpty(given_name));
                     String status = row.getTextValue("ZABOUTTEXT"); //$NON-NLS-1$
@@ -105,8 +104,8 @@ public abstract class WAContactsExtractorIOS extends WAContactsExtractor {
             }
         }
     }
-    
-    
+
+
     private static class WAIOSContactValidator implements SQLiteRecordValidator {
 
         @Override
@@ -117,7 +116,7 @@ public abstract class WAContactsExtractorIOS extends WAContactsExtractor {
                     return false;
                 }
                 return true;
-                
+
             } catch (Exception e) {
             }
             return false;

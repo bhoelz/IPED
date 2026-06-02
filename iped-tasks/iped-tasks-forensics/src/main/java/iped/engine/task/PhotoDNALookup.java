@@ -1,24 +1,5 @@
 package iped.engine.task;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import br.dpf.sepinf.photodna.api.PhotoDNATransforms;
 import iped.configuration.Configurable;
 import iped.data.IItem;
@@ -32,6 +13,12 @@ import iped.engine.hashdb.PhotoDnaItem;
 import iped.engine.hashdb.PhotoDnaTree;
 import iped.utils.HashValue;
 import iped.utils.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PhotoDNALookup extends AbstractTask {
 
@@ -58,7 +45,7 @@ public class PhotoDNALookup extends AbstractTask {
     private static PhotoDNATransforms transforms;
 
     private static HashDBDataSource hashDBDataSource;
-    
+
     // Magic number used as the first bytes of cache file
     private static final int magic = 0x20260126;
 

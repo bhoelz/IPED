@@ -1,12 +1,8 @@
 package iped.parsers.misc;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Base64;
-
-import javax.imageio.ImageIO;
-
+import iped.parsers.util.ComputeThumb;
+import iped.properties.ExtraProperties;
+import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -17,9 +13,11 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import iped.parsers.util.ComputeThumb;
-import iped.properties.ExtraProperties;
-import junit.framework.TestCase;
+import javax.imageio.ImageIO;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 
 public class PDFTextParserTest extends TestCase {
 

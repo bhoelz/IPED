@@ -1,13 +1,12 @@
 package iped.parsers.ufed.handler;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-
 import iped.data.IItemReader;
 import iped.parsers.ufed.model.ContactEntry;
 import iped.parsers.ufed.model.UserAccount;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class UserAccountHandler extends AccountableHandler<UserAccount> {
 

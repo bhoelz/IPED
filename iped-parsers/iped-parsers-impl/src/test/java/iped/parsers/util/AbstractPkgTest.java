@@ -1,17 +1,7 @@
 package iped.parsers.util;
 
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
-
+import iped.properties.ExtraProperties;
+import junit.framework.TestCase;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -24,8 +14,13 @@ import org.apache.tika.parser.Parser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.properties.ExtraProperties;
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
 
 public abstract class AbstractPkgTest extends TestCase {
     protected ParseContext trackingContext;

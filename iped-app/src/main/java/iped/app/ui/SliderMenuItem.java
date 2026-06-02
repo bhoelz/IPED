@@ -1,20 +1,13 @@
 package iped.app.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+import iped.viewers.api.IQuantifiableFilter;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.MenuElement;
-import javax.swing.MenuSelectionManager;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import iped.viewers.api.IQuantifiableFilter;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 public class SliderMenuItem extends JPanel implements MenuElement {
     private JSlider valueSlider;

@@ -1,24 +1,5 @@
 package iped.app.bootstrap;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.tika.utils.SystemUtils;
-
 import ag.ion.bion.officelayer.application.IOfficeApplication;
 import iped.app.config.LogConfiguration;
 import iped.app.processing.Main;
@@ -31,11 +12,23 @@ import iped.engine.util.Util;
 import iped.utils.IOUtil;
 import iped.viewers.util.LibreOfficeFinder;
 import iped.viewers.util.UNOLibFinder;
+import org.apache.tika.utils.SystemUtils;
+
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Bootstrap class to start the main application process with a custom classpath
  * with plugin jars.
- * 
+ *
  * @author Luís Nassif
  *
  */
@@ -131,13 +124,13 @@ public class Bootstrap {
             iped.setLogConfiguration(logConfig);
 
             Configuration.getInstance().loadConfigurables(iped.getConfigPath(), false);
-            
+
             configLoaded();
-            
+
             String classpath = getDefaultClassPath(iped);
-            
+
             PluginConfig pluginConfig = ConfigurationManager.get().findObject(PluginConfig.class);
-            
+
             if (pluginConfig.getTskJarFile() != null) {
                 classpath += separator + pluginConfig.getTskJarFile().getAbsolutePath();
             }
@@ -172,7 +165,7 @@ public class Bootstrap {
             cmd.add("-Djava.net.useSystemProxies=true"); // fix for #1446
             cmd.add(getMainClassName());
             cmd.addAll(finalArgs);
-            
+
             ProcessBuilder pb = new ProcessBuilder();
             // pb.directory(directory)
             pb.command(cmd);
@@ -206,7 +199,7 @@ public class Bootstrap {
 
         System.exit(exit);
     }
-    
+
     private static void cleanTempFolder() {
         if (subProcessTempFolder != null && subProcessTempFolder.isDirectory()) {
             for (File file : subProcessTempFolder.listFiles()) {
@@ -227,7 +220,7 @@ public class Bootstrap {
     protected void configLoaded() {
         new SplashScreenManager().start();
     }
-    
+
     private static List<String> getCustomJVMArgs(){
         return Arrays.asList("-XX:+IgnoreUnrecognizedVMOptions",
                 "-XX:+HeapDumpOnOutOfMemoryError",

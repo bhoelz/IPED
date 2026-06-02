@@ -1,11 +1,11 @@
 package iped.utils;
 
+import iped.io.IStreamSource;
+import iped.io.SeekableInputStream;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
-
-import iped.io.IStreamSource;
-import iped.io.SeekableInputStream;
 
 public class FileContentSource implements IStreamSource {
 

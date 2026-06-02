@@ -1,8 +1,7 @@
 package iped.app.timelinegraph.cache;
 
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.app.timelinegraph.IpedChartsPanel;
+import org.roaringbitmap.RoaringBitmap;
 
 /*
  * Represent a cache event entry on cache persistance

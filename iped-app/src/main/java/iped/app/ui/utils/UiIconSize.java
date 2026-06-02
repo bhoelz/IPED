@@ -1,14 +1,14 @@
 package iped.app.ui.utils;
 
+import iped.app.ui.IconManager;
+import iped.utils.UTF8Properties;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import iped.app.ui.IconManager;
-import iped.utils.UTF8Properties;
 
 public class UiIconSize {
     private static final File file = new File(System.getProperty("user.home") + "/.iped", "UiIconSize.txt");

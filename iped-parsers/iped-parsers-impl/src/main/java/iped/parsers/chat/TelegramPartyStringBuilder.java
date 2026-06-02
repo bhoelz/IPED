@@ -1,9 +1,9 @@
 package iped.parsers.chat;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class TelegramPartyStringBuilder extends PartyStringBuilder {
 

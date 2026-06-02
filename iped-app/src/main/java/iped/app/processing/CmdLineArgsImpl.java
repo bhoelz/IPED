@@ -1,24 +1,7 @@
 package iped.app.processing;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
-
-import com.beust.jcommander.DynamicParameter;
-import com.beust.jcommander.IParameterValidator;
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
+import com.beust.jcommander.*;
 import com.beust.jcommander.converters.IParameterSplitter;
-
 import iped.data.ICaseData;
 import iped.engine.CmdLineArgs;
 import iped.engine.Version;
@@ -28,6 +11,12 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.parsers.ocr.OCRParser;
 import iped.parsers.whatsapp.WhatsAppParser;
+import org.apache.commons.io.IOUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  * Classe para leitura dos parâmetros informados via linha de comando.
@@ -124,9 +113,9 @@ public class CmdLineArgsImpl implements CmdLineArgs {
 
     @Parameter(names = "--downloadInternetData", description = "download Internet data to enrich evidence data processing. E.g. media files still available in WhatsApp servers and not found in the evidence")
     private boolean downloadInternetData;
-    
+
     @Parameter(names = { "-splash" }, description = "custom message to be shown in the splash screen")
-    private String splashMessage;    
+    private String splashMessage;
 
     @Parameter(names = { "--help", "-h", "/?" }, help = true, description = "display this help")
     private boolean help;
@@ -252,7 +241,7 @@ public class CmdLineArgsImpl implements CmdLineArgs {
     public String getSplashMessage() {
         return splashMessage;
     }
-    
+
     @Override
     public boolean isHelp() {
         return help;

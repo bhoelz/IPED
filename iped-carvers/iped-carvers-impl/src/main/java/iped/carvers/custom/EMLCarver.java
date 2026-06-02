@@ -1,11 +1,11 @@
 package iped.carvers.custom;
 
-import java.io.IOException;
-import java.util.ArrayDeque;
-
 import iped.carvers.api.Hit;
 import iped.carvers.standard.DefaultCarver;
 import iped.data.IItem;
+
+import java.io.IOException;
+import java.util.ArrayDeque;
 
 public class EMLCarver extends DefaultCarver {
     Hit lastFooter = null;

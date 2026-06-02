@@ -1,24 +1,10 @@
 package iped.app.timelinegraph;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.Date;
-
-import javax.swing.UIManager;
-
+import iped.app.ui.themes.Theme;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.CrosshairState;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.PlotRenderingInfo;
-import org.jfree.chart.plot.SeriesRenderingOrder;
-import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.plot.*;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRendererState;
 import org.jfree.chart.util.Args;
@@ -27,7 +13,12 @@ import org.jfree.data.general.DatasetUtils;
 import org.jfree.data.xy.AbstractIntervalXYDataset;
 import org.jfree.data.xy.XYDataset;
 
-import iped.app.ui.themes.Theme;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.Date;
 
 public class IpedXYPlot extends XYPlot {
 

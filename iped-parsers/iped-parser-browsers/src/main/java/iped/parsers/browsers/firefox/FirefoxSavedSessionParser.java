@@ -1,11 +1,10 @@
 package iped.parsers.browsers.firefox;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.jpountz.lz4.LZ4Exception;
+import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4SafeDecompressor;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -18,12 +17,11 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import net.jpountz.lz4.LZ4Exception;
-import net.jpountz.lz4.LZ4Factory;
-import net.jpountz.lz4.LZ4SafeDecompressor;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 public class FirefoxSavedSessionParser extends AbstractParser {
     private static final long serialVersionUID = 1L;
@@ -138,7 +136,7 @@ public class FirefoxSavedSessionParser extends AbstractParser {
                 printEmptyLine(xHandler, 2);
             }
             xHandler.endElement("table"); // End of Tabs list
-            
+
             /* -- COOKIES */
             xHandler.startElement("hr"); //$NON-NLS-1$
             xHandler.startElement("h3 align=center"); //$NON-NLS-1$
@@ -193,14 +191,14 @@ public class FirefoxSavedSessionParser extends AbstractParser {
             if(empty) {
                 printEmptyLine(xHandler, 4);
             }
-            
+
             xHandler.endElement("table"); //$NON-NLS-1$
             xHandler.endDocument();
         } catch (SAXException e) {
             throw e;
         }
     }
-    
+
     private void printEmptyLine(XHTMLContentHandler xHandler, int cols) throws SAXException {
         xHandler.startElement("tr"); //$NON-NLS-1$
         for(int i = 0; i < cols; i++) {
@@ -251,10 +249,10 @@ public class FirefoxSavedSessionParser extends AbstractParser {
             /*
              * -- Thales - After a while researching the MozLZ4 files, discovered that they
              * keep the uncompressed length on its header. This is calculated as follow:
-             * 
+             *
              * Uncompressed Length= byte[8] + byte[9]*256 + byte[10]*(256^2) +
              * byte[11]*(256^3)
-             * 
+             *
              */
             uncompressedLength = ((int) compressedFile[8] & 0xff) + (((int) compressedFile[9] & 0xff) * (1 << 8))
                     + (((int) compressedFile[10] & 0xff) * (1 << 16)) + (((int) compressedFile[11] & 0xff) * (1 << 24));

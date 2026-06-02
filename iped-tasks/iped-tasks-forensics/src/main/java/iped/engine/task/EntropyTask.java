@@ -1,17 +1,17 @@
 package iped.engine.task;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
-import iped.engine.preview.ThumbConstants;
 import iped.engine.config.EnableTaskProperty;
+import iped.engine.preview.ThumbConstants;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.parsers.standard.RawStringParser;
 import iped.utils.RandomFilterInputStream;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class EntropyTask extends AbstractTask {
 
@@ -72,11 +72,11 @@ public class EntropyTask extends AbstractTask {
          * while((len = is.read(buf))!= -1){ compressor.setInput(buf, 0, len); do{
          * compressor.deflate(out); }while(!compressor.needsInput()); }
          * compressor.finish(); compressor.deflate(out);
-         * 
+         *
          * float ratio = (float)compressor.getBytesWritten()/compressor.getBytesRead();
-         * 
+         *
          * evidence.setExtraAttribute("compressRatioTask", ratio);
-         * 
+         *
          * }catch(Exception e){ //ignore }
          */
     }

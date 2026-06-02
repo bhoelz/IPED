@@ -1,12 +1,11 @@
 package iped.parsers.registry.keys;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-
+import iped.parsers.registry.model.KeyNode;
+import iped.parsers.registry.model.KeyValue;
+import iped.parsers.standard.StandardParser;
+import iped.parsers.util.EmbeddedParent;
+import iped.properties.BasicProps;
+import iped.properties.ExtraProperties;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -16,12 +15,8 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.registry.model.KeyNode;
-import iped.parsers.registry.model.KeyValue;
-import iped.parsers.standard.StandardParser;
-import iped.parsers.util.EmbeddedParent;
-import iped.properties.BasicProps;
-import iped.properties.ExtraProperties;
+import java.io.*;
+import java.util.ArrayList;
 
 public class AresKeyParser extends HtmlKeyParser {
 

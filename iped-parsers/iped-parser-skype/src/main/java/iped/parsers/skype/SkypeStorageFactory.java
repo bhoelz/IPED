@@ -1,19 +1,18 @@
 package iped.parsers.skype;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-
+import iped.parsers.skype.v8.SkypeSqliteV12;
+import iped.parsers.sqlite.SQLite3DBParser;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 
-import iped.parsers.skype.v8.SkypeSqliteV12;
-import iped.parsers.sqlite.SQLite3DBParser;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
 
 public class SkypeStorageFactory extends SQLite3DBParser {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

@@ -2,8 +2,6 @@ package iped.parsers.emule;
 
 import java.util.Date;
 
-import org.apache.commons.lang3.BooleanUtils;
-
 public class KnownMetEntry {
     private String hash, name, fileType, partName;
     private Date lastModified, lastPublishedKad, lastShared;

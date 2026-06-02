@@ -1,14 +1,5 @@
 package iped.parsers.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
-import javax.xml.XMLConstants;
-
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.ContentHandlerDecorator;
 import org.ccil.cowan.tagsoup.HTMLSchema;
@@ -18,6 +9,14 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.XMLConstants;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 public class IndentityHtmlParser {
 
@@ -55,7 +54,7 @@ public class IndentityHtmlParser {
      * elements before passing them on to the decorated content handler. This
      * downgrading consists of dropping all namespaces (and namespaced attributes)
      * and uppercasing all element names.
-     * 
+     *
      * Copied from org.apache.tika.parser.html.XHTMLDowngradeHandler with some
      * adjusts: - drop HTML elements - drop BODY elements - drop HEAD elements
      */

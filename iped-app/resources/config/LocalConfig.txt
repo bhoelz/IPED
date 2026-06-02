@@ -15,13 +15,13 @@ indexTempOnSSD = false
 
 # Enable if output/case folder is on SSD. If enabled, index is created directly in case folder,
 # not in indexTemp, so you will need less free space in temp folder.
-outputOnSSD = false
+outputOnSSD = true
 
 # Number of processing threads/workers: "default" uses the number of CPU logical cores.
 # If you have memory usage problems, you can decrease it or increase java heap memory (-Xms).
 numThreads = default
 
-# Full path for IPED hash database. It is highly recommended to store it on a fast disk, 
+# Full path for IPED hash database. It is highly recommended to store it on a fast disk,
 # preferably SSD, and not the same used as "indexTemp", if other disk is available.
 #hashesDB = C:/IPED/iped-hashes.db
 

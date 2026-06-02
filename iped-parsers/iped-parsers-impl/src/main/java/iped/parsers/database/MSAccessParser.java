@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,17 +18,15 @@
  */
 package iped.parsers.database;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Set;
-
+import com.healthmarketscience.jackcess.*;
+import com.healthmarketscience.jackcess.PropertyMap.Property;
+import com.healthmarketscience.jackcess.impl.OleUtil;
+import com.healthmarketscience.jackcess.util.OleBlob;
+import com.healthmarketscience.jackcess.util.OleBlob.Content;
+import com.healthmarketscience.jackcess.util.OleBlob.EmbeddedContent;
+import com.healthmarketscience.jackcess.util.OleBlob.PackageContent;
+import iped.parsers.util.Messages;
+import iped.utils.IOUtil;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -45,21 +43,16 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.healthmarketscience.jackcess.Column;
-import com.healthmarketscience.jackcess.DataType;
-import com.healthmarketscience.jackcess.Database;
-import com.healthmarketscience.jackcess.DatabaseBuilder;
-import com.healthmarketscience.jackcess.PropertyMap.Property;
-import com.healthmarketscience.jackcess.Row;
-import com.healthmarketscience.jackcess.Table;
-import com.healthmarketscience.jackcess.impl.OleUtil;
-import com.healthmarketscience.jackcess.util.OleBlob;
-import com.healthmarketscience.jackcess.util.OleBlob.Content;
-import com.healthmarketscience.jackcess.util.OleBlob.EmbeddedContent;
-import com.healthmarketscience.jackcess.util.OleBlob.PackageContent;
-
-import iped.parsers.util.Messages;
-import iped.utils.IOUtil;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Set;
 
 /**
  * Parser para arquivos MS Access.

@@ -1,12 +1,8 @@
 package iped.app.graph;
 
-import java.awt.BorderLayout;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import java.awt.*;
 
 public class GraphStatusBar extends JPanel {
 

@@ -3,8 +3,6 @@ package iped.parsers.evtx.model;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-import iped.parsers.evtx.template.TemplateInstance;
-
 public class EvtxAttributes {
 
     private EvtxFile evtxFile;

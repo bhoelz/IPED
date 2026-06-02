@@ -1,19 +1,13 @@
 package iped.app.ui.splash;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.SplashScreen;
-import java.awt.geom.Rectangle2D;
-import java.io.File;
-
 import iped.app.ui.AppMain;
 import iped.engine.Version;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.SplashScreenConfig;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
 
 public class SplashScreenManager {
     /**

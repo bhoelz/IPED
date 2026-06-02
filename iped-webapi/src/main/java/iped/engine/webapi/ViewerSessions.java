@@ -1,34 +1,21 @@
 package iped.engine.webapi;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import iped.data.IIPEDSource;
+import iped.data.IItem;
+import iped.engine.webapi.json.v2.*;
+import iped.engine.webapi.spi.RenditionDescriptor;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import iped.data.IIPEDSource;
-import iped.data.IItem;
-import iped.engine.webapi.json.v2.HitRangeJSON;
-import iped.engine.webapi.json.v2.RenditionLinkJSON;
-import iped.engine.webapi.json.v2.ViewerCapabilitiesJSON;
-import iped.engine.webapi.json.v2.ViewerHitStateJSON;
-import iped.engine.webapi.json.v2.ViewerNavigateHitRequestJSON;
-import iped.engine.webapi.json.v2.ViewerOpenRequestJSON;
-import iped.engine.webapi.json.v2.ViewerOpenResponseJSON;
-import iped.engine.webapi.json.v2.ViewerSearchRequestJSON;
-import iped.engine.webapi.json.v2.ViewerSearchResponseJSON;
-import iped.engine.webapi.json.v2.ViewerToolbarStateJSON;
-import iped.engine.webapi.spi.RenditionDescriptor;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Api(value = "ViewerSessions")
 @Path("sources/{sourceID}/docs/{id}")

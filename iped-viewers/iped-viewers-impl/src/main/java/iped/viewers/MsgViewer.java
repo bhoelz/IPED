@@ -1,34 +1,18 @@
 package iped.viewers;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import iped.io.IStreamSource;
+import iped.parsers.util.ToXMLContentHandler;
+import iped.parsers.util.Util;
+import iped.properties.MediaTypes;
+import iped.utils.FileContentSource;
+import iped.utils.IOUtil;
+import iped.utils.SimpleHTMLEncoder;
+import iped.viewers.localization.Messages;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hmef.attribute.MAPIRtfAttribute;
 import org.apache.poi.hsmf.MAPIMessage;
-import org.apache.poi.hsmf.datatypes.AttachmentChunks;
-import org.apache.poi.hsmf.datatypes.ByteChunk;
-import org.apache.poi.hsmf.datatypes.MAPIProperty;
-import org.apache.poi.hsmf.datatypes.StringChunk;
-import org.apache.poi.hsmf.datatypes.Types;
+import org.apache.poi.hsmf.datatypes.*;
 import org.apache.poi.hsmf.exceptions.ChunkNotFoundException;
 import org.apache.tika.Tika;
 import org.apache.tika.metadata.Metadata;
@@ -40,14 +24,17 @@ import org.bbottema.rtftohtml.impl.RTF2HTMLConverterRFCCompliant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import iped.io.IStreamSource;
-import iped.parsers.util.ToXMLContentHandler;
-import iped.parsers.util.Util;
-import iped.properties.MediaTypes;
-import iped.utils.FileContentSource;
-import iped.utils.IOUtil;
-import iped.utils.SimpleHTMLEncoder;
-import iped.viewers.localization.Messages;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -175,7 +162,7 @@ public class MsgViewer extends HtmlViewer {
         String bcc[] = null;
 
         preview.append("<div class=\"ipedtheme\">");
-        
+
         ArrayList<Object[]> RecipientList = new ArrayList<Object[]>();
 
         try {
@@ -413,7 +400,7 @@ public class MsgViewer extends HtmlViewer {
         }
 
         preview.append("<hr>");
-        preview.append("</div>");        
+        preview.append("</div>");
 
         Set<String> inlined = new HashSet<>();
         boolean noHtml = false;

@@ -1,18 +1,16 @@
 package iped.engine.task.regex.validator.crypto;
 
+import iped.engine.task.regex.BasicAbstractRegexValidatorService;
+import org.bouncycastle.jcajce.provider.digest.Keccak;
+
 import java.io.File;
 import java.security.MessageDigest;
-import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 
-import org.bouncycastle.jcajce.provider.digest.Keccak;
-
-import iped.engine.task.regex.BasicAbstractRegexValidatorService;
-
 /**
  * Validate Ethereum address encoded as in EIP-55
- * 
+ *
  * @author Fabio Melo Pfeifer <pfeifer.fmp@pf.gov.br>
  *
  */

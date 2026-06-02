@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,25 +18,6 @@
  */
 package iped.app.ui;
 
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-
-import javax.swing.JOptionPane;
-
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.roaringbitmap.RoaringBitmap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.data.ItemId;
@@ -45,12 +26,20 @@ import iped.engine.search.MultiSearchResult;
 import iped.engine.search.QueryBuilder;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
-import iped.viewers.api.CancelableWorker;
-import iped.viewers.api.IBitmapFilter;
-import iped.viewers.api.IFilter;
-import iped.viewers.api.IQueryFilterer;
-import iped.viewers.api.IResultSetFilter;
-import iped.viewers.api.IResultSetFilterer;
+import iped.viewers.api.*;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.Query;
+import org.roaringbitmap.RoaringBitmap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.lang.ref.SoftReference;
+import java.util.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
 
 public class CaseSearcherFilter extends CancelableWorker<MultiSearchResult, Object> {
     private static Logger LOGGER = LoggerFactory.getLogger(CaseSearcherFilter.class);

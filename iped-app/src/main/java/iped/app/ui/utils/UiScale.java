@@ -1,5 +1,7 @@
 package iped.app.ui.utils;
 
+import iped.utils.UTF8Properties;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -8,8 +10,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import iped.utils.UTF8Properties;
 
 public class UiScale {
 

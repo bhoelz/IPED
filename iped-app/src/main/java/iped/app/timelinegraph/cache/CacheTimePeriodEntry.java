@@ -1,11 +1,10 @@
 package iped.app.timelinegraph.cache;
 
-import java.util.Date;
-
-import org.roaringbitmap.RoaringBitmap;
-
 import iped.app.timelinegraph.IpedChartsPanel;
+import org.roaringbitmap.RoaringBitmap;
 import scala.Array;
+
+import java.util.Date;
 
 /*
  * Represent a cache timeperiod entry on cache persistance

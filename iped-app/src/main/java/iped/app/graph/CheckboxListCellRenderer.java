@@ -1,14 +1,11 @@
 package iped.app.graph;
 
-import java.awt.Component;
+import iped.app.graph.CheckboxListCellRenderer.CheckboxListItem;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.JCheckBox;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-
-import iped.app.graph.CheckboxListCellRenderer.CheckboxListItem;
 
 public class CheckboxListCellRenderer extends JCheckBox implements ListCellRenderer<CheckboxListItem> {
 

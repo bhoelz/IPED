@@ -1,18 +1,10 @@
 package iped.parsers.registry.keys;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-
+import iped.parsers.registry.model.KeyNode;
+import iped.parsers.registry.model.KeyValue;
+import iped.parsers.util.EmbeddedItem;
+import iped.parsers.util.EmbeddedParent;
+import iped.properties.ExtraProperties;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -23,11 +15,13 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.registry.model.KeyNode;
-import iped.parsers.registry.model.KeyValue;
-import iped.parsers.util.EmbeddedItem;
-import iped.parsers.util.EmbeddedParent;
-import iped.properties.ExtraProperties;
+import java.io.*;
+import java.text.DateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 
 public class MRUKeyParser extends HtmlKeyParser {
     @Override

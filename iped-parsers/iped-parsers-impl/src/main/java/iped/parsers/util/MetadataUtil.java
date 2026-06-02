@@ -1,36 +1,5 @@
 package iped.parsers.util;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.detect.apple.BPListDetector;
-import org.apache.tika.metadata.IPTC;
-import org.apache.tika.metadata.Message;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.Office;
-import org.apache.tika.metadata.Property;
-import org.apache.tika.metadata.TIFF;
-import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-
 import iped.data.IItem;
 import iped.parsers.image.TiffPageParser;
 import iped.parsers.ocr.OCRParser;
@@ -40,6 +9,21 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.utils.StringUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.detect.apple.BPListDetector;
+import org.apache.tika.metadata.*;
+import org.apache.tika.mime.MediaType;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.Collator;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MetadataUtil {
 
@@ -58,7 +42,7 @@ public class MetadataUtil {
     private static final Map<String, String> renameMap = getRenameMap();
 
     private static final Map<String, String> renameOrRemoveMap = getRenameOrRemoveMap();
-    
+
     private static final Set<String> singleValueKeys = getSingleValKeys();
 
     private static Map<String, String> metaCaseMap = getMetaCaseMap();
@@ -82,7 +66,7 @@ public class MetadataUtil {
     /**
      * Method to add a new metadata prefix. Can be called from parsers to install a
      * new meta prefix.
-     * 
+     *
      * @param metaPrefix
      */
     public static void addCustomMetadataPrefix(String metaPrefix) {
@@ -134,9 +118,9 @@ public class MetadataUtil {
             key = removePrefix(key);
             metaCaseMap.put(key.toLowerCase(), key);
         }
-        return metaCaseMap; 
+        return metaCaseMap;
     }
-    
+
     private static String removePrefix(String key) {
         // UFED prefix doesn't need to be removed because it is not added by this class
         if (key.startsWith(ExtraProperties.IMAGE_META_PREFIX))
@@ -157,7 +141,7 @@ public class MetadataUtil {
             return key.substring(ExtraProperties.COMMON_META_PREFIX.length());
         return key;
     }
-    
+
     private static Set<String> getSingleValKeys() {
         Set<String> singleValueKeys = new HashSet<>();
         singleValueKeys.add(ExtraProperties.IMAGE_META_PREFIX + "Make");
@@ -185,13 +169,13 @@ public class MetadataUtil {
     }
 
     private static Map<String, String> getRenameOrRemoveMap() {
-        // Properties here are renamed if is no value already associated with the new name, otherwise they are simply removed. 
+        // Properties here are renamed if is no value already associated with the new name, otherwise they are simply removed.
         Map<String, String> renameOrRemove = new HashMap<String, String>();
         renameOrRemove.put(ExtraProperties.IMAGE_META_PREFIX + "Image Width", ExtraProperties.IMAGE_META_PREFIX + "Width");
         renameOrRemove.put(ExtraProperties.IMAGE_META_PREFIX + "Image Height", ExtraProperties.IMAGE_META_PREFIX + "Height");
         return renameOrRemove;
     }
-    
+
     private static Set<String> getIgnorePreviewMetas() {
         ignorePreviewMetas = new HashSet<>();
         ignorePreviewMetas.add(TikaCoreProperties.RESOURCE_NAME_KEY);
@@ -810,7 +794,7 @@ public class MetadataUtil {
         }
         return clone;
     }
-    
+
     private static void renameKeys(Metadata metadata) {
         for (String oldName : renameMap.keySet()) {
             String[] values = metadata.getValues(oldName);
@@ -829,7 +813,7 @@ public class MetadataUtil {
                 String newName = renameOrRemoveMap.get(oldName);
                 String[] newValues = metadata.getValues(newName);
                 if (newValues == null || newValues.length == 0) {
-                    // Add old values only if there is no values associated with the new name 
+                    // Add old values only if there is no values associated with the new name
                     for (String val : oldValues) {
                         metadata.add(newName, val);
                     }

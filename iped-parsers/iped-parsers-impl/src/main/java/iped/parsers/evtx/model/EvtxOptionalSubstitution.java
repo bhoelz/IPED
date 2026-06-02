@@ -1,8 +1,8 @@
 package iped.parsers.evtx.model;
 
-import java.nio.ByteBuffer;
-
 import iped.parsers.evtx.template.TemplateInstance;
+
+import java.nio.ByteBuffer;
 
 public class EvtxOptionalSubstitution {
     private short template_value_index;

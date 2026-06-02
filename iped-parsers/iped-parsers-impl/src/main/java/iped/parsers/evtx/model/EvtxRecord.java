@@ -1,12 +1,12 @@
 package iped.parsers.evtx.model;
 
+import iped.utils.DateUtil;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-
-import iped.utils.DateUtil;
 
 public class EvtxRecord {
     ByteBuffer bb;

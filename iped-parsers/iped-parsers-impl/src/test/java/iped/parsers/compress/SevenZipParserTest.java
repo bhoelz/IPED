@@ -1,7 +1,10 @@
 package iped.parsers.compress;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import iped.parsers.util.AbstractPkgTest;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.sax.BodyContentHandler;
+import org.junit.Test;
+import org.xml.sax.ContentHandler;
 
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -9,12 +12,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.sax.BodyContentHandler;
-import org.junit.Test;
-import org.xml.sax.ContentHandler;
-
-import iped.parsers.util.AbstractPkgTest;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class SevenZipParserTest extends AbstractPkgTest {
 

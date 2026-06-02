@@ -1,12 +1,12 @@
 package iped.parsers.threema;
 
 import iped.data.IItemReader;
+import iped.parsers.threema.Message.MessageType;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.Messages;
 import iped.properties.ExtraProperties;
 import iped.utils.EmojiUtil;
 import iped.utils.SimpleHTMLEncoder;
-import iped.parsers.threema.Message.MessageType;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.commons.text.lookup.StringLookupFactory;
 

@@ -1,7 +1,15 @@
 package iped.viewers;
 
-import java.awt.Component;
-import java.awt.GridLayout;
+import iped.io.IStreamSource;
+import iped.io.URLUtil;
+import iped.utils.IOUtil;
+import iped.viewers.api.AbstractViewer;
+import iped.viewers.localization.Messages;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -12,18 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Set;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.io.IStreamSource;
-import iped.io.URLUtil;
-import iped.utils.IOUtil;
-import iped.viewers.api.AbstractViewer;
-import iped.viewers.localization.Messages;
 
 public class CADViewer extends AbstractViewer {
 

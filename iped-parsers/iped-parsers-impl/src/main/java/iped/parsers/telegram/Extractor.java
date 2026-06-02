@@ -1,6 +1,6 @@
 /*
  * Copyright 2020-2020, João Vitor de Sá Hauck
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,26 +18,6 @@
  */
 package iped.parsers.telegram;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dpf.ap.gpinf.interfacetelegram.DecoderTelegramInterface;
 import dpf.ap.gpinf.interfacetelegram.PhotoData;
 import iped.data.IItemReader;
@@ -45,6 +25,16 @@ import iped.parsers.sqlite.SQLite3DBParser;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.sql.*;
+import java.util.*;
 
 public class Extractor {
 
@@ -292,15 +282,15 @@ public class Extractor {
         Chat chat = null;
 
         ChatGroup cg = null;
-        
+
         if (first && !msgsResultSet.next()) {
             return null;
         }
-        
+
         if (msgsResultSet.isAfterLast()) {
             return null;
         }
-        
+
 
         do {
             byte[] data = msgsResultSet.getBytes("data");
@@ -454,11 +444,11 @@ public class Extractor {
                     }
                     while (rs.next()) {
                         PostBoxCoding p = new PostBoxCoding();
-    
+
                         Message message = new Message(0, chat);
-    
+
                         p.readMessage(rs.getBytes("key"), rs.getBytes("value"), message, mediaKey);
-    
+
                         setFrom(message, chat);
 
                         if (!chat.isGroupOrChannel()) {
@@ -468,11 +458,11 @@ public class Extractor {
                                 message.setToId(this.userAccount.getId());
                             }
                         }
-    
+
                         if (cg != null && message.getFrom().getId() != 0) {
                             cg.addMember(message.getFrom().getId());
                         }
-    
+
                         if (message.getNames() != null && !message.getNames().isEmpty()) {
                             for (PhotoData f : message.getNames()) {
                                 ArrayList<String> name = new ArrayList<>();
@@ -483,7 +473,7 @@ public class Extractor {
                                 message.setMediaMime("attach");
                             }
                         }
-    
+
                         message.setFrom(getContact(message.getFrom().getId()));
                         MessageMultiMedia mmm = new MessageMultiMedia(message.getId(), chat);
                         mmm.setFrom(message.getFrom());
@@ -619,15 +609,15 @@ public class Extractor {
                 while (rs.next()) {
 
                     long id = rs.getLong("key");
-                    
+
                     if (id != 0) {
                         Contact cont = getContact(id);
                         if (cont.getName() == null) {
                             PostBoxCoding p = new PostBoxCoding(rs.getBytes("value"));
                             p.readContact(cont);
-    
+
                         }
-    
+
                         //if (cont.getPhone() != null) {
                         //   nphones++;
                         //}

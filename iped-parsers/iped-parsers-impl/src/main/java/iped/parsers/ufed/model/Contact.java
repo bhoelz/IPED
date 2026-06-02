@@ -1,11 +1,11 @@
 package iped.parsers.ufed.model;
 
-import static iped.parsers.ufed.util.UfedUtils.readUfedMetadata;
+import iped.data.IItemReader;
+import iped.parsers.ufed.reference.ReferencedAccountable;
 
 import java.util.Optional;
 
-import iped.data.IItemReader;
-import iped.parsers.ufed.reference.ReferencedAccountable;
+import static iped.parsers.ufed.util.UfedUtils.readUfedMetadata;
 
 /**
  * Represents a <model type="Contact"> element.

@@ -1,9 +1,8 @@
 package iped.app.ui.controls;
 
+import javax.swing.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-
-import javax.swing.JTextField;
 
 public class HintTextField extends JTextField {
     private static final long serialVersionUID = 6618073426383888695L;

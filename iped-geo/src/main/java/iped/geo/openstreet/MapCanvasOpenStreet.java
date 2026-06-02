@@ -1,18 +1,5 @@
 package iped.geo.openstreet;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.io.IOException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.Semaphore;
-
-import javax.swing.UIManager;
-
-import org.apache.commons.io.IOUtils;
-
 import iped.geo.AbstractMapCanvas;
 import iped.geo.impl.JMapOptionsPane;
 import iped.utils.UiUtil;
@@ -28,10 +15,20 @@ import javafx.scene.web.WebErrorEvent;
 import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
+import org.apache.commons.io.IOUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.Semaphore;
 
 public class MapCanvasOpenStreet extends AbstractMapCanvas {
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String DARK_THEME_SCRIPT = "applyDarkTheme();";
@@ -404,7 +401,7 @@ public class MapCanvasOpenStreet extends AbstractMapCanvas {
                         boolean hasCheckedMarker = false;
                         StringBuffer scriptCheck = new StringBuffer();
                         StringBuffer scriptUnCheck = new StringBuffer();
-                        
+
                         scriptCheck.append("track.checkMarcador([");
                         scriptUnCheck.append("track.checkMarcador([");
 
@@ -578,7 +575,7 @@ public class MapCanvasOpenStreet extends AbstractMapCanvas {
                     } else {
                         webEngine.executeScript("track.clearVisibleMarkers();");
                     }
-                    webEngine.executeScript("track.tourOrder='"+self.tourOrder+"';");                    
+                    webEngine.executeScript("track.tourOrder='"+self.tourOrder+"';");
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {

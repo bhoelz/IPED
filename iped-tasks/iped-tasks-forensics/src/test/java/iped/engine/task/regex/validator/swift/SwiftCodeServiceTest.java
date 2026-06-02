@@ -1,12 +1,10 @@
 package iped.engine.task.regex.validator.swift;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class SwiftCodeServiceTest {
 

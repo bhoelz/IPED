@@ -1,25 +1,17 @@
 package iped.app.ui.bookmarks;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import iped.app.ui.IconManager;
+import iped.data.IMultiBookmarks;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.RenderingHints.Key;
-import java.awt.Shape;
-import java.awt.Stroke;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.Icon;
-
-import iped.app.ui.IconManager;
-import iped.data.IMultiBookmarks;
 
 public class BookmarkIcon implements Icon {
     public static final String columnName = "$BookmarkIcon";

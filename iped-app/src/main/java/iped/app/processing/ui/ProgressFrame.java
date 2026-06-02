@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -17,40 +17,6 @@
  * along with IPED.  If not, see <http://www.gnu.org/licenses/>.
  */
 package iped.app.processing.ui;
-
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.RenderingHints.Key;
-import java.awt.Taskbar;
-import java.awt.Taskbar.State;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.nio.file.FileStore;
-import java.nio.file.Files;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
 
 import iped.app.ui.App;
 import iped.app.ui.AppMain;
@@ -70,6 +36,25 @@ import iped.parsers.standard.StandardParser;
 import iped.utils.EmojiUtil;
 import iped.utils.IconUtil;
 import iped.utils.LocalizedFormat;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.RenderingHints.Key;
+import java.awt.Taskbar.State;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Dialog de progresso do processamento, fornecendo previsão de término,
@@ -202,7 +187,7 @@ public class ProgressFrame extends JFrame implements PropertyChangeListener, Act
         if (s == null) {
             return;
         }
-        // Get volume/item processed/total 
+        // Get volume/item processed/total
         int totalVolume = (int)(Statistics.get().getCaseData().getDiscoveredVolume() >>> 20); // Converted to MB
         int totalItems = Statistics.get().getCaseData().getDiscoveredEvidences();
         int processedVolume = (int)(Statistics.get().getVolume() >>> 20); // Converted to MB
@@ -222,7 +207,7 @@ public class ProgressFrame extends JFrame implements PropertyChangeListener, Act
                 progressBar.setValue(newProgressValue);
             }
         }
-        
+
         tasks.setText(getTaskTimes());
         itens.setText(getItemList());
         stats.setText(getStats());
@@ -264,7 +249,7 @@ public class ProgressFrame extends JFrame implements PropertyChangeListener, Act
         if ("discoverEnded".equals(evt.getPropertyName())) {
             discoverEnded = true;
             update();
-            
+
         } else if ("update".equals(evt.getPropertyName())) {
             update();
 

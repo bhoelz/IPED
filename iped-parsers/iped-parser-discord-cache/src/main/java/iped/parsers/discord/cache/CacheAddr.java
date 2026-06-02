@@ -1,14 +1,13 @@
 package iped.parsers.discord.cache;
 
+import iped.data.IItemReader;
+import iped.io.SeekableInputStream;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-
-import iped.data.IItemReader;
-import iped.io.SeekableInputStream;
 
 /**
  * @author PCF Campanini
@@ -62,7 +61,7 @@ public class CacheAddr {
 
     public static class InputStreamNotAvailable extends IOException {
         /**
-         * 
+         *
          */
         private static final long serialVersionUID = 1L;
 
@@ -74,9 +73,9 @@ public class CacheAddr {
     /**
      * Creation of Cache Address as defined in:
      * https://forensicswiki.xyz/wiki/index.php?title=Chrome_Disk_Cache_Format
-     * 
+     *
      * @param address
-     * 
+     *
      */
     public CacheAddr(long address) throws IOException {
 

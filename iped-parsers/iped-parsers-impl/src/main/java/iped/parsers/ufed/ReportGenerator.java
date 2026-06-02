@@ -1,16 +1,20 @@
 package iped.parsers.ufed;
-import static j2html.TagCreator.attrs;
-import static j2html.TagCreator.b;
-import static j2html.TagCreator.br;
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.i;
-import static j2html.TagCreator.img;
-import static j2html.TagCreator.span;
-import static j2html.TagCreator.table;
-import static j2html.TagCreator.td;
-import static j2html.TagCreator.tr;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import ezvcard.util.org.apache.commons.codec.binary.Base64;
+import iped.parsers.ufed.handler.ChatHandler;
+import iped.parsers.ufed.handler.PartyHandler;
+import iped.parsers.ufed.model.*;
+import iped.parsers.ufed.reference.ReferencedAccountable;
+import iped.parsers.ufed.reference.ReferencedFile;
+import iped.parsers.ufed.reference.ReferencedLocation;
+import iped.parsers.util.Messages;
+import iped.parsers.whatsapp.Util;
+import iped.properties.BasicProps;
+import iped.utils.EmojiUtil;
+import iped.utils.SimpleHTMLEncoder;
+import j2html.tags.specialized.DivTag;
+import j2html.tags.specialized.TableTag;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
@@ -23,27 +27,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-
-import ezvcard.util.org.apache.commons.codec.binary.Base64;
-import iped.parsers.ufed.handler.ChatHandler;
-import iped.parsers.ufed.handler.PartyHandler;
-import iped.parsers.ufed.model.Attachment;
-import iped.parsers.ufed.model.Chat;
-import iped.parsers.ufed.model.Contact;
-import iped.parsers.ufed.model.ContactPhoto;
-import iped.parsers.ufed.model.InstantMessage;
-import iped.parsers.ufed.model.Party;
-import iped.parsers.ufed.reference.ReferencedAccountable;
-import iped.parsers.ufed.reference.ReferencedFile;
-import iped.parsers.ufed.reference.ReferencedLocation;
-import iped.parsers.util.Messages;
-import iped.parsers.whatsapp.Util;
-import iped.properties.BasicProps;
-import iped.utils.EmojiUtil;
-import iped.utils.SimpleHTMLEncoder;
-import j2html.tags.specialized.DivTag;
-import j2html.tags.specialized.TableTag;
+import static j2html.TagCreator.*;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class ReportGenerator {
 
@@ -475,7 +461,7 @@ public class ReportGenerator {
         }
 
         boolean hasSubject = isNotBlank(message.getSubject());
-        
+
         if (isNotBlank(body) || hasSubject) {
             if (hasSubject)
                 out.print(format(message.getSubject()));
@@ -639,7 +625,7 @@ public class ReportGenerator {
         // when contentType is "URL", fileName may contain relevant information
         String contentType = attachment.getContentType();
         String fileName = attachment.getFilename();
-        if ("URL".equalsIgnoreCase(contentType) && isNotBlank(fileName) 
+        if ("URL".equalsIgnoreCase(contentType) && isNotBlank(fileName)
                 && !StringUtils.contains(body, fileName) && !StringUtils.contains(title, fileName)) {
             sb.append("<p>").append(format(fileName)).append("</p>");
         }

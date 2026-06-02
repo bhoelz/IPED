@@ -1,12 +1,12 @@
 package iped.app.ui;
 
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-
 import iped.app.ui.filterdecisiontree.CombinedFilterer;
 import iped.app.ui.filterdecisiontree.OperandNode;
 import iped.viewers.api.IFilterer;
+
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 public class CombinedFilterTreeModel implements TreeModel {
 

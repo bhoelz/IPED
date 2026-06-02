@@ -2,12 +2,7 @@ package iped.app.timelinegraph.cache;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.Semaphore;
 
 public class TimelineCache {

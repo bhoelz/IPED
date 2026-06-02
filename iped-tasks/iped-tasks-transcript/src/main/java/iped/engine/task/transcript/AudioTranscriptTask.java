@@ -1,13 +1,13 @@
 package iped.engine.task.transcript;
 
-import java.util.Arrays;
-import java.util.List;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.AudioTranscriptConfig;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.task.AbstractTask;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class AudioTranscriptTask extends AbstractTask {
 

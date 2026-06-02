@@ -1,12 +1,8 @@
 package iped.app.timelinegraph.cache;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-
 import org.jfree.data.time.TimePeriod;
+
+import java.util.*;
 
 public interface TimeStampCache extends Runnable {
     public void addTimePeriodClassToCache(Class<? extends TimePeriod> timePeriodClass);

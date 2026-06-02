@@ -1,25 +1,6 @@
 package iped.app.ui.utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import bibliothek.gui.dock.common.CControl;
-import bibliothek.gui.dock.common.CExternalizeArea;
-import bibliothek.gui.dock.common.CLocation;
-import bibliothek.gui.dock.common.CStation;
-import bibliothek.gui.dock.common.DefaultSingleCDockable;
+import bibliothek.gui.dock.common.*;
 import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.intern.station.CScreenDockStation;
 import bibliothek.gui.dock.common.location.CExternalizedLocation;
@@ -30,6 +11,11 @@ import bibliothek.gui.dock.station.screen.ScreenDockProperty;
 import iped.app.ui.App;
 import iped.utils.IOUtil;
 import iped.viewers.MultiViewer;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.*;
 
 public class PanelsLayout {
     private static final File dir = new File(System.getProperty("user.home"), ".iped");

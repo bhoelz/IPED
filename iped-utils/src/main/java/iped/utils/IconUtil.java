@@ -1,16 +1,10 @@
 package iped.utils;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import java.util.*;
 
 public class IconUtil {
     private static final Map<String, Icon> memoIcon = new HashMap<String, Icon>();

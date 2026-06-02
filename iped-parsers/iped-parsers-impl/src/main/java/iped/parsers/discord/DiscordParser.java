@@ -1,44 +1,9 @@
 package iped.parsers.discord;
-import java.util.zip.GZIPInputStream;
-import java.io.PushbackInputStream;
-import org.brotli.dec.BrotliInputStream;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.imageio.ImageIO;
-
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.extractor.EmbeddedDocumentExtractor;
-import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
-import org.apache.tika.io.TemporaryResources;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.AbstractParser;
-import org.apache.tika.parser.ParseContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import iped.data.IItemReader;
 import iped.parsers.browsers.chrome.CacheIndexParser;
 import iped.parsers.discord.cache.Index;
@@ -53,9 +18,30 @@ import iped.search.IItemSearcher;
 import iped.utils.DateUtil;
 import iped.utils.EmptyInputStream;
 import iped.utils.ImageUtil;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.extractor.EmbeddedDocumentExtractor;
+import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
+import org.apache.tika.io.TemporaryResources;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AbstractParser;
+import org.apache.tika.parser.ParseContext;
+import org.brotli.dec.BrotliInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /***
- * 
+ *
  * @author PCF Campanini
  * @author PCF Patrick Dalla Bernardina
  *
@@ -157,7 +143,7 @@ public class DiscordParser extends AbstractParser {
                 if (rootNode != null) {
                     if (rootNode.isArray()) {
                         discordRoot = mapper.convertValue(rootNode, new TypeReference<List<DiscordRoot>>() {});
-                        
+
                     } else if (rootNode.isObject()) {
                         if (rootNode.has("author") && rootNode.has("timestamp")) {
                             DiscordRoot singleMsg = mapper.convertValue(rootNode, DiscordRoot.class);
@@ -395,7 +381,7 @@ public class DiscordParser extends AbstractParser {
 
         }
     }
-    
+
     private InputStream getDecompressedStream(InputStream is) throws IOException {
         PushbackInputStream pb = new PushbackInputStream(is, 2);
         byte[] sig = pb.readNBytes(2);
@@ -404,12 +390,12 @@ public class DiscordParser extends AbstractParser {
         // Verify the GZIP signature (1F 8B)
         if (sig.length == 2 && sig[0] == (byte) 0x1F && sig[1] == (byte) 0x8B) {
             return new GZIPInputStream(pb);
-        } 
+        }
         // If it's not pure JSON (which always starts with '{', '[' or a space), it assumes Brotli
         else if (sig.length > 0 && sig[0] != '{' && sig[0] != '[' && sig[0] != ' ' && sig[0] != '\n' && sig[0] != '\r' && sig[0] != '\t') {
             return new BrotliInputStream(pb);
         }
-        
+
         return pb; // Returns as plain text if not compressed.
     }
 }

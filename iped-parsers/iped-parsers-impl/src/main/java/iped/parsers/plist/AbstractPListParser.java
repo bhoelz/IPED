@@ -1,20 +1,8 @@
 package iped.parsers.plist;
 
-import static iped.parsers.plist.PListHelper.DATE;
-import static iped.parsers.plist.PListHelper.NUMBER;
-import static iped.parsers.plist.PListHelper.STRING;
-import static iped.parsers.plist.PListHelper.UID;
-import static iped.parsers.plist.PListHelper.appendPath;
-import static iped.parsers.plist.PListHelper.getUIDInteger;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Map.Entry;
-
-import javax.xml.parsers.ParserConfigurationException;
-
+import com.dd.plist.*;
+import iped.data.IItemReader;
+import iped.utils.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.detect.apple.BPListDetector;
 import org.apache.tika.exception.TikaException;
@@ -32,24 +20,18 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.dd.plist.NSArray;
-import com.dd.plist.NSData;
-import com.dd.plist.NSDate;
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSNumber;
-import com.dd.plist.NSObject;
-import com.dd.plist.NSSet;
-import com.dd.plist.NSString;
-import com.dd.plist.PropertyListFormatException;
-import com.dd.plist.PropertyListParser;
-import com.dd.plist.UID;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Map.Entry;
 
-import iped.data.IItemReader;
-import iped.utils.DateUtil;
+import static iped.parsers.plist.PListHelper.*;
 
 /**
  * Based on org.apache.tika.parser.apple.PListParser
- * 
+ *
  * @see https://github.com/apache/tika/blob/main/tika-parsers/tika-parsers-standard/tika-parsers-standard-modules/tika-parser-apple-module/src/main/java/org/apache/tika/parser/apple/PListParser.java
  */
 public abstract class AbstractPListParser<T> implements Parser {

@@ -1,7 +1,12 @@
 package iped.parsers.compress;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import iped.parsers.util.AbstractPkgTest;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.sax.BodyContentHandler;
+import org.junit.Test;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,14 +16,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.sax.BodyContentHandler;
-import org.junit.Test;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
-import iped.parsers.util.AbstractPkgTest;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class PackageParserTest extends AbstractPkgTest {
 
@@ -257,7 +256,7 @@ public class PackageParserTest extends AbstractPkgTest {
         parser.getSupportedTypes(trackingContext);
         try (InputStream stream = getStream("test-files/test_mock7z_2.7z")) {
             parser.parse(stream, handler, metadata, trackingContext);
-            
+
             DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             df.setTimeZone(TimeZone.getTimeZone("GMT-3"));
 
@@ -375,7 +374,7 @@ public class PackageParserTest extends AbstractPkgTest {
             assertEquals(3, tracker.modifieddate.size());
             assertEquals(3, tracker.itensmd5.size());
 
-            assertEquals("META-INF", tracker.filenames.get(0)); 
+            assertEquals("META-INF", tracker.filenames.get(0));
             Date date = parseFromDefaultDateFormat(tracker.modifieddate.get(0));
             assertEquals(df.parse("30/04/2021 15:26:20"), date);
             assertEquals("D41D8CD98F00B204E9800998ECF8427E", tracker.itensmd5.get(0));

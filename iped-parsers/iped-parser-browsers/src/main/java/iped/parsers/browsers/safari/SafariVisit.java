@@ -1,10 +1,10 @@
 package iped.parsers.browsers.safari;
 
+import com.google.common.base.Strings;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-
-import com.google.common.base.Strings;
 
 public class SafariVisit {
     private long id;

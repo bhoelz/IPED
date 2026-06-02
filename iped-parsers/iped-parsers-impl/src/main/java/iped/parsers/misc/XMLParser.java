@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,10 +18,8 @@
  */
 package iped.parsers.misc;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-
+import iped.io.IStreamSource;
+import iped.parsers.standard.RawStringParser;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
@@ -34,14 +32,15 @@ import org.apache.tika.parser.xml.DcXMLParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.io.IStreamSource;
-import iped.parsers.standard.RawStringParser;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
 
 /**
  * Parser customizado para arquivos XML. Usa um parser menos restrito que o
  * parser padrão do Tika e tb executa o parser de strings para indexar elementos
  * e atributos.
- * 
+ *
  * @author Nassif
  *
  */

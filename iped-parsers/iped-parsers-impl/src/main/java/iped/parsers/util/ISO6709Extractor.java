@@ -16,15 +16,15 @@
  */
 package iped.parsers.util;
 
+import org.apache.tika.metadata.Metadata;
+
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.tika.metadata.Metadata;
-
 /**
- * 
+ *
  * Copied and pasted from Tika-1.28.2.
  */
 class ISO6709Extractor implements Serializable {

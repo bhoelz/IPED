@@ -1,15 +1,12 @@
 package iped.app.ui.ai;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.JTree;
-import javax.swing.UIManager;
-import javax.swing.tree.DefaultTreeCellRenderer;
-
 import iped.app.ui.IconManager;
 import iped.engine.data.SimpleFilterNode;
 import iped.utils.LocalizedFormat;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import java.awt.*;
 
 public class AIFiltersTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final long serialVersionUID = 1L;

@@ -1,8 +1,6 @@
 package iped.parsers.image;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -13,7 +11,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ImageParserTest extends TestCase {
 

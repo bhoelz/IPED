@@ -1,15 +1,14 @@
 package iped.parsers.util;
 
-import java.io.File;
-import java.util.List;
-
+import iped.data.IItemReader;
+import iped.properties.BasicProps;
+import iped.search.IItemSearcher;
 import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import iped.data.IItemReader;
-import iped.properties.BasicProps;
-import iped.search.IItemSearcher;
+import java.io.File;
+import java.util.List;
 
 public class P2PUtil {
     public static IItemReader searchItemInCase(IItemSearcher searcher, String hashAlgo, String hash) {

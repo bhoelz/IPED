@@ -1,26 +1,20 @@
 package iped.parsers.skype;
 
+import iped.data.IItemReader;
+import iped.properties.BasicProps;
+import iped.search.IItemSearcher;
+import org.apache.commons.lang.ArrayUtils;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.List;
-
-import org.apache.commons.lang.ArrayUtils;
-
-import iped.data.IItemReader;
-import iped.properties.BasicProps;
-import iped.search.IItemSearcher;
 
 /**
  * Classe de persistência (apenas leitura) para acesso aos dados no banco de

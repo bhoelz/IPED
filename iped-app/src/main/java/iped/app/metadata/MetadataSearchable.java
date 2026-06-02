@@ -1,18 +1,13 @@
 package iped.app.metadata;
 
-import java.io.IOException;
-import java.util.HashMap;
-
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.NumericDocValues;
-import org.apache.lucene.index.SortedDocValues;
-import org.apache.lucene.index.SortedNumericDocValues;
-import org.apache.lucene.index.SortedSetDocValues;
-
 import iped.app.ui.App;
 import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
+import org.apache.lucene.index.*;
+
+import java.io.IOException;
+import java.util.HashMap;
 
 public class MetadataSearchable {
     protected volatile NumericDocValues numValues;

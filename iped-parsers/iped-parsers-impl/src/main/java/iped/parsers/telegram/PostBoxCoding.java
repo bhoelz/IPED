@@ -1,6 +1,6 @@
 /*
  * Copyright 2020-2020, João Vitor de Sá Hauck
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,21 +18,14 @@
  */
 package iped.parsers.telegram;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import dpf.ap.gpinf.interfacetelegram.PhotoData;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dpf.ap.gpinf.interfacetelegram.PhotoData;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * @author ADMHauck

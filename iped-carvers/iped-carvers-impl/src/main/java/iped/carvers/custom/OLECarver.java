@@ -1,14 +1,13 @@
 package iped.carvers.custom;
 
-import java.io.IOException;
-
-import org.apache.commons.codec.DecoderException;
-
 import iped.carvers.api.CarverType;
 import iped.carvers.api.Hit;
 import iped.carvers.standard.AbstractCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
+import org.apache.commons.codec.DecoderException;
+
+import java.io.IOException;
 
 public class OLECarver extends AbstractCarver {
 

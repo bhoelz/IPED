@@ -1,16 +1,16 @@
 package iped.engine.task.regex.validator.crypto;
 
+import iped.engine.task.regex.BasicAbstractRegexValidatorService;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-
-import iped.engine.task.regex.BasicAbstractRegexValidatorService;
 
 /**
  * Validate BCH CashAddr format. Note that the legacy format follow the exact
  * same rules as of bitcoin address, so it's not possible to tell the difference
  * (it will be validated as BitcoinAddress)
- * 
+ *
  * @author Fabio Melo Pfeifer <pfeifer.fmp@pf.gov.br>
  *
  */

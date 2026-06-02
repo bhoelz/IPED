@@ -1,20 +1,5 @@
 package iped.app.ui.viewers;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
-import javax.swing.JLabel;
-
-import org.exbin.deltahex.highlight.swing.HighlightCodeAreaPainter;
-import org.exbin.deltahex.highlight.swing.HighlightCodeAreaPainter.SearchMatch;
-import org.exbin.deltahex.swing.CodeArea;
-
 import iped.app.ui.App;
 import iped.app.ui.Messages;
 import iped.io.SeekableInputStream;
@@ -22,6 +7,13 @@ import iped.viewers.HexViewerPlus.HexSearcher;
 import iped.viewers.HexViewerPlus.Hits;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.util.ProgressDialog;
+import org.exbin.deltahex.highlight.swing.HighlightCodeAreaPainter;
+import org.exbin.deltahex.highlight.swing.HighlightCodeAreaPainter.SearchMatch;
+import org.exbin.deltahex.swing.CodeArea;
+
+import javax.swing.*;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  *
@@ -320,19 +312,19 @@ public class HexSearcherImpl implements HexSearcher {
     }
 
     /**
-     * 
+     *
      * Source https://gist.github.com/anuvrat/2382245
-     * 
+     *
      * @author: anuvrat
-     * 
+     *
      * @guilherme.dutra: modified sentence length and Case Sensitive option
-     * 
+     *
      */
 
     /**
      * Searches for all occurances of the word in the sentence. Runs in O(n+k) where
      * n is the word length and k is the sentence length.
-     * 
+     *
      * @param word
      *            The word that is being searched
      * @param sentence
@@ -395,7 +387,7 @@ public class HexSearcherImpl implements HexSearcher {
     /**
      * Creates the Partial Match Table for the word. Runs in O(n) where n is the
      * length of the word.
-     * 
+     *
      * @param word
      *            The word whose Partial Match Table is required.
      * @return The table as a list of integers.

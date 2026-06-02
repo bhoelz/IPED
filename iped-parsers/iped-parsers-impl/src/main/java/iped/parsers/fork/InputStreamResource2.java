@@ -16,12 +16,12 @@
  */
 package iped.parsers.fork;
 
+import org.apache.tika.fork.ForkResource;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
-import org.apache.tika.fork.ForkResource;
 
 class InputStreamResource2 implements ForkResource {
 

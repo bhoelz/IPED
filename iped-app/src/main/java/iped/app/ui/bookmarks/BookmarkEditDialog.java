@@ -1,28 +1,17 @@
 package iped.app.ui.bookmarks;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridLayout;
+import iped.app.ui.BookmarksManager;
+import iped.app.ui.Messages;
+import iped.app.ui.utils.JTextFieldLimited;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import iped.app.ui.BookmarksManager;
-import iped.app.ui.Messages;
-import iped.app.ui.utils.JTextFieldLimited;
 
 public class BookmarkEditDialog extends JDialog {
     private static final long serialVersionUID = -8204366293115657785L;

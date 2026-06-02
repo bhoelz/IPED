@@ -1,9 +1,12 @@
 package iped.parsers.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.utils.XMLReaderUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,14 +17,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.utils.XMLReaderUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 
 public class ExternalParserConfigGenerator {
 
@@ -80,11 +79,11 @@ public class ExternalParserConfigGenerator {
     public void setParserName(String strName) {
         addTextContent(name, strName);
     }
-    
+
     public void setCheckCommand(String strCheckCommand) {
         addTextContent(checkCommand, strCheckCommand);
     }
-    
+
     public void setErrorCodes(int... intErrorCodes) {
         String strErrorCodes = Arrays.toString(intErrorCodes).replaceAll("\\[|\\]|\\s", "");
         addTextContent(errorCodes, strErrorCodes);

@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,33 +18,16 @@
  */
 package iped.utils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import iped.data.IItem;
+import iped.data.IItemReader;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.JOptionPane;
-
-import org.slf4j.LoggerFactory;
-
-import iped.data.IItem;
-import iped.data.IItemReader;
+import java.util.*;
 
 public class IOUtil {
 
@@ -71,7 +54,7 @@ public class IOUtil {
     }
 
     private static ExternalOpenEnum externalOpenConfig = ExternalOpenEnum.ASK_IF_EXE;
-    
+
     public static boolean isTemporaryFile(File file) {
         if (tmpDir == null) {
             tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
@@ -356,7 +339,7 @@ public class IOUtil {
     /**
      * Use this method with CAUTION, it buffers all input stream data on memory and
      * could cause OOME.
-     * 
+     *
      */
     public static byte[] loadInputStream(InputStream is) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

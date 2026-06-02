@@ -1,16 +1,6 @@
 package iped.app.ui.viewers;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.lucene.index.SortedDocValues;
-import org.apache.lucene.util.BytesRef;
-
 import com.zaxxer.sparsebits.SparseBitSet;
-
 import iped.app.ui.App;
 import iped.app.ui.BookmarksController;
 import iped.data.IItem;
@@ -21,6 +11,14 @@ import iped.engine.search.MultiSearchResult;
 import iped.engine.search.QueryBuilder;
 import iped.properties.BasicProps;
 import iped.viewers.api.AttachmentSearcher;
+import org.apache.lucene.index.SortedDocValues;
+import org.apache.lucene.util.BytesRef;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class AttachmentSearcherImpl implements AttachmentSearcher {
 

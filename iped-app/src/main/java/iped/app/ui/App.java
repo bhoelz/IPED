@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,83 +18,10 @@
  */
 package iped.app.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.awt.Insets;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTree;
-import javax.swing.KeyStroke;
-import javax.swing.RowSorter.SortKey;
-import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.table.JTableHeader;
-import javax.swing.text.JTextComponent;
-import javax.swing.tree.TreePath;
-
-import org.apache.lucene.search.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import bibliothek.extension.gui.dock.theme.EclipseTheme;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.EclipseTabPane;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.EclipseTabPaneContent;
-import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.BorderedComponent;
-import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.InvisibleTab;
-import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.InvisibleTabPane;
-import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.RectGradientPainter;
-import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.TabComponent;
-import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.TabPainter;
-import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.TabPanePainter;
+import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.*;
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.StackDockStation;
@@ -148,14 +75,7 @@ import iped.engine.data.Category;
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.data.ItemId;
-import iped.engine.search.IPEDSearcher;
-import iped.engine.search.ImageSimilarityLowScoreFilter;
-import iped.engine.search.ImageSimilarityScorer;
-import iped.engine.search.MultiSearchResult;
-import iped.engine.search.QueryBuilder;
-import iped.engine.search.SimilarDocumentSearch;
-import iped.engine.search.SimilarFacesSearch;
-import iped.engine.search.SimilarImagesSearch;
+import iped.engine.search.*;
 import iped.engine.task.ImageThumbTask;
 import iped.engine.util.Util;
 import iped.exception.ParseException;
@@ -167,25 +87,30 @@ import iped.utils.IconUtil;
 import iped.utils.UiUtil;
 import iped.viewers.ATextViewer;
 import iped.viewers.MultiViewer;
-import iped.viewers.api.AbstractViewer;
-import iped.viewers.api.ClearFilterListener;
-import iped.viewers.api.GUIProvider;
-import iped.viewers.api.IColumnsManager;
-import iped.viewers.api.IFilter;
-import iped.viewers.api.IFilterer;
-import iped.viewers.api.IItemRef;
-import iped.viewers.api.IMiniaturizable;
-import iped.viewers.api.IMultiSearchResultProvider;
-import iped.viewers.api.IMutableFilter;
-import iped.viewers.api.IQuantifiableFilter;
-import iped.viewers.api.IQueryFilter;
-import iped.viewers.api.IQueryFilterer;
-import iped.viewers.api.IResultSetFilter;
-import iped.viewers.api.IResultSetFilterer;
-import iped.viewers.api.ResultSetViewer;
-import iped.viewers.api.ResultSetViewerConfiguration;
+import iped.viewers.api.*;
 import iped.viewers.components.HitsTable;
 import iped.viewers.components.HitsTableModel;
+import org.apache.lucene.search.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.border.Border;
+import javax.swing.table.JTableHeader;
+import javax.swing.text.JTextComponent;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class App extends JFrame implements WindowListener, IMultiSearchResultProvider, GUIProvider {
     /**
@@ -356,7 +281,7 @@ public class App extends JFrame implements WindowListener, IMultiSearchResultPro
 
     public MenuClass getContextMenu() {
         IItemId id = resultTableListener.getSelectedItemId();
-        IItem item = id == null ? null : appCase.getItemByItemId(id); 
+        IItem item = id == null ? null : appCase.getItemByItemId(id);
         return new MenuClass(item);
     }
 
@@ -1024,7 +949,7 @@ public class App extends JFrame implements WindowListener, IMultiSearchResultPro
             }
         });
         butFaceSearch.setEnabled(false);
-        
+
         galleryTabDock.addSeparator();
 
         // Add buttons to control the thumbnails size / number of columns in the gallery

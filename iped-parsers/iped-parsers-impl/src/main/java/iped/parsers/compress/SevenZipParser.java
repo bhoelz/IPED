@@ -1,24 +1,15 @@
 package iped.parsers.compress;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.TreeMap;
-
+import iped.parsers.util.RawISOConverter;
+import iped.parsers.util.Util;
+import iped.properties.ExtraProperties;
+import iped.utils.EmptyInputStream;
+import iped.utils.IOUtil;
+import iped.utils.LocalizedFormat;
+import net.sf.sevenzipjbinding.*;
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
+import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
+import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.TikaException;
@@ -37,29 +28,18 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import iped.parsers.util.RawISOConverter;
-import iped.parsers.util.Util;
-import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
-import iped.utils.IOUtil;
-import iped.utils.LocalizedFormat;
-import net.sf.sevenzipjbinding.ExtractAskMode;
-import net.sf.sevenzipjbinding.ExtractOperationResult;
-import net.sf.sevenzipjbinding.IArchiveExtractCallback;
-import net.sf.sevenzipjbinding.IInArchive;
-import net.sf.sevenzipjbinding.ISequentialOutStream;
-import net.sf.sevenzipjbinding.PropID;
-import net.sf.sevenzipjbinding.SevenZip;
-import net.sf.sevenzipjbinding.SevenZipException;
-import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
-import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
-import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.text.DecimalFormat;
+import java.util.*;
 
 
 public class SevenZipParser extends AbstractParser {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -192,7 +172,7 @@ public class SevenZipParser extends AbstractParser {
         }
 
     }
-    
+
     private void listArchiveContent(IInArchive inArchive, XHTMLContentHandler xhtml) {
         int maxNumEntries = 1 << 24;
         List<String> entries = new ArrayList<String>();

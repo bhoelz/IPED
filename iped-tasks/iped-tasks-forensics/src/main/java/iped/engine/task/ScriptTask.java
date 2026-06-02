@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de EvidÃªncias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,26 +18,16 @@
  */
 package iped.engine.task;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.Collections;
-import java.util.List;
-
-import javax.script.Bindings;
-import javax.script.Invocable;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
 import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.data.IPEDSource;
 import iped.engine.search.IPEDSearcher;
+
+import javax.script.*;
+import java.io.*;
+import java.util.Collections;
+import java.util.List;
 
 public class ScriptTask extends AbstractTask {
 

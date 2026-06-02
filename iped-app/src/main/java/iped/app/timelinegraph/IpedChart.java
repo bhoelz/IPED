@@ -1,16 +1,14 @@
 package iped.app.timelinegraph;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
-
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.plot.Plot;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.title.Title;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.RectangleInsets;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 public class IpedChart extends JFreeChart {
     IpedChartPanel ipedchartPanel;

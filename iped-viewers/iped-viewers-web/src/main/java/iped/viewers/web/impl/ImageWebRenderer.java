@@ -1,5 +1,13 @@
 package iped.viewers.web.impl;
 
+import iped.viewers.web.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,20 +15,6 @@ import java.io.OutputStream;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.viewers.web.RenderRequest;
-import iped.viewers.web.RenditionKind;
-import iped.viewers.web.UnsupportedRenditionException;
-import iped.viewers.web.ViewerCapabilities;
-import iped.viewers.web.WebRenderer;
 
 /**
  * Renders image items (including multi-page TIFF) as PNG using headless ImageIO.

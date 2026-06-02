@@ -1,17 +1,14 @@
 package iped.app.ui.bookmarks;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.Icon;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeCellRenderer;
-
 import iped.app.ui.App;
 import iped.app.ui.BookmarksTreeModel;
 import iped.app.ui.IconManager;
 import iped.data.IMultiBookmarks;
 import iped.utils.LocalizedFormat;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import java.awt.*;
 
 public class BookmarkTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final long serialVersionUID = 1L;

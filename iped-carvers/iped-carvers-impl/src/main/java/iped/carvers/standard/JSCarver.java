@@ -1,21 +1,15 @@
 package iped.carvers.standard;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import iped.carvers.api.CarverType;
+import iped.carvers.api.Hit;
+import iped.carvers.api.InvalidCarvedObjectException;
+import iped.data.IItem;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-
-import iped.carvers.api.CarverType;
-import iped.carvers.api.Hit;
-import iped.carvers.api.InvalidCarvedObjectException;
-import iped.data.IItem;
+import java.io.*;
 
 public class JSCarver extends DefaultCarver {
     ScriptEngine engine;

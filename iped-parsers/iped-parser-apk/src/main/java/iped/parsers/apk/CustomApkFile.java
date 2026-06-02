@@ -1,23 +1,5 @@
 package iped.parsers.apk;
 
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
 import iped.utils.IOUtil;
 import net.dongliu.apk.parser.AbstractApkFile;
 import net.dongliu.apk.parser.bean.ApkSignStatus;
@@ -32,6 +14,19 @@ import net.dongliu.apk.parser.struct.zip.EOCD;
 import net.dongliu.apk.parser.utils.Buffers;
 import net.dongliu.apk.parser.utils.Inputs;
 import net.dongliu.apk.parser.utils.Unsigned;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * This class replaces the library net.dongliu.apk.parser.ApkFile, that uses
