@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -18,61 +18,22 @@
  */
 package iped.engine.core;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.security.Security;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.index.ConcurrentMergeScheduler;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexCommit;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TieredMergePolicy;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.store.Directory;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import iped.data.ICaseData;
-import iped.engine.core.CaseContextThreadLocal;
 import iped.data.IItem;
 import iped.engine.CmdLineArgs;
-import iped.engine.config.AnalysisConfig;
-import iped.engine.config.Configuration;
-import iped.engine.config.ConfigurationManager;
-import iped.engine.config.IndexTaskConfig;
-import iped.engine.config.LocalConfig;
-import iped.engine.config.SplashScreenConfig;
+import iped.engine.config.*;
 import iped.engine.data.Bookmarks;
 import iped.engine.data.CaseData;
 import iped.engine.data.IPEDSource;
-import iped.engine.config.ConfigurationView;
-import java.util.UUID;
 import iped.engine.data.Item;
 import iped.engine.datasource.ItemProducer;
 import iped.engine.datasource.SleuthkitReader;
-import iped.engine.graph.GraphFileWriter;
 import iped.engine.graph.GraphConstants;
+import iped.engine.graph.GraphFileWriter;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.index.IndexExtraAttributes;
+import iped.engine.index.IndexMetadata;
 import iped.engine.io.ParsingReader;
 import iped.engine.localization.Messages;
 import iped.engine.lucene.ConfiguredFSDirectory;
@@ -87,7 +48,6 @@ import iped.engine.sleuthkit.SleuthkitClient;
 import iped.engine.sleuthkit.SleuthkitInputStreamFactory;
 import iped.engine.task.ExportFileTaskRuntime;
 import iped.engine.task.TaskRuntime;
-import iped.engine.index.IndexMetadata;
 import iped.engine.task.index.IndexItem;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
@@ -96,6 +56,31 @@ import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
 import iped.search.SearchResult;
 import iped.utils.IOUtil;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.store.Directory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Classe responsável pela preparação do processamento, inicialização do
@@ -124,7 +109,7 @@ import iped.utils.IOUtil;
  * palavras-chave e o log de estatísticas do processamento.
  *
  */
-public class Manager {
+public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
     private static long commitIntervalMillis = 30 * 60 * 1000;
     private static Logger LOGGER = LogManager.getLogger(Manager.class);
@@ -207,6 +192,43 @@ public class Manager {
         return processingQueues;
     }
 
+    // --- IDatasourceRegistry implementation ---
+
+    @Override
+    public IItem createItem() {
+        return new Item();
+    }
+
+    @Override
+    public void addItem(IItem item) throws InterruptedException {
+        processingQueues.addItem(item);
+    }
+
+    @Override
+    public void addItemFirst(IItem item) throws InterruptedException {
+        processingQueues.addItemFirst(item);
+    }
+
+    @Override
+    public void prepareForQueue(IItem item, iped.data.ICaseData caseData) {
+        Util.calctrackIDAndUpdateID((CaseData) caseData, item);
+    }
+
+    @Override
+    public String getTrackID(IItem item) {
+        return Util.getTrackID(item);
+    }
+
+    @Override
+    public void onProgress(String propertyName, Object oldValue, Object newValue) {
+        UIPropertyListenerProvider.getInstance().firePropertyChange(propertyName, oldValue, newValue);
+    }
+
+    @Override
+    public void setEnvVar(String key, String value) {
+        Util.setEnvVar(key, value);
+    }
+
     public Manager(List<File> sources, File output, File palavras) {
 
         this.localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
@@ -248,6 +270,40 @@ public class Manager {
         this.caseContext = context;
 
         commitIntervalMillis = indexConfig.getCommitIntervalSeconds() * 1000;
+
+        // ---- Distributed mode toggle ----------------------------------------
+        // If DistributedConfig is present and enabled, swap the local in-memory
+        // queue for a Kafka-backed producer. Task and reader code is unchanged.
+        iped.engine.datasource.DatasourceRegistry.set(buildDatasourceRegistry());
+    }
+
+    private iped.engine.datasource.IDatasourceRegistry buildDatasourceRegistry() {
+        try {
+            iped.engine.config.ConfigurationManager cm = iped.engine.config.ConfigurationManager.get();
+            // DistributedConfig is optional — only available when iped-distributed is on the classpath
+            Class<?> cfgClass = Class.forName("iped.distributed.config.DistributedConfig");
+            Object distCfg = cm.findObject((Class) cfgClass);
+            if (distCfg != null) {
+                boolean enabled = (boolean) cfgClass.getMethod("isEnabled").invoke(distCfg);
+                if (enabled) {
+                    LOGGER.info("Distributed mode enabled — initialising KafkaItemProducer");
+                    // Derive a stable caseId from the output path
+                    String caseId = output != null
+                            ? output.getName().replaceAll("[^a-zA-Z0-9_-]", "_")
+                            : java.util.UUID.randomUUID().toString();
+                    Class<?> prodClass = Class.forName("iped.distributed.kafka.KafkaItemProducer");
+                    return (iped.engine.datasource.IDatasourceRegistry)
+                            prodClass.getDeclaredConstructor(cfgClass, String.class,
+                                    iped.engine.datasource.IDatasourceRegistry.class)
+                            .newInstance(distCfg, caseId, this);
+                }
+            }
+        } catch (ClassNotFoundException ignored) {
+            // iped-distributed not on classpath — local mode
+        } catch (Exception e) {
+            LOGGER.warn("Could not initialise distributed mode: {} — falling back to local", e.getMessage());
+        }
+        return this;  // local mode: Manager is its own IDatasourceRegistry
     }
 
     public File getIndexTemp() {
@@ -554,7 +610,7 @@ public class Manager {
         LOGGER.info((newIndex ? "Creating" : "Opening") + " index: {}", indexDir.getAbsoluteFile());
         Directory directory = ConfiguredFSDirectory.open(indexDir);
         IndexWriterConfig config = getIndexWriterConfig();
-        
+
         if (args.isRestart()) {
             List<IndexCommit> commits = DirectoryReader.listCommits(directory);
             config.setIndexCommit(commits.get(0));
@@ -992,7 +1048,7 @@ public class Manager {
     public void setProcessingFinished(boolean isProcessingFinished) {
         this.isProcessingFinished = isProcessingFinished;
     }
-    
+
     private void setSplashMessage(File dir) throws IOException {
         String msg = args.getSplashMessage();
         if (msg != null && !msg.isBlank()) {

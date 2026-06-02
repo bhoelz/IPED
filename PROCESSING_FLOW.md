@@ -1,0 +1,30 @@
+# IPED Data Processing Flow
+
+End-to-end flow in IPED, from data source intake to persistence:
+
+1. Case orchestration
+- Processing starts in `Manager`, which prepares output, opens the index, and starts workers plus producers: [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L241), [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L282), [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L288), [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L292).
+- The case final index is stored at `output/index`: [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L212).
+
+2. How a data source is used
+- `ItemProducer` picks the proper reader (`SleuthkitReader`, `IPEDReader`, `UfedXmlReader`, `AD1DataSourceReader`, `FolderTreeReader`) via `isSupported`, then calls `read(source)`: [ItemProducer.java](iped-engine/src/main/java/iped/engine/datasource/ItemProducer.java#L73), [ItemProducer.java](iped-engine/src/main/java/iped/engine/datasource/ItemProducer.java#L117), [ItemProducer.java](iped-engine/src/main/java/iped/engine/datasource/ItemProducer.java#L123).
+- The base abstraction is `DataSourceReader` (`read`, `listOnly`, `caseData`, `output`): [DataSourceReader.java](iped-engine/src/main/java/iped/engine/datasource/DataSourceReader.java#L38), [DataSourceReader.java](iped-engine/src/main/java/iped/engine/datasource/DataSourceReader.java#L97).
+- Each concrete source creates a `DataSource` (with UUID) and attaches it to items: [DataSource.java](iped-engine-core/src/main/java/iped/engine/data/DataSource.java#L15), [FolderTreeReader.java](iped-engine/src/main/java/iped/engine/datasource/FolderTreeReader.java#L69), [SleuthkitReader.java](iped-engine/src/main/java/iped/engine/datasource/SleuthkitReader.java#L336), [UfedXmlReader.java](iped-engine/src/main/java/iped/engine/datasource/UfedXmlReader.java#L313).
+
+3. Item creation
+- Readers instantiate `Item`, set `dataSource` and `idInDataSource`, update discovery counters (`incDiscoveredEvidences/Volume`), and enqueue: [FolderTreeReader.java](iped-engine/src/main/java/iped/engine/datasource/FolderTreeReader.java#L118), [FolderTreeReader.java](iped-engine/src/main/java/iped/engine/datasource/FolderTreeReader.java#L121), [AD1DataSourceReader.java](iped-engine/src/main/java/iped/engine/datasource/AD1DataSourceReader.java#L85), [SleuthkitReader.java](iped-engine/src/main/java/iped/engine/datasource/SleuthkitReader.java#L927), [UfedXmlReader.java](iped-engine/src/main/java/iped/engine/datasource/UfedXmlReader.java#L656).
+- The queue receives an end marker (`[queue-end]`) when production is done: [ItemProducer.java](iped-engine/src/main/java/iped/engine/datasource/ItemProducer.java#L141).
+
+4. Item processing
+- `ProcessingQueues` computes/updates `trackId` and ID before queue insertion (`Util.calctrackIDAndUpdateID`), including resume support (`--continue`): [ProcessingQueues.java](iped-engine/src/main/java/iped/engine/core/ProcessingQueues.java#L107), [Util.java](iped-engine/src/main/java/iped/engine/util/Util.java#L163).
+- `Worker` pulls from the queue and runs the task chain (`firstTask.processAndSendToNextTask`): [Worker.java](iped-engine/src/main/java/iped/engine/core/Worker.java#L168), [Worker.java](iped-engine/src/main/java/iped/engine/core/Worker.java#L179).
+- The chain is assembled by `TaskInstaller`; task order comes from configuration: [TaskInstaller.java](iped-engine/src/main/java/iped/engine/task/TaskInstaller.java#L16).
+- In `AbstractTask`, each task processes and forwards the item; subitems can be re-enqueued/prioritized: [AbstractTask.java](iped-engine/src/main/java/iped/engine/task/AbstractTask.java#L160), [AbstractTask.java](iped-engine/src/main/java/iped/engine/task/AbstractTask.java#L210), [AbstractTask.java](iped-engine/src/main/java/iped/engine/task/AbstractTask.java#L247).
+
+5. Where results are written
+- Lucene index: `IndexTask` converts `IItem` into `Document` (`IndexItem.Document`) and writes using `writer.addDocuments(...)`: [IndexTask.java](iped-engine/src/main/java/iped/engine/task/index/IndexTask.java#L149), [IndexTask.java](iped-engine/src/main/java/iped/engine/task/index/IndexTask.java#L212).
+- Extracted/binary artifacts: `ExportFileTask` writes to filesystem (`extractDir`) and/or SQLite storage (`configureSQLiteStorage`, `insertIntoStorage`): [ExportFileTask.java](iped-engine/src/main/java/iped/engine/task/ExportFileTask.java#L189), [ExportFileTask.java](iped-engine/src/main/java/iped/engine/task/ExportFileTask.java#L235), [ExportFileTask.java](iped-engine/src/main/java/iped/engine/task/ExportFileTask.java#L740).
+- Auxiliary metadata and commits: `Manager` performs periodic and final commits for index + storages + CSV + metadata: [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L646), [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L651), [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L655), [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L659).
+- If a temporary index is used, it is moved/copied to the final `output/index`: [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L718), [Manager.java](iped-engine/src/main/java/iped/engine/core/Manager.java#L722).
+
+Summary: a data source enters through a `DataSourceReader`, becomes an `Item` with identity (`dataSource + idInDataSource + trackId`), moves through a parallel task pipeline, and is persisted primarily in the Lucene index (`output/index`) plus extraction/export artifacts (filesystem/SQLite/CSV).

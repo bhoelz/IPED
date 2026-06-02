@@ -7,11 +7,7 @@ import iped.io.SeekableInputStream;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.channels.SeekableByteChannel;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Interface that defines an evidence file, which is a case file accompanied by
@@ -516,6 +512,10 @@ public interface IItem extends IItemReader {
      * @return returns the created evidenceFile.
      */
     IItem createChildItem();
+
+    void setSubitemId(Integer id);
+
+    void setOpenContainer(Object container);
 
     /**
      * Returns a String with data contained in this object.
