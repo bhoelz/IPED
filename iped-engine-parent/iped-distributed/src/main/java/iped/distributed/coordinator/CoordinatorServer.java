@@ -217,14 +217,64 @@ public class CoordinatorServer {
     // Standalone entry point (run coordinator independently)
     // -----------------------------------------------------------------------
 
+    /**
+     * Standalone coordinator startup.
+     *
+     * <p>Configuration priority (highest → lowest):
+     * <ol>
+     *   <li>Environment variables ({@code KAFKA_BOOTSTRAP_SERVERS}, {@code COORDINATOR_PORT},
+     *       {@code AGENT_EXPIRY_SECONDS}, {@code TOPIC_PARTITIONS},
+     *       {@code TOPIC_REPLICATION_FACTOR}, {@code HEARTBEAT_INTERVAL_SECONDS},
+     *       {@code ITEM_TIMEOUT_SECONDS})</li>
+     *   <li>Built-in defaults ({@link DistributedConfig} field initialisers)</li>
+     * </ol>
+     *
+     * <p>No argument is required.  Useful for Docker / k8s deployments where
+     * all settings come from env vars or a mounted {@code DistributedConfig.txt}
+     * (pass the config directory as the first argument to load the file).
+     */
     public static void main(String[] args) throws Exception {
-        // Basic startup: java -cp ... CoordinatorServer [port] [kafkaBootstrap]
         DistributedConfig cfg = new DistributedConfig();
+
+        // 1. Apply env-var overrides (Docker / k8s friendly)
+        iped.utils.UTF8Properties envProps = new iped.utils.UTF8Properties();
+        applyEnv(envProps, "kafkaBootstrapServers",    "KAFKA_BOOTSTRAP_SERVERS");
+        applyEnv(envProps, "coordinatorPort",          "COORDINATOR_PORT");
+        applyEnv(envProps, "agentExpirySeconds",       "AGENT_EXPIRY_SECONDS");
+        applyEnv(envProps, "topicPartitions",          "TOPIC_PARTITIONS");
+        applyEnv(envProps, "topicReplicationFactor",   "TOPIC_REPLICATION_FACTOR");
+        applyEnv(envProps, "heartbeatIntervalSeconds", "HEARTBEAT_INTERVAL_SECONDS");
+        applyEnv(envProps, "itemTimeoutSeconds",       "ITEM_TIMEOUT_SECONDS");
+        cfg.processProperties(envProps);
+
+        // 2. Optionally load DistributedConfig.txt from a config directory (first arg)
+        if (args.length > 0) {
+            java.nio.file.Path configDir = java.nio.file.Paths.get(args[0]);
+            java.io.File configFile = configDir.resolve(DistributedConfig.CONFIG_FILE).toFile();
+            if (configFile.isFile()) {
+                iped.utils.UTF8Properties fileProps = new iped.utils.UTF8Properties();
+                fileProps.load(configFile);
+                cfg.processProperties(fileProps);
+                LOGGER.info("Loaded configuration from {}", configFile);
+            } else {
+                LOGGER.warn("Config file not found at {} — using defaults/env vars", configFile);
+            }
+        }
+
+        LOGGER.info("Starting IPED Coordinator — kafka={}, port={}",
+                cfg.getKafkaBootstrapServers(), cfg.getCoordinatorPort());
+
         CoordinatorServer srv = new CoordinatorServer(cfg);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try { srv.stop(); } catch (Exception ignored) {}
         }));
         srv.start();
         srv.join();
+    }
+
+    /** Copies a single env var into a {@link iped.utils.UTF8Properties} map if it is set. */
+    private static void applyEnv(iped.utils.UTF8Properties props, String key, String envVar) {
+        String val = System.getenv(envVar);
+        if (val != null && !val.isBlank()) props.setProperty(key, val.trim());
     }
 }

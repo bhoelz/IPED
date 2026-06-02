@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Docker build context exclusions
+# Applied when building from the repo root (e.g. coordinator Dockerfile).
+# Keeps the context lean — only POM files + src/ directories are copied.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Local Maven build output
+**/target/
+target/
+
+# Local Maven repository cache
+.m2/
+
+# IDE metadata
+.idea/
+.vscode/
+**/*.iml
+**/.classpath
+**/.project
+**/.settings/
+
+# Git internals
+.git/
+.gitignore
+.gitattributes
+
+# Pre-built distribution (worker uses COPY dist/lib/ explicitly)
+# Exclude everything else so only dist/ enters the worker context
+dist/native/
+
+# Documentation — not needed at build time
+*.md
+docs/
+specs/
+PROCESSING.md
+ARCHITECTURE.md
+
+# Logs
+*.log
+server-output.log
+
+# Test reports
+**/surefire-reports/
+**/failsafe-reports/
+
+# OS noise
+**/.DS_Store
+**/Thumbs.db

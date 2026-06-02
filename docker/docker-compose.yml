@@ -1,0 +1,202 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# IPED Distributed Processing — Docker Compose Stack
+#
+# Services
+# ────────
+#  kafka        Apache Kafka 3.7 in KRaft mode (no Zookeeper)
+#  coordinator  IPED Coordinator REST server (port 8484)
+#  worker-*     Example Task Agent workers (one per task type)
+#  kafka-ui     Kafka UI console — optional, activate with: --profile monitoring
+#
+# Prerequisites
+# ─────────────
+#  1. Build IPED:       mvn -B package -DskipTests (from repo root)
+#  2. Collect JARs:
+#       mvn dependency:copy-dependencies \
+#         -DoutputDirectory=dist/lib -DincludeScope=runtime
+#       cp iped-engine-parent/*/target/*.jar dist/lib/
+#  3. Copy a valid IPED configuration to ./config/
+#
+# Usage
+# ─────
+#  # Start coordinator + Kafka only (readers run externally):
+#  CASE_ID=my-case docker compose up -d kafka coordinator
+#
+#  # Start a full worker fleet for a specific case:
+#  CASE_ID=my-case docker compose up -d
+#
+#  # Scale a single worker type:
+#  CASE_ID=my-case docker compose up -d --scale worker-hash=3
+#
+#  # Open Kafka UI:
+#  CASE_ID=my-case docker compose --profile monitoring up -d kafka-ui
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: '3.9'
+
+# ── Shared worker settings (non-environment) ──────────────────────────────────
+x-worker-common: &worker-common
+  image: iped-worker:latest
+  build:
+    context: ..
+    dockerfile: docker/worker/Dockerfile
+  depends_on:
+    coordinator:
+      condition: service_healthy
+  volumes:
+    - iped-shared:/mnt/iped-shared
+    - ./config:/etc/iped:ro
+  restart: on-failure:5
+
+services:
+
+  # ── Apache Kafka 3.7 — KRaft mode (no Zookeeper) ──────────────────────────
+  kafka:
+    image: bitnami/kafka:3.7
+    hostname: kafka
+    ports:
+      # Internal (container-to-container): kafka:9092
+      # External (host access for IPED readers): localhost:9094
+      - "9094:9094"
+    environment:
+      # KRaft (Kafka without Zookeeper)
+      KAFKA_CFG_NODE_ID: "0"
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,EXTERNAL://:9094,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "0@kafka:9093"
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # Topic defaults — coordinator overrides these per case
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+
+      # Retention — pipeline topics accumulate large forensic payloads
+      KAFKA_CFG_LOG_RETENTION_HOURS: "168"          # 7 days
+      KAFKA_CFG_LOG_SEGMENT_BYTES: "1073741824"     # 1 GB
+      KAFKA_CFG_MESSAGE_MAX_BYTES: "104857600"      # 100 MB max message
+      KAFKA_CFG_REPLICA_FETCH_MAX_BYTES: "104857600"
+    volumes:
+      - kafka-data:/bitnami/kafka
+    healthcheck:
+      test: ["CMD-SHELL",
+             "kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 40s
+
+  # ── IPED Coordinator ───────────────────────────────────────────────────────
+  coordinator:
+    image: iped-coordinator:latest
+    build:
+      context: ..
+      dockerfile: docker/coordinator/Dockerfile
+    hostname: coordinator
+    ports:
+      - "8484:8484"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      COORDINATOR_PORT: "8484"
+      AGENT_EXPIRY_SECONDS: "30"
+      TOPIC_PARTITIONS: "8"
+      TOPIC_REPLICATION_FACTOR: "1"
+      HEARTBEAT_INTERVAL_SECONDS: "10"
+      ITEM_TIMEOUT_SECONDS: "3600"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL",
+             "wget -qO- http://localhost:8484/api/v1/agents > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+
+  # ── Worker: HashTask ───────────────────────────────────────────────────────
+  worker-hash:
+    <<: *worker-common
+    hostname: worker-hash
+    environment:
+      CASE_ID: "${CASE_ID:?Set CASE_ID env var}"
+      TASK_TYPE: HashTask
+      TASK_CLASS: iped.engine.task.HashTask
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      COORDINATOR_URL: http://coordinator:8484
+      SHARED_STORAGE_ROOT: /mnt/iped-shared
+      AGENT_PARALLELISM: "4"
+      JAVA_OPTS: "-Xmx4g -XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -Djava.awt.headless=true"
+
+  # ── Worker: ParsingTask ────────────────────────────────────────────────────
+  worker-parsing:
+    <<: *worker-common
+    hostname: worker-parsing
+    environment:
+      CASE_ID: "${CASE_ID:?Set CASE_ID env var}"
+      TASK_TYPE: ParsingTask
+      TASK_CLASS: iped.engine.task.ParsingTask
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      COORDINATOR_URL: http://coordinator:8484
+      SHARED_STORAGE_ROOT: /mnt/iped-shared
+      AGENT_PARALLELISM: "4"
+      JAVA_OPTS: "-Xmx6g -XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -Djava.awt.headless=true"
+
+  # ── Worker: IndexTask ──────────────────────────────────────────────────────
+  worker-index:
+    <<: *worker-common
+    hostname: worker-index
+    environment:
+      CASE_ID: "${CASE_ID:?Set CASE_ID env var}"
+      TASK_TYPE: IndexTask
+      TASK_CLASS: iped.engine.task.index.IndexTask
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      COORDINATOR_URL: http://coordinator:8484
+      SHARED_STORAGE_ROOT: /mnt/iped-shared
+      AGENT_PARALLELISM: "2"
+      JAVA_OPTS: "-Xmx8g -XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -Djava.awt.headless=true"
+
+  # ── Worker: ExportFileTask ─────────────────────────────────────────────────
+  worker-export:
+    <<: *worker-common
+    hostname: worker-export
+    environment:
+      CASE_ID: "${CASE_ID:?Set CASE_ID env var}"
+      TASK_TYPE: ExportFileTask
+      TASK_CLASS: iped.engine.task.ExportFileTask
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      COORDINATOR_URL: http://coordinator:8484
+      SHARED_STORAGE_ROOT: /mnt/iped-shared
+      AGENT_PARALLELISM: "4"
+      JAVA_OPTS: "-Xmx4g -XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -Djava.awt.headless=true"
+
+  # ── Kafka UI (monitoring — opt-in) ─────────────────────────────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    hostname: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: iped-distributed
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    profiles:
+      - monitoring
+    restart: unless-stopped
+
+# ── Volumes ───────────────────────────────────────────────────────────────────
+volumes:
+  kafka-data:
+    driver: local
+
+  # Shared evidence storage — in production replace with an NFS / GlusterFS
+  # volume driver so every worker node sees the same data.
+  iped-shared:
+    driver: local
