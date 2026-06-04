@@ -17,11 +17,11 @@ public class PhotoDNALookupConfig extends AbstractTaskPropertiesConfig {
     private static final String TEST_ROTATED_FLIPPED = "searchRotatedAndFlipped";
 
     private static final String MIN_ENTROPY = "minEntropy";
-    
+
     private int maxDistance = 40000;
 
     private double minEntropy = 0.7;
-    
+
     private boolean rotateAndFlip = true;
 
     private String statusHashDBFilter = "";

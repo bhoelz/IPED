@@ -41,7 +41,7 @@ public class RemoteImageClassifierConfig extends AbstractTaskPropertiesConfig {
     private int skipDimension = 0;
 
     // Skip classification of images/videos with hits on IPED hashesDB database (if 'hashesDB' is not configured in 'LocalConfig.txt' or 'false', do not skip)
-    private boolean skipHashDBFiles = true;   
+    private boolean skipHashDBFiles = true;
 
     // Validate server SSL certificate
     private boolean validateSSL = false;
@@ -157,7 +157,7 @@ public class RemoteImageClassifierConfig extends AbstractTaskPropertiesConfig {
         if (value != null && !value.trim().isEmpty()) {
             socketTimeout = Integer.valueOf(value.trim());
         }
-    
+
     }
 
 }

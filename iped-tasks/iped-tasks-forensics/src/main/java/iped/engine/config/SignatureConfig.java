@@ -9,7 +9,7 @@ import java.nio.file.Path;
 public class SignatureConfig extends AbstractTaskConfig<String> {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -412134138223527641L;
 

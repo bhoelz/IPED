@@ -5,7 +5,7 @@ import iped.utils.UTF8Properties;
 public class PhotoDNAConfig extends AbstractTaskPropertiesConfig {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

@@ -5,7 +5,7 @@ import iped.utils.UTF8Properties;
 public class MinIOConfig extends AbstractTaskPropertiesConfig {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
     private static final String CONFIG_FILE = "MinIOConfig.txt";

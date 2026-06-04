@@ -5,7 +5,7 @@ import iped.utils.UTF8Properties;
 public class ElasticSearchTaskConfig extends AbstractTaskPropertiesConfig {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
