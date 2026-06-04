@@ -16,6 +16,8 @@ import iped.engine.util.TextCache;
 import iped.engine.util.Util;
 import iped.io.ISeekableInputStreamFactory;
 import iped.io.SeekableInputStream;
+import iped.engine.io.ByteArrayImageInputStream;
+import iped.engine.io.LimitedSeekableInputStream;
 import iped.utils.*;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.tika.io.TemporaryResources;

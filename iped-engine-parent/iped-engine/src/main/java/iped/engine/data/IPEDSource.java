@@ -43,7 +43,7 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
 import iped.utils.IOUtil;
-import iped.utils.SelectImagePathWithDialog;
+import iped.engine.io.SelectImagePathWithDialog;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;

@@ -34,6 +34,7 @@ import iped.parsers.standard.StandardParser;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
+import iped.engine.io.SelectImagePathWithDialog;
 import iped.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.*;

@@ -1,7 +1,7 @@
 package iped.engine.io;
 
 import iped.io.SeekableInputStream;
-import iped.utils.ReadOnlyRAFSeekableByteChannel;
+import iped.engine.io.ReadOnlyRAFSeekableByteChannel;
 import iped.utils.SeekableFileInputStream;
 import iped.utils.SeekableInputStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
