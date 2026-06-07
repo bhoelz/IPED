@@ -6,7 +6,6 @@ import iped.engine.util.Util;
 import iped.search.IMultiSearchResult;
 import org.apache.commons.lang.ArrayUtils;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -226,23 +225,23 @@ public class MultiBookmarks implements Serializable, IMultiBookmarks {
         return usedColors;
     }
 
-    public void setBookmarkKeyStroke(String bookmarkName, KeyStroke key) {
+    public void setBookmarkBookmarkShortcut(String bookmarkName, BookmarkShortcut key) {
         for (IBookmarks m : map.values())
-            m.setBookmarkKeyStroke(m.getBookmarkId(bookmarkName), key);
+            m.setBookmarkBookmarkShortcut(m.getBookmarkId(bookmarkName), key);
     }
 
-    public KeyStroke getBookmarkKeyStroke(String bookmarkName) {
+    public BookmarkShortcut getBookmarkBookmarkShortcut(String bookmarkName) {
         for (IBookmarks m : map.values()) {
-            KeyStroke key = m.getBookmarkKeyStroke(m.getBookmarkId(bookmarkName));
+            BookmarkShortcut key = m.getBookmarkBookmarkShortcut(m.getBookmarkId(bookmarkName));
             if (key != null)
                 return key;
         }
         return null;
     }
 
-    public void removeBookmarkKeyStroke(String bookmarkName) {
+    public void removeBookmarkBookmarkShortcut(String bookmarkName) {
         for (IBookmarks m : map.values())
-            m.removeBookmarkKeyStroke(m.getBookmarkId(bookmarkName));
+            m.removeBookmarkBookmarkShortcut(m.getBookmarkId(bookmarkName));
     }
 
     public int getBookmarkCount(String bookmarkName) {

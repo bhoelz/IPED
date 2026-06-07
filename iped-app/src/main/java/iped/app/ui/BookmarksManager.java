@@ -235,7 +235,8 @@ public class BookmarksManager implements ActionListener, ListSelectionListener, 
             if (!bookmarks.contains(bk)) {
                 bookmarks.add(bk);
             }
-            bk.setKey(App.get().appCase.getMultiBookmarks().getBookmarkKeyStroke(bookmark));
+            iped.data.BookmarkShortcut bs = App.get().appCase.getMultiBookmarks().getBookmarkKeyStroke(bookmark);
+            bk.setKey(bs != null ? KeyStroke.getKeyStroke(bs.keyCode(), bs.modifiers()) : null);
         }
         Iterator<BookmarkAndKey> iterator = bookmarks.iterator();
         while (iterator.hasNext()) {
@@ -657,7 +658,8 @@ public class BookmarksManager implements ActionListener, ListSelectionListener, 
         keystrokeToBookmark.put(stroke, bookmarkStr);
         keystrokeToBookmark.put(getRemoveKey(stroke), bookmarkStr);
 
-        App.get().appCase.getMultiBookmarks().setBookmarkKeyStroke(bookmarkStr, stroke);
+        App.get().appCase.getMultiBookmarks().setBookmarkKeyStroke(bookmarkStr,
+                new iped.data.BookmarkShortcut(stroke.getKeyCode(), stroke.getModifiers()));
         App.get().appCase.getMultiBookmarks().saveState();
     }
 

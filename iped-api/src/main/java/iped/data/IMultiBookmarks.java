@@ -7,7 +7,6 @@ package iped.data;
 
 import iped.search.IMultiSearchResult;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -82,11 +81,11 @@ public interface IMultiBookmarks extends Serializable {
 
     void saveState(File file) throws IOException;
 
-    void setBookmarkKeyStroke(String bookmarkName, KeyStroke key);
+    void setBookmarkBookmarkShortcut(String bookmarkName, BookmarkShortcut key);
 
-    KeyStroke getBookmarkKeyStroke(String bookmarkName);
+    BookmarkShortcut getBookmarkBookmarkShortcut(String bookmarkName);
 
-    void removeBookmarkKeyStroke(String bookmarkName);
+    void removeBookmarkBookmarkShortcut(String bookmarkName);
 
     void checkAll();
 

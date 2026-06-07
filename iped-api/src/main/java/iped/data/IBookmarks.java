@@ -7,7 +7,6 @@ package iped.data;
 
 import iped.search.SearchResult;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -95,11 +94,11 @@ public interface IBookmarks extends Serializable {
 
     Set<Color> getUsedColors();
 
-    void setBookmarkKeyStroke(int bookmarkId, KeyStroke key);
+    void setBookmarkBookmarkShortcut(int bookmarkId, BookmarkShortcut key);
 
-    KeyStroke getBookmarkKeyStroke(int bookmarkId);
+    BookmarkShortcut getBookmarkBookmarkShortcut(int bookmarkId);
 
-    void removeBookmarkKeyStroke(int bookmarkId);
+    void removeBookmarkBookmarkShortcut(int bookmarkId);
 
     int getBookmarkCount(int bookmarkId);
 

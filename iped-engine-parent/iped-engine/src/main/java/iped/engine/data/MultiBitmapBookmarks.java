@@ -7,7 +7,6 @@ import iped.search.IMultiSearchResult;
 import org.apache.commons.lang.ArrayUtils;
 import org.roaringbitmap.RoaringBitmap;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -202,14 +201,14 @@ public class MultiBitmapBookmarks implements Serializable, IMultiBookmarks {
         return null;
     }
 
-    public void setBookmarkKeyStroke(String bookmarkName, KeyStroke key) {
+    public void setBookmarkBookmarkShortcut(String bookmarkName, BookmarkShortcut key) {
         for (IBookmarks m : map.values())
-            m.setBookmarkKeyStroke(m.getBookmarkId(bookmarkName), key);
+            m.setBookmarkBookmarkShortcut(m.getBookmarkId(bookmarkName), key);
     }
 
-    public KeyStroke getBookmarkKeyStroke(String bookmarkName) {
+    public BookmarkShortcut getBookmarkBookmarkShortcut(String bookmarkName) {
         for (IBookmarks m : map.values()) {
-            KeyStroke key = m.getBookmarkKeyStroke(m.getBookmarkId(bookmarkName));
+            BookmarkShortcut key = m.getBookmarkBookmarkShortcut(m.getBookmarkId(bookmarkName));
             if (key != null)
                 return key;
         }
@@ -515,8 +514,8 @@ public class MultiBitmapBookmarks implements Serializable, IMultiBookmarks {
     }
 
     @Override
-    public void removeBookmarkKeyStroke(String bookmarkName) {
+    public void removeBookmarkBookmarkShortcut(String bookmarkName) {
         for (IBookmarks m : map.values())
-            m.removeBookmarkKeyStroke(m.getBookmarkId(bookmarkName));
+            m.removeBookmarkBookmarkShortcut(m.getBookmarkId(bookmarkName));
     }
 }

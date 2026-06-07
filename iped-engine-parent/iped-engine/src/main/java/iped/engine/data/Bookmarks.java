@@ -27,7 +27,8 @@ import iped.utils.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
+import iped.data.BookmarkShortcut;
+
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class Bookmarks implements IBookmarks {
     ArrayList<byte[]> bookmarks;
     TreeMap<Integer, String> bookmarkNames = new TreeMap<Integer, String>();
     TreeMap<Integer, String> bookmarkComments = new TreeMap<Integer, String>();
-    TreeMap<Integer, KeyStroke> bookmarkKeyStrokes = new TreeMap<Integer, KeyStroke>();
+    TreeMap<Integer, BookmarkShortcut> bookmarkBookmarkShortcuts = new TreeMap<Integer, BookmarkShortcut>();
     TreeMap<Integer, Color> bookmarkColors = new TreeMap<Integer, Color>();
     Set<Integer> reportBookmarks = new TreeSet<Integer>();
 
@@ -270,7 +271,7 @@ public class Bookmarks implements IBookmarks {
 
         bookmarkNames.put(bookmarkId, bookmarkName);
         bookmarkComments.put(bookmarkId, null);
-        bookmarkKeyStrokes.put(bookmarkId, null);
+        bookmarkBookmarkShortcuts.put(bookmarkId, null);
         if (bookmarkColors == null)
             bookmarkColors = new TreeMap<Integer, Color>();
         bookmarkColors.put(bookmarkId, null);
@@ -283,7 +284,7 @@ public class Bookmarks implements IBookmarks {
             return;
         bookmarkNames.remove(bookmark);
         bookmarkComments.remove(bookmark);
-        bookmarkKeyStrokes.remove(bookmark);
+        bookmarkBookmarkShortcuts.remove(bookmark);
         if (bookmarkColors == null)
             bookmarkColors = new TreeMap<Integer, Color>();
         bookmarkColors.remove(bookmark);
@@ -337,16 +338,16 @@ public class Bookmarks implements IBookmarks {
         return bookmarkColors == null ? new HashSet<Color>() : new HashSet<Color>(bookmarkColors.values());
     }
 
-    public synchronized void setBookmarkKeyStroke(int bookmarkId, KeyStroke key) {
-        bookmarkKeyStrokes.put(bookmarkId, key);
+    public synchronized void setBookmarkBookmarkShortcut(int bookmarkId, BookmarkShortcut key) {
+        bookmarkBookmarkShortcuts.put(bookmarkId, key);
     }
 
-    public KeyStroke getBookmarkKeyStroke(int bookmarkId) {
-        return bookmarkKeyStrokes.get(bookmarkId);
+    public BookmarkShortcut getBookmarkBookmarkShortcut(int bookmarkId) {
+        return bookmarkBookmarkShortcuts.get(bookmarkId);
     }
 
-    public synchronized void removeBookmarkKeyStroke(int bookmarkId) {
-    	bookmarkKeyStrokes.remove(bookmarkId);
+    public synchronized void removeBookmarkBookmarkShortcut(int bookmarkId) {
+    	bookmarkBookmarkShortcuts.remove(bookmarkId);
     }
 
     public synchronized void setInReport(int bookmarkId, boolean inReport) {
@@ -507,7 +508,7 @@ public class Bookmarks implements IBookmarks {
         this.selectedItens = state.selectedItens;
         this.bookmarkNames = state.bookmarkNames;
         this.bookmarkComments = state.bookmarkComments;
-        this.bookmarkKeyStrokes = state.bookmarkKeyStrokes;
+        this.bookmarkBookmarkShortcuts = state.bookmarkBookmarkShortcuts;
         this.reportBookmarks = state.reportBookmarks;
         this.bookmarkColors = state.bookmarkColors;
     }
