@@ -34,7 +34,7 @@ import iped.parsers.standard.StandardParser;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.engine.io.SelectImagePathWithDialog;
+import iped.engine.io.ImagePathResolverProvider;
 import iped.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.*;
@@ -1007,8 +1007,7 @@ public class IndexItem extends BasicProps {
                 sisf.setDataSourceURI(newPath.toUri());
                 return;
             }
-            SelectImagePathWithDialog siwd = new SelectImagePathWithDialog(path.toFile(), true);
-            File newDataSource = siwd.askImagePathInGUI();
+            File newDataSource = ImagePathResolverProvider.get().resolve(path.toFile(), true);
             if (newDataSource != null) {
                 sisf.setDataSourceURI(newDataSource.toPath().toUri());
                 saveDataSourcePath(caseModuleDir, path, newDataSource.toPath());

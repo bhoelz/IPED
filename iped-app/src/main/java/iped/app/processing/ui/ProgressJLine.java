@@ -89,6 +89,11 @@ public class ProgressJLine implements PropertyChangeListener {
                 lastMessage = (String) evt.getNewValue();
                 redraw();
                 break;
+            case "uiWarning":
+                iped.engine.core.EngineMessage msg = (iped.engine.core.EngineMessage) evt.getNewValue();
+                lastMessage = msg.title() + ": " + msg.body();
+                redraw();
+                break;
             default:
                 break;
         }

@@ -2,13 +2,13 @@ package iped.engine.util;
 
 import iped.engine.core.CaseContextThreadLocal;
 
-import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class UIPropertyListenerProvider {
 
@@ -24,6 +24,14 @@ public class UIPropertyListenerProvider {
 
     private volatile boolean canceled = false;
 
+    /**
+     * Dispatcher used to invoke UI listeners. Defaults to inline (synchronous)
+     * execution, suitable for headless / test mode. In GUI mode, iped-app sets
+     * this to {@code SwingUtilities::invokeLater} so events are marshalled to the
+     * EDT automatically.
+     */
+    private Consumer<Runnable> uiDispatcher = Runnable::run;
+
     private UIPropertyListenerProvider() {
     }
 
@@ -33,6 +41,15 @@ public class UIPropertyListenerProvider {
 
     public void setExecutorThread(Thread executorthread) {
         this.executorthread = executorthread;
+    }
+
+    /**
+     * Sets the dispatcher used to invoke UI listeners.
+     * Call {@code setUiDispatcher(SwingUtilities::invokeLater)} from iped-app
+     * before processing starts when running in GUI mode.
+     */
+    public void setUiDispatcher(Consumer<Runnable> dispatcher) {
+        this.uiDispatcher = dispatcher;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l, boolean isUIListener) {
@@ -66,16 +83,7 @@ public class UIPropertyListenerProvider {
             Set<PropertyChangeListener> caseUiListenersSet = caseUiListeners.get(ctx.getId());
             if (caseUiListenersSet != null) {
                 for (PropertyChangeListener l : caseUiListenersSet) {
-                    if (SwingUtilities.isEventDispatchThread()) {
-                        l.propertyChange(event);
-                    } else {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                l.propertyChange(event);
-                            }
-                        });
-                    }
+                    uiDispatcher.accept(() -> l.propertyChange(event));
                 }
             }
         }
@@ -84,16 +92,7 @@ public class UIPropertyListenerProvider {
             l.propertyChange(event);
         }
         for (PropertyChangeListener l : uiListeners) {
-            if (SwingUtilities.isEventDispatchThread()) {
-                l.propertyChange(event);
-            } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        l.propertyChange(event);
-                    }
-                });
-            }
+            uiDispatcher.accept(() -> l.propertyChange(event));
         }
     }
 

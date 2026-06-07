@@ -20,7 +20,8 @@ import org.apache.lucene.index.IndexReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
+import iped.engine.util.UIPropertyListenerProvider;
+
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -395,11 +396,8 @@ public class Statistics {
         if (maxMemory / localConfig.getNumThreads() < minMemPerThread) {
             String memoryAlert = Messages.getString("Statistics.LowMemory.Msg").replace("{}", //$NON-NLS-1$
                     Integer.toString(minMemPerThread));
-            CmdLineArgs cmdArgs = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
-            if (!cmdArgs.isNogui()) {
-                JOptionPane.showMessageDialog(null, memoryAlert, Messages.getString("Statistics.LowMemory.Title"), //$NON-NLS-1$
-                        JOptionPane.WARNING_MESSAGE);
-            }
+            UIPropertyListenerProvider.getInstance().firePropertyChange("uiWarning", null, //$NON-NLS-1$
+                    new EngineMessage(Messages.getString("Statistics.LowMemory.Title"), memoryAlert)); //$NON-NLS-1$
             throw new IPEDException(memoryAlert);
         }
 

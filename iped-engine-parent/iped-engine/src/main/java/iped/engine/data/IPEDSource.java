@@ -43,7 +43,7 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
 import iped.utils.IOUtil;
-import iped.engine.io.SelectImagePathWithDialog;
+import iped.engine.io.ImagePathResolverProvider;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
@@ -723,8 +723,10 @@ public class IPEDSource implements IIPEDSource {
     }
 
     private void askNewImagePath(long imgId, List<String> paths, File sleuthFile) throws TskCoreException, IOException {
-        SelectImagePathWithDialog sip = new SelectImagePathWithDialog(new File(paths.get(0)));
-        File newImage = sip.askImagePathInGUI();
+        File newImage = ImagePathResolverProvider.get().resolve(new File(paths.get(0)), false);
+        if (newImage == null) {
+            return;
+        }
 
         ArrayList<String> newPaths = new ArrayList<String>();
         if (paths.size() == 1) {

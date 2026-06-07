@@ -30,6 +30,7 @@ import iped.engine.task.AbstractTask;
 import iped.engine.task.ExportFileTask;
 import iped.engine.task.ParsingTaskSupport;
 import iped.engine.task.carver.BaseCarveTask;
+import iped.engine.core.EngineMessage;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
 import iped.parsers.standard.StandardParser;
@@ -268,6 +269,10 @@ public class ProgressFrame extends JFrame implements PropertyChangeListener, Act
             lastWorkerTaskItemId = new String[workers.length];
             lastWorkerTime = new long[workers.length];
             pause.setEnabled(true);
+
+        } else if ("uiWarning".equals(evt.getPropertyName())) { //$NON-NLS-1$
+            EngineMessage msg = (EngineMessage) evt.getNewValue();
+            JOptionPane.showMessageDialog(this, msg.body(), msg.title(), JOptionPane.WARNING_MESSAGE);
         }
     }
 

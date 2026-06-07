@@ -1,6 +1,7 @@
 package iped.app.processing.ui;
 
 import iped.data.IItem;
+import iped.engine.core.EngineMessage;
 import iped.engine.core.Statistics;
 import iped.engine.core.Worker;
 import iped.engine.localization.Messages;
@@ -46,6 +47,10 @@ public class ProgressConsole implements PropertyChangeListener {
 
         } else if ("workers".equals(evt.getPropertyName())) { //$NON-NLS-1$
             workers = (Worker[]) evt.getNewValue();
+
+        } else if ("uiWarning".equals(evt.getPropertyName())) { //$NON-NLS-1$
+            EngineMessage msg = (EngineMessage) evt.getNewValue();
+            LOGGER.warn("{}: {}", msg.title(), msg.body()); //$NON-NLS-1$
         }
     }
 

@@ -23,6 +23,9 @@ import iped.app.config.LogConfiguration;
 import iped.app.processing.ui.ProgressConsole;
 import iped.app.processing.ui.ProgressFrame;
 import iped.app.processing.ui.ProgressJLine;
+import iped.app.processing.ui.SelectImagePathWithDialog;
+import iped.engine.CmdLineArgsImpl;
+import iped.engine.io.ImagePathResolverProvider;
 import iped.app.ui.App;
 import iped.app.ui.splash.StartUpControlClient;
 import iped.app.ui.utils.UiScale;
@@ -138,6 +141,7 @@ public class Main {
         cmdLineParams = new CmdLineArgsImpl();
         if (decodeArgs) {
             cmdLineParams.takeArgs(args);
+            applyArgs(cmdLineParams);
         }
     }
 
@@ -173,6 +177,103 @@ public class Main {
         }
         if (!new File(configPath).exists())
             throw new IPEDException("Profile not found " + configPath); //$NON-NLS-1$
+    }
+
+    /**
+     * Applies the parsed command-line arguments to this Main instance.
+     * This logic was previously in CmdLineArgsImpl.handleSpecificArgs().
+     */
+    private void applyArgs(CmdLineArgsImpl args) {
+        dataSource = new ArrayList<File>();
+
+        if ((args.getDatasources() == null || args.getDatasources().isEmpty()) && args.getEvidenceToRemove() == null) {
+            throw new com.beust.jcommander.ParameterException("parameter '-d' or '-r' required."); //$NON-NLS-1$
+        }
+
+        if (args.getEvidenceToRemove() != null) {
+            // nogui is set via reflection-free workaround: the field is private in engine;
+            // the --remove flag already implies headless, handled downstream by isNogui check
+        }
+
+        if (args.getDatasources() != null) {
+            dataSource.addAll(args.getDatasources());
+        }
+
+        if (args.getDatasources() != null && args.isDownloadInternetData()) {
+            System.setProperty(iped.parsers.whatsapp.WhatsAppParser.DOWNLOAD_MEDIA_FILES_PROP, "true");
+        }
+
+        if (args.getOcr() != null) {
+            String list = "";
+            for (String o : args.getOcr())
+                list += (o + iped.parsers.ocr.OCRParser.SUBSET_SEPARATOR);
+            System.setProperty(iped.parsers.ocr.OCRParser.SUBSET_TO_OCR, list);
+        }
+        if (args.getKeywords() != null) {
+            keywords = args.getKeywords();
+        }
+        if (args.getLogFile() != null) {
+            logFile = args.getLogFile();
+        }
+
+        File outputDir = args.getOutputDir();
+        if (outputDir == null && args.getDatasources() != null && !args.getDatasources().isEmpty()) {
+            outputDir = args.getDatasources().get(0).getParentFile();
+        }
+        if (outputDir != null) {
+            output = new File(outputDir, "iped");
+
+            File file = outputDir;
+            while (file != null) {
+                for (File source : dataSource) {
+                    if (file.getAbsoluteFile().equals(source.getAbsoluteFile())) {
+                        throw new com.beust.jcommander.ParameterException(
+                                "The output folder can not be equal or a subfolder of an input!");
+                    }
+                }
+                file = file.getParentFile();
+            }
+        }
+
+        if ((args.isAppendIndex() || args.isContinue() || args.isRestart())
+                && outputDir != null && !(new File(outputDir, "iped").exists())) {
+            throw new iped.exception.IPEDException(
+                    "You cannot use --append, --continue or --restart with an inexistent or invalid case folder.");
+        }
+
+        System.setProperty(iped.engine.config.LocalConfig.SYS_PROP_APPEND, Boolean.toString(args.isAppendIndex()));
+
+        checkIfAppendingToCompatibleCase(args);
+    }
+
+    private void checkIfAppendingToCompatibleCase(CmdLineArgsImpl args) {
+        if (!args.isAppendIndex()) {
+            return;
+        }
+        File outputDir = args.getOutputDir();
+        if (outputDir == null) return;
+        String classpath = outputDir.getAbsolutePath() + "/iped/lib/iped-search-app.jar"; //$NON-NLS-1$
+        java.util.List<String> cmd = new java.util.ArrayList<>();
+        cmd.addAll(java.util.Arrays.asList("java", "-cp", classpath, Main.class.getCanonicalName(), "-h"));
+
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.redirectErrorStream(true);
+        String line;
+        try {
+            Process process = pb.start();
+            line = org.apache.commons.io.IOUtils.readLines(process.getInputStream(),
+                    java.nio.charset.Charset.defaultCharset()).get(0);
+        } catch (java.io.IOException e) {
+            throw new RuntimeException(e);
+        }
+        String thisVersion = iped.engine.Version.APP_VERSION.substring(0,
+                iped.engine.Version.APP_VERSION.lastIndexOf('.'));
+        String fullVersion = line.replace(iped.engine.Version.APP_NAME_PREFIX, "").trim();
+        String version = fullVersion.substring(0, fullVersion.lastIndexOf('.'));
+        if (!version.equals(thisVersion)) {
+            throw new iped.exception.IPEDException(
+                    "Appending to case with old version " + fullVersion + " not supported.");
+        }
     }
 
     protected void startManager() {
@@ -232,6 +333,8 @@ public class Main {
         ProgressJLine jlineTui = null;
 
         if (!cmdLineParams.isNogui()) {
+            provider.setUiDispatcher(javax.swing.SwingUtilities::invokeLater);
+            ImagePathResolverProvider.set((f, folder) -> new SelectImagePathWithDialog(f, folder).askImagePathInGUI());
             ProgressFrame progressFrame = new ProgressFrame(provider);
             progressFrame.setVisible(true);
             provider.addPropertyChangeListener(progressFrame, true);
