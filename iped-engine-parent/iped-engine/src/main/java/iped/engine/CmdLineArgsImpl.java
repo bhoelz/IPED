@@ -1,34 +1,27 @@
-package iped.app.processing;
+package iped.engine;
 
 import com.beust.jcommander.*;
 import com.beust.jcommander.converters.IParameterSplitter;
 import iped.data.ICaseData;
-import iped.engine.CmdLineArgs;
-import iped.engine.Version;
-import iped.engine.config.LocalConfig;
 import iped.engine.task.SkipCommitedTaskSupport;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
-import iped.parsers.ocr.OCRParser;
-import iped.parsers.whatsapp.WhatsAppParser;
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
- * Classe para leitura dos parâmetros informados via linha de comando.
- * Parâmetros iniciados com 01 hífen aceitam 01 valor e com 02 hífens não
- * aceitam valor. Os parâmetros são armazenados no caso, podendo ser obtidos por
- * outros módulos:
+ * Reads and exposes command-line parameters for IPED processing.
  *
- * CmdLineArgs args =
- * (CmdLineArgs)caseData.getCaseObject(CmdLineArgs.class.getName())
+ * <p>Parameters are stored in the case data and can be retrieved by any module:
+ * <pre>
+ *   CmdLineArgs args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
+ * </pre>
+ *
+ * <p>After calling {@link #takeArgs(String[])}, callers are responsible for applying
+ * any app-level side effects (setting datasources, output, keywords on the main class).
  *
  * @author Nassif
- *
  */
 public class CmdLineArgsImpl implements CmdLineArgs {
 
@@ -127,134 +120,39 @@ public class CmdLineArgsImpl implements CmdLineArgs {
 
     private HashSet<String> evidenceNames = new HashSet<>();
 
-    @Override
-    public boolean isDownloadInternetData() {
-        return downloadInternetData;
-    }
+    // -------------------------------------------------------------------------
+    // CmdLineArgs interface
+    // -------------------------------------------------------------------------
 
-    @Override
-    public List<File> getDatasources() {
-        return datasources;
-    }
+    @Override public boolean isDownloadInternetData() { return downloadInternetData; }
+    @Override public List<File> getDatasources() { return datasources; }
+    @Override public List<String> getDname() { return dname; }
+    @Override public File getOutputDir() { return outputDir; }
+    @Override public File getKeywords() { return keywords; }
+    @Override public List<String> getOcr() { return ocr; }
+    @Override public File getLogFile() { return logFile; }
+    @Override public File getAsap() { return asap; }
+    @Override public List<String> getNocontent() { return nocontent; }
+    @Override public String getTimezone() { return timezone; }
+    @Override public int getBlocksize() { return blocksize; }
+    @Override public List<String> getPasswords() { return passwords; }
+    @Override public String getProfile() { return profile; }
+    @Override public boolean isAddowner() { return addowner; }
+    @Override public boolean isAppendIndex() { return appendIndex; }
+    @Override public boolean isContinue() { return isContinue; }
+    @Override public boolean isRestart() { return restart; }
+    @Override public boolean isNogui() { return nogui; }
+    @Override public boolean isNologfile() { return nologfile; }
+    @Override public boolean isNopstattachs() { return nopstattachs; }
+    @Override public boolean isNoLinkedItems() { return noLinkedItems; }
+    @Override public boolean isPortable() { return portable; }
+    @Override public String getSplashMessage() { return splashMessage; }
+    @Override public boolean isHelp() { return help; }
+    @Override public Map<String, String> getExtraParams() { return extraParams; }
 
-    @Override
-    public List<String> getDname() {
-        return dname;
-    }
+    public String getEvidenceToRemove() { return evidenceToRemove; }
 
-    @Override
-    public File getOutputDir() {
-        return outputDir;
-    }
-
-    @Override
-    public File getKeywords() {
-        return keywords;
-    }
-
-    @Override
-    public List<String> getOcr() {
-        return ocr;
-    }
-
-    @Override
-    public File getLogFile() {
-        return logFile;
-    }
-
-    @Override
-    public File getAsap() {
-        return asap;
-    }
-
-    @Override
-    public List<String> getNocontent() {
-        return nocontent;
-    }
-
-    @Override
-    public String getTimezone() {
-        return timezone;
-    }
-
-    @Override
-    public int getBlocksize() {
-        return blocksize;
-    }
-
-    @Override
-    public List<String> getPasswords() {
-        return passwords;
-    }
-
-    @Override
-    public String getProfile() {
-        return profile;
-    }
-
-    @Override
-    public boolean isAddowner() {
-        return addowner;
-    }
-
-    @Override
-    public boolean isAppendIndex() {
-        return appendIndex;
-    }
-
-    @Override
-    public boolean isContinue() {
-        return isContinue;
-    }
-
-    @Override
-    public boolean isRestart() {
-        return restart;
-    }
-
-    @Override
-    public boolean isNogui() {
-        return nogui;
-    }
-
-    @Override
-    public boolean isNologfile() {
-        return nologfile;
-    }
-
-    @Override
-    public boolean isNopstattachs() {
-        return nopstattachs;
-    }
-
-    @Override
-    public boolean isNoLinkedItems() {
-        return noLinkedItems;
-    }
-
-    @Override
-    public boolean isPortable() {
-        return portable;
-    }
-
-    @Override
-    public String getSplashMessage() {
-        return splashMessage;
-    }
-
-    @Override
-    public boolean isHelp() {
-        return help;
-    }
-
-    @Override
-    public Map<String, String> getExtraParams() {
-        return extraParams;
-    }
-
-    public String getEvidenceToRemove() {
-        return evidenceToRemove;
-    }
+    public HashSet<String> getEvidenceNames() { return evidenceNames; }
 
     @Override
     public String getDataSourceName(File datasource) {
@@ -310,62 +208,6 @@ public class CmdLineArgsImpl implements CmdLineArgs {
         }
     }
 
-    /**
-     * Salva os parâmetros no objeto do caso, para serem consultados pelos módulos.
-     *
-     * @param caseData
-     *            caso atual
-     */
-    public void saveIntoCaseData(ICaseData caseData) {
-        caseData.putCaseObject(CmdLineArgs.class.getName(), this);
-        caseData.putCaseObject(SkipCommitedTaskSupport.DATASOURCE_NAMES, evidenceNames);
-    }
-
-    /**
-     * Interpreta parâmetros informados via linha de comando.
-     */
-    public void takeArgs(String[] args) {
-        JCommander jc = new JCommander(this);
-        jc.setProgramName("java -jar iped.jar [--no_arg_option] -option"); //$NON-NLS-1$
-        try {
-            jc.parse(args);
-            if (help)
-                printUsageAndExit(jc);
-
-            allArgs = Arrays.asList(args);
-            handleSpecificArgs();
-            checkIfAppendingToCompatibleCase();
-
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage() + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
-            System.exit(1);
-        }
-    }
-
-    private void checkIfAppendingToCompatibleCase() {
-        if (this.isAppendIndex()) {
-            String classpath = outputDir.getAbsolutePath() + "/iped/lib/iped-search-app.jar"; //$NON-NLS-1$
-            List<String> cmd = new ArrayList<>();
-            cmd.addAll(Arrays.asList("java", "-cp", classpath, Main.class.getCanonicalName(), "-h"));
-
-            ProcessBuilder pb = new ProcessBuilder(cmd);
-            pb.redirectErrorStream(true);
-            String line;
-            try {
-                Process process = pb.start();
-                line = IOUtils.readLines(process.getInputStream(), Charset.defaultCharset()).get(0);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            String thisVersion = Version.APP_VERSION.substring(0, Version.APP_VERSION.lastIndexOf('.'));
-            String fullVersion = line.replace(Version.APP_NAME_PREFIX, "").trim();
-            String version = fullVersion.substring(0, fullVersion.lastIndexOf('.'));
-            if (!version.equals(thisVersion)) {
-                throw new IPEDException("Appending to case with old version " + fullVersion + " not supported.");
-            }
-        }
-    }
-
     private void checkDuplicateDataSources() {
         for (File source : datasources) {
             String name = getDataSourceName(source);
@@ -375,77 +217,46 @@ public class CmdLineArgsImpl implements CmdLineArgs {
         }
     }
 
-    private void printUsageAndExit(JCommander jc) {
-        System.out.println(Version.APP_NAME);
-        jc.usage();
-        System.exit(0);
+    /**
+     * Saves parsed arguments into the case data so they can be retrieved by
+     * processing modules.
+     */
+    public void saveIntoCaseData(ICaseData caseData) {
+        caseData.putCaseObject(CmdLineArgs.class.getName(), this);
+        caseData.putCaseObject(SkipCommitedTaskSupport.DATASOURCE_NAMES, evidenceNames);
     }
 
     /**
-     * Trata parâmetros específicos informados. TODO: mover o tratamento de cada
-     * parâmetro para a classe que o utiliza e remover esta função.
+     * Parses the command-line arguments. After this call the getters are populated.
+     * Callers are responsible for any app-level side effects (populating datasources,
+     * output directory, etc. on the application context).
      *
-     * @param args
-     *            parâmetros
+     * @param programName the program name shown in usage output
      */
-    private void handleSpecificArgs() {
-
-        Main.getInstance().dataSource = new ArrayList<File>();
-
-        if ((datasources == null || datasources.isEmpty()) && evidenceToRemove == null) {
-            throw new ParameterException("parameter '-d' or '-r' required."); //$NON-NLS-1$
-        }
-
-        if (evidenceToRemove != null) {
-            this.nogui = true;
-        }
-
-        if (this.datasources != null) {
-            for (File dataSource : this.datasources) {
-                Main.getInstance().dataSource.add(dataSource);
+    public void takeArgs(String programName, String[] args) {
+        JCommander jc = new JCommander(this);
+        jc.setProgramName(programName);
+        try {
+            jc.parse(args);
+            if (help) {
+                System.out.println(Version.APP_NAME);
+                jc.usage();
+                System.exit(0);
             }
-            checkDuplicateDataSources();
-        }
-
-        if (downloadInternetData) {
-            System.setProperty(WhatsAppParser.DOWNLOAD_MEDIA_FILES_PROP, "true");
-        }
-
-        if (this.ocr != null) {
-            String list = "";
-            for (String o : ocr)
-                list += (o + OCRParser.SUBSET_SEPARATOR);
-            System.setProperty(OCRParser.SUBSET_TO_OCR, list);
-        }
-        if (this.keywords != null) {
-            Main.getInstance().keywords = this.keywords;
-        }
-        if (this.logFile != null) {
-            Main.getInstance().logFile = this.logFile;
-        }
-
-        if (outputDir == null) {
-            outputDir = datasources.get(0).getParentFile();
-        }
-        Main.getInstance().output = new File(outputDir, "iped");
-
-        File file = outputDir;
-        while (file != null) {
-            for (File source : Main.getInstance().dataSource) {
-                if (file.getAbsoluteFile().equals(source.getAbsoluteFile())) {
-                    throw new ParameterException("The output folder can not be equal or a subfolder of an input!");
-                }
+            allArgs = Arrays.asList(args);
+            if (datasources != null) {
+                checkDuplicateDataSources();
             }
-            file = file.getParentFile();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage() + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+            System.exit(1);
         }
-
-        if ((appendIndex || isContinue || restart) && !(new File(outputDir, "iped").exists())) {
-            throw new IPEDException(
-                    "You cannot use --append, --continue or --restart with an inexistent or invalid case folder.");
-        }
-
-        System.setProperty(LocalConfig.SYS_PROP_APPEND, Boolean.toString(this.appendIndex));
-
     }
 
+    /**
+     * Convenience overload that uses the default IPED program name.
+     */
+    public void takeArgs(String[] args) {
+        takeArgs("java -jar iped.jar [--no_arg_option] -option", args); //$NON-NLS-1$
+    }
 }
