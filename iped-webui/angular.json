@@ -57,6 +57,26 @@
           },
           "defaultConfiguration": "production"
         },
+        "islands": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/islands/main.ts",
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "outputPath": "dist/islands",
+            "index": false,
+            "outputHashing": "all",
+            "optimization": true,
+            "polyfills": [],
+            "budgets": [
+              {
+                "type": "initial",
+                "maximumWarning": "300kB",
+                "maximumError": "600kB"
+              }
+            ]
+          }
+        },
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
