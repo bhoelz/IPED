@@ -1,0 +1,16 @@
+/*
+ * The island lives inside the SSR workspace shell, which loads the shared
+ * design system (workspace.css). Angular's emulated encapsulation does not block
+ * those document styles, so the .tbl / .score-bar / .ext-dot / .check-dot /
+ * .empty-state classes below are styled by the shared stylesheet — keeping the
+ * grid pixel-identical to the SPA without duplicating its rules here.
+ *
+ * This component only owns its host box sizing so it fills the main panel.
+ */
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}

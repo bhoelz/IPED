@@ -1,0 +1,136 @@
+/*
+ * Gallery island styles.
+ * The island lives inside the SSR workspace shell so design-system tokens
+ * (--bg, --border, --accent, --selected-soft, …) from workspace.css are
+ * already in scope. This file only owns island-specific geometry.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gallery-scroll {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  padding: 8px;
+  /* CSS filter applied here wraps the entire thumbnail grid */
+  transition: filter 0.2s ease;
+}
+
+.gallery-grid {
+  --cols: 5;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 6px;
+}
+
+/* ── Cell ────────────────────────────────────────────────────────────── */
+.gallery-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px;
+  transition: background 0.1s;
+}
+
+.gallery-cell:hover { background: var(--surface); }
+.gallery-cell.selected { background: var(--selected-soft); }
+.gallery-cell.checked .thumb-wrap { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ── Thumbnail container ─────────────────────────────────────────────── */
+.thumb-wrap {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* Colour placeholder — shown when thumb fails to load or is unavailable */
+.thumb-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Shown by default; hidden via JS once real image loads */
+}
+
+.thumb-ext {
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.04em;
+}
+
+/* Checkbox overlay — top-left corner */
+.thumb-check {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.gallery-cell:hover .thumb-check,
+.gallery-cell.checked .thumb-check { opacity: 1; }
+
+.thumb-check input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Similar-image button — bottom-right corner, appears on hover */
+.thumb-similar {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  z-index: 3;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 3px;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
+}
+
+.gallery-cell:hover .thumb-similar { opacity: 1; }
+
+/* ── Filename label ───────────────────────────────────────────────────── */
+.thumb-name {
+  font-size: 10.5px;
+  color: var(--text-mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.gallery-cell.selected .thumb-name { color: var(--text); }

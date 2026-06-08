@@ -1,0 +1,52 @@
+@if (loading()) {
+  <div class="empty-state"><div class="empty-sub">Searching…</div></div>
+} @else if (error()) {
+  <div class="empty-state"><div class="empty-sub" style="color:var(--bad)">{{ error() }}</div></div>
+} @else if (items().length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    </div>
+    <div class="empty-title">No results</div>
+    <div class="empty-sub">Type a query in the top bar and press Enter</div>
+  </div>
+} @else {
+  <div class="scroll" style="flex:1">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th style="width:44px;text-align:right">#</th>
+          <th style="width:70px">Score</th>
+          <th style="width:20px"></th>
+          <th style="width:260px">Name</th>
+          <th style="width:120px">Type</th>
+          <th style="width:80px;text-align:right">Size</th>
+          <th style="width:150px">Path</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.itemId; let i = $index) {
+          <tr [class.selected]="selectedId() === item.itemId"
+              [class.checked]="isChecked(item)"
+              (click)="select(item)">
+            <td class="mono dim" style="text-align:right">{{ offset() + i + 1 }}</td>
+            <td>
+              <span class="score-bar"><span [style.width.%]="scorePct(item)"></span></span>
+              <span class="mono dim" style="margin-left:5px;font-size:10.5px">{{ scorePct(item) }}</span>
+            </td>
+            <td style="text-align:center">
+              <button class="check-dot" [class.on]="isChecked(item)"
+                      (click)="toggleChecked(item, $event)" title="Mark item"></button>
+            </td>
+            <td [title]="item.path">
+              <span class="ext-dot" [style.background]="extColor(item)"></span>{{ fileName(item) }}
+            </td>
+            <td class="muted">{{ item.mediaType || '—' }}</td>
+            <td class="mono num" style="text-align:right">{{ fmtSize(item.size) }}</td>
+            <td class="mono dim path-cell" [title]="item.path">{{ item.path }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,50 @@
+@if (loading()) {
+  <div class="empty-state"><div class="empty-sub">Loading gallery…</div></div>
+} @else if (error()) {
+  <div class="empty-state"><div class="empty-sub" style="color:var(--bad)">{{ error() }}</div></div>
+} @else if (items().length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    </div>
+    <div class="empty-title">No results</div>
+    <div class="empty-sub">Type a query in the top bar and press Enter</div>
+  </div>
+} @else {
+  <div class="gallery-scroll" [style.filter]="filterStyle()">
+    <div class="gallery-grid" [style.--cols]="cols()">
+      @for (item of items(); track item.itemId) {
+        <div class="gallery-cell"
+             [class.selected]="selectedId() === item.itemId"
+             [class.checked]="isChecked(item)"
+             (click)="select(item)"
+             [title]="fileName(item)">
+          <div class="thumb-wrap">
+            @if (thumbUrl(item)) {
+              <img class="thumb-img"
+                   [src]="thumbUrl(item)!"
+                   (error)="onThumbError($event)"
+                   loading="lazy"
+                   alt="">
+            }
+            <div class="thumb-placeholder" [style.background]="extColor(item)">
+              <span class="thumb-ext">{{ extOf(item).toUpperCase() || '?' }}</span>
+            </div>
+            <label class="thumb-check" (click)="$event.stopPropagation()" title="Mark item">
+              <input type="checkbox"
+                     [checked]="isChecked(item)"
+                     (change)="toggleChecked(item, $event)">
+            </label>
+            @if (item.mediaType?.startsWith('image/')) {
+            <button class="thumb-similar" title="Find similar images"
+                    (click)="$event.stopPropagation(); similarImageSearch.emit({itemId: item.itemId})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </button>
+            }
+          </div>
+          <div class="thumb-name">{{ fileName(item) }}</div>
+        </div>
+      }
+    </div>
+  </div>
+}

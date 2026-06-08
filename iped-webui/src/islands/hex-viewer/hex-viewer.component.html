@@ -1,0 +1,47 @@
+@if (loading()) {
+  <div class="hx-state"><div class="hx-muted">Loading bytes…</div></div>
+} @else if (error()) {
+  <div class="hx-state"><div class="hx-bad">{{ error() }}</div></div>
+} @else if (rows().length === 0) {
+  <div class="hx-state"><div class="hx-muted">No item selected</div></div>
+} @else {
+  <div class="hx-nav">
+    <span class="hx-range mono">{{ pageLabel() }}</span>
+    <div style="flex:1"></div>
+    <button class="iconbtn" [disabled]="!hasPrev()" (click)="goPage(-1)" title="Previous page">
+      <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <button class="iconbtn" [disabled]="!hasNext()" (click)="goPage(+1)" title="Next page">
+      <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <div class="hx-scroll">
+    <table class="hx-tbl">
+      <thead>
+        <tr>
+          <th class="hx-off-hdr">Offset</th>
+          <th class="hx-hex-hdr" colspan="8">00–07</th>
+          <th class="hx-gap-hdr"></th>
+          <th class="hx-hex-hdr" colspan="8">08–0F</th>
+          <th class="hx-ascii-hdr">ASCII</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.offsetHex) {
+          <tr>
+            <td class="hx-off">{{ row.offsetHex }}</td>
+            @for (i of [0,1,2,3,4,5,6,7]; track i) {
+              <td class="hx-byte">{{ row.hexCols[i] }}</td>
+            }
+            <td class="hx-gap"></td>
+            @for (i of [8,9,10,11,12,13,14,15]; track i) {
+              <td class="hx-byte">{{ row.hexCols[i] }}</td>
+            }
+            <td class="hx-ascii">{{ row.ascii }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
