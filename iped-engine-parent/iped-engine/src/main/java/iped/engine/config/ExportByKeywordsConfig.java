@@ -16,6 +16,14 @@ public class ExportByKeywordsConfig extends AbstractTaskConfig<List<String>> imp
 
     public static final String CONFIG_FILE = "KeywordsToExport.txt";
 
+    /**
+     * Enable property for the automatic file-export feature. Shared with
+     * {@code ExportByCategoriesConfig}, which was moved to the
+     * iped-tasks-forensics module and is therefore not visible from iped-engine.
+     * This literal must stay in sync with that class's {@code ENABLE_PARAM}.
+     */
+    public static final String ENABLE_PARAM = "enableAutomaticExportFiles";
+
     private List<String> keywords = new ArrayList<>();
 
     @Override
@@ -53,7 +61,7 @@ public class ExportByKeywordsConfig extends AbstractTaskConfig<List<String>> imp
 
     @Override
     public String getTaskEnableProperty() {
-        return ExportByCategoriesConfig.ENABLE_PARAM;
+        return ENABLE_PARAM;
     }
 
     @Override

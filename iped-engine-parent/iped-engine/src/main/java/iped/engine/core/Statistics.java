@@ -48,7 +48,7 @@ public class Statistics {
     ICaseData caseData;
     File indexDir;
 
-    // EstatÃ­sticas
+    // Estatísticas
     Date start = new Date();
     int splits = 0;
     int timeouts = 0;
@@ -326,11 +326,15 @@ public class Statistics {
             LOGGER.error("Alert: Processed " + processed + " items of " + discovered); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        ExportByCategoriesConfig exportByCategories = ConfigurationManager.get()
-                .findObject(ExportByCategoriesConfig.class);
+        // ExportByCategoriesConfig was moved to the iped-tasks-forensics module and is not
+        // visible from iped-engine. Use the shared enable property as the engine-level gate
+        // for "automatic file export active" (the property is shared by the categories and
+        // keywords export configs), combined with the keywords config available here.
         ExportByKeywordsConfig exportByKeywords = ConfigurationManager.get().findObject(ExportByKeywordsConfig.class);
+        boolean automaticExportEnabled = ConfigurationManager.get()
+                .getEnableTaskProperty(ExportByKeywordsConfig.ENABLE_PARAM);
 
-        if (!(exportByCategories.hasCategoryToExport() || exportByKeywords.isEnabled())) {
+        if (!(automaticExportEnabled || exportByKeywords.isEnabled())) {
             if (indexed != discovered - carvedIgnored - ignored) {
                 LOGGER.error("Alert: Indexed " + indexed + " items of " + (discovered - carvedIgnored - ignored)); //$NON-NLS-1$ //$NON-NLS-2$
             }
