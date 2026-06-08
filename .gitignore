@@ -9,3 +9,7 @@ nbactions.xml
 **/dependency-reduced-pom.xml
 iped-ui/node_modules/
 iped-ui/build/
+iped-webui/node_modules/
+iped-webui/dist/
+# Claude Code project directory (local settings, worktrees — not for VCS)
+.claude/
