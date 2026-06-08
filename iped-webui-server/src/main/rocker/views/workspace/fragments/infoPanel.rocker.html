@@ -1,0 +1,136 @@
+@import java.util.Map
+@args (String activeTab, String itemId, Map<String, String> metadata)
+@* Server-owned info panel. Reacts to the island's item-selected event.
+   When itemId is a real "{sourceId}:{docId}" value, metadata is populated
+   from the API. For stub IDs the metadata map is empty and fallback UI shows. *@
+
+<div class="panel-h">
+  <div class="tab @if(activeTab.equals("hits")){active}"
+       hx-get="/workspace/info?tab=hits&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Hits</div>
+  <div class="tab @if(activeTab.equals("sub")){active}"
+       hx-get="/workspace/info?tab=sub&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Attachments</div>
+  <div class="tab @if(activeTab.equals("par")){active}"
+       hx-get="/workspace/info?tab=par&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Parent</div>
+  <div class="tab @if(activeTab.equals("dup")){active}"
+       hx-get="/workspace/info?tab=dup&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Duplicates</div>
+  <div class="tab @if(activeTab.equals("ref")){active}"
+       hx-get="/workspace/info?tab=ref&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Refs</div>
+  <div class="tab @if(activeTab.equals("refby")){active}"
+       hx-get="/workspace/info?tab=refby&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Ref'd by</div>
+  <div style="flex:1"></div>
+  <button class="iconbtn" title="Pin item">
+    <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 17v5M5 12h14M9 12V3h6v9l2 2v3H7v-3Z"/></svg>
+  </button>
+</div>
+
+<div class="scroll" style="padding-top:4px">
+@if (itemId == null || itemId.isEmpty()) {
+  <div class="empty-state" style="padding:24px 12px">
+    <div class="empty-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <div class="empty-sub">Select an item to see related data</div>
+  </div>
+} else {
+
+  @* ── Hits ───────────────────────────────────────────────────────────── *@
+  @if (activeTab.equals("hits")) {
+    <div class="infosec">
+      <div class="h">
+        <span>Search hits</span>
+        <span class="mono" style="color:var(--accent)">
+          @if (!metadata.isEmpty() && metadata.containsKey("textSize")) {
+            @metadata.get("textSize") chars
+          } else {
+            — hits
+          }
+        </span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+        <button class="iconbtn" title="Previous hit">
+          <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <span class="mono dim" style="font-size:11px">— / —</span>
+        <button class="iconbtn" title="Next hit">
+          <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="infosec">
+      <div class="h">Selected item</div>
+      <div class="mono" style="color:var(--text);font-size:11px;word-break:break-all">@itemId</div>
+      @if (metadata.containsKey("name")) {
+        <div style="margin-top:4px;font-size:11.5px">@metadata.get("name")</div>
+      }
+    </div>
+    @if (metadata.isEmpty()) {
+      <div class="dim" style="padding:8px 10px;font-size:11px;font-style:italic">
+        Hit snippets require v2 search API (EPIC-WEB-03).
+      </div>
+    }
+
+  @* ── Attachments (sub-items) ────────────────────────────────────────── *@
+  } else if (activeTab.equals("sub")) {
+    <div class="infosec">
+      <div class="h">Sub-items / attachments</div>
+      @if (metadata.containsKey("name")) {
+        <div class="breadcrumbs" style="margin-bottom:8px">
+          <span class="c cur">@metadata.get("name")</span>
+        </div>
+      }
+      <div class="dim" style="font-size:11px;font-style:italic">
+        Sub-item listing requires GET /subitems API endpoint (v2).
+      </div>
+    </div>
+
+  @* ── Parent ──────────────────────────────────────────────────────────── *@
+  } else if (activeTab.equals("par")) {
+    <div class="infosec">
+      <div class="h">Parent hierarchy</div>
+      <div class="breadcrumbs">
+        @if (metadata.containsKey("path")) {
+          @* Render path segments as breadcrumb chips *@
+          <span class="c">…</span>
+          <span class="sep">▸</span>
+          <span class="c cur">@metadata.getOrDefault("name", itemId)</span>
+        } else {
+          <span class="c">…</span>
+          <span class="sep">▸</span>
+          <span class="c cur">@itemId</span>
+        }
+      </div>
+    </div>
+
+  @* ── Duplicates ──────────────────────────────────────────────────────── *@
+  } else if (activeTab.equals("dup")) {
+    <div class="infosec">
+      <div class="h">Exact duplicates</div>
+      @if (metadata.containsKey("hash")) {
+        <div class="mono dim" style="font-size:10px;margin-bottom:6px">SHA-256: @metadata.get("hash")</div>
+      }
+      <div class="dim" style="font-size:11px;font-style:italic">
+        Duplicate listing requires GET /duplicates API endpoint (v2).
+      </div>
+    </div>
+
+  @* ── References from ────────────────────────────────────────────────── *@
+  } else if (activeTab.equals("ref")) {
+    <div class="infosec">
+      <div class="h">References (from this item)</div>
+      <div class="dim" style="font-size:11px;font-style:italic">
+        Reference graph requires GET /references API endpoint (v2).
+      </div>
+    </div>
+
+  @* ── Referenced by ───────────────────────────────────────────────────── *@
+  } else {
+    <div class="infosec">
+      <div class="h">Referenced by (other items → this)</div>
+      <div class="dim" style="font-size:11px;font-style:italic">
+        Back-reference graph requires GET /referencedBy API endpoint (v2).
+      </div>
+    </div>
+  }
+
+}
+</div>

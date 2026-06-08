@@ -1,0 +1,121 @@
+@import java.util.Map
+@args (String activeMode, String itemId, Map<String, String> metadata)
+@* Server-owned viewer panel. Renderer chrome and tab switching are SSR.
+   The preview tab uses a sandboxed iframe → HTML rendition from the API;
+   hex and advanced text are Angular islands (C-17, C-15) — stubs until then.
+   Metadata tab is fully SSR using docProps fetched server-side. *@
+
+<div class="panel-h">
+  <div class="tab @if(activeMode.equals("hex")){active}"
+       hx-get="/workspace/viewer?mode=hex&itemId=@itemId" hx-target="#viewer-panel" hx-swap="innerHTML">Hex</div>
+  <div class="tab @if(activeMode.equals("text")){active}"
+       hx-get="/workspace/viewer?mode=text&itemId=@itemId" hx-target="#viewer-panel" hx-swap="innerHTML">Text</div>
+  <div class="tab @if(activeMode.equals("meta")){active}"
+       hx-get="/workspace/viewer?mode=meta&itemId=@itemId" hx-target="#viewer-panel" hx-swap="innerHTML">Metadata</div>
+  <div class="tab @if(activeMode.equals("preview")){active}"
+       hx-get="/workspace/viewer?mode=preview&itemId=@itemId" hx-target="#viewer-panel" hx-swap="innerHTML">Preview</div>
+  <div style="flex:1"></div>
+  @if (itemId != null && !itemId.isEmpty()) {
+    <span class="dim mono" style="font-size:10.5px;padding-right:4px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+          title="@itemId">@itemId</span>
+  }
+  @if (itemId != null && !itemId.isEmpty()) {
+    <a class="iconbtn" title="Download raw content"
+       href="/api/sources/@(itemId.contains(":") ? itemId.substring(0,itemId.lastIndexOf(':')) : "?")/docs/@(itemId.contains(":") ? itemId.substring(itemId.lastIndexOf(':')+1) : "?")/content"
+       download>
+      <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+    </a>
+  }
+</div>
+
+@if (itemId == null || itemId.isEmpty()) {
+  <div class="empty-state" style="padding:24px">
+    <div class="empty-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+    </div>
+    <div class="empty-title">No item selected</div>
+    <div class="empty-sub">Select a result in the grid to open the viewer</div>
+  </div>
+
+@* ── Metadata ──────────────────────────────────────────────────────────── *@
+} else if (activeMode.equals("meta")) {
+  <div class="scroll" style="padding:4px 0">
+    @if (metadata.isEmpty()) {
+      <table class="meta-tbl">
+        <tbody>
+          <tr><td class="k">Item ID</td><td class="v">@itemId</td></tr>
+          <tr><td class="k dim" colspan="2" style="font-style:italic;font-size:11px">
+            Full metadata available when itemId is "{sourceId}:{docId}" format (v2 API).
+          </td></tr>
+        </tbody>
+      </table>
+    } else {
+      <table class="meta-tbl">
+        <tbody>
+        @for (Map.Entry<String, String> entry : metadata.entrySet()) {
+          <tr>
+            <td class="k">@entry.getKey()</td>
+            <td class="v">@entry.getValue()</td>
+          </tr>
+        }
+        </tbody>
+      </table>
+    }
+  </div>
+
+@* ── Preview (iframe → HTML rendition) ─────────────────────────────────── *@
+} else if (activeMode.equals("preview")) {
+  @if (itemId.contains(":")) {
+    @* Real item: stream the HTML rendition from the API into a sandboxed iframe *@
+    <iframe class="preview-iframe"
+            src="/api/sources/@(itemId.substring(0,itemId.lastIndexOf(':')))/docs/@(itemId.substring(itemId.lastIndexOf(':')+1))/renditions/html"
+            sandbox="allow-same-origin allow-scripts"
+            style="flex:1;border:0;background:#fff;min-height:0">
+    </iframe>
+  } else {
+    @* Stub item: show placeholder *@
+    <div class="preview-stage">
+      <p style="color:#888;font-size:12px">Preview available for real items (v2 API).</p>
+      <p style="color:#aaa;font-size:11px">Item: @itemId</p>
+    </div>
+  }
+
+@* ── Text ──────────────────────────────────────────────────────────────── *@
+} else if (activeMode.equals("text")) {
+  @if (itemId.contains(":")) {
+    <div class="scroll" style="padding:12px 16px;font-family:var(--font-mono);font-size:11.5px;line-height:1.6">
+      <div class="htmx-indicator" style="padding:8px;color:var(--text-dim);font-size:11px">Loading text…</div>
+      <div hx-get="/api/sources/@(itemId.substring(0,itemId.lastIndexOf(':')))/docs/@(itemId.substring(itemId.lastIndexOf(':')+1))/text"
+           hx-trigger="load"
+           hx-swap="outerHTML">
+        <pre style="margin:0;white-space:pre-wrap;word-break:break-word"></pre>
+      </div>
+    </div>
+  } else {
+    <div class="scroll" style="padding:12px 16px;font-family:var(--font-mono);font-size:11.5px;line-height:1.6">
+      <pre style="margin:0;white-space:pre-wrap;word-break:break-word;color:var(--text-dim)">Text rendition available for real items (v2 API).
+Item ID: @itemId</pre>
+    </div>
+  }
+
+@* ── Hex ───────────────────────────────────────────────────────────────── *@
+} else {
+  <div class="scroll" style="padding:6px 0">
+    <div class="hex">
+      <div class="row" style="color:var(--text-dim);font-size:10px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-bottom:4px">
+        <div>Offset</div>
+        <div>00 01 02 03 04 05 06 07&nbsp; 08 09 0A 0B 0C 0D 0E 0F</div>
+        <div>ASCII</div>
+      </div>
+      @if (itemId.contains(":")) {
+        <div class="dim" style="padding:8px 12px;font-size:11px">
+          Hex viewer island (C-17) loads here — Angular island pending implementation.
+        </div>
+      } else {
+        <div class="row"><div>00000000</div><div>25 50 44 46 2D 31 2E 37&nbsp; 0D 0A 25 E2 E3 CF D3 0D</div><div>%PDF-1.7..%....</div></div>
+        <div class="row"><div>00000010</div><div>0A 31 20 30 20 6F 62 6A&nbsp; 0A 3C 3C 2F 54 79 70 65</div><div>.1 0 obj.&lt;&lt;/Type</div></div>
+        <div class="dim" style="padding:8px 12px;font-size:11px">Demo bytes — real hex viewer requires Angular island (C-17, v2).</div>
+      }
+    </div>
+  </div>
+}

@@ -1,0 +1,53 @@
+@* Export dialog — rendered inside #modal via hx-get="/workspace/export/dialog".
+   The backdrop click closes the modal by clearing #modal's innerHTML.
+   POST /workspace/export (not yet implemented) would start the async job. *@
+<div class="modal-backdrop" onclick="document.getElementById('modal').innerHTML=''"></div>
+<div class="modal-box" role="dialog" aria-modal="true" aria-label="Export items">
+  <div class="modal-header">
+    <span style="font-weight:600">Export items</span>
+    <button class="iconbtn" style="margin-left:auto"
+            onclick="document.getElementById('modal').innerHTML=''"
+            title="Close">
+      <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <form class="modal-body" onsubmit="return false">
+
+    <div class="filt" style="border:0;padding-bottom:0">
+      <div class="lab">Scope</div>
+      <label class="filt-row"><input type="radio" name="scope" value="checked" checked/> Checked items</label>
+      <label class="filt-row"><input type="radio" name="scope" value="page"/> Current page</label>
+      <label class="filt-row"><input type="radio" name="scope" value="all"/> All results</label>
+    </div>
+
+    <div class="filt" style="border:0;padding-bottom:0;margin-top:8px">
+      <div class="lab">Format</div>
+      <div class="ifield" style="margin-top:4px">
+        <select style="width:100%;appearance:auto">
+          <option value="zip">ZIP archive (files + report)</option>
+          <option value="csv">CSV index</option>
+          <option value="report">HTML report</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filt" style="border:0;padding-bottom:0;margin-top:8px">
+      <div class="lab">Options</div>
+      <label class="filt-row"><input type="checkbox" checked/> Include subdirectory structure</label>
+      <label class="filt-row"><input type="checkbox"/> Include extracted text</label>
+    </div>
+
+  </form>
+
+  <div class="modal-footer">
+    <button class="iconbtn" onclick="document.getElementById('modal').innerHTML=''">Cancel</button>
+    <button class="btn-accent" style="margin-left:8px"
+            hx-post="/workspace/export"
+            hx-target="#modal"
+            hx-swap="innerHTML"
+            hx-include="closest form">
+      Start export
+    </button>
+  </div>
+</div>

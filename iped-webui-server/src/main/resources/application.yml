@@ -1,0 +1,15 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: iped-webui-server
+
+iped:
+  webui:
+    # Base URL of the backing Jersey iped-webapi that /api/** is proxied to.
+    api-base-url: ${IPED_WEBAPI_BASE_URL:http://localhost:8080}
+
+logging:
+  level:
+    iped.webui: INFO

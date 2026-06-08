@@ -1,0 +1,344 @@
+@import java.util.List
+@args (List<String> styles, List<String> scripts, String caseId)
+@views.layout.main.template("IPED — Investigation Platform", styles, scripts) -> {
+<div class="app">
+
+  @* ═══════════════════════════════════════════════════════ TOP BAR ════ *@
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">I</div>
+      <div>
+        <div class="brand-name">IPED</div>
+        <div class="brand-case mono">@caseId</div>
+      </div>
+    </div>
+
+    <button class="iconbtn" id="btn-sidebar-collapse" title="Toggle sidebar"
+            onclick="ipedToggleSidebar()" style="margin-right:4px">
+      <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>
+      </svg>
+    </button>
+
+    <div class="topbar-center">
+      <form class="searchwrap" onsubmit="return ipedSearch(event)">
+        <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-mute);flex-shrink:0">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
+        <input id="q" name="q" placeholder="Search evidence…" autocomplete="off"/>
+        <span class="count mono" id="hitcount"></span>
+      </form>
+      @* Active filter chips — loaded via HTMX on page init, updated by filter actions *@
+      <div id="filter-chips" class="filter-chips"
+           hx-get="/workspace/filter-chips"
+           hx-trigger="load"
+           hx-swap="innerHTML">
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="iconbtn" title="Notifications">
+        <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      </button>
+      <button class="iconbtn" title="Settings">
+        <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      </button>
+      <div class="profile-area">
+        <div class="avatar"><span style="color:var(--ok)">●</span></div>
+        <div style="line-height:1.15">
+          <div style="font-size:11.5px">@caseId</div>
+          <div class="dim mono" style="font-size:10px">analyst</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  @* ═══════════════════════════════════════════════════════ SIDEBAR ════ *@
+  <aside class="sidebar panel" id="sidebar"
+         hx-get="/workspace/sidebar?tab=cat" hx-trigger="load" hx-target="#sidebar" hx-swap="innerHTML">
+  </aside>
+
+  <div class="resize-handle resize-handle-sidebar" id="rh-sidebar" title="Drag to resize sidebar"></div>
+
+  @* ═══════════════════════════════════════════════════════ MAIN PANEL ════ *@
+  <section class="main panel">
+    <div class="panel-h" style="padding:0 8px">
+      <div class="seg mode-seg" style="margin-right:8px">
+        <button class="on" data-mode="table" onclick="ipedSetMode('table')">Table</button>
+        <button data-mode="gallery" onclick="ipedSetMode('gallery')">Gallery</button>
+        <button data-mode="timeline" onclick="ipedSetMode('timeline')">Timeline</button>
+        <button data-mode="graph" onclick="ipedSetMode('graph')">Links</button>
+      </div>
+      <div style="flex:1"></div>
+      <span class="muted mono" style="font-size:11px" id="resultsummary">results grid</span>
+      <span class="dim mono" style="font-size:11px;margin-left:8px" id="resultrange"></span>
+      <button class="iconbtn" id="pgprev" title="Previous page" disabled
+              onclick="ipedPage('previous-page')">
+        <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <button class="iconbtn" id="pgnext" title="Next page" disabled
+              onclick="ipedPage('next-page')">
+        <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <div style="width:1px;height:16px;background:var(--border);margin:0 6px"></div>
+      <button class="iconbtn" id="btn-check-all" title="Check all visible"
+              onclick="ipedCheckAll()">
+        <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h6"/></svg>
+      </button>
+      <button class="iconbtn" title="Export items"
+              hx-get="/workspace/export/dialog"
+              hx-target="#modal"
+              hx-swap="innerHTML">
+        <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      </button>
+    </div>
+
+    @* ── Table view: Angular results-grid island ─────────────────────── *@
+    <iped-results-grid data-view="table"
+                       case-id="@caseId"
+                       api-base="/api"></iped-results-grid>
+
+    @* ── Gallery view: Angular gallery island ───────────────────────── *@
+    <iped-gallery data-view="gallery"
+                  case-id="@caseId"
+                  api-base="/api"
+                  hidden></iped-gallery>
+
+    @* ── Timeline / Graph: placeholders until islands land ──────────── *@
+    <div data-view="timeline" hidden class="empty-state" style="flex:1">
+      <div class="empty-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
+      </div>
+      <div class="empty-title">Timeline</div>
+      <div class="empty-sub">Timeline island (C-10) pending implementation</div>
+    </div>
+    <div data-view="graph" hidden class="empty-state" style="flex:1">
+      <div class="empty-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="m8 6 8 0M7 8l4 8M17 8l-4 8"/></svg>
+      </div>
+      <div class="empty-title">Links graph</div>
+      <div class="empty-sub">Graph island (C-11) pending implementation</div>
+    </div>
+  </section>
+
+  <div class="resize-handle resize-handle-right" id="rh-right" title="Drag to resize right panel"></div>
+
+  @* ══════════════════════════════════════════════════ RIGHT PANELS ════ *@
+  <div class="right">
+    <div class="panel" style="flex:1;min-height:0" id="info-panel"
+         hx-get="/workspace/info?tab=hits" hx-trigger="load" hx-target="#info-panel" hx-swap="innerHTML">
+    </div>
+    <div class="panel" style="flex:1;min-height:0" id="viewer-panel"
+         hx-get="/workspace/viewer?mode=preview" hx-trigger="load" hx-target="#viewer-panel" hx-swap="innerHTML">
+    </div>
+  </div>
+
+  @* ═════════════════════════════════════════════════ STATUS BAR ════ *@
+  <footer class="statusbar">
+    <span class="muted" id="statuspath">No item selected</span>
+    <div style="flex:1"></div>
+    <span style="display:inline-flex;align-items:center;gap:4px">
+      <span class="pulse"></span>
+      Connected · @caseId
+    </span>
+    <span class="seg-sep"></span>
+    <span class="mono" id="clock">--:--:-- UTC</span>
+  </footer>
+</div>
+
+@* ── Modal overlay (export dialog, bookmark editor, etc.) ─────────────────── *@
+<div id="modal"></div>
+
+@* ══════════════════════════════════════════════ BOUNDARY BRIDGES ════════════
+   Rules:
+   • topbar search → set query attribute on both islands
+   • island item-selected → HTMX loads info + viewer panels
+   • island results-loaded → update SSR hit count chrome
+   • sidebar filter click → add chip + update island query
+   • chip removal → update island query
+   • mode button → show/hide the right island/view *@
+<script>
+(function () {
+  'use strict';
+
+  // ── Layout resize ──────────────────────────────────────────────────────
+  (function () {
+    var LS_SIDEBAR = 'iped.sidebar-w';
+    var LS_RIGHT   = 'iped.right-w';
+    var MIN_SIDE   = 120;
+    var MAX_SIDE   = 560;
+    var MIN_RIGHT  = 200;
+    var MAX_RIGHT  = 720;
+
+    function setVar(name, px) {
+      document.documentElement.style.setProperty(name, px + 'px');
+    }
+
+    // Restore saved sizes
+    var sw = parseInt(localStorage.getItem(LS_SIDEBAR) || '0', 10);
+    var rw = parseInt(localStorage.getItem(LS_RIGHT)   || '0', 10);
+    if (sw >= MIN_SIDE && sw <= MAX_SIDE) setVar('--sidebar-w', sw);
+    if (rw >= MIN_RIGHT && rw <= MAX_RIGHT) setVar('--right-w', rw);
+
+    function makeDragger(handleId, cssVar, min, max, storageKey, getStart) {
+      var handle = document.getElementById(handleId);
+      if (!handle) return;
+      handle.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        var startX   = e.clientX;
+        var startVal = parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue(cssVar) || '0', 10);
+        handle.classList.add('dragging');
+        function onMove(ev) {
+          var delta = ev.clientX - startX;
+          var next  = Math.min(max, Math.max(min, startVal + getStart(delta)));
+          setVar(cssVar, next);
+        }
+        function onUp() {
+          handle.classList.remove('dragging');
+          var cur = parseInt(
+            getComputedStyle(document.documentElement).getPropertyValue(cssVar) || '0', 10);
+          localStorage.setItem(storageKey, cur);
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    }
+
+    // Sidebar handle: dragging right → sidebar grows
+    makeDragger('rh-sidebar', '--sidebar-w', MIN_SIDE, MAX_SIDE, LS_SIDEBAR, function (d) { return d; });
+    // Right handle: dragging left → right panel grows
+    makeDragger('rh-right', '--right-w', MIN_RIGHT, MAX_RIGHT, LS_RIGHT, function (d) { return -d; });
+  })();
+
+  // ── Sidebar collapse ───────────────────────────────────────────────────
+  var _sidebarCollapsed = false;
+  window.ipedToggleSidebar = function () {
+    _sidebarCollapsed = !_sidebarCollapsed;
+    document.querySelector('.app').classList.toggle('sidebar-collapsed', _sidebarCollapsed);
+  };
+
+  // ── Island references (resolved lazily after upgrade) ──────────────────
+  function grid()    { return document.querySelector('iped-results-grid'); }
+  function gallery() { return document.querySelector('iped-gallery'); }
+  function timeline(){ return document.querySelector('iped-timeline'); }
+  function graph()   { return document.querySelector('iped-graph'); }
+  function allViews() { return document.querySelectorAll('[data-view]'); }
+
+  // ── Search ─────────────────────────────────────────────────────────────
+  window.ipedSearch = function (ev) {
+    ev.preventDefault();
+    var q = document.getElementById('q').value || '';
+    var g = grid(), gal = gallery();
+    if (g)   g.setAttribute('query', q);
+    if (gal) gal.setAttribute('query', q);
+    return false;
+  };
+
+  // ── Pagination (dispatches to whichever island is visible) ─────────────
+  window.ipedPage = function (dir) {
+    var active = document.querySelector('[data-view]:not([hidden])');
+    if (active) active.dispatchEvent(new CustomEvent(dir));
+  };
+
+  // ── Check-all ──────────────────────────────────────────────────────────
+  window.ipedCheckAll = function () {
+    var active = document.querySelector('[data-view]:not([hidden])');
+    if (active) active.dispatchEvent(new CustomEvent('check-all'));
+  };
+
+  // ── Mode switching ─────────────────────────────────────────────────────
+  window.ipedSetMode = function (mode) {
+    document.querySelectorAll('.mode-seg button').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.mode === mode);
+    });
+    allViews().forEach(function (el) {
+      el.hidden = el.dataset.view !== mode;
+    });
+    // Sync page/check buttons to active island
+    var active = document.querySelector('[data-view="' + mode + '"]');
+    if (active && active.getAttribute('case-id')) {
+      // Trigger the island to load if it hasn't yet
+      active.dispatchEvent(new CustomEvent('view-activated'));
+    }
+  };
+
+  // ── Filter chip management ─────────────────────────────────────────────
+  // Called from sidebar node onclick: ipedSelectFilter('category', 'Documents', 'category:"Documents"')
+  window.ipedSelectFilter = function (type, label, query) {
+    htmx.ajax('POST',
+              '/workspace/filter?type=' + encodeURIComponent(type) +
+              '&label=' + encodeURIComponent(label),
+              { target: '#filter-chips', swap: 'innerHTML' });
+    if (query) {
+      var g = grid(), gal = gallery();
+      if (g)   g.setAttribute('query', query);
+      if (gal) gal.setAttribute('query', query);
+    }
+  };
+
+  // Called after chip removal (hx-on:htmx:afterRequest on × button)
+  window.ipedOnChipRemoved = function () {
+    var remaining = document.querySelectorAll('#filter-chips .chip').length;
+    if (remaining === 0) {
+      var g = grid(), gal = gallery();
+      if (g)   g.setAttribute('query', '*');
+      if (gal) gal.setAttribute('query', '*');
+    }
+  };
+
+  // Clear-all button
+  window.ipedClearFilters = function () {
+    htmx.ajax('DELETE', '/workspace/filters',
+              { target: '#filter-chips', swap: 'innerHTML' });
+    var g = grid(), gal = gallery();
+    if (g)   g.setAttribute('query', '*');
+    if (gal) gal.setAttribute('query', '*');
+  };
+
+  // ── Island → SSR bridges ───────────────────────────────────────────────
+  function wireIsland(el) {
+    if (!el) return;
+
+    el.addEventListener('item-selected', function (e) {
+      var id = e.detail && e.detail.itemId;
+      if (!id) return;
+      document.getElementById('statuspath').textContent = id;
+      htmx.ajax('GET', '/workspace/info?tab=hits&itemId=' + encodeURIComponent(id),
+                { target: '#info-panel', swap: 'innerHTML' });
+      htmx.ajax('GET', '/workspace/viewer?mode=preview&itemId=' + encodeURIComponent(id),
+                { target: '#viewer-panel', swap: 'innerHTML' });
+    });
+
+    el.addEventListener('results-loaded', function (e) {
+      var d = e.detail || {};
+      if (d.total != null) {
+        document.getElementById('hitcount').textContent =
+            d.total.toLocaleString() + ' indexed';
+        document.getElementById('resultsummary').textContent =
+            d.shown + ' items';
+        document.getElementById('resultrange').textContent = d.rangeLabel || '';
+        document.getElementById('pgprev').disabled = !d.hasPrev;
+        document.getElementById('pgnext').disabled = !d.hasNext;
+      }
+    });
+  }
+
+  // Wire islands once they upgrade (custom elements define asynchronously)
+  document.addEventListener('DOMContentLoaded', function () {
+    wireIsland(grid());
+    wireIsland(gallery());
+  });
+
+  // ── Clock ──────────────────────────────────────────────────────────────
+  (function tick() {
+    var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+    document.getElementById('clock').textContent =
+      p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds()) + ' UTC';
+    setTimeout(tick, 1000);
+  })();
+})();
+</script>
+}

@@ -1,0 +1,24 @@
+@import java.util.List
+@import iped.webui.session.FilterState.ActiveFilter
+@args (List<ActiveFilter> activeFilters)
+@* Active-filter chips strip rendered into #filter-chips in the top bar.
+   Each chip has an HTMX-driven × that removes the filter server-side and
+   returns the updated chips fragment. The JS bridge in page.rocker.html
+   handles propagating the removal to the Angular islands. *@
+@for (ActiveFilter f : activeFilters) {
+<span class="chip accent" data-filter-id="@f.id()" data-filter-type="@f.type()">
+  <span class="chip-type dim mono" style="font-size:10px;margin-right:3px">@f.type()</span>@f.label()
+  <span class="x"
+        hx-delete="/workspace/filter/@f.id()"
+        hx-target="#filter-chips"
+        hx-swap="innerHTML"
+        hx-on:htmx:afterRequest="ipedOnChipRemoved()"
+        title="Remove filter">×</span>
+</span>
+}
+@if (!activeFilters.isEmpty()) {
+<button class="iconbtn" style="margin-left:2px" title="Clear all filters"
+        onclick="ipedClearFilters()" style="font-size:10.5px;color:var(--text-dim)">
+  <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+</button>
+}

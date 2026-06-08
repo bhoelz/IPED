@@ -1,0 +1,229 @@
+@import java.util.List
+@import iped.webui.session.FilterState.ActiveFilter
+@args (String activeTab, List<String> categories, List<String> bookmarks, List<ActiveFilter> activeFilters)
+@* Server-owned sidebar. Tabs swap themselves via HTMX; no Angular here.
+   Categories and bookmarks are loaded from the real iped-webapi on each tab
+   activation. Evidence, AI, and Applied-filters tabs are structural stubs
+   that will be backed by real endpoints when the v2 API lands. *@
+
+<div class="panel-h" style="padding:0 4px;overflow-x:auto;white-space:nowrap">
+  <div class="tab @if(activeTab.equals("cat")){active}"
+       hx-get="/workspace/sidebar?tab=cat" hx-target="#sidebar" hx-swap="innerHTML">Categories</div>
+  <div class="tab @if(activeTab.equals("evid")){active}"
+       hx-get="/workspace/sidebar?tab=evid" hx-target="#sidebar" hx-swap="innerHTML">Evidence</div>
+  <div class="tab @if(activeTab.equals("coll")){active}"
+       hx-get="/workspace/sidebar?tab=coll" hx-target="#sidebar" hx-swap="innerHTML">Bookmarks</div>
+  <div class="tab @if(activeTab.equals("meta")){active}"
+       hx-get="/workspace/sidebar?tab=meta" hx-target="#sidebar" hx-swap="innerHTML">Metadata</div>
+  <div class="tab @if(activeTab.equals("ai")){active}"
+       hx-get="/workspace/sidebar?tab=ai" hx-target="#sidebar" hx-swap="innerHTML">AI</div>
+  <div class="tab @if(activeTab.equals("filt")){active}" style="position:relative"
+       hx-get="/workspace/sidebar?tab=filt" hx-target="#sidebar" hx-swap="innerHTML">
+    Filters@if(!activeFilters.isEmpty()){ <span class="badge">@activeFilters.size()</span>}
+  </div>
+</div>
+
+@* ── Categories ────────────────────────────────────────────────────────── *@
+@if (activeTab.equals("cat")) {
+  <div class="scroll">
+    <div class="group-label">Evidence root</div>
+    <div class="tree">
+      <div class="node active">
+        <span class="caret"></span>
+        <svg class="icn" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>
+        <span>All evidence</span>
+      </div>
+    </div>
+
+    <div class="group-label">Categories</div>
+    @if (categories.isEmpty()) {
+      <div class="dim" style="padding:8px 12px;font-size:11.5px;font-style:italic">
+        No categories — is iped-webapi running?
+      </div>
+    } else {
+      <div class="tree">
+      @for (String cat : categories) {
+        <div class="node"
+             onclick="ipedSelectFilter('category', '@cat', 'category:&quot;@cat&quot;')"
+             title="@cat">
+          <span class="caret"></span>
+          <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+          <span>@cat</span>
+        </div>
+      }
+      </div>
+    }
+  </div>
+
+@* ── Evidence tree ─────────────────────────────────────────────────────── *@
+} else if (activeTab.equals("evid")) {
+  <div class="scroll">
+    <div style="padding:6px 10px">
+      <label class="filt-row" style="margin-bottom:6px">
+        <input type="checkbox" checked
+               hx-get="/workspace/sidebar?tab=evid"
+               hx-trigger="change"
+               hx-target="#sidebar"
+               hx-swap="innerHTML"/>
+        Recursive listing
+      </label>
+    </div>
+    <div class="tree">
+      <div class="node">
+        <span class="caret">▸</span>
+        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+        <span>Case root</span>
+      </div>
+      <div class="child">
+        <div class="node">
+          <span class="caret">▸</span>
+          <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+          <span>Evidence source</span>
+          <span class="count">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="dim" style="padding:8px 12px;font-size:11px;font-style:italic">
+      Evidence tree requires GET /tree API endpoint (v2).
+    </div>
+  </div>
+
+@* ── Bookmarks ─────────────────────────────────────────────────────────── *@
+} else if (activeTab.equals("coll")) {
+  <div class="scroll" style="padding:6px 0">
+    <div class="group-label">Bookmarks</div>
+    @if (bookmarks.isEmpty()) {
+      <div class="dim" style="padding:8px 12px;font-size:11.5px;font-style:italic">
+        No bookmarks yet — mark items in the grid to create a working set.
+      </div>
+    } else {
+      <div class="tree">
+      @for (String bm : bookmarks) {
+        <div class="node"
+             onclick="ipedSelectFilter('bookmark', '@bm', 'bookmark:&quot;@bm&quot;')"
+             title="@bm">
+          <span class="caret"></span>
+          <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span>@bm</span>
+        </div>
+      }
+      </div>
+    }
+    <div style="padding:6px 10px">
+      <button class="btn-accent" style="width:100%;margin-top:4px"
+              hx-post="/api/bookmarks/New%20Bookmark"
+              hx-trigger="click"
+              hx-on:htmx:afterRequest="htmx.ajax('GET','/workspace/sidebar?tab=coll',{target:'#sidebar',swap:'innerHTML'})">
+        + New bookmark
+      </button>
+    </div>
+  </div>
+
+@* ── Metadata filters ──────────────────────────────────────────────────── *@
+} else if (activeTab.equals("meta")) {
+  <div class="scroll">
+    <div class="filt">
+      <div class="lab">Size</div>
+      <div class="range">
+        <span>0</span>
+        <input type="range" min="0" max="100" value="100"
+               hx-post="/workspace/filter"
+               hx-trigger="change"
+               hx-vals='{"type":"metadata","label":"size ≤ max"}'
+               hx-target="#filter-chips"
+               hx-swap="innerHTML"/>
+        <span>Max</span>
+      </div>
+    </div>
+    <div class="filt">
+      <div class="lab">Modified</div>
+      <div style="display:grid;gap:4px">
+        <div class="ifield"><input type="date" placeholder="From"/></div>
+        <div class="ifield"><input type="date" placeholder="To"/></div>
+      </div>
+    </div>
+    <div class="filt">
+      <div class="lab">Flags</div>
+      <label class="filt-row">
+        <input type="checkbox"/>
+        Deleted only
+      </label>
+      <label class="filt-row">
+        <input type="checkbox" checked/>
+        Has hits
+      </label>
+      <label class="filt-row">
+        <input type="checkbox"/>
+        Encrypted
+      </label>
+      <label class="filt-row">
+        <input type="checkbox"/>
+        Hidden / system
+      </label>
+    </div>
+  </div>
+
+@* ── AI filters ────────────────────────────────────────────────────────── *@
+} else if (activeTab.equals("ai")) {
+  <div class="scroll">
+    <div class="group-label">AI classifiers</div>
+    <div class="tree">
+      <div class="node">
+        <span class="caret">▸</span>
+        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        <span>NSFW classifier</span>
+        <span class="count">—</span>
+      </div>
+      <div class="node">
+        <span class="caret">▸</span>
+        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        <span>Face detection</span>
+        <span class="count">—</span>
+      </div>
+      <div class="node">
+        <span class="caret"></span>
+        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        <span>Document language</span>
+        <span class="count">—</span>
+      </div>
+    </div>
+    <div class="dim" style="padding:8px 12px;font-size:11px;font-style:italic">
+      AI filters require GET /ai-filters API endpoint (v2).
+    </div>
+  </div>
+
+@* ── Applied filters ───────────────────────────────────────────────────── *@
+} else {
+  <div class="scroll">
+    <div class="group-label" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Applied filters</span>
+      @if (!activeFilters.isEmpty()) {
+        <button class="iconbtn" style="font-size:10.5px;color:var(--text-dim);padding:0 6px;width:auto"
+                onclick="ipedClearFilters()"
+                title="Clear all">clear all</button>
+      }
+    </div>
+    @if (activeFilters.isEmpty()) {
+      <div class="empty-state" style="padding:20px 12px">
+        <div class="empty-sub">No filters active — click a category or bookmark to filter results.</div>
+      </div>
+    } else {
+      <div style="padding:4px 0">
+      @for (ActiveFilter f : activeFilters) {
+        <div class="filt-row filt-active" style="padding:4px 10px;justify-content:space-between">
+          <span>
+            <span class="dim mono" style="font-size:10px;margin-right:6px">@f.type()</span>@f.label()
+          </span>
+          <span class="x"
+                hx-delete="/workspace/filter/@f.id()"
+                hx-target="#filter-chips"
+                hx-swap="innerHTML"
+                hx-on:htmx:afterRequest="ipedOnChipRemoved(); htmx.ajax('GET','/workspace/sidebar?tab=filt',{target:'#sidebar',swap:'innerHTML'})"
+                style="cursor:pointer;color:var(--text-dim)"
+                title="Remove filter">×</span>
+        </div>
+      }
+      </div>
+    }
+  </div>
+}
