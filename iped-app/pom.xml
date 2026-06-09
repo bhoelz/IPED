@@ -863,6 +863,87 @@
                             </resources>
                         </configuration>
                     </execution>
+                    <!-- COPY RESOURCES TO LOCAL TARGET DIR -->
+                    <execution>
+                        <id>copy-root-to-target</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <filtering>false</filtering>
+                                    <directory>${resources.dir}/root</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-config-to-target</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/config</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <filtering>false</filtering>
+                                    <directory>${resources.dir}/config</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-localization-to-target</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/localization</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <filtering>false</filtering>
+                                    <directory>${resources.dir}/localization</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-plugins-to-target</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/plugins</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <filtering>false</filtering>
+                                    <directory>${resources.dir}/plugins</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-scripts-to-target</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/scripts</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <filtering>false</filtering>
+                                    <directory>${resources.dir}/scripts</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

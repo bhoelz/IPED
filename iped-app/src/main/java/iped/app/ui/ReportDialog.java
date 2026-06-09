@@ -1,7 +1,7 @@
 package iped.app.ui;
 
 import iped.app.bootstrap.Bootstrap;
-import iped.app.processing.CmdLineArgsImpl;
+import iped.engine.CmdLineArgsImpl;
 import iped.app.ui.bookmarks.BookmarkIcon;
 import iped.app.ui.columns.ColumnsSelectReportUI;
 import iped.data.IMultiBookmarks;
