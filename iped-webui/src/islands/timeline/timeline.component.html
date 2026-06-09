@@ -1,0 +1,62 @@
+@if (loading()) {
+  <div class="tl-state"><span class="tl-muted">Loading timeline…</span></div>
+} @else if (error()) {
+  <div class="tl-state"><span class="tl-bad">{{ error() }}</span></div>
+} @else if (bars().length === 0) {
+  <div class="tl-state">
+    <div class="tl-empty-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/>
+      </svg>
+    </div>
+    <div class="tl-empty-label">No timeline data</div>
+  </div>
+} @else {
+  <div class="tl-wrap">
+    <!-- Tooltip -->
+    @if (hovDate()) {
+      <div class="tl-tip">{{ hovDate() }} · {{ hovCount()?.toLocaleString() }} items</div>
+    }
+    @if (dragAnchor() !== null) {
+      <div class="tl-sel-label">{{ selLabel() }}</div>
+    }
+
+    <svg class="tl-svg"
+         [attr.viewBox]="'0 0 ' + svgW + ' ' + svgH"
+         preserveAspectRatio="none"
+         [style.cursor]="dragAnchor() !== null ? 'col-resize' : 'crosshair'"
+         (mousedown)="startDrag($event)"
+         (mousemove)="moveDrag($event)"
+         (mouseup)="endDrag()"
+         (mouseleave)="endDrag()">
+
+      <!-- Selection overlay -->
+      @if (dragAnchor() !== null && selWidth() > 0) {
+        <rect
+          [attr.x]="selX()" y="0"
+          [attr.width]="selWidth()" [attr.height]="chartH"
+          class="tl-sel-rect"/>
+      }
+
+      <!-- Bars -->
+      @for (bar of bars(); track bar.date) {
+        <rect
+          [attr.x]="bar.x" [attr.y]="bar.y"
+          [attr.width]="bar.w" [attr.height]="bar.h"
+          [class.tl-bar-sel]="bar.selected"
+          class="tl-bar"
+          (mouseenter)="hoverBar(bar)"
+          (mouseleave)="leaveBar()"/>
+      }
+
+      <!-- Zero line -->
+      <line x1="0" [attr.y1]="chartH" [attr.x2]="svgW" [attr.y2]="chartH" class="tl-zero"/>
+
+      <!-- Axis labels -->
+      @for (l of axisLabels(); track l.x) {
+        <text [attr.x]="l.x" [attr.y]="svgH - 3"
+              text-anchor="middle" class="tl-axis-text">{{ l.label }}</text>
+      }
+    </svg>
+  </div>
+}

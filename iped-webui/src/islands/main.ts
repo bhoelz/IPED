@@ -5,6 +5,9 @@ import {createCustomElement} from '@angular/elements';
 
 import {ResultsGridComponent} from './results-grid/results-grid.component';
 import {GalleryComponent} from './gallery/gallery.component';
+import {HexViewerComponent} from './hex-viewer/hex-viewer.component';
+import {TimelineComponent} from './timeline/timeline.component';
+import {GraphComponent} from './graph/graph.component';
 
 /**
  * Island entry point.
@@ -31,5 +34,20 @@ import {GalleryComponent} from './gallery/gallery.component';
   if (!customElements.get('iped-gallery')) {
     const Gallery = createCustomElement(GalleryComponent, {injector: app.injector});
     customElements.define('iped-gallery', Gallery);
+  }
+
+  if (!customElements.get('iped-hex-viewer')) {
+    const HexViewer = createCustomElement(HexViewerComponent, {injector: app.injector});
+    customElements.define('iped-hex-viewer', HexViewer);
+  }
+
+  if (!customElements.get('iped-timeline')) {
+    const Timeline = createCustomElement(TimelineComponent, {injector: app.injector});
+    customElements.define('iped-timeline', Timeline);
+  }
+
+  if (!customElements.get('iped-graph')) {
+    const Graph = createCustomElement(GraphComponent, {injector: app.injector});
+    customElements.define('iped-graph', Graph);
   }
 })();
