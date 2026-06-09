@@ -1,16 +1,24 @@
-<html>
+<!DOCTYPE html>
+<html lang="fr">
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta charset="utf-8">
         <title>IPED Rapport</title>
-        <base target="_self" />
+        <style>
+            html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+            #layout { display: flex; height: 100%; }
+            #sidebar { width: 200px; flex-shrink: 0; overflow: auto; }
+            #main { flex: 1; overflow: auto; }
+            iframe { display: block; width: 100%; height: 100%; border: none; }
+        </style>
     </head>
-    <frameset cols="200,10%" framespacing="0" border="0" frameborder="0">
-        <frame src="rapport/contents.htm" scrolling="auto" />
-        <frame src="rapport/caseinformation.htm" name="ReportPage" scrolling="auto" />
-        <noframes>
-            <body>
-            </body>
-        </noframes>
-    </frameset>
+    <body>
+        <div id="layout">
+            <div id="sidebar">
+                <iframe src="rapport/contents.htm"></iframe>
+            </div>
+            <div id="main">
+                <iframe src="rapport/caseinformation.htm" name="ReportPage"></iframe>
+            </div>
+        </div>
+    </body>
 </html>
-

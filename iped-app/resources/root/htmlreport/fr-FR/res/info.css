@@ -1,6 +1,10 @@
+div#conteudo {
+    text-align: center;
+}
+
 table.info {
     width: 90%;
-
+    margin: 0 auto;
 }
 
 table.info td {

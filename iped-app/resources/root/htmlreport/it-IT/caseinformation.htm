@@ -1,38 +1,37 @@
-<html>
+<!DOCTYPE html>
+<html lang="it">
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta charset="utf-8">
         <title>NOME DELL'ORGANIZZAZIONE</title>
         <link rel="stylesheet" type="text/css" href="res/estilo.css" />
         <link rel="stylesheet" type="text/css" href="res/info.css" />
     </head>
     <body>
-        <div id="conteudo" align="center">
+        <div id="conteudo">
             <table class="info">
                 <tr>
-                    <td valign="middle" class="SmallText3" align="center" colspan="2"><b>%HEADER%</b><br /></td>
-				</tr>	
-                <tr><td valign="top" class="SmallText3" width = "1%"><b>Report</b></td><td align="left" valign="middle" class="MainBodyText"><b>%REPORT%</b></td></tr>
-                <tr><td valign="top" class="SmallText3" width = "1%"><b>Data</b></td><td align="left" valign="middle" class="MainBodyText">%REPORT_DATE%</td></tr>
-				<tr><td valign="top" class="SmallText3" width = "1%"><b>Titolo</b></td><td align="left" valign="middle" class="MainBodyText">%TITLE%</td></tr>
+                    <td style="vertical-align:middle; text-align:center" class="SmallText3" colspan="2"><b>%HEADER%</b><br /></td>
+                </tr>
+                <tr><td style="width:1%" class="SmallText3"><b>Rapporto</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText"><b>%REPORT%</b></td></tr>
+                <tr><td style="width:1%" class="SmallText3"><b>Data</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText">%REPORT_DATE%</td></tr>
+                <tr><td style="width:1%" class="SmallText3"><b>Titolo</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText">%TITLE%</td></tr>
 
-                <tr><td valign="top" class="SmallText3" width = "1%"><b>Esaminatore(i)</b></td><td align="left" valign="middle" class="MainBodyText">
+                <tr><td style="width:1%" class="SmallText3"><b>Esaminatore(i)</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText">
                         %EXAMINERS%
                     </td></tr>
 
-                <tr><td valign="top" class="SmallText3" width = "1%"><b>Riferimento</b></td><td align="left" valign="middle" class="MainBodyText">
+                <tr><td style="width:1%" class="SmallText3"><b>Riferimento</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText">
                         <b>%INVESTIGATION%</b><br>
-                        %REQUEST_DOC% it %REQUEST_DATE%<br>
+                        %REQUEST_DOC% del %REQUEST_DATE%<br>
                         Richiesto da %REQUESTER%<br>
-                        Numero di caso del laboratorio %RECORD% at %RECORD_DATE%<br>
+                        Numero di caso del laboratorio %RECORD% del %RECORD_DATE%<br>
                     </td></tr>
 
                 <tr>
-                    <td valign="top" class="SmallText3" width = "1%"><b>Reperto Analizzato</b></td>
-                    <td align="left" valign="middle" class="MainBodyText">
+                    <td style="width:1%" class="SmallText3"><b>Reperto Analizzato</b></td>
+                    <td style="text-align:left; vertical-align:middle" class="MainBodyText">
                         %EVIDENCE%
                     </td>
-                </tr>
-
                 </tr>
 
             </table>

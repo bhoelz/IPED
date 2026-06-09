@@ -1,25 +1,27 @@
-<html>
+<!DOCTYPE html>
+<html lang="pt-BR">
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta charset="utf-8">
         <title>Pol&iacute;cia Federal</title>
         <link rel="stylesheet" type="text/css" href="res/estilo.css" />
         <link rel="stylesheet" type="text/css" href="res/info.css" />
     </head>
     <body>
-        <div id="conteudo" align="center">
+        <div id="conteudo">
             <table class="info">
                 <tr>
-                    <td valign="middle" class="SmallText3" align="center" colspan="2"><img border="0" src="res/armas.gif" /><br />
+                    <td style="vertical-align:middle; text-align:center" class="SmallText3" colspan="2"><img src="res/armas.gif" /><br />
                         <b>%HEADER%</b>
+                    </td>
+                </tr>
+                <tr><td style="width:1%" class="SmallText3"><b>Laudo</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText"><b>%REPORT%</b> de %REPORT_DATE%</td></tr>
+                <tr><td style="width:1%" class="SmallText3"><b>Título</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText">%TITLE%</td></tr>
 
-                <tr><td valign="top" class="SmallText3" width = "1%"><b>Laudo</b></td><td align="left" valign="middle" class="MainBodyText"><b>%REPORT%</b> de %REPORT_DATE%</td></tr>
-                <tr><td valign="top" class="SmallText3" width = "1%"><b>Título</b></td><td align="left" valign="middle" class="MainBodyText">%TITLE%</td></tr>
-
-                <tr><td valign="top" class="SmallText3" width = "1%"><b>Signatário(s)</b></td><td align="left" valign="middle" class="MainBodyText">
+                <tr><td style="width:1%" class="SmallText3"><b>Signatário(s)</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText">
                         %EXAMINERS%
                     </td></tr>
 
-                <tr><td valign="top" class="SmallText3" width = "1%"><b>Referências</b></td><td align="left" valign="middle" class="MainBodyText">
+                <tr><td style="width:1%" class="SmallText3"><b>Referências</b></td><td style="text-align:left; vertical-align:middle" class="MainBodyText">
                         <b>%INVESTIGATION%</b><br>
                         %REQUEST_DOC% de %REQUEST_DATE%<br>
                         Solicitação %REQUESTER%<br>
@@ -27,12 +29,10 @@
                     </td></tr>
 
                 <tr>
-                    <td valign="top" class="SmallText3" width = "1%"><b>Material examinado</b></td>
-                    <td align="left" valign="middle" class="MainBodyText">
+                    <td style="width:1%" class="SmallText3"><b>Material examinado</b></td>
+                    <td style="text-align:left; vertical-align:middle" class="MainBodyText">
                         %EVIDENCE%
                     </td>
-                </tr>
-
                 </tr>
 
             </table>
