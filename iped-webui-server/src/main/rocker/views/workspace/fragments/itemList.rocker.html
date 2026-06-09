@@ -1,0 +1,66 @@
+@import java.util.List
+@import iped.webui.web.WorkspaceFragmentController.ItemRow
+@args (String tab, String parentItemId, List<ItemRow> items, boolean hasMore, int totalCount)
+@* Shared fragment for relational info-panel tabs: sub-items, parent hierarchy,
+   duplicates, references, and referenced-by. Loaded via HTMX into #info-panel
+   content area; rows call ipedSelectItem() on click. *@
+
+@if (items.isEmpty()) {
+  <div class="empty-state" style="padding:20px 12px">
+    <div class="empty-sub">
+      @if (tab.equals("par")) {
+        No parent item — this is a root.
+      } else if (tab.equals("sub")) {
+        No sub-items or attachments.
+      } else if (tab.equals("dup")) {
+        No exact duplicates found.
+      } else if (tab.equals("ref")) {
+        No outgoing references.
+      } else {
+        Not referenced by any other item.
+      }
+    </div>
+    @if (totalCount < 0) {
+      <div class="dim" style="font-size:10.5px;margin-top:4px;font-style:italic">
+        Relational API endpoints (v2) not yet available.
+      </div>
+    }
+  </div>
+} else {
+  @if (totalCount > items.size()) {
+    <div class="dim" style="padding:4px 10px;font-size:11px;border-bottom:1px solid var(--border)">
+      Showing @items.size() of @totalCount
+      @if (hasMore) { — <a style="color:var(--accent);cursor:pointer"
+           hx-get="/workspace/info/items?tab=@tab&itemId=@parentItemId&offset=@items.size()"
+           hx-target="#info-panel"
+           hx-swap="innerHTML">load more</a>}
+    </div>
+  }
+  <div class="scroll" style="padding:4px 0">
+    <table class="meta-tbl" style="width:100%">
+      <colgroup>
+        <col style="width:auto"/>
+        <col style="width:58px"/>
+        <col style="width:72px"/>
+      </colgroup>
+      <thead>
+        <tr>
+          <td class="k" style="font-weight:600;padding:3px 10px;font-size:10.5px;color:var(--text-mute)">Name</td>
+          <td class="k" style="font-weight:600;padding:3px 4px;font-size:10.5px;color:var(--text-mute)">Size</td>
+          <td class="k" style="font-weight:600;padding:3px 4px;font-size:10.5px;color:var(--text-mute)">Type</td>
+        </tr>
+      </thead>
+      <tbody>
+      @for (ItemRow r : items) {
+        <tr class="item-row" onclick="ipedSelectItem('@r.iid()')" title="@r.title()" style="cursor:pointer">
+          <td class="v" style="padding:4px 10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            <span class="mono" style="font-size:10.5px;color:var(--accent);margin-right:4px">@if (!r.ext().isEmpty()) {.@r.ext()}</span>@r.name()
+          </td>
+          <td class="v" style="padding:4px;font-size:11px;color:var(--text-dim);white-space:nowrap">@r.sizeStr()</td>
+          <td class="v" style="padding:4px;font-size:10px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">@r.typeDisp()</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+}
