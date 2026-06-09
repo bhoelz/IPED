@@ -8,6 +8,8 @@
 /* ── Global reset (styles.scss) ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+/* Override Angular island :host { display: flex } so the hidden attribute works */
+[hidden] { display: none !important; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
 input, select, textarea { font: inherit; color: inherit; background: none; border: 0; outline: 0; }
 input::placeholder { color: var(--text-dim, #888); }
@@ -217,6 +219,9 @@ body {
 .chip.accent { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .chip .x { color: var(--text-dim); cursor: pointer; font-size: 12px; line-height: 1; }
 .chip .x:hover { color: var(--text); }
+.chip-toggle { cursor: pointer; color: var(--text-dim); transition: color 0.12s, border-color 0.12s, background 0.12s; user-select: none; }
+.chip-toggle:hover { color: var(--text); border-color: var(--border-hi); }
+.chip-toggle.on { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
 .avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--surface-hi); color: var(--text-mute); display: grid; place-items: center; font-size: 12px; }
 .btn-accent {
   display: inline-flex; align-items: center; justify-content: center; height: 26px; padding: 0 12px; border-radius: 3px;
@@ -244,8 +249,10 @@ body {
 }
 .node:hover { background: var(--surface); }
 .node.active { background: var(--selected-soft); color: var(--text); }
-.node .caret { color: var(--text-dim); font-size: 9px; }
+.node .caret { color: var(--text-dim); font-size: 9px; transition: transform 0.12s; }
+.node.open > .caret { color: var(--accent); }
 .node .count { color: var(--text-dim); font-family: var(--font-mono); font-size: 10.5px; }
+.node.expandable > .caret { cursor: pointer; }
 .child { padding-left: 18px; }
 .child .node { padding-left: 8px; }
 .group-label { padding: 10px 10px 4px; color: var(--text-dim); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -343,3 +350,11 @@ body {
 .path-cell { max-width: 0; width: 150px; }
 .check-dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--border); background: none; cursor: pointer; display: inline-block; transition: background .1s, border-color .1s; }
 .check-dot.on { background: var(--accent); border-color: var(--accent); }
+
+/* ── Hit snippets (info panel hits tab) ─────────────────────────────────── */
+.hit-mark { background: var(--accent-soft); color: var(--accent); border-radius: 2px; padding: 0 2px; font-weight: 600; font-style: normal; }
+#hits-panel .infosec { animation: fadein 0.15s ease; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Bookmark node (sidebar) — icon stroke carries the bookmark colour ───── */
+.bm-node .icn { transition: stroke 0.1s; }

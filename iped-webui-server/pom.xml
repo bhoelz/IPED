@@ -143,6 +143,33 @@
                 </executions>
             </plugin>
 
+            <!--
+                Delete the islands output dir at the start of every build so stale
+                content-hashed bundles (e.g. main-OLDHASH.js) never survive across
+                rebuilds and cause IslandManifest to emit duplicate script tags.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clean-island-bundles</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.build.outputDirectory}/static/islands</directory>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Copy the hashed island bundles into the served static dir -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

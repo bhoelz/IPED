@@ -1,37 +1,42 @@
 @import java.util.List
+@import iped.webui.web.WorkspaceFragmentController.CategoryEntry
+@import iped.webui.web.WorkspaceFragmentController.BookmarkEntry
+@import iped.webui.web.WorkspaceFragmentController.AiClassifier
+@import iped.webui.web.WorkspaceFragmentController.AiLabel
+@import iped.webui.web.WorkspaceFragmentController.EvidenceNode
 @import iped.webui.session.FilterState.ActiveFilter
-@args (String activeTab, List<String> categories, List<String> bookmarks, List<ActiveFilter> activeFilters)
-@* Server-owned sidebar. Tabs swap themselves via HTMX; no Angular here.
-   Categories and bookmarks are loaded from the real iped-webapi on each tab
-   activation. Evidence, AI, and Applied-filters tabs are structural stubs
-   that will be backed by real endpoints when the v2 API lands. *@
+@args (String activeTab, String caseId, List<CategoryEntry> categories, List<BookmarkEntry> bookmarks, List<AiClassifier> classifiers, List<EvidenceNode> evidenceRoots, List<ActiveFilter> activeFilters)
+@* Server-owned sidebar. Tabs swap themselves via HTMX; no Angular here. *@
 
 <div class="panel-h" style="padding:0 4px;overflow-x:auto;white-space:nowrap">
   <div class="tab @if(activeTab.equals("cat")){active}"
-       hx-get="/workspace/sidebar?tab=cat" hx-target="#sidebar" hx-swap="innerHTML">Categories</div>
+       hx-get="/workspace/sidebar?tab=cat&caseId=@caseId" hx-target="#sidebar" hx-swap="innerHTML">Categories</div>
   <div class="tab @if(activeTab.equals("evid")){active}"
-       hx-get="/workspace/sidebar?tab=evid" hx-target="#sidebar" hx-swap="innerHTML">Evidence</div>
+       hx-get="/workspace/sidebar?tab=evid&caseId=@caseId" hx-target="#sidebar" hx-swap="innerHTML">Evidence</div>
   <div class="tab @if(activeTab.equals("coll")){active}"
-       hx-get="/workspace/sidebar?tab=coll" hx-target="#sidebar" hx-swap="innerHTML">Bookmarks</div>
+       hx-get="/workspace/sidebar?tab=coll&caseId=@caseId" hx-target="#sidebar" hx-swap="innerHTML">Bookmarks</div>
   <div class="tab @if(activeTab.equals("meta")){active}"
-       hx-get="/workspace/sidebar?tab=meta" hx-target="#sidebar" hx-swap="innerHTML">Metadata</div>
+       hx-get="/workspace/sidebar?tab=meta&caseId=@caseId" hx-target="#sidebar" hx-swap="innerHTML">Metadata</div>
   <div class="tab @if(activeTab.equals("ai")){active}"
-       hx-get="/workspace/sidebar?tab=ai" hx-target="#sidebar" hx-swap="innerHTML">AI</div>
+       hx-get="/workspace/sidebar?tab=ai&caseId=@caseId" hx-target="#sidebar" hx-swap="innerHTML">AI</div>
   <div class="tab @if(activeTab.equals("filt")){active}" style="position:relative"
-       hx-get="/workspace/sidebar?tab=filt" hx-target="#sidebar" hx-swap="innerHTML">
+       hx-get="/workspace/sidebar?tab=filt&caseId=@caseId" hx-target="#sidebar" hx-swap="innerHTML">
     Filters@if(!activeFilters.isEmpty()){ <span class="badge">@activeFilters.size()</span>}
   </div>
 </div>
 
-@* ── Categories ────────────────────────────────────────────────────────── *@
+@* ── Categories (C-02) ─────────────────────────────────────────────────── *@
 @if (activeTab.equals("cat")) {
   <div class="scroll">
     <div class="group-label">Evidence root</div>
     <div class="tree">
-      <div class="node active">
+      <div class="node active"
+           onclick="ipedSelectFilter('query', 'All evidence', '*')"
+           title="Show all indexed items">
         <span class="caret"></span>
         <svg class="icn" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>
         <span>All evidence</span>
+        <span class="count">@categories.stream().mapToLong(CategoryEntry::count).filter(c -> c >= 0).sum()</span>
       </div>
     </div>
 
@@ -42,53 +47,38 @@
       </div>
     } else {
       <div class="tree">
-      @for (String cat : categories) {
+      @for (CategoryEntry cat : categories) {
         <div class="node"
-             onclick="ipedSelectFilter('category', '@cat', 'category:&quot;@cat&quot;')"
-             title="@cat">
+             onclick="ipedSelectFilter('category', '@cat.name()', 'category:&quot;@cat.name()&quot;')"
+             title="@cat.name()">
           <span class="caret"></span>
           <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
-          <span>@cat</span>
+          <span>@cat.name()</span>
+          @if (cat.count() >= 0) { <span class="count">@cat.count()</span> }
         </div>
       }
       </div>
     }
   </div>
 
-@* ── Evidence tree ─────────────────────────────────────────────────────── *@
+@* ── Evidence tree (C-03) ──────────────────────────────────────────────── *@
 } else if (activeTab.equals("evid")) {
   <div class="scroll">
-    <div style="padding:6px 10px">
-      <label class="filt-row" style="margin-bottom:6px">
-        <input type="checkbox" checked
-               hx-get="/workspace/sidebar?tab=evid"
-               hx-trigger="change"
-               hx-target="#sidebar"
-               hx-swap="innerHTML"/>
-        Recursive listing
-      </label>
-    </div>
+    <div class="group-label">Evidence sources</div>
     <div class="tree">
-      <div class="node">
+    @for (EvidenceNode r : evidenceRoots) {
+      <div class="node expandable" id="en-@r.id()" onclick="ipedEvidToggle('@r.id()', '@caseId')" title="@r.name()">
         <span class="caret">▸</span>
-        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
-        <span>Case root</span>
+        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span>@r.name()</span>
+        <span class="count">@r.count()</span>
       </div>
-      <div class="child">
-        <div class="node">
-          <span class="caret">▸</span>
-          <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
-          <span>Evidence source</span>
-          <span class="count">—</span>
-        </div>
-      </div>
-    </div>
-    <div class="dim" style="padding:8px 12px;font-size:11px;font-style:italic">
-      Evidence tree requires GET /tree API endpoint (v2).
+      <div class="child" id="ch-@r.id()" hidden></div>
+    }
     </div>
   </div>
 
-@* ── Bookmarks ─────────────────────────────────────────────────────────── *@
+@* ── Bookmarks (C-04) ─────────────────────────────────────────────────── *@
 } else if (activeTab.equals("coll")) {
   <div class="scroll" style="padding:6px 0">
     <div class="group-label">Bookmarks</div>
@@ -98,101 +88,112 @@
       </div>
     } else {
       <div class="tree">
-      @for (String bm : bookmarks) {
-        <div class="node"
-             onclick="ipedSelectFilter('bookmark', '@bm', 'bookmark:&quot;@bm&quot;')"
-             title="@bm">
+      @for (BookmarkEntry bm : bookmarks) {
+        <div class="node bm-node"
+             onclick="ipedSelectFilter('bookmark', '@bm.name()', 'bookmark:&quot;@bm.name()&quot;')"
+             title="@bm.name()">
           <span class="caret"></span>
-          <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-          <span>@bm</span>
+          <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="@bm.color()" stroke-width="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span>@bm.name()</span>
+          @if (bm.count() >= 0) { <span class="count">@bm.count()</span> }
         </div>
       }
       </div>
     }
     <div style="padding:6px 10px">
       <button class="btn-accent" style="width:100%;margin-top:4px"
-              hx-post="/api/bookmarks/New%20Bookmark"
+              hx-post="/api/cases/@caseId/bookmarks"
               hx-trigger="click"
-              hx-on:htmx:afterRequest="htmx.ajax('GET','/workspace/sidebar?tab=coll',{target:'#sidebar',swap:'innerHTML'})">
+              hx-on:htmx:afterRequest="htmx.ajax('GET','/workspace/sidebar?tab=coll&caseId=@caseId',{target:'#sidebar',swap:'innerHTML'})">
         + New bookmark
       </button>
     </div>
   </div>
 
-@* ── Metadata filters ──────────────────────────────────────────────────── *@
+@* ── Metadata filters (C-05) ────────────────────────────────────────────── *@
 } else if (activeTab.equals("meta")) {
   <div class="scroll">
     <div class="filt">
       <div class="lab">Size</div>
       <div class="range">
         <span>0</span>
-        <input type="range" min="0" max="100" value="100"
-               hx-post="/workspace/filter"
-               hx-trigger="change"
-               hx-vals='{"type":"metadata","label":"size ≤ max"}'
-               hx-target="#filter-chips"
-               hx-swap="innerHTML"/>
-        <span>Max</span>
+        <input type="range" min="0" max="7" value="7" list="size-ticks"
+               onchange="ipedSizeFilter(this.value)"/>
+        <span>Any</span>
       </div>
+      <datalist id="size-ticks">
+        <option value="0" label="0 B"/>
+        <option value="1" label="1 KB"/>
+        <option value="2" label="10 KB"/>
+        <option value="3" label="100 KB"/>
+        <option value="4" label="1 MB"/>
+        <option value="5" label="10 MB"/>
+        <option value="6" label="100 MB"/>
+        <option value="7"/>
+      </datalist>
     </div>
     <div class="filt">
       <div class="lab">Modified</div>
       <div style="display:grid;gap:4px">
-        <div class="ifield"><input type="date" placeholder="From"/></div>
-        <div class="ifield"><input type="date" placeholder="To"/></div>
+        <div class="ifield"><input type="date" id="meta-date-from" placeholder="From" onchange="ipedDateFilter()"/></div>
+        <div class="ifield"><input type="date" id="meta-date-to"   placeholder="To"   onchange="ipedDateFilter()"/></div>
       </div>
     </div>
     <div class="filt">
       <div class="lab">Flags</div>
       <label class="filt-row">
-        <input type="checkbox"/>
+        <input type="checkbox" onchange="ipedFlagFilter('deletedItem:true', 'Deleted only', this.checked)"/>
         Deleted only
       </label>
       <label class="filt-row">
-        <input type="checkbox" checked/>
-        Has hits
+        <input type="checkbox" checked onchange="ipedFlagFilter('hasChildren:true OR textSize:[1 TO *]', 'Has content', this.checked)"/>
+        Has content
       </label>
       <label class="filt-row">
-        <input type="checkbox"/>
+        <input type="checkbox" onchange="ipedFlagFilter('encrypted:true', 'Encrypted', this.checked)"/>
         Encrypted
       </label>
       <label class="filt-row">
-        <input type="checkbox"/>
-        Hidden / system
+        <input type="checkbox" onchange="ipedFlagFilter('isDir:true', 'Directories only', this.checked)"/>
+        Directories only
       </label>
     </div>
   </div>
 
-@* ── AI filters ────────────────────────────────────────────────────────── *@
+@* ── AI filters (C-06) ─────────────────────────────────────────────────── *@
 } else if (activeTab.equals("ai")) {
   <div class="scroll">
     <div class="group-label">AI classifiers</div>
-    <div class="tree">
-      <div class="node">
-        <span class="caret">▸</span>
-        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-        <span>NSFW classifier</span>
-        <span class="count">—</span>
+    @if (classifiers.isEmpty()) {
+      <div class="dim" style="padding:8px 12px;font-size:11.5px;font-style:italic">
+        No AI classifiers — is iped-webapi running?
       </div>
-      <div class="node">
-        <span class="caret">▸</span>
-        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-        <span>Face detection</span>
-        <span class="count">—</span>
+    } else {
+      <div class="tree">
+      @for (AiClassifier clf : classifiers) {
+        <div class="node expandable" id="ai-@clf.id()" onclick="ipedAiToggle('@clf.id()')" title="@clf.name()">
+          <span class="caret">▸</span>
+          <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          <span>@clf.name()</span>
+          <span class="count">@clf.labels().stream().mapToLong(AiLabel::count).sum()</span>
+        </div>
+        <div class="child" id="aic-@clf.id()" hidden>
+        @for (AiLabel lbl : clf.labels()) {
+          <div class="node"
+               onclick="ipedSelectFilter('@clf.id()', '@lbl.name()', '@clf.id():&quot;@lbl.name()&quot;')"
+               title="@lbl.name()">
+            <span class="caret"></span>
+            <span>@lbl.name()</span>
+            <span class="count">@lbl.count()</span>
+          </div>
+        }
+        </div>
+      }
       </div>
-      <div class="node">
-        <span class="caret"></span>
-        <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-        <span>Document language</span>
-        <span class="count">—</span>
-      </div>
-    </div>
-    <div class="dim" style="padding:8px 12px;font-size:11px;font-style:italic">
-      AI filters require GET /ai-filters API endpoint (v2).
-    </div>
+    }
   </div>
 
-@* ── Applied filters ───────────────────────────────────────────────────── *@
+@* ── Applied filters (C-07) ────────────────────────────────────────────── *@
 } else {
   <div class="scroll">
     <div class="group-label" style="display:flex;align-items:center;justify-content:space-between">
@@ -218,7 +219,7 @@
                 hx-delete="/workspace/filter/@f.id()"
                 hx-target="#filter-chips"
                 hx-swap="innerHTML"
-                hx-on:htmx:afterRequest="ipedOnChipRemoved(); htmx.ajax('GET','/workspace/sidebar?tab=filt',{target:'#sidebar',swap:'innerHTML'})"
+                hx-on:htmx:afterRequest="ipedOnChipRemoved(); htmx.ajax('GET','/workspace/sidebar?tab=filt&caseId=@caseId',{target:'#sidebar',swap:'innerHTML'})"
                 style="cursor:pointer;color:var(--text-dim)"
                 title="Remove filter">×</span>
         </div>

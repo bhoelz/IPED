@@ -1,22 +1,22 @@
 @import java.util.Map
-@args (String activeTab, String itemId, Map<String, String> metadata)
+@args (String activeTab, String itemId, String caseId, Map<String, String> metadata)
 @* Server-owned info panel. Reacts to the island's item-selected event.
    When itemId is a real "{sourceId}:{docId}" value, metadata is populated
    from the API. For stub IDs the metadata map is empty and fallback UI shows. *@
 
 <div class="panel-h">
   <div class="tab @if(activeTab.equals("hits")){active}"
-       hx-get="/workspace/info?tab=hits&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Hits</div>
+       hx-get="/workspace/info?tab=hits&itemId=@itemId&caseId=@caseId" hx-target="#info-panel" hx-swap="innerHTML">Hits</div>
   <div class="tab @if(activeTab.equals("sub")){active}"
-       hx-get="/workspace/info?tab=sub&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Attachments</div>
+       hx-get="/workspace/info?tab=sub&itemId=@itemId&caseId=@caseId" hx-target="#info-panel" hx-swap="innerHTML">Attachments</div>
   <div class="tab @if(activeTab.equals("par")){active}"
-       hx-get="/workspace/info?tab=par&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Parent</div>
+       hx-get="/workspace/info?tab=par&itemId=@itemId&caseId=@caseId" hx-target="#info-panel" hx-swap="innerHTML">Parent</div>
   <div class="tab @if(activeTab.equals("dup")){active}"
-       hx-get="/workspace/info?tab=dup&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Duplicates</div>
+       hx-get="/workspace/info?tab=dup&itemId=@itemId&caseId=@caseId" hx-target="#info-panel" hx-swap="innerHTML">Duplicates</div>
   <div class="tab @if(activeTab.equals("ref")){active}"
-       hx-get="/workspace/info?tab=ref&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Refs</div>
+       hx-get="/workspace/info?tab=ref&itemId=@itemId&caseId=@caseId" hx-target="#info-panel" hx-swap="innerHTML">Refs</div>
   <div class="tab @if(activeTab.equals("refby")){active}"
-       hx-get="/workspace/info?tab=refby&itemId=@itemId" hx-target="#info-panel" hx-swap="innerHTML">Ref'd by</div>
+       hx-get="/workspace/info?tab=refby&itemId=@itemId&caseId=@caseId" hx-target="#info-panel" hx-swap="innerHTML">Ref'd by</div>
   <div style="flex:1"></div>
   <button class="iconbtn" title="Pin item">
     <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 17v5M5 12h14M9 12V3h6v9l2 2v3H7v-3Z"/></svg>
@@ -33,29 +33,8 @@
   </div>
 } else {
 
-  @* ── Hits ───────────────────────────────────────────────────────────── *@
+  @* ── Hits (C-12) ────────────────────────────────────────────────────── *@
   @if (activeTab.equals("hits")) {
-    <div class="infosec">
-      <div class="h">
-        <span>Search hits</span>
-        <span class="mono" style="color:var(--accent)">
-          @if (!metadata.isEmpty() && metadata.containsKey("textSize")) {
-            @metadata.get("textSize") chars
-          } else {
-            — hits
-          }
-        </span>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
-        <button class="iconbtn" title="Previous hit">
-          <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        </button>
-        <span class="mono dim" style="font-size:11px">— / —</span>
-        <button class="iconbtn" title="Next hit">
-          <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </div>
-    </div>
     <div class="infosec">
       <div class="h">Selected item</div>
       <div class="mono" style="color:var(--text);font-size:11px;word-break:break-all">@itemId</div>
@@ -63,72 +42,20 @@
         <div style="margin-top:4px;font-size:11.5px">@metadata.get("name")</div>
       }
     </div>
-    @if (metadata.isEmpty()) {
-      <div class="dim" style="padding:8px 10px;font-size:11px;font-style:italic">
-        Hit snippets require v2 search API (EPIC-WEB-03).
-      </div>
-    }
-
-  @* ── Attachments (sub-items) ────────────────────────────────────────── *@
-  } else if (activeTab.equals("sub")) {
-    <div class="infosec">
-      <div class="h">Sub-items / attachments</div>
-      @if (metadata.containsKey("name")) {
-        <div class="breadcrumbs" style="margin-bottom:8px">
-          <span class="c cur">@metadata.get("name")</span>
-        </div>
-      }
-      <div class="dim" style="font-size:11px;font-style:italic">
-        Sub-item listing requires GET /subitems API endpoint (v2).
-      </div>
+    <div hx-get="/workspace/info/hits?itemId=@itemId&caseId=@caseId"
+         hx-trigger="load"
+         hx-swap="outerHTML"
+         style="display:flex;flex:1;align-items:center;justify-content:center;color:var(--text-dim);font-size:11px">
+      Loading hits…
     </div>
 
-  @* ── Parent ──────────────────────────────────────────────────────────── *@
-  } else if (activeTab.equals("par")) {
-    <div class="infosec">
-      <div class="h">Parent hierarchy</div>
-      <div class="breadcrumbs">
-        @if (metadata.containsKey("path")) {
-          @* Render path segments as breadcrumb chips *@
-          <span class="c">…</span>
-          <span class="sep">▸</span>
-          <span class="c cur">@metadata.getOrDefault("name", itemId)</span>
-        } else {
-          <span class="c">…</span>
-          <span class="sep">▸</span>
-          <span class="c cur">@itemId</span>
-        }
-      </div>
-    </div>
-
-  @* ── Duplicates ──────────────────────────────────────────────────────── *@
-  } else if (activeTab.equals("dup")) {
-    <div class="infosec">
-      <div class="h">Exact duplicates</div>
-      @if (metadata.containsKey("hash")) {
-        <div class="mono dim" style="font-size:10px;margin-bottom:6px">SHA-256: @metadata.get("hash")</div>
-      }
-      <div class="dim" style="font-size:11px;font-style:italic">
-        Duplicate listing requires GET /duplicates API endpoint (v2).
-      </div>
-    </div>
-
-  @* ── References from ────────────────────────────────────────────────── *@
-  } else if (activeTab.equals("ref")) {
-    <div class="infosec">
-      <div class="h">References (from this item)</div>
-      <div class="dim" style="font-size:11px;font-style:italic">
-        Reference graph requires GET /references API endpoint (v2).
-      </div>
-    </div>
-
-  @* ── Referenced by ───────────────────────────────────────────────────── *@
+  @* ── Relational tabs: lazy-load from /workspace/info/items ──────────── *@
   } else {
-    <div class="infosec">
-      <div class="h">Referenced by (other items → this)</div>
-      <div class="dim" style="font-size:11px;font-style:italic">
-        Back-reference graph requires GET /referencedBy API endpoint (v2).
-      </div>
+    <div hx-get="/workspace/info/items?tab=@activeTab&itemId=@itemId"
+         hx-trigger="load"
+         hx-swap="outerHTML"
+         style="display:flex;flex:1;align-items:center;justify-content:center;color:var(--text-dim);font-size:11px">
+      Loading…
     </div>
   }
 

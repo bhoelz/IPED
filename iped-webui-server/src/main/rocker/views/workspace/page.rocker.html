@@ -28,6 +28,12 @@
         <input id="q" name="q" placeholder="Search evidence…" autocomplete="off"/>
         <span class="count mono" id="hitcount"></span>
       </form>
+      @* Dedup toggle chip — always visible, independent of active filters *@
+      <label class="chip chip-toggle" id="chip-dedup" title="Hide duplicate items">
+        <input type="checkbox" id="dedup-check" onchange="ipedToggleDedup(this.checked)" style="display:none"/>
+        <svg class="icn" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        No duplicates
+      </label>
       @* Active filter chips — loaded via HTMX on page init, updated by filter actions *@
       <div id="filter-chips" class="filter-chips"
            hx-get="/workspace/filter-chips"
@@ -55,7 +61,7 @@
 
   @* ═══════════════════════════════════════════════════════ SIDEBAR ════ *@
   <aside class="sidebar panel" id="sidebar"
-         hx-get="/workspace/sidebar?tab=cat" hx-trigger="load" hx-target="#sidebar" hx-swap="innerHTML">
+         hx-get="/workspace/sidebar?tab=cat&caseId=@caseId" hx-trigger="load" hx-target="#sidebar" hx-swap="innerHTML">
   </aside>
 
   <div class="resize-handle resize-handle-sidebar" id="rh-sidebar" title="Drag to resize sidebar"></div>
@@ -68,6 +74,22 @@
         <button data-mode="gallery" onclick="ipedSetMode('gallery')">Gallery</button>
         <button data-mode="timeline" onclick="ipedSetMode('timeline')">Timeline</button>
         <button data-mode="graph" onclick="ipedSetMode('graph')">Links</button>
+      </div>
+      @* Gallery-specific toolbar — shown only in gallery mode *@
+      <div id="gallery-tools" hidden style="display:none;align-items:center;gap:2px;margin-right:6px">
+        <button class="iconbtn" title="Fewer columns" onclick="document.querySelector('iped-gallery').dispatchEvent(new CustomEvent('columns-dec'))">
+          <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14"/></svg>
+        </button>
+        <button class="iconbtn" title="More columns" onclick="document.querySelector('iped-gallery').dispatchEvent(new CustomEvent('columns-inc'))">
+          <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div style="width:1px;height:16px;background:var(--border);margin:0 4px"></div>
+        <button class="iconbtn" id="btn-blur" title="Toggle blur filter" onclick="ipedGalleryToggle('blur-toggle','btn-blur')">
+          <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+        </button>
+        <button class="iconbtn" id="btn-gray" title="Toggle grayscale" onclick="ipedGalleryToggle('gray-toggle','btn-gray')">
+          <svg class="icn" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 1 0 18"/></svg>
+        </button>
       </div>
       <div style="flex:1"></div>
       <span class="muted mono" style="font-size:11px" id="resultsummary">results grid</span>
@@ -104,21 +126,19 @@
                   api-base="/api"
                   hidden></iped-gallery>
 
-    @* ── Timeline / Graph: placeholders until islands land ──────────── *@
-    <div data-view="timeline" hidden class="empty-state" style="flex:1">
-      <div class="empty-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>
-      </div>
-      <div class="empty-title">Timeline</div>
-      <div class="empty-sub">Timeline island (C-10) pending implementation</div>
-    </div>
-    <div data-view="graph" hidden class="empty-state" style="flex:1">
-      <div class="empty-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="m8 6 8 0M7 8l4 8M17 8l-4 8"/></svg>
-      </div>
-      <div class="empty-title">Links graph</div>
-      <div class="empty-sub">Graph island (C-11) pending implementation</div>
-    </div>
+    @* ── Timeline island (C-10) ──────────────────────────────────────── *@
+    <iped-timeline data-view="timeline"
+                   case-id="@caseId"
+                   api-base="/api"
+                   hidden>
+    </iped-timeline>
+
+    @* ── Graph island (C-11) ─────────────────────────────────────────── *@
+    <iped-graph data-view="graph"
+                case-id="@caseId"
+                api-base="/api"
+                hidden>
+    </iped-graph>
   </section>
 
   <div class="resize-handle resize-handle-right" id="rh-right" title="Drag to resize right panel"></div>
@@ -231,9 +251,11 @@
   window.ipedSearch = function (ev) {
     ev.preventDefault();
     var q = document.getElementById('q').value || '';
-    var g = grid(), gal = gallery();
+    var g = grid(), gal = gallery(), tl = timeline();
     if (g)   g.setAttribute('query', q);
     if (gal) gal.setAttribute('query', q);
+    // Reset timeline search-id so it re-fetches for the new query
+    if (tl)  { tl.removeAttribute('search-id'); tl.setAttribute('case-id', tl.getAttribute('case-id') || ''); }
     return false;
   };
 
@@ -257,12 +279,42 @@
     allViews().forEach(function (el) {
       el.hidden = el.dataset.view !== mode;
     });
-    // Sync page/check buttons to active island
+    // Show gallery toolbar only in gallery mode
+    var gt = document.getElementById('gallery-tools');
+    if (gt) { gt.hidden = mode !== 'gallery'; gt.style.display = mode === 'gallery' ? 'flex' : 'none'; }
+    // Trigger the island to load if it hasn't yet
     var active = document.querySelector('[data-view="' + mode + '"]');
     if (active && active.getAttribute('case-id')) {
-      // Trigger the island to load if it hasn't yet
       active.dispatchEvent(new CustomEvent('view-activated'));
     }
+  };
+
+  // ── Gallery toggle helper ──────────────────────────────────────────────
+  window.ipedGalleryToggle = function (eventName, btnId) {
+    var gal = gallery();
+    if (gal) gal.dispatchEvent(new CustomEvent(eventName));
+    var btn = document.getElementById(btnId);
+    if (btn) btn.classList.toggle('on');
+  };
+
+  // ── Dedup toggle (C-01) ────────────────────────────────────────────────
+  var DEDUP_ID = 'dedup_no_duplicates';
+  window.ipedToggleDedup = function (checked) {
+    var chip = document.getElementById('chip-dedup');
+    if (chip) chip.classList.toggle('on', checked);
+    if (checked) {
+      htmx.ajax('POST',
+                '/workspace/filter?type=dedup&label=No%20duplicates',
+                { target: '#filter-chips', swap: 'innerHTML' });
+    } else {
+      htmx.ajax('DELETE', '/workspace/filter/' + DEDUP_ID,
+                { target: '#filter-chips', swap: 'innerHTML' });
+    }
+    // Re-search with updated query context (islands will re-fetch)
+    var q = document.getElementById('q').value || '';
+    var g = grid(), gal = gallery();
+    if (g)   g.setAttribute('query', q);
+    if (gal) gal.setAttribute('query', q);
   };
 
   // ── Filter chip management ─────────────────────────────────────────────
@@ -299,17 +351,29 @@
   };
 
   // ── Island → SSR bridges ───────────────────────────────────────────────
+
+  // Exposed for onclick handlers in server-rendered item lists (itemList.rocker.html)
+  window.ipedSelectItem = function (id) { onItemSelected(id); };
+
+  // Called by any island or SSR event that selects an item
+  function onItemSelected(id) {
+    if (!id) return;
+    document.getElementById('statuspath').textContent = id;
+    var cid = currentCaseId();
+    htmx.ajax('GET', '/workspace/info?tab=hits&itemId=' + encodeURIComponent(id) +
+                     '&caseId=' + encodeURIComponent(cid),
+              { target: '#info-panel', swap: 'innerHTML' });
+    htmx.ajax('GET', '/workspace/viewer?mode=preview&itemId=' + encodeURIComponent(id),
+              { target: '#viewer-panel', swap: 'innerHTML' });
+    var gr = graph();
+    if (gr) gr.setAttribute('item-id', id);
+  }
+
   function wireIsland(el) {
     if (!el) return;
 
     el.addEventListener('item-selected', function (e) {
-      var id = e.detail && e.detail.itemId;
-      if (!id) return;
-      document.getElementById('statuspath').textContent = id;
-      htmx.ajax('GET', '/workspace/info?tab=hits&itemId=' + encodeURIComponent(id),
-                { target: '#info-panel', swap: 'innerHTML' });
-      htmx.ajax('GET', '/workspace/viewer?mode=preview&itemId=' + encodeURIComponent(id),
-                { target: '#viewer-panel', swap: 'innerHTML' });
+      onItemSelected(e.detail && e.detail.itemId);
     });
 
     el.addEventListener('results-loaded', function (e) {
@@ -326,11 +390,115 @@
     });
   }
 
+  function wireTimeline(el) {
+    if (!el) return;
+    el.addEventListener('time-range-selected', function (e) {
+      var d = e.detail || {};
+      if (!d.start || !d.end) return;
+      var label = d.start + ' → ' + d.end;
+      // Add as a date-range filter chip and update all search islands
+      ipedSelectFilter('date-range', label, 'modified:[' + d.start + ' TO ' + d.end + ']');
+    });
+  }
+
   // Wire islands once they upgrade (custom elements define asynchronously)
   document.addEventListener('DOMContentLoaded', function () {
     wireIsland(grid());
-    wireIsland(gallery());
+    var gal = gallery();
+    wireIsland(gal);
+    // C-19: similar-image-search → fetch item hash → set hash query on both islands
+    if (gal) gal.addEventListener('similar-image-search', function (e) {
+      var itemId = e.detail && e.detail.itemId;
+      if (!itemId) return;
+      fetch('/api/cases/' + encodeURIComponent(currentCaseId()) +
+            '/items/' + encodeURIComponent(itemId) + '/metadata')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (meta) {
+          var hash = meta && (meta['hash'] || meta['Hash'] || meta['md5'] || meta['sha256']);
+          var q = hash ? 'hash:"' + hash + '"' : '';
+          if (!q) return;
+          var g = grid(), gl = gallery();
+          if (g)  g.setAttribute('query', q);
+          if (gl) gl.setAttribute('query', q);
+        })
+        .catch(function () {});
+    });
+    wireTimeline(timeline());
+    // graph item-selected also loads info/viewer panels
+    var gr = graph();
+    if (gr) gr.addEventListener('item-selected', function (e) {
+      onItemSelected(e.detail && e.detail.itemId);
+    });
   });
+
+  function currentCaseId() {
+    var el = document.querySelector('iped-results-grid[case-id]');
+    return el ? el.getAttribute('case-id') : '';
+  }
+
+  // ── Evidence tree toggle (C-03) ────────────────────────────────────────
+  window.ipedEvidToggle = function (nodeId, caseId) {
+    var ch = document.getElementById('ch-' + nodeId);
+    var nd = document.getElementById('en-' + nodeId);
+    if (!ch || !nd) return;
+    var opening = ch.hidden;
+    if (opening && !ch.children.length) {
+      htmx.ajax('GET',
+        '/workspace/sidebar/evid-children?nodeId=' + encodeURIComponent(nodeId) +
+        '&caseId=' + encodeURIComponent(caseId),
+        { target: ch, swap: 'innerHTML' });
+    }
+    ch.hidden = !opening;
+    nd.classList.toggle('open', opening);
+    var caret = nd.querySelector('.caret');
+    if (caret) caret.textContent = opening ? '▾' : '▸';
+  };
+
+  // ── AI classifier expand/collapse (C-06) ──────────────────────────────
+  window.ipedAiToggle = function (clfId) {
+    var ch = document.getElementById('aic-' + clfId);
+    var nd = document.getElementById('ai-' + clfId);
+    if (!ch || !nd) return;
+    ch.hidden = !ch.hidden;
+    nd.classList.toggle('open', !ch.hidden);
+    var caret = nd.querySelector('.caret');
+    if (caret) caret.textContent = ch.hidden ? '▸' : '▾';
+  };
+
+  // ── Metadata size filter (C-05) ────────────────────────────────────────
+  var _SIZE_LABELS = ['0 B','1 KB','10 KB','100 KB','1 MB','10 MB','100 MB',''];
+  var _SIZE_QUERIES = ['size:[0 TO 0]','size:[0 TO 1024]','size:[0 TO 10240]',
+                       'size:[0 TO 102400]','size:[0 TO 1048576]','size:[0 TO 10485760]',
+                       'size:[0 TO 104857600]',''];
+  window.ipedSizeFilter = function (val) {
+    var i = parseInt(val, 10);
+    var q = _SIZE_QUERIES[i] || '';
+    var label = i < 7 ? 'size ≤ ' + _SIZE_LABELS[i] : '';
+    if (q) ipedSelectFilter('size', label, q);
+    else   ipedOnChipRemoved(); // clear old size filter
+  };
+
+  // ── Metadata date-range filter (C-05) ─────────────────────────────────
+  window.ipedDateFilter = function () {
+    var from = document.getElementById('meta-date-from');
+    var to   = document.getElementById('meta-date-to');
+    var f = from && from.value ? from.value : '*';
+    var t = to   && to.value   ? to.value   : '*';
+    if (f === '*' && t === '*') return;
+    var label = f + ' → ' + t;
+    ipedSelectFilter('date-range', label, 'modified:[' + f + ' TO ' + t + ']');
+  };
+
+  // ── Metadata flag filter (C-05) ────────────────────────────────────────
+  window.ipedFlagFilter = function (query, label, checked) {
+    if (checked) ipedSelectFilter('flag', label, query);
+    else {
+      var id = ('flag_' + label).replace(/[^A-Za-z0-9_]/g, '_').toLowerCase();
+      htmx.ajax('DELETE', '/workspace/filter/' + encodeURIComponent(id),
+                { target: '#filter-chips', swap: 'innerHTML' });
+      ipedOnChipRemoved();
+    }
+  };
 
   // ── Clock ──────────────────────────────────────────────────────────────
   (function tick() {
