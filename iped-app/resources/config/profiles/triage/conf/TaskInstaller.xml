@@ -20,14 +20,14 @@
     <task class="iped.engine.task.HashDBLookupTask"></task>
     <task class="iped.engine.task.DuplicateTask"></task>
     
-    <task class="iped.engine.task.transcript.AudioTranscriptTask"></task>
+    <!--AudioTranscriptTask is provided by the iped-tasks-transcript plugin (runs before VideoThumbTask, see issue #100)-->
     <task class="iped.engine.task.video.VideoThumbTask"></task> <!--see issue #100-->
-    
+
     <task class="iped.engine.task.QRCodeTask"></task>
     <task class="iped.engine.task.regex.RegexTask"></task>
     <task class="iped.engine.task.LanguageDetectTask"></task>
     <task class="iped.engine.task.NamedEntityTask"></task>
-    <task class="iped.engine.task.MakePreviewTask"></task>
+    <!--MakePreviewTask is provided by the iped-tasks-report plugin-->
     
     <task class="iped.engine.task.DocThumbTask"></task>
     <task class="iped.engine.task.ImageThumbTask"></task>
@@ -41,8 +41,7 @@
     <task class="iped.engine.task.EntropyTask"></task>
     <task class="iped.engine.task.MinIOTask"></task>
     <task class="iped.engine.task.index.ElasticSearchIndexTask"></task>
-    <task class="iped.engine.graph.GraphTask"></task>
-    
-    <task class="iped.engine.task.ExportCSVTask"></task>
-    <task class="iped.engine.task.HTMLReportTask"></task>
+    <!--GraphTask is provided by the iped-tasks-graph plugin-->
+
+    <!--ExportCSVTask and HTMLReportTask are provided by the iped-tasks-report plugin-->
 </tasks>

@@ -3,17 +3,16 @@ package iped.engine.config;
 import iped.engine.task.AbstractTask;
 import iped.tasks.spi.TaskDescriptor;
 import iped.tasks.spi.TaskProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
+@Slf4j
 class PluginTaskLoader {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginTaskLoader.class);
 
     private static final List<String> PARENT_FIRST_PREFIXES = List.of("java.", "javax.", "jdk.", "sun.", "iped.tasks.spi.", "iped.configuration.", "iped.engine.");
 
@@ -40,15 +39,15 @@ class PluginTaskLoader {
                 }
             } catch (Exception e) {
                 skippedProviders.add(pluginCandidate.getName() + ": " + e.getMessage());
-                LOGGER.warn("Failed to load task providers from plugin {}", pluginCandidate.getAbsolutePath(), e);
+                log.warn("Failed to load task providers from plugin {}", pluginCandidate.getAbsolutePath(), e);
             }
         }
 
         if (!loadedProviders.isEmpty()) {
-            LOGGER.info("Loaded {} task providers from plugins: {}", loadedProviders.size(), loadedProviders);
+            log.info("Loaded {} task providers from plugins: {}", loadedProviders.size(), loadedProviders);
         }
         if (!skippedProviders.isEmpty()) {
-            LOGGER.warn("Skipped {} task providers/plugins: {}", skippedProviders.size(), skippedProviders);
+            log.warn("Skipped {} task providers/plugins: {}", skippedProviders.size(), skippedProviders);
         }
 
         return new TaskRegistry(registrations, loadedProviders, skippedProviders);
@@ -63,7 +62,7 @@ class PluginTaskLoader {
             }
         } catch (Exception e) {
             skippedProviders.add("classpath: " + e.getMessage());
-            LOGGER.warn("Failed to load task providers from classpath", e);
+            log.warn("Failed to load task providers from classpath", e);
         }
     }
 
@@ -73,7 +72,15 @@ class PluginTaskLoader {
         TaskDescriptor descriptor = provider.descriptor();
         String taskId = descriptor.id();
 
-        if (registrations.containsKey(taskId)) {
+        TaskRegistry.TaskRegistration existing = registrations.get(taskId);
+        if (existing != null) {
+            // Plugin jars are also on the flat application classpath, so the same provider can be
+            // discovered by both the classpath pass and the per-jar pass: not a conflict.
+            if (provider.getClass().getName().equals(existing.providerClass)) {
+                log.debug("Provider {} for task '{}' already registered from {}, ignoring duplicate from {}",
+                        existing.providerClass, taskId, existing.source, source);
+                return;
+            }
             throw new IOException("Duplicate task id '" + taskId + "' provided by plugin " + source);
         }
 

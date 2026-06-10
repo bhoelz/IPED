@@ -3,8 +3,7 @@ package iped.engine.config;
 import iped.configuration.Configurable;
 import iped.engine.task.AbstractTask;
 import iped.exception.IPEDException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -26,10 +25,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class TaskInstallerConfig implements Configurable<String> {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaskInstallerConfig.class);
     private static final String CONFIG_XML = "TaskInstaller.xml"; //$NON-NLS-1$
     public static final String SCRIPT_BASE = "scripts/tasks"; //$NON-NLS-1$
 
@@ -48,12 +47,12 @@ public class TaskInstallerConfig implements Configurable<String> {
         TaskRegistry registry = TaskRegistry.merge(xmlTasks.values(), pluginRegistry);
 
         if (!pluginRegistry.loadedProviders().isEmpty()) {
-            LOGGER.info("Resolving task graph with {} XML tasks and {} plugin tasks", xmlTasks.size(),
+            log.info("Resolving task graph with {} XML tasks and {} plugin tasks", xmlTasks.size(),
                     pluginRegistry.registrations().size());
         }
 
         List<AbstractTask> tasks = registry.instantiateResolvedTasks();
-        LOGGER.info("Resolved {} total tasks for execution pipeline", tasks.size());
+        log.info("Resolved {} total tasks for execution pipeline", tasks.size());
         return tasks;
     }
 

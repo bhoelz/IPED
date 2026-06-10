@@ -1,0 +1,3 @@
+iped.engine.task.provider.MakePreviewTaskProvider
+iped.engine.task.provider.ExportCSVTaskProvider
+iped.engine.task.provider.HTMLReportTaskProvider
