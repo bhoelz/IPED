@@ -1,0 +1,10 @@
+# pedo profile — only deviations from built-in defaults
+
+categories = [
+    "Text Documents",
+    "Spreadsheets",
+    "Presentations",
+    "RTF Documents",
+    "PDF Documents",
+    "HTML Documents",
+]

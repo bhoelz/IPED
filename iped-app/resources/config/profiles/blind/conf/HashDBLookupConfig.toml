@@ -1,0 +1,3 @@
+# blind profile — only deviations from built-in defaults
+
+excludeKnown = true

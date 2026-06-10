@@ -18,7 +18,7 @@ public class MapPanelConfig implements Configurable<UTF8Properties> {
      */
     private static final long serialVersionUID = 1L;
 
-    public static final String GEO_CONFIG_FILE = "GEOConfig.txt"; //$NON-NLS-1$
+    public static final String GEO_CONFIG_FILE = "GEOConfig.toml"; //$NON-NLS-1$
 
     UTF8Properties properties = new UTF8Properties();
     String tileServerUrlPattern;

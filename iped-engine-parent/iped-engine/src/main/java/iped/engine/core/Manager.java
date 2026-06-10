@@ -56,9 +56,8 @@ import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
 import iped.search.SearchResult;
 import iped.utils.IOUtil;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -109,10 +108,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * palavras-chave e o log de estatísticas do processamento.
  *
  */
+@Log4j2
 public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
     private static long commitIntervalMillis = 30 * 60 * 1000;
-    private static Logger LOGGER = LogManager.getLogger(Manager.class);
 
     private CaseData caseData;
     private ProcessingQueues processingQueues;
@@ -148,7 +147,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
             Method method = clazz.getMethod("install");
             method.invoke(null);
         } catch (Exception e) {
-            LOGGER.debug("AmazonCorrettoCryptoProvider not installed", e);
+            log.debug("AmazonCorrettoCryptoProvider not installed", e);
         }
 
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -286,7 +285,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
             if (distCfg != null) {
                 boolean enabled = (boolean) cfgClass.getMethod("isEnabled").invoke(distCfg);
                 if (enabled) {
-                    LOGGER.info("Distributed mode enabled — initialising KafkaItemProducer");
+                    log.info("Distributed mode enabled — initialising KafkaItemProducer");
                     // Derive a stable caseId from the output path
                     String caseId = output != null
                             ? output.getName().replaceAll("[^a-zA-Z0-9_-]", "_")
@@ -301,7 +300,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
         } catch (ClassNotFoundException ignored) {
             // iped-distributed not on classpath — local mode
         } catch (Exception e) {
-            LOGGER.warn("Could not initialise distributed mode: {} — falling back to local", e.getMessage());
+            log.warn("Could not initialise distributed mode: {} — falling back to local", e.getMessage());
         }
         return this;  // local mode: Manager is its own IDatasourceRegistry
     }
@@ -353,7 +352,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
         int i = 1;
         for (File source : sources) {
-            LOGGER.info("Evidence " + (i++) + ": '{}'", source.getAbsolutePath()); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info("Evidence " + (i++) + ": '{}'", source.getAbsolutePath()); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         PreviewRepositoryManager.configureWritable(output);
@@ -464,7 +463,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
     }
 
     private void shutDownSleuthkitServers() {
-        LOGGER.info("Closing Sleuthkit Servers."); //$NON-NLS-1$
+        log.info("Closing Sleuthkit Servers."); //$NON-NLS-1$
         SleuthkitClient.shutDownServers();
     }
 
@@ -526,7 +525,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
     private void removeEvidence(String evidenceName, EvidenceStatus status) throws Exception {
         Level CONSOLE = Level.getLevel("MSG"); //$NON-NLS-1$
-        LOGGER.log(CONSOLE, "Removing evidence '{}' from case...", evidenceName);
+        log.log(CONSOLE, "Removing evidence '{}' from case...", evidenceName);
 
         // query evidenceUUID and tskID
         String evidenceUUID;
@@ -550,17 +549,17 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
         }
 
         // remove from items from index
-        LOGGER.log(CONSOLE, "Deleting items from index...");
+        log.log(CONSOLE, "Deleting items from index...");
         TermQuery query = new TermQuery(new Term(BasicProps.EVIDENCE_UUID, evidenceUUID));
         int prevDocs = writer.getDocStats().numDocs;
         writer.deleteDocuments(query);
         writer.commit();
         int deletes = prevDocs - writer.getDocStats().numDocs;
-        LOGGER.log(CONSOLE, "Deleted {} raw documents from index.", deletes);
+        log.log(CONSOLE, "Deleted {} raw documents from index.", deletes);
 
         // remove evidence from TSK DB
         if (tskID != null) {
-            LOGGER.log(CONSOLE, "Deleting image reference from TSK DB...");
+            log.log(CONSOLE, "Deleting image reference from TSK DB...");
             SleuthkitReader.deleteImageInfo(tskID, output);
         }
 
@@ -575,7 +574,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
         writer.close();
 
         // removes graph connections from evidence
-        LOGGER.log(CONSOLE, "Deleting connections from graph...");
+        log.log(CONSOLE, "Deleting connections from graph...");
         GraphService graphService = null;
         try {
             if (new File(output, GraphConstants.DB_DATA_PATH).exists()) {
@@ -583,9 +582,9 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
                 graphService = GraphServiceFactoryImpl.getInstance().getGraphService(graphDbFolder);
                 graphService.start(graphDbFolder);
                 int deletions = graphService.deleteRelationshipsFromDatasource(evidenceUUID);
-                LOGGER.log(CONSOLE, "Deleted {} graph connections.", deletions);
+                log.log(CONSOLE, "Deleted {} graph connections.", deletions);
             } else {
-                LOGGER.log(CONSOLE, "Graph database not found.");
+                log.log(CONSOLE, "Graph database not found.");
             }
         } finally {
             if (graphService != null) {
@@ -594,10 +593,10 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
         }
 
         // Delete relations from graph source CSV
-        LOGGER.log(CONSOLE, "Deleting connections from graph CSVs...");
+        log.log(CONSOLE, "Deleting connections from graph CSVs...");
         int deletions = GraphFileWriter.removeDeletedRelationships(evidenceUUID,
                 new File(output, GraphConstants.CSVS_PATH));
-        LOGGER.log(CONSOLE, "Deleted {} CSV connections.", deletions);
+        log.log(CONSOLE, "Deleted {} CSV connections.", deletions);
 
         status.removeEvidence(evidenceName);
         status.save();
@@ -607,7 +606,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
         UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", Messages.getString("Manager.OpeningIndex")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
         boolean newIndex = !indexDir.exists();
-        LOGGER.info((newIndex ? "Creating" : "Opening") + " index: {}", indexDir.getAbsoluteFile());
+        log.info((newIndex ? "Creating" : "Opening") + " index: {}", indexDir.getAbsoluteFile());
         Directory directory = ConfiguredFSDirectory.open(indexDir);
         IndexWriterConfig config = getIndexWriterConfig();
 
@@ -699,7 +698,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
                     throw new IPEDException("Tried to get queue end from queue, but failed! Please warn the dev team.");
                 }
                 if (processingQueues.changeToNextQueue() != null) {
-                    LOGGER.info(
+                    log.info(
                             "Changed to processing queue with priority " + processingQueues.getCurrentQueuePriority()); //$NON-NLS-1$
                     caseData.putCaseObject(IItemSearcher.class.getName(),
                             new ItemSearcher(output.getParentFile(), writer));
@@ -731,7 +730,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
                 try {
                     long start = System.currentTimeMillis() / 1000;
                     UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", Messages.getString("Manager.CommitStarted"));
-                    LOGGER.info("Prepare commit started...");
+                    log.info("Prepare commit started...");
                     writer.prepareCommit();
 
                     // commit other control data
@@ -739,7 +738,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
                     IndexMetadata.saveMetadataTypes(new File(output, "conf")); //$NON-NLS-1$
                     stats.commit();
 
-                    LOGGER.info("Commiting sqlite storages...");
+                    log.info("Commiting sqlite storages...");
                     ExportFileTaskRuntime.commitStorage(output);
 
                     TaskRuntime.invokeStaticVoid("iped.engine.graph.GraphTask", "commit");
@@ -752,7 +751,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
                     long end = System.currentTimeMillis() / 1000;
                     UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", Messages.getString("Manager.CommitFinished"));
-                    LOGGER.info("Commit finished in " + (end - start) + "s");
+                    log.info("Commit finished in " + (end - start) + "s");
                     partialCommitsTime.addAndGet(end - start);
 
                 } catch (Exception e) {
@@ -762,9 +761,9 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
                         e.printStackTrace();
                     }
                     try {
-                        LOGGER.error("Error commiting. Rollback commit started...");
+                        log.error("Error commiting. Rollback commit started...");
                         writer.rollback();
-                        LOGGER.error("Rollback commit finished.");
+                        log.error("Rollback commit finished.");
 
                     } catch (IOException e1) {
                         e1.printStackTrace();
@@ -791,11 +790,11 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
         if (indexConfig.isForceMerge()) {
             UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", Messages.getString("Manager.Optimizing")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            LOGGER.info("Optimizing Index..."); //$NON-NLS-1$
+            log.info("Optimizing Index..."); //$NON-NLS-1$
             try {
                 writer.forceMerge(1);
             } catch (Throwable e) {
-                LOGGER.error("Error while optimizing: {}", e); //$NON-NLS-1$
+                log.error("Error while optimizing: {}", e); //$NON-NLS-1$
             }
 
         }
@@ -803,18 +802,18 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
         stats.commit();
 
         UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", Messages.getString("Manager.ClosingIndex")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        LOGGER.info("Closing Index..."); //$NON-NLS-1$
+        log.info("Closing Index..."); //$NON-NLS-1$
         writer.close();
         writer = null;
 
         if (!indexDir.getCanonicalPath().equalsIgnoreCase(finalIndexDir.getCanonicalPath())) {
             UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", Messages.getString("Manager.CopyingIndex")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            LOGGER.info("Moving Index..."); //$NON-NLS-1$
+            log.info("Moving Index..."); //$NON-NLS-1$
             try {
                 Files.move(indexDir.toPath(), finalIndexDir.toPath());
 
             } catch (IOException e) {
-                LOGGER.info("Move failed. Copying Index..."); //$NON-NLS-1$
+                log.info("Move failed. Copying Index..."); //$NON-NLS-1$
                 IOUtil.copyDirectory(indexDir, finalIndexDir);
             }
         }
@@ -834,14 +833,14 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
     }
 
     public void deleteTempDir() {
-        LOGGER.info("Deleting temp folder {}", localConfig.getIndexerTemp()); //$NON-NLS-1$
+        log.info("Deleting temp folder {}", localConfig.getIndexerTemp()); //$NON-NLS-1$
         IOUtil.deleteDirectory(localConfig.getIndexerTemp());
     }
 
     private void filterKeywords() {
 
         try {
-            LOGGER.info("Filtering keywords..."); //$NON-NLS-1$
+            log.info("Filtering keywords..."); //$NON-NLS-1$
             UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", //$NON-NLS-1$ //$NON-NLS-2$
                     Messages.getString("Manager.FilteringKeywords")); //$NON-NLS-1$
             ArrayList<String> palavras = Util.loadKeywords(output.getAbsolutePath() + "/palavras-chave.txt", //$NON-NLS-1$
@@ -862,7 +861,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
                             palavrasFinais.add(palavra);
                         }
                     } catch (Exception e) {
-                        LOGGER.error("Erro filtering by {} {}", palavra, e.toString());
+                        log.error("Erro filtering by {} {}", palavra, e.toString());
                     }
 
                 }
@@ -870,13 +869,13 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
                 Util.saveKeywords(palavrasFinais, output.getAbsolutePath() + "/palavras-chave.txt", "UTF-8"); //$NON-NLS-1$ //$NON-NLS-2$
                 int filtradas = palavras.size() - palavrasFinais.size();
-                LOGGER.info("Filtered {} keywords.", filtradas); //$NON-NLS-1$
+                log.info("Filtered {} keywords.", filtradas); //$NON-NLS-1$
             } else {
-                LOGGER.info("No keywords to filter out."); //$NON-NLS-1$
+                log.info("No keywords to filter out."); //$NON-NLS-1$
             }
 
         } catch (Exception e) {
-            LOGGER.error("Error filtering keywords", e); //$NON-NLS-1$
+            log.error("Error filtering keywords", e); //$NON-NLS-1$
         }
 
     }
@@ -889,7 +888,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
         UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", //$NON-NLS-1$ //$NON-NLS-2$
                 Messages.getString("Manager.DeletingTreeNodes")); //$NON-NLS-1$
-        LOGGER.info("Deleting empty tree nodes"); //$NON-NLS-1$
+        log.info("Deleting empty tree nodes"); //$NON-NLS-1$
 
         try (IPEDSource ipedCase = new IPEDSource(output.getParentFile())) {
             IPEDSearcher searchAll = new IPEDSearcher(ipedCase, new MatchAllDocsQuery());
@@ -927,7 +926,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
             }
 
         } catch (Exception e) {
-            LOGGER.warn("Error deleting empty tree nodes", e); //$NON-NLS-1$
+            log.warn("Error deleting empty tree nodes", e); //$NON-NLS-1$
 
         } finally {
             IOUtil.closeQuietly(writer);
@@ -980,11 +979,17 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
             IOUtil.copyDirectory(new File(Configuration.getInstance().appRoot, "htmlreport"), //$NON-NLS-1$
                     new File(output, "htmlreport")); //$NON-NLS-1$
 
-            // copy default configs
+            // copy local deviation configs; built-in defaults travel inside lib/ jars
             File defaultProfile = new File(Configuration.getInstance().appRoot);
             IOUtil.copyDirectory(new File(defaultProfile, "conf"), new File(output, "conf"));
-            IOUtil.copyFile(new File(defaultProfile, Configuration.LOCAL_CONFIG), new File(output, Configuration.LOCAL_CONFIG));
-            IOUtil.copyFile(new File(defaultProfile, Configuration.CONFIG_FILE), new File(output, Configuration.CONFIG_FILE));
+            File localConfig = new File(defaultProfile, Configuration.LOCAL_CONFIG);
+            if (localConfig.exists()) {
+                IOUtil.copyFile(localConfig, new File(output, Configuration.LOCAL_CONFIG));
+            }
+            File mainConfig = new File(defaultProfile, Configuration.CONFIG_FILE);
+            if (mainConfig.exists()) {
+                IOUtil.copyFile(mainConfig, new File(output, Configuration.CONFIG_FILE));
+            }
             resetLocalConfigToPortable(new File(output, Configuration.LOCAL_CONFIG));
             setSplashMessage(output);
 

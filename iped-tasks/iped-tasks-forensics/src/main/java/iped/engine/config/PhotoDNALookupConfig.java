@@ -6,7 +6,7 @@ public class PhotoDNALookupConfig extends AbstractTaskPropertiesConfig {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String CONFIG_FILE = "PhotoDNALookupConfig.txt";
+    private static final String CONFIG_FILE = "PhotoDNALookupConfig.toml";
 
     private static final String ENABLE_PHOTO_DNA = "enablePhotoDNALookup";
 

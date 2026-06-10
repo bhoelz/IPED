@@ -12,7 +12,7 @@ public class IndexTaskConfig extends AbstractTaskPropertiesConfig {
     private static final long serialVersionUID = 1L;
 
     private static final String ENABLE_PARAM = "indexFileContents";
-    private static final String CONFIG_FILE = "IndexTaskConfig.txt";
+    private static final String CONFIG_FILE = "IndexTaskConfig.toml";
 
     private boolean indexUnallocated = false;
     private boolean convertCharsToLowerCase = false;

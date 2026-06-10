@@ -14,7 +14,7 @@ import platform
 
 # configuration properties
 enableProp = 'enableFaceRecognition'
-configFile = 'FaceRecognitionConfig.txt'
+configFile = 'FaceRecognitionConfig.toml'
 numFaceRecognitionProcessesProp = 'numFaceRecognitionProcesses'
 maxResolutionProp = 'maxResolution'
 faceDetectionModelProp = 'faceDetectionModel'

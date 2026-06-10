@@ -1,0 +1,14 @@
+# pedo profile — only deviations from built-in defaults
+
+enablePhotoDNA = true
+enableHashDBLookup = true
+enablePhotoDNALookup = true
+enableLedDie = true
+enableQRCode = true
+enableCarving = true
+enableLedCarving = true
+enableKnownMetCarving = true
+enableImageSimilarity = true
+enableFaceRecognition = true
+enableAgeEstimation = true
+enableRemoteImageClassifier = true

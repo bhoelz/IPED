@@ -1,10 +1,10 @@
 package iped.engine.config;
 
+import iped.utils.TomlProperties;
+
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class ExportByCategoriesConfig extends AbstractTaskConfig<Set<String>> {
@@ -13,7 +13,8 @@ public class ExportByCategoriesConfig extends AbstractTaskConfig<Set<String>> {
      *
      */
     private static final long serialVersionUID = 1L;
-    public static final String CONFIG_FILE = "CategoriesToExport.txt"; //$NON-NLS-1$
+    public static final String CONFIG_FILE = "CategoriesToExport.toml"; //$NON-NLS-1$
+    private static final String CATEGORIES_KEY = "categories";
     public static final String ENABLE_PARAM = "enableAutomaticExportFiles";
 
     private Set<String> categoriesToExport = new HashSet<String>();
@@ -53,13 +54,9 @@ public class ExportByCategoriesConfig extends AbstractTaskConfig<Set<String>> {
 
     @Override
     public void processTaskConfig(Path resource) throws IOException {
-        List<String> lines = Files.readAllLines(resource);
-        for (String line : lines) { // $NON-NLS-1$
-            if (line.trim().startsWith("#") || line.trim().isEmpty()) { //$NON-NLS-1$
-                continue;
-            }
-            categoriesToExport.add(line.trim());
-        }
+        TomlProperties properties = new TomlProperties();
+        properties.load(resource);
+        categoriesToExport.addAll(properties.getListProperty(CATEGORIES_KEY));
     }
 
 }

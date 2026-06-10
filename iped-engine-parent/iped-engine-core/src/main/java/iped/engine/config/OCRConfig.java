@@ -13,8 +13,8 @@ public class OCRConfig extends AbstractPropertiesConfigurable {
      */
     private static final long serialVersionUID = 1L;
 
-    private static final String CONFIG_FILE0 = "IPEDConfig.txt"; //$NON-NLS-1$
-    public static final String CONFIG_FILE = "conf/OCRConfig.txt"; //$NON-NLS-1$
+    private static final String CONFIG_FILE0 = "IPEDConfig.toml"; //$NON-NLS-1$
+    public static final String CONFIG_FILE = "conf/OCRConfig.toml"; //$NON-NLS-1$
 
     private Boolean enableOCR;
     private boolean skipKnownFiles;

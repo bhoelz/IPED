@@ -1,0 +1,17 @@
+# fastmode profile — only deviations from built-in defaults
+
+enableHash = false
+exportFileProps = false
+processFileSignatures = false
+enableFileParsing = false
+expandContainers = false
+processEmbeddedDisks = false
+enableRegexSearch = false
+enableLanguageDetect = false
+enableGraphGeneration = false
+entropyTest = false
+indexFileContents = false
+enableImageThumbs = false
+enableSearchHardwareWallets = false
+enableVideoThumbs = false
+enableHTMLReport = false

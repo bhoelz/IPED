@@ -1,0 +1,5 @@
+# forensic profile — only deviations from built-in defaults
+
+categories = [
+    "Event Files",
+]

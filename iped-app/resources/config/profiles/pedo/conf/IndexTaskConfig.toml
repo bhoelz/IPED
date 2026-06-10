@@ -1,0 +1,3 @@
+# pedo profile — only deviations from built-in defaults
+
+indexUnallocated = true

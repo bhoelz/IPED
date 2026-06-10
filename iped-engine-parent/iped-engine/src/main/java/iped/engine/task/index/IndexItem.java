@@ -23,6 +23,7 @@ import iped.datasource.IDataSource;
 import iped.engine.data.DataSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.data.Item;
+import iped.engine.io.ImagePathResolverProvider;
 import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
 import iped.engine.preview.PreviewConstants;
 import iped.engine.preview.PreviewInputStreamFactory;
@@ -34,7 +35,6 @@ import iped.parsers.standard.StandardParser;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.engine.io.ImagePathResolverProvider;
 import iped.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.*;
@@ -51,8 +51,10 @@ import org.sleuthkit.datamodel.SleuthkitCase;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URI;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -81,7 +83,9 @@ public class IndexItem extends BasicProps {
     public static final String HAS_PREVIEW = "hasPreview";
     public static final String PREVIEW_EXT = "previewExt";
 
-    public static final String attrTypesFilename = "metadataTypes.txt"; //$NON-NLS-1$
+    public static final String attrTypesFilename = "metadataTypes.toml"; //$NON-NLS-1$
+
+    private static final String attrTypesSeedResource = "iped/config/defaults/conf/" + attrTypesFilename; //$NON-NLS-1$
 
     private static final String NEW_DATASOURCE_PATH_FILE = "data/newDataSourceLocations.txt";
 
@@ -192,25 +196,32 @@ public class IndexItem extends BasicProps {
     @SuppressWarnings("unchecked")
     public static void saveMetadataTypes(File confDir) throws IOException {
         File metadataTypesFile = new File(confDir, attrTypesFilename);
-        UTF8Properties props = new UTF8Properties();
+        Map<String, Object> types = new TreeMap<>();
         for (Entry<String, Class<?>> e : typesMap.entrySet().toArray(new Entry[0])) {
             if (ExtraProperties.FACE_ENCODINGS.equals(e.getKey())) {
                 continue;
             }
-            props.setProperty(e.getKey(), e.getValue().getName());
+            types.put(e.getKey(), e.getValue().getName());
         }
-        props.store(metadataTypesFile);
+        TomlProperties.store(types, metadataTypesFile.toPath());
         IOUtils.fsync(metadataTypesFile.toPath(), false);
     }
 
     public static void loadMetadataTypes(File confDir) throws IOException, ClassNotFoundException {
+        TomlProperties props = new TomlProperties();
+        // seed with the built-in known types, then let the case file override them
+        Enumeration<URL> seeds = IndexItem.class.getClassLoader().getResources(attrTypesSeedResource);
+        while (seeds.hasMoreElements()) {
+            try (InputStream is = seeds.nextElement().openStream()) {
+                props.load(is);
+            }
+        }
         File metadataTypesFile = new File(confDir, attrTypesFilename);
         if (metadataTypesFile.exists()) {
-            UTF8Properties props = new UTF8Properties();
-            props.load(metadataTypesFile);
-            for (String key : props.stringPropertyNames()) {
-                MetadataUtil.setMetadataType(key, Class.forName(props.getProperty(key)));
-            }
+            props.load(metadataTypesFile.toPath());
+        }
+        for (String key : props.stringPropertyNames()) {
+            MetadataUtil.setMetadataType(key, Class.forName(props.getProperty(key)));
         }
     }
 

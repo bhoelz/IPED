@@ -1,0 +1,5 @@
+# triage profile — only deviations from built-in defaults
+
+parseUnknownFiles = false
+parseCorruptedFiles = false
+storeTextCacheOnDisk = false

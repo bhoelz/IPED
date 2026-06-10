@@ -17,7 +17,7 @@ public class AnalysisConfig extends AbstractPropertiesConfigurable {
      */
     private static final long serialVersionUID = 1L;
 
-    public static final String CONFIG_FILE = "AnalysisConfig.txt"; //$NON-NLS-1$
+    public static final String CONFIG_FILE = "AnalysisConfig.toml"; //$NON-NLS-1$
 
     private boolean embedLibreOffice = true;
     private int searchThreads = 1;

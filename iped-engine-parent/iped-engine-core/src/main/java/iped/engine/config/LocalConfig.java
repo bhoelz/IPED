@@ -20,7 +20,7 @@ public class LocalConfig extends AbstractPropertiesConfigurable {
      */
     private static final long serialVersionUID = 1L;
 
-    public static final String CONFIG_FILE = "LocalConfig.txt"; //$NON-NLS-1$
+    public static final String CONFIG_FILE = "LocalConfig.toml"; //$NON-NLS-1$
 
     public static final String SYS_PROP_APPEND = "iped.appending"; //$NON-NLS-1$
 
@@ -174,11 +174,11 @@ public class LocalConfig extends AbstractPropertiesConfigurable {
         for (String line : lines) {
             line = line.trim();
             if (line.startsWith(NUM_THREADS)) {
-                line = NUM_THREADS + " = " + DEFAULT_VAL;
+                line = NUM_THREADS + " = \"" + DEFAULT_VAL + "\"";
             } else if (line.startsWith(TEMP_ON_SSD)) {
                 line = TEMP_ON_SSD + " = false";
             } else if (line.startsWith(IPED_TEMP)) {
-                line = IPED_TEMP + " = " + DEFAULT_VAL;
+                line = IPED_TEMP + " = \"" + DEFAULT_VAL + "\"";
             } else if (line.startsWith(HASH_DB)) {
                 line = "#" + line;
             } else if (line.startsWith(OUTPUT_ON_SSD)) {

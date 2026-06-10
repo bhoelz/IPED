@@ -1,6 +1,6 @@
 package iped.engine.config;
 
-import iped.engine.util.Util;
+import iped.utils.TomlProperties;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,7 +18,7 @@ public class MakePreviewConfig extends AbstractTaskConfig<List<Set<String>>> {
 
     private static final String ENABLE_PROP = ParsingTaskConfig.ENABLE_PARAM;
 
-    private static final String CONFIG_FILE = "MakePreviewConfig.txt";
+    private static final String CONFIG_FILE = "MakePreviewConfig.toml";
 
     private static final String SUPPORTED_KEY = "supportedMimes";
 
@@ -59,21 +59,10 @@ public class MakePreviewConfig extends AbstractTaskConfig<List<Set<String>>> {
 
     @Override
     public void processTaskConfig(Path resource) throws IOException {
-
-        String content = Util.readUTF8Content(resource.toFile());
-        for (String line : content.split("\n")) { //$NON-NLS-1$
-            if (line.trim().startsWith("#") || line.trim().isEmpty()) { //$NON-NLS-1$
-                continue;
-            }
-            if (line.startsWith(SUPPORTED_KEY) || line.startsWith(SUPPORTED_LINKS_KEY))
-                for (String mime : line.substring(line.indexOf('=') + 1).split(";")) {
-                    if (line.startsWith(SUPPORTED_LINKS_KEY))
-                        supportedMimesWithLinks.add(mime.trim());
-                    else if (line.startsWith(SUPPORTED_KEY))
-                        supportedMimes.add(mime.trim());
-                }
-        }
-
+        TomlProperties properties = new TomlProperties();
+        properties.load(resource);
+        supportedMimes.addAll(properties.getListProperty(SUPPORTED_KEY));
+        supportedMimesWithLinks.addAll(properties.getListProperty(SUPPORTED_LINKS_KEY));
     }
 
 }

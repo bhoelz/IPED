@@ -1,0 +1,7 @@
+iped/config/defaults/IPEDConfig.toml
+iped/config/defaults/LocalConfig.toml
+iped/config/defaults/conf/FileSystemConfig.toml
+iped/config/defaults/conf/OCRConfig.toml
+iped/config/defaults/conf/ParsingTaskConfig.toml
+iped/config/defaults/conf/SplashScreenConfig.toml
+iped/config/defaults/conf/SplitLargeBinaryConfig.toml

@@ -1,0 +1,3 @@
+# pedo profile — only deviations from built-in defaults
+
+hashes = ["md5", "sha-1", "sha-256", "edonkey"]

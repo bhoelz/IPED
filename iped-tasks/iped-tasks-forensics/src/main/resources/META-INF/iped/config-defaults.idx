@@ -1,0 +1,8 @@
+iped/config/defaults/conf/AppIDs.toml
+iped/config/defaults/conf/CategoriesToExport.toml
+iped/config/defaults/conf/HashDBLookupConfig.toml
+iped/config/defaults/conf/HashTaskConfig.toml
+iped/config/defaults/conf/NamedEntityRecognitionConfig.toml
+iped/config/defaults/conf/PhotoDNAConfig.toml
+iped/config/defaults/conf/PhotoDNALookupConfig.toml
+iped/config/defaults/conf/TempFileTaskConfig.toml

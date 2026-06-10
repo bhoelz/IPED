@@ -1,0 +1,6 @@
+# forensic profile — only deviations from built-in defaults
+
+enableHashDBLookup = true
+enableQRCode = true
+enableCarving = true
+enableImageSimilarity = true

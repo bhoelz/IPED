@@ -1,6 +1,6 @@
 package iped.engine.config;
 
-import iped.engine.util.Util;
+import iped.utils.TomlProperties;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -14,7 +14,8 @@ public class ExportByKeywordsConfig extends AbstractTaskConfig<List<String>> imp
      */
     private static final long serialVersionUID = 2L;
 
-    public static final String CONFIG_FILE = "KeywordsToExport.txt";
+    public static final String CONFIG_FILE = "KeywordsToExport.toml";
+    private static final String KEYWORDS_KEY = "keywords";
 
     /**
      * Enable property for the automatic file-export feature. Shared with
@@ -37,16 +38,9 @@ public class ExportByKeywordsConfig extends AbstractTaskConfig<List<String>> imp
 
     @Override
     public void processTaskConfig(Path resource) throws IOException {
-
-        String content = Util.readUTF8Content(resource.toFile());
-        for (String line : content.split("\n")) { //$NON-NLS-1$
-            line = line.trim();
-            if (line.startsWith("#") || line.isEmpty()) { //$NON-NLS-1$
-                continue;
-            }
-            keywords.add(line);
-        }
-
+        TomlProperties properties = new TomlProperties();
+        properties.load(resource);
+        keywords.addAll(properties.getListProperty(KEYWORDS_KEY));
     }
 
     @Override

@@ -51,7 +51,7 @@ All schemas conform to **JSON Schema Draft 2020-12** for maximum compatibility w
 ### Map Panel Configuration
 - **File**: `MapPanelConfig.schema.json`
 - **Class**: `iped.geo.impl.MapPanelConfig`
-- **Resource**: `GEOConfig.txt`
+- **Resource**: `GEOConfig.toml`
 - **Description**: Configures geographic mapping and map tile servers
 - **Configuration Type**: UTF8Properties
 - **Key Properties**:
@@ -63,7 +63,7 @@ All schemas conform to **JSON Schema Draft 2020-12** for maximum compatibility w
 ### Analysis Configuration
 - **File**: `AnalysisConfig.schema.json`
 - **Class**: `iped.engine.config.AnalysisConfig`
-- **Resource**: `AnalysisConfig.txt`
+- **Resource**: `AnalysisConfig.toml`
 - **Description**: General application-wide analysis and processing settings
 - **Configuration Type**: UTF8Properties
 - **Key Properties**:
@@ -75,7 +75,7 @@ All schemas conform to **JSON Schema Draft 2020-12** for maximum compatibility w
 ### OCR Configuration
 - **File**: `OCRConfig.schema.json`
 - **Class**: `iped.engine.config.OCRConfig`
-- **Resource**: `OCRConfig.txt`
+- **Resource**: `OCRConfig.toml`
 - **Description**: Optical character recognition settings for image text extraction
 - **Configuration Type**: UTF8Properties
 - **Key Properties**:
@@ -89,7 +89,7 @@ All schemas conform to **JSON Schema Draft 2020-12** for maximum compatibility w
 ### Index Task Configuration
 - **File**: `IndexTaskConfig.schema.json`
 - **Class**: `iped.engine.config.IndexTaskConfig`
-- **Resource**: `IndexTaskConfig.txt`
+- **Resource**: `IndexTaskConfig.toml`
 - **Description**: Elasticsearch indexing and search optimization
 - **Configuration Type**: UTF8Properties
 - **Key Properties**:
@@ -102,7 +102,7 @@ All schemas conform to **JSON Schema Draft 2020-12** for maximum compatibility w
 ### Hash Task Configuration
 - **File**: `HashTaskConfig.schema.json`
 - **Class**: `iped.engine.config.HashTaskConfig`
-- **Resource**: `HashTaskConfig.txt`
+- **Resource**: `HashTaskConfig.toml`
 - **Description**: File hashing and known hash database lookup
 - **Configuration Type**: UTF8Properties
 - **Key Properties**:

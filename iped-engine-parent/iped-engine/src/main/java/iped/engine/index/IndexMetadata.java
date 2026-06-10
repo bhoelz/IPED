@@ -3,23 +3,29 @@ package iped.engine.index;
 import iped.engine.lucene.analysis.FastASCIIFoldingFilter;
 import iped.parsers.util.MetadataUtil;
 import iped.utils.DateUtil;
-import iped.utils.UTF8Properties;
+import iped.utils.TomlProperties;
 import org.apache.lucene.index.IndexableField;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 public final class IndexMetadata {
 
     private IndexMetadata() {
     }
 
-    public static final String ATTR_TYPES_FILENAME = "metadataTypes.txt";
+    public static final String ATTR_TYPES_FILENAME = "metadataTypes.toml";
+
+    private static final String SEED_RESOURCE = "iped/config/defaults/conf/" + ATTR_TYPES_FILENAME;
 
     public static Map<String, Class<?>> getMetadataTypes() {
         return Collections.unmodifiableMap(MetadataUtil.getMetadataTypes());
@@ -28,21 +34,28 @@ public final class IndexMetadata {
     @SuppressWarnings("unchecked")
     public static void saveMetadataTypes(File confDir) throws IOException {
         File metadataTypesFile = new File(confDir, ATTR_TYPES_FILENAME);
-        UTF8Properties props = new UTF8Properties();
+        Map<String, Object> types = new TreeMap<>();
         for (Entry<String, Class<?>> e : MetadataUtil.getMetadataTypes().entrySet().toArray(new Entry[0])) {
-            props.setProperty(e.getKey(), e.getValue().getName());
+            types.put(e.getKey(), e.getValue().getName());
         }
-        props.store(metadataTypesFile);
+        TomlProperties.store(types, metadataTypesFile.toPath());
     }
 
     public static void loadMetadataTypes(File confDir) throws IOException, ClassNotFoundException {
+        TomlProperties props = new TomlProperties();
+        // seed with the built-in known types, then let the case file override them
+        Enumeration<URL> seeds = IndexMetadata.class.getClassLoader().getResources(SEED_RESOURCE);
+        while (seeds.hasMoreElements()) {
+            try (InputStream is = seeds.nextElement().openStream()) {
+                props.load(is);
+            }
+        }
         File metadataTypesFile = new File(confDir, ATTR_TYPES_FILENAME);
         if (metadataTypesFile.exists()) {
-            UTF8Properties props = new UTF8Properties();
-            props.load(metadataTypesFile);
-            for (String key : props.stringPropertyNames()) {
-                MetadataUtil.setMetadataType(key, Class.forName(props.getProperty(key)));
-            }
+            props.load(metadataTypesFile.toPath());
+        }
+        for (String key : props.stringPropertyNames()) {
+            MetadataUtil.setMetadataType(key, Class.forName(props.getProperty(key)));
         }
     }
 

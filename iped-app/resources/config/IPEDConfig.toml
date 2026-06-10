@@ -1,0 +1,17 @@
+# ########################################################################
+# Processing Settings (TOML)
+#
+# IPED ships safe defaults inside its own jars, so this file only needs
+# to contain settings that DIFFER from the defaults. Uncomment and edit
+# just what you want to change. The full list of options and their
+# documentation lives in the built-in defaults (iped/config/defaults/
+# inside the jars) and in the profiles under profiles/.
+# ########################################################################
+
+# Examples of frequently changed flags:
+#enableHash = true
+#enableHashDBLookup = false
+#enableOCR = false
+#enableCarving = false
+#enableAudioTranscription = false
+#addUnallocated = false   # see conf/FileSystemConfig.toml

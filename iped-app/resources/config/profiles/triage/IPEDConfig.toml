@@ -1,0 +1,12 @@
+# triage profile — only deviations from built-in defaults
+
+enableHash = false
+processFileSignatures = false
+expandContainers = false
+processEmbeddedDisks = false
+enableLanguageDetect = false
+enableGraphGeneration = false
+entropyTest = false
+enableImageThumbs = false
+enableVideoThumbs = false
+enableHTMLReport = false

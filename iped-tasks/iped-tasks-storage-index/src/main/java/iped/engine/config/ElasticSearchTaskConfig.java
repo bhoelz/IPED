@@ -9,7 +9,7 @@ public class ElasticSearchTaskConfig extends AbstractTaskPropertiesConfig {
      */
     private static final long serialVersionUID = 1L;
 
-    private static final String CONF_FILE_NAME = "ElasticSearchConfig.txt";
+    private static final String CONF_FILE_NAME = "ElasticSearchConfig.toml";
 
     private static final String ENABLED_KEY = "enableIndexToElasticSearch";
     private static final String HOST_KEY = "host";

@@ -12,7 +12,7 @@ public class ImageThumbTaskConfig extends AbstractTaskPropertiesConfig {
 
     private static final String ENABLE_PROP = "enableImageThumbs"; //$NON-NLS-1$
 
-    private static final String CONFIG_FILE = "ImageThumbsConfig.txt"; //$NON-NLS-1$
+    private static final String CONFIG_FILE = "ImageThumbsConfig.toml"; //$NON-NLS-1$
 
     public static final int DEFAULT_THUMB_SIZE = 256;
 

@@ -46,7 +46,7 @@
       "jsonSchema": "schemas/json/MapPanelConfig.schema.json",
       "uiSchema": "schemas/ui/MapPanelConfig.uischema.json",
       "configurableClass": "iped.geo.impl.MapPanelConfig",
-      "resourcePattern": "GEOConfig.txt",
+      "resourcePattern": "GEOConfig.toml",
       "category": "ui",
       "priority": 10
     },
@@ -57,7 +57,7 @@
       "jsonSchema": "schemas/json/AnalysisConfig.schema.json",
       "uiSchema": "schemas/ui/AnalysisConfig.uischema.json",
       "configurableClass": "iped.engine.config.AnalysisConfig",
-      "resourcePattern": "AnalysisConfig.txt",
+      "resourcePattern": "AnalysisConfig.toml",
       "category": "general",
       "priority": 5
     },
@@ -68,7 +68,7 @@
       "jsonSchema": "schemas/json/OCRConfig.schema.json",
       "uiSchema": "schemas/ui/OCRConfig.uischema.json",
       "configurableClass": "iped.engine.config.OCRConfig",
-      "resourcePattern": "OCRConfig.txt",
+      "resourcePattern": "OCRConfig.toml",
       "category": "processing",
       "priority": 8
     },
@@ -79,7 +79,7 @@
       "jsonSchema": "schemas/json/IndexTaskConfig.schema.json",
       "uiSchema": "schemas/ui/IndexTaskConfig.uischema.json",
       "configurableClass": "iped.engine.config.IndexTaskConfig",
-      "resourcePattern": "IndexTaskConfig.txt",
+      "resourcePattern": "IndexTaskConfig.toml",
       "category": "task",
       "priority": 4
     },
@@ -90,7 +90,7 @@
       "jsonSchema": "schemas/json/HashTaskConfig.schema.json",
       "uiSchema": "schemas/ui/HashTaskConfig.uischema.json",
       "configurableClass": "iped.engine.config.HashTaskConfig",
-      "resourcePattern": "HashTaskConfig.txt",
+      "resourcePattern": "HashTaskConfig.toml",
       "category": "task",
       "priority": 6
     },
@@ -101,7 +101,7 @@
       "jsonSchema": "schemas/json/PluginConfig.schema.json",
       "uiSchema": "schemas/ui/PluginConfig.uischema.json",
       "configurableClass": "iped.engine.config.PluginConfig",
-      "resourcePattern": "LocalConfig.txt",
+      "resourcePattern": "LocalConfig.toml",
       "category": "system",
       "priority": 15
     },
@@ -112,7 +112,7 @@
       "jsonSchema": "schemas/json/FileSystemConfig.schema.json",
       "uiSchema": "schemas/ui/FileSystemConfig.uischema.json",
       "configurableClass": "iped.engine.config.FileSystemConfig",
-      "resourcePattern": "FileSystemConfig.txt",
+      "resourcePattern": "FileSystemConfig.toml",
       "category": "system",
       "priority": 12
     },
@@ -123,7 +123,7 @@
       "jsonSchema": "schemas/json/ProcessingPriorityConfig.schema.json",
       "uiSchema": "schemas/ui/ProcessingPriorityConfig.uischema.json",
       "configurableClass": "iped.engine.config.ProcessingPriorityConfig",
-      "resourcePattern": "ProcessingPriorityConfig.txt",
+      "resourcePattern": "ProcessingPriorityConfig.toml",
       "category": "performance",
       "priority": 7
     },

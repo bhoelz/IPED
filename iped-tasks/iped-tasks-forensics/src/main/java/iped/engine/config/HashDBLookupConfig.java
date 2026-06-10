@@ -1,6 +1,6 @@
 package iped.engine.config;
 
-import iped.utils.UTF8Properties;
+import iped.utils.TomlProperties;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ public class HashDBLookupConfig extends AbstractTaskConfig<Pair<Boolean, String>
      */
     private static final long serialVersionUID = 1L;
 
-    private static final String CONFIG_FILE = "HashDBLookupConfig.txt";
+    private static final String CONFIG_FILE = "HashDBLookupConfig.toml";
     public static final String NSRL_CONFIG_FILE = "NSRLConfig.json";
     private static final String ENABLE_PARAM = "enableHashDBLookup";
     private static final String EXCLUDE_KNOWN = "excludeKnown";
@@ -57,8 +57,8 @@ public class HashDBLookupConfig extends AbstractTaskConfig<Pair<Boolean, String>
     public void processTaskConfig(Path resource) throws IOException {
 
         if (resource.endsWith(CONFIG_FILE)) {
-            UTF8Properties properties = new UTF8Properties();
-            properties.load(resource.toFile());
+            TomlProperties properties = new TomlProperties();
+            properties.load(resource);
             String value = properties.getProperty(EXCLUDE_KNOWN);
             if (value != null) {
                 setExcludeKnown(Boolean.valueOf(value.trim()));

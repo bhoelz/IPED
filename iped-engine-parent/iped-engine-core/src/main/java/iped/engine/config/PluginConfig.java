@@ -20,7 +20,7 @@ public class PluginConfig extends AbstractPropertiesConfigurable {
     private String relativePluginFolder;
     private String tskJarPath;
 
-    public static final String LOCAL_CONFIG = "LocalConfig.txt"; //$NON-NLS-1$
+    public static final String LOCAL_CONFIG = "LocalConfig.toml"; //$NON-NLS-1$
 
     public static final DirectoryStream.Filter<Path> filter = new Filter<Path>() {
         @Override
@@ -71,10 +71,10 @@ public class PluginConfig extends AbstractPropertiesConfigurable {
         if (tskJarPath != null && !tskJarPath.isEmpty())
             tskJarPath = tskJarPath.trim();
         else if (!SystemUtils.IS_OS_WINDOWS) {
-            throw new IPEDException("You must set tskJarPath on LocalConfig.txt!"); //$NON-NLS-1$
+            throw new IPEDException("You must set tskJarPath on LocalConfig.toml!"); //$NON-NLS-1$
         }
         if (!SystemUtils.IS_OS_WINDOWS && !new File(tskJarPath).exists()) {
-            throw new IPEDException("File not found " + tskJarPath + ". Set tskJarPath on LocalConfig.txt!"); //$NON-NLS-1$ //$NON-NLS-2$
+            throw new IPEDException("File not found " + tskJarPath + ". Set tskJarPath on LocalConfig.toml!"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 

@@ -9,7 +9,7 @@ public class RemoteImageClassifierConfig extends AbstractTaskPropertiesConfig {
     /**
      * Config file name and enable/disable property.
      */
-    private static final String CONFIG_FILE = "RemoteImageClassifierConfig.txt";
+    private static final String CONFIG_FILE = "RemoteImageClassifierConfig.toml";
     private static final String ENABLE_PROP = "enableRemoteImageClassifier";
 
     /**
@@ -40,7 +40,7 @@ public class RemoteImageClassifierConfig extends AbstractTaskPropertiesConfig {
     // Skip classification of images/videos smaller than a given dimension, i.e. height or width (in pixels; '0' = do not skip)
     private int skipDimension = 0;
 
-    // Skip classification of images/videos with hits on IPED hashesDB database (if 'hashesDB' is not configured in 'LocalConfig.txt' or 'false', do not skip)
+    // Skip classification of images/videos with hits on IPED hashesDB database (if 'hashesDB' is not configured in 'LocalConfig.toml' or 'false', do not skip)
     private boolean skipHashDBFiles = true;
 
     // Validate server SSL certificate

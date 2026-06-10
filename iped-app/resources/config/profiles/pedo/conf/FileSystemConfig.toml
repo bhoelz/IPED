@@ -1,0 +1,5 @@
+# pedo profile — only deviations from built-in defaults
+
+addUnallocated = true
+addFileSlacks = true
+unallocatedFragSize = 10737418240

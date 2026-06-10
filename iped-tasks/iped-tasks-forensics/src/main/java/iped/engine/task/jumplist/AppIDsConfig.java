@@ -1,23 +1,18 @@
 package iped.engine.task.jumplist;
 
 import iped.engine.config.AbstractTaskConfig;
+import iped.utils.TomlProperties;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AppIDsConfig extends AbstractTaskConfig<ConcurrentMap<String, String>> {
 
     private static final long serialVersionUID = 8409433427758336695L;
 
-    public static final String CONFIG_FILE = "AppIDs.txt";
-
-    private Pattern pattern = Pattern.compile("\"([^\"]*)\"");
+    public static final String CONFIG_FILE = "AppIDs.toml";
 
     private ConcurrentMap<String, String> appIDsMap = new ConcurrentHashMap<>();
 
@@ -43,31 +38,11 @@ public class AppIDsConfig extends AbstractTaskConfig<ConcurrentMap<String, Strin
 
     @Override
     public void processTaskConfig(Path resource) throws IOException {
-
-        try (BufferedReader reader = Files.newBufferedReader(resource)) {
-            String line = reader.readLine();
-
-            while ((line = reader.readLine()) != null) {
-                if (line.trim().startsWith("#") || line.trim().isEmpty()) {
-                    continue;
-                }
-
-                Matcher matcher = pattern.matcher(line);
-
-                if (!matcher.find()) {
-                    continue;
-                }
-                String appID = matcher.group(1).toLowerCase();
-
-                if (!matcher.find()) {
-                    continue;
-                }
-                String appName = matcher.group(1);
-
-                appIDsMap.put(appID, appName);
-            }
+        TomlProperties properties = new TomlProperties();
+        properties.load(resource);
+        for (String appID : properties.stringPropertyNames()) {
+            appIDsMap.put(appID.toLowerCase(), properties.getProperty(appID));
         }
-
     }
 
 }

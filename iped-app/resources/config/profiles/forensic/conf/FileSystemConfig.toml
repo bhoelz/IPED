@@ -1,0 +1,4 @@
+# forensic profile — only deviations from built-in defaults
+
+addUnallocated = true
+addFileSlacks = true

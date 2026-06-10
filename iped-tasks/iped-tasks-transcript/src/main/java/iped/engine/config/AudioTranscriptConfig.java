@@ -15,7 +15,7 @@ public class AudioTranscriptConfig extends AbstractTaskPropertiesConfig {
      *
      */
     private static final long serialVersionUID = 1L;
-    public static final String CONF_FILE = "AudioTranscriptConfig.txt";
+    public static final String CONF_FILE = "AudioTranscriptConfig.toml";
     private static final String ENABLE_KEY = "enableAudioTranscription";
     private static final String IMPL_CLASS_KEY = "implementationClass";
     private static final String REGION_KEY = "serviceRegion";

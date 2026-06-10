@@ -39,7 +39,7 @@ np = None
 
 # --- Global Configurations ---
 PLUGIN_ENABLE_PROP = 'enableCSAMDetector'
-CSAM_CONFIG_FILE = 'CSAMDetectorConfig.txt'
+CSAM_CONFIG_FILE = 'CSAMDetectorConfig.toml'
 CSAM_SCORE = 'ai:csamDetector:csam'
 PORN_SCORE = 'ai:csamDetector:porn'
 OTHER_SCORE = 'ai:csamDetector:other'

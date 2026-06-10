@@ -13,7 +13,7 @@ public class FileSystemConfig extends AbstractPropertiesConfigurable {
      */
     private static final long serialVersionUID = 1L;
 
-    private static final String CONFIG_FILE = "FileSystemConfig.txt";
+    private static final String CONFIG_FILE = "FileSystemConfig.toml";
 
     private boolean toAddUnallocated = false;
     private boolean toAddFileSlacks = false;

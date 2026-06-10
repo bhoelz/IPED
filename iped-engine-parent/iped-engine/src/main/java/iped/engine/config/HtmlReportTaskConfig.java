@@ -10,7 +10,7 @@ public class HtmlReportTaskConfig extends AbstractTaskPropertiesConfig {
      */
     private static final long serialVersionUID = 1L;
 
-    private static final String CONFIG_FILE = "HTMLReportConfig.txt"; //$NON-NLS-1$
+    private static final String CONFIG_FILE = "HTMLReportConfig.toml"; //$NON-NLS-1$
 
     /**
      * Flag de controle se a geração de miniaturas de imagem está habilitada.

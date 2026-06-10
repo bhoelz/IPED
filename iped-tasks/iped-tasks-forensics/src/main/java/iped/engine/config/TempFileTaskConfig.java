@@ -5,7 +5,7 @@ import iped.utils.UTF8Properties;
 public class TempFileTaskConfig extends AbstractTaskPropertiesConfig {
 
     private static final long serialVersionUID = 1L;
-    private static final String CONFIG_FILE = "TempFileTaskConfig.txt";
+    private static final String CONFIG_FILE = "TempFileTaskConfig.toml";
 
     private long maxFileSize = 1L << 30;
 

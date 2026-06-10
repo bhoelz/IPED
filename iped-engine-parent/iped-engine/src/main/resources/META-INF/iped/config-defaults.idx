@@ -1,0 +1,12 @@
+iped/config/defaults/conf/AgeEstimationConfig.toml
+iped/config/defaults/conf/AnalysisConfig.toml
+iped/config/defaults/conf/CategoriesToExpand.toml
+iped/config/defaults/conf/FaceRecognitionConfig.toml
+iped/config/defaults/conf/HTMLReportConfig.toml
+iped/config/defaults/conf/ImageThumbsConfig.toml
+iped/config/defaults/conf/IndexTaskConfig.toml
+iped/config/defaults/conf/KeywordsToExport.toml
+iped/config/defaults/conf/ProcessingPriorityConfig.toml
+iped/config/defaults/conf/RegexConfig.toml
+iped/config/defaults/conf/VideoThumbsConfig.toml
+iped/config/defaults/conf/metadataTypes.toml

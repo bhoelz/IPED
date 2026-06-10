@@ -9,7 +9,7 @@ import java.nio.file.Path;
 public class SplashScreenConfig extends AbstractPropertiesConfigurable {
 
     private static final long serialVersionUID = 1L;
-    public static final String CONFIG_FILE = "conf/SplashScreenConfig.txt";
+    public static final String CONFIG_FILE = "conf/SplashScreenConfig.toml";
     public static final String CUSTOM_MESSAGE = "customMessage";
 
     private String message;

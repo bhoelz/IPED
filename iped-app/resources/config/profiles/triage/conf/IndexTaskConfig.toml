@@ -1,0 +1,4 @@
+# triage profile — only deviations from built-in defaults
+
+storeTermVectors = false
+maxTokenLength = 128

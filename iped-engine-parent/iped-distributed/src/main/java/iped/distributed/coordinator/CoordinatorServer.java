@@ -7,14 +7,15 @@ import iped.distributed.kafka.TopicProvisioner;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,9 +37,9 @@ import java.util.concurrent.TimeUnit;
  *   GET    /api/v1/pipeline/{caseId}         Task → stage number map
  * </pre>
  */
+@Slf4j
 public class CoordinatorServer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CoordinatorServer.class);
 
     private final int                    port;
     private final AgentRegistry          registry;
@@ -69,14 +70,14 @@ public class CoordinatorServer {
         ctx.addServlet(new ServletHolder(new ApiServlet()), "/api/v1/*");
 
         server.start();
-        LOGGER.info("CoordinatorServer started on port {}", port);
+        log.info("CoordinatorServer started on port {}", port);
 
         // Periodically log registry health
         eviction.scheduleAtFixedRate(() -> {
             Map<String, AgentAvailability> avail = registry.availability();
             if (!avail.isEmpty()) {
                 avail.forEach((type, a) ->
-                    LOGGER.info("  [{}] agents={} free={}/{}", type,
+                    log.info("  [{}] agents={} free={}/{}", type,
                             a.getTotalAgents(), a.getFreeSlots(), a.getTotalSlots()));
             }
         }, 30, 30, TimeUnit.SECONDS);
@@ -128,7 +129,7 @@ public class CoordinatorServer {
                     resp.getWriter().write("{\"error\":\"Not found\"}");
                 }
             } catch (Exception e) {
-                LOGGER.error("Request error: {} {}", method, path, e);
+                log.error("Request error: {} {}", method, path, e);
                 resp.setStatus(500);
                 resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
             }
@@ -230,7 +231,7 @@ public class CoordinatorServer {
      * </ol>
      *
      * <p>No argument is required.  Useful for Docker / k8s deployments where
-     * all settings come from env vars or a mounted {@code DistributedConfig.txt}
+     * all settings come from env vars or a mounted {@code DistributedConfig.toml}
      * (pass the config directory as the first argument to load the file).
      */
     public static void main(String[] args) throws Exception {
@@ -247,21 +248,21 @@ public class CoordinatorServer {
         applyEnv(envProps, "itemTimeoutSeconds",       "ITEM_TIMEOUT_SECONDS");
         cfg.processProperties(envProps);
 
-        // 2. Optionally load DistributedConfig.txt from a config directory (first arg)
+        // 2. Optionally load DistributedConfig.toml from a config directory (first arg)
         if (args.length > 0) {
             java.nio.file.Path configDir = java.nio.file.Paths.get(args[0]);
             java.io.File configFile = configDir.resolve(DistributedConfig.CONFIG_FILE).toFile();
             if (configFile.isFile()) {
-                iped.utils.UTF8Properties fileProps = new iped.utils.UTF8Properties();
-                fileProps.load(configFile);
+                iped.utils.TomlProperties fileProps = new iped.utils.TomlProperties();
+                fileProps.load(configFile.toPath());
                 cfg.processProperties(fileProps);
-                LOGGER.info("Loaded configuration from {}", configFile);
+                log.info("Loaded configuration from {}", configFile);
             } else {
-                LOGGER.warn("Config file not found at {} — using defaults/env vars", configFile);
+                log.warn("Config file not found at {} — using defaults/env vars", configFile);
             }
         }
 
-        LOGGER.info("Starting IPED Coordinator — kafka={}, port={}",
+        log.info("Starting IPED Coordinator — kafka={}, port={}",
                 cfg.getKafkaBootstrapServers(), cfg.getCoordinatorPort());
 
         CoordinatorServer srv = new CoordinatorServer(cfg);

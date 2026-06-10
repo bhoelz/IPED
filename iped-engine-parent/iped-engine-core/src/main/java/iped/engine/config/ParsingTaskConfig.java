@@ -10,7 +10,7 @@ public class ParsingTaskConfig extends AbstractTaskPropertiesConfig {
     private static final long serialVersionUID = 1L;
 
     public static final String ENABLE_PARAM = "enableFileParsing";
-    public static final String CONF_FILE = "ParsingTaskConfig.txt";
+    public static final String CONF_FILE = "ParsingTaskConfig.toml";
 
     public static final String NUM_EXTERNAL_PARSERS = "numExternalParsers";
     public static final String SOURCES_WITH_PARSERS = "sourcesWithInternalParsers";

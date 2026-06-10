@@ -10,7 +10,7 @@ import java.nio.file.Path;
 public class ProcessingPriorityConfig extends AbstractPropertiesConfigurable {
     private static final long serialVersionUID = 1L;
 
-    public static final String CONFIG_FILE = "conf/ProcessingPriorityConfig.txt";
+    public static final String CONFIG_FILE = "conf/ProcessingPriorityConfig.toml";
 
     private boolean randomOrder = true;
     private int maxQueueSize = 0;

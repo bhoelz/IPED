@@ -5,7 +5,7 @@
 
 
 /**
- * Retorna o nome dos regex (em referência ao arquivo 'conf/RegexConfig.txt') ao qual este validator será aplicado.
+ * Retorna o nome dos regex (em referência ao arquivo 'conf/RegexConfig.toml') ao qual este validator será aplicado.
  * @returns um array contendo um ou mais nomes de regex a serem validados.
  */
 function getRegexNames() {

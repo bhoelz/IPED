@@ -13,7 +13,7 @@ public class SplitLargeBinaryConfig extends AbstractPropertiesConfigurable {
      */
     private static final long serialVersionUID = 1L;
 
-    private static final String CONF_FILE = "SplitLargeBinaryConfig.txt";
+    private static final String CONF_FILE = "SplitLargeBinaryConfig.toml";
 
     private long minItemSizeToFragment = 100 * 1024 * 1024;
     private int itemFragmentSize = 10 * 1024 * 1024;

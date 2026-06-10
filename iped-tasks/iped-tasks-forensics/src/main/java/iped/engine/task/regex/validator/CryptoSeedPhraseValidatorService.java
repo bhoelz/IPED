@@ -4,8 +4,7 @@ import iped.engine.config.ConfigurationManager; // Import ConfigurationManager
 import iped.engine.config.RegexTaskConfig; // Import RegexTaskConfig
 import iped.engine.config.RegexTaskConfig.RegexEntry; // Import RegexEntry
 import iped.engine.task.regex.RegexValidatorService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -23,9 +22,9 @@ import java.util.regex.Pattern;
  *
  * @author Rui Sant'Ana Junior
  */
+@Slf4j
 public class CryptoSeedPhraseValidatorService implements RegexValidatorService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CryptoSeedPhraseValidatorService.class);
     private static final String REGEX_PREFIX = "CRYPTO_POSSIBLE_SEED_PHRASE_";
     private static final List<Integer> BIP39_VALID_WORD_COUNTS = Arrays.asList(12, 15, 18, 21, 24);
 
@@ -39,7 +38,7 @@ public class CryptoSeedPhraseValidatorService implements RegexValidatorService {
         RegexTaskConfig regexTaskConfig = configurationManager.findObject(RegexTaskConfig.class);
 
         if (regexTaskConfig == null) {
-            LOGGER.error("RegexTaskConfig not found in ConfigurationManager. CryptoSeedPhraseValidatorService cannot initialize.");
+            log.error("RegexTaskConfig not found in ConfigurationManager. CryptoSeedPhraseValidatorService cannot initialize.");
             return;
         }
 
@@ -63,12 +62,12 @@ public class CryptoSeedPhraseValidatorService implements RegexValidatorService {
                     }
                     wordMaps.put(regexName, currentWordMap);
                 } else {
-                    LOGGER.warn("Regex pattern string is empty or null for regexName: {}", regexName);
+                    log.warn("Regex pattern string is empty or null for regexName: {}", regexName);
                 }
             }
         }
         if (discoveredRegexNames.isEmpty()) {
-            LOGGER.warn("No crypto seed phrase regexes found in RegexConfig.txt with prefix: {}", REGEX_PREFIX);
+            log.warn("No crypto seed phrase regexes found in RegexConfig.toml with prefix: {}", REGEX_PREFIX);
         }
     }
 
@@ -147,7 +146,7 @@ public class CryptoSeedPhraseValidatorService implements RegexValidatorService {
             String expectedChecksum = hashBits.substring(0, cs);
             return checksumBits.equals(expectedChecksum);
         } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("SHA-256 algorithm not found", e);
+            log.error("SHA-256 algorithm not found", e);
             return false;
         }
     }
@@ -181,7 +180,7 @@ public class CryptoSeedPhraseValidatorService implements RegexValidatorService {
             return version == 0x01 || version == 0x100 || version == 0x101 || version == 0x102 || version == 0x201;
 
         } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("HmacSHA512 algorithm not found", e);
+            log.error("HmacSHA512 algorithm not found", e);
             return false;
         } catch (Exception e) {
             return false;

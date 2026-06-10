@@ -17,7 +17,7 @@ public class RegexTaskConfig extends AbstractTaskConfig<Pair<Boolean, List<iped.
      */
     private static final long serialVersionUID = 2L;
 
-    private static final String CONFIG_FILE = "RegexConfig.txt"; //$NON-NLS-1$
+    private static final String CONFIG_FILE = "RegexConfig.toml"; //$NON-NLS-1$
     private static final String ENABLE_PARAM = "enableRegexSearch"; //$NON-NLS-1$
     private static final String FORMAT_MATCHES = "formatRegexMatches"; //$NON-NLS-1$
 

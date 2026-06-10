@@ -3,7 +3,6 @@ package iped.distributed.config;
 import iped.engine.config.AbstractPropertiesConfigurable;
 import iped.utils.UTF8Properties;
 
-import java.io.IOException;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 
@@ -11,13 +10,13 @@ import java.nio.file.Path;
  * Configuration for IPED distributed processing mode via Apache Kafka.
  *
  * To enable distributed mode, set {@code enableDistributed = true} in
- * {@code DistributedConfig.txt} inside the IPED configuration directory.
+ * {@code DistributedConfig.toml} inside the IPED configuration directory.
  */
 public class DistributedConfig extends AbstractPropertiesConfigurable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String CONFIG_FILE = "DistributedConfig.txt";
+    public static final String CONFIG_FILE = "DistributedConfig.toml";
 
     /** Master switch — false means local (current) behaviour, no Kafka involved. */
     private boolean enabled = false;

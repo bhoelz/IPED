@@ -1,0 +1,3 @@
+# fastmode profile — only deviations from built-in defaults
+
+storeTermVectors = false

@@ -1,0 +1,5 @@
+# blind profile — only deviations from built-in defaults
+
+enableHashDBLookup = true
+enableAutomaticExportFiles = true
+enableCarving = true

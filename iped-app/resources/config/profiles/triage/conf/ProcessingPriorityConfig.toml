@@ -1,0 +1,4 @@
+# triage profile — only deviations from built-in defaults
+
+randomOrder = false
+maxQueueSize = 100000

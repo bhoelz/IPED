@@ -1,9 +1,9 @@
 package iped.engine.config;
 
 import iped.utils.UTF8Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 public class DocThumbTaskConfig extends AbstractTaskPropertiesConfig {
 
     /**
@@ -11,9 +11,8 @@ public class DocThumbTaskConfig extends AbstractTaskPropertiesConfig {
      */
     private static final long serialVersionUID = 1L;
     private static final String ENABLE_PROP = "enableDocThumbs";
-    private static final String CONFIG_FILE = "DocThumbsConfig.txt";
+    private static final String CONFIG_FILE = "DocThumbsConfig.toml";
 
-    private static final Logger logger = LoggerFactory.getLogger(DocThumbTaskConfig.class);
 
     private int pdfTimeout = 60;
     private int loTimeout = 180;
@@ -115,7 +114,7 @@ public class DocThumbTaskConfig extends AbstractTaskPropertiesConfig {
         }
 
         if (!loEnabled && !pdfEnabled) {
-            logger.warn("Both PDF and LibreOffice thumb generation disabled!");
+            log.warn("Both PDF and LibreOffice thumb generation disabled!");
             super.setEnabled(false);
         }
 

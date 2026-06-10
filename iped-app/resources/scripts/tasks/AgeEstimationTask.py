@@ -18,7 +18,7 @@ from java.lang import System
 
 # configuration properties
 enableProp = 'enableAgeEstimation'
-configFile = 'AgeEstimationConfig.txt'
+configFile = 'AgeEstimationConfig.toml'
 
 # Maximum number of items per classification run
 batchSize = 50
@@ -28,7 +28,7 @@ batchSizeProp = 'batchSize'
 categorizationThreshold = 0
 categorizationThresholdProp = 'categorizationThreshold'
 
-# Skip age estimation for faces within images with hits on IPED hashesDB database (if 'hashesDB' is not configured in 'LocalConfig.txt' or 'false', do not skip)
+# Skip age estimation for faces within images with hits on IPED hashesDB database (if 'hashesDB' is not configured in 'LocalConfig.toml' or 'false', do not skip)
 skipHashDBFiles = True
 skipHashDBFilesProp = 'skipHashDBFiles'
 

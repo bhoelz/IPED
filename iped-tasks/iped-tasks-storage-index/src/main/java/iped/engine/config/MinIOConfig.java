@@ -8,7 +8,7 @@ public class MinIOConfig extends AbstractTaskPropertiesConfig {
      *
      */
     private static final long serialVersionUID = 1L;
-    private static final String CONFIG_FILE = "MinIOConfig.txt";
+    private static final String CONFIG_FILE = "MinIOConfig.toml";
     private static final String ENABLE_KEY = "enableMinIO";
     private static final String HOST_KEY = "host";
     private static final String PORT_KEY = "port";

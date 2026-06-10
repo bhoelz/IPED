@@ -12,6 +12,7 @@ import iped.exception.QueryNodeException;
 import iped.localization.LocaleResolver;
 import iped.properties.ExtraProperties;
 import iped.search.IMultiSearchResult;
+import iped.utils.TomlProperties;
 import iped.utils.UTF8Properties;
 import iped.viewers.api.*;
 import org.apache.lucene.search.Query;
@@ -87,10 +88,22 @@ public class FilterManager implements ActionListener, ListSelectionListener {
                 filters.load(userFilters);
             }
 
-            if (defaultFilter == null) {
-                defaultFilter = new File(App.get().appCase.getAtomicSourceBySourceId(0).getModuleDir(), "conf/DefaultFilters.txt"); //$NON-NLS-1$
+            // built-in default filters, overridden by case-specific deviations if present
+            Enumeration<java.net.URL> seeds = FilterManager.class.getClassLoader()
+                    .getResources("iped/config/defaults/conf/DefaultFilters.toml"); //$NON-NLS-1$
+            TomlProperties defaultFilters = new TomlProperties();
+            while (seeds.hasMoreElements()) {
+                try (java.io.InputStream is = seeds.nextElement().openStream()) {
+                    defaultFilters.load(is);
+                }
             }
-            filters.load(defaultFilter);
+            if (defaultFilter == null) {
+                defaultFilter = new File(App.get().appCase.getAtomicSourceBySourceId(0).getModuleDir(), "conf/DefaultFilters.toml"); //$NON-NLS-1$
+            }
+            if (defaultFilter.exists()) {
+                defaultFilters.load(defaultFilter.toPath());
+            }
+            filters.putAll(defaultFilters);
 
             // Remove obsolete default filters
             Iterator<Entry<Object, Object>> it = filters.entrySet().iterator();

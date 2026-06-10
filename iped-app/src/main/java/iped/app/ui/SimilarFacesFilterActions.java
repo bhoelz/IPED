@@ -180,7 +180,7 @@ public class SimilarFacesFilterActions {
     private abstract static class FaceFeatureExtractor implements Callable<Void> {
 
         private static final String SCRIPT_PATH = TaskInstallerConfig.SCRIPT_BASE + "/FaceRecognitionTask.py";
-        private static final String CONF_FILE = "FaceRecognitionConfig.txt";
+        private static final String CONF_FILE = "FaceRecognitionConfig.toml";
         private static final String NUM_PROCESSES = "numFaceRecognitionProcesses";
 
         private static volatile PythonTask task;

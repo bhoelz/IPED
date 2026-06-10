@@ -12,7 +12,7 @@ public class VideoThumbsConfig extends AbstractTaskPropertiesConfig {
     /**
      * Constante com o nome utilizado para o arquivo de propriedades.
      */
-    private static final String CONFIG_FILE = "VideoThumbsConfig.txt";
+    private static final String CONFIG_FILE = "VideoThumbsConfig.toml";
 
     private static final String ENABLED_PROP = "enableVideoThumbs";
 
