@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -23,16 +22,15 @@ public interface Configurable<T> extends Serializable {
      *
      * @return the filter to be used
      */
-    public DirectoryStream.Filter<Path> getResourceLookupFilter();
+    DirectoryStream.Filter<Path> getResourceLookupFilter();
 
     /**
      * Process the configuration resources found after applying the lookup filter.
      *
      * @param resources the filtered configuration resources.
      */
-    default public void processConfigs(List<Path> resources) throws IOException {
-        for (Iterator<Path> iterator = resources.iterator(); iterator.hasNext(); ) {
-            Path path = iterator.next();
+    default void processConfigs(List<Path> resources) throws IOException {
+        for (Path path : resources) {
             processConfig(path);
         }
     }

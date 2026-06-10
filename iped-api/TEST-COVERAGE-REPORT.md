@@ -96,7 +96,7 @@ Generated: 2026-05-31
 | `ParseException` | Class | `ExceptionsTest.java` | 1 | Constructor with message |
 | `QueryNodeException` | Class | `ExceptionsTest.java` | (covered via suite) | Constructor with message |
 
-**Tests:** 3 tests (+ suite runner). All exception classes fully covered.
+**Tests:** 3 tests (+ suite runner). All exception classes are fully covered.
 
 ---
 

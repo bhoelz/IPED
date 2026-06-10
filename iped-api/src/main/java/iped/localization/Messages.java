@@ -1,6 +1,7 @@
 package iped.localization;
 
 import iped.io.URLUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,21 +14,37 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 
+/**
+ * Loads UTF-8 resource bundles from the external {@code localization} folder
+ * shipped with the application, instead of the classpath.
+ */
+@Slf4j
 public class Messages {
 
+    /** Name of the folder containing the externalized resource bundles. */
     public static final String BUNDLES_FOLDER = "localization";
+
+    /** Path prefix used to locate the bundles folder from a source checkout. */
     public static final String BUNDLES_FOLDER_PREFIX = "iped-app/resources/";
 
     private Messages() {
     }
 
+    /**
+     * Loads a resource bundle from the external localization folder, reading
+     * the properties files as UTF-8.
+     *
+     * @param bundleName base name of the bundle, e.g. {@code "iped-properties"}
+     * @param locale     desired locale
+     * @return the resolved bundle
+     */
     public static ResourceBundle getExternalBundle(String bundleName, Locale locale) {
         File file = null;
         try {
             URL url = URLUtil.getURL(Messages.class);
             file = new File(new File(url.toURI()).getParentFile().getParentFile(), BUNDLES_FOLDER);
         } catch (URISyntaxException e1) {
-            e1.printStackTrace();
+            log.error("Failed to get URL for Messages class", e1);
         }
         if (file != null && !file.exists()) {
             File baseFile = new File(System.getProperty("user.dir"));
@@ -37,6 +54,7 @@ public class Messages {
             } while (!file.exists());
         }
         try {
+            assert file != null;
             URL[] urls = {file.toURI().toURL()};
             ClassLoader loader = new URLClassLoader(urls);
             return ResourceBundle.getBundle(bundleName, locale, loader, new UTF8Control());
@@ -49,7 +67,7 @@ public class Messages {
 
         @Override
         public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader,
-                                        boolean reload) throws IllegalAccessException, InstantiationException, IOException {
+                                        boolean reload) throws IOException {
             // The below is a copy of the default implementation.
             String bundleName = toBundleName(baseName, locale);
             String resourceName = toResourceName(bundleName, "properties");

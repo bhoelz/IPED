@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * <p>Tasks annotated with this annotation must satisfy the following
  * contract:</p>
  * <ul>
- *   <li>They MUST NOT attempt to create new child items (i.e. they must not
+ *   <li>They MUST NOT attempt to create new child items (i.e., they must not
  *       call {@code worker.processNewItem()}).</li>
  *   <li>They MUST be idempotent: running the same task twice on the same item
  *       must produce the same result (the previous result will be overwritten
@@ -32,7 +32,7 @@ public @interface AdditionalProcessingCapable {
 
     /**
      * {@code true} if the task reads the binary content of the file
-     * (e.g. OCR, transcription).  Used by the GUI to warn the user when
+     * (e.g., OCR, transcription).  Used by the GUI to warn the user when
      * source media is unavailable.
      */
     boolean requiresFileContent() default false;

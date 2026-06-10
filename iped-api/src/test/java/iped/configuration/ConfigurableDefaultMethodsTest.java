@@ -3,6 +3,7 @@ package iped.configuration;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,6 +19,7 @@ class ConfigurableDefaultMethodsTest {
         List<Path> visited = new ArrayList<>();
 
         Configurable<Void> configurable = new Configurable<>() {
+            @Serial
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -54,6 +56,7 @@ class ConfigurableDefaultMethodsTest {
         List<Path> visited = new ArrayList<>();
 
         Configurable<Void> configurable = new Configurable<>() {
+            @Serial
             private static final long serialVersionUID = 1L;
 
             @Override

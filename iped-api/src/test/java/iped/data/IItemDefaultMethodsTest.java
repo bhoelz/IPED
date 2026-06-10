@@ -79,7 +79,7 @@ class IItemDefaultMethodsTest {
     @DisplayName("setMetadata(Object) with null should invoke concrete method with null")
     void setMetadata_withNull_shouldDelegate() {
         StubItem item = new StubItem();
-        item.setMetadata((Object) null);
+        item.setMetadata(null);
         assertNull(item.metadataValue);
     }
 
@@ -260,7 +260,7 @@ class IItemDefaultMethodsTest {
 
         public String get(String key) {
             java.util.List<String> list = values.get(key);
-            return list == null || list.isEmpty() ? null : list.get(0);
+            return list == null || list.isEmpty() ? null : list.getFirst();
         }
 
         public String[] getValues(String key) {

@@ -45,7 +45,6 @@ public interface IItem extends IItemReader {
     /**
      * Releases used resources such as temporary files and handles.
      *
-     * @throws IOException if an I/O error occurs
      */
     void dispose();
 
@@ -99,7 +98,7 @@ public interface IItem extends IItemReader {
     Map<String, Object> getExtraAttributeMap();
 
     /**
-     * @return offset in the parent item where this item was recovered by carving.
+     * @return offset in the parent item where carving recovered this item.
      * Returns -1 if the item does not come from carving.
      */
     long getFileOffset();
@@ -187,7 +186,7 @@ public interface IItem extends IItemReader {
     boolean isToExtract();
 
     /**
-     * @return true if the item must be ignored by subsequent processing tasks
+     * @return true if the item must be ignored by later processing tasks
      * and removed from the case
      */
     boolean isToIgnore();
@@ -369,7 +368,7 @@ public interface IItem extends IItemReader {
                 setMetadataValue(entry.getKey(), ""); //$NON-NLS-1$
                 continue;
             }
-            setMetadataValue(entry.getKey(), entry.getValue().get(0));
+            setMetadataValue(entry.getKey(), entry.getValue().getFirst());
             for (int i = 1; i < entry.getValue().size(); i++) {
                 addMetadataValue(entry.getKey(), entry.getValue().get(i));
             }
@@ -477,13 +476,13 @@ public interface IItem extends IItemReader {
     void setToExtract(boolean isToExtract);
 
     /**
-     * @param toIgnore whether the item must be ignored by subsequent processing
+     * @param toIgnore whether the item must be ignored by later processing
      *                 tasks and removed from the case
      */
     void setToIgnore(boolean toIgnore);
 
     /**
-     * @param toIgnore whether the item must be ignored by subsequent processing
+     * @param toIgnore whether the item must be ignored by later processing
      *                 tasks and removed from the case
      */
     void setToIgnore(boolean toIgnore, boolean updateStats);

@@ -1,7 +1,5 @@
 package iped.datasource;
 
-import iped.data.AdditionalItemData;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -26,7 +24,7 @@ public interface IAdditionalDataSource extends Closeable {
      *
      * @param itemId     IPED item identifier (stable, not a Lucene doc ID)
      * @param taskName   simple class name of the task
-     * @param extraAttrs extra attributes written by the task (may be empty)
+     * @param extraAttrs extra attributes written by the task (might empty)
      * @throws IOException on I/O failure
      */
     void storeTaskResult(int itemId, String taskName, Map<String, Object> extraAttrs) throws IOException;
@@ -53,17 +51,17 @@ public interface IAdditionalDataSource extends Closeable {
      * Returns the names of all tasks that have stored results for the item.
      *
      * @param itemId IPED item identifier
-     * @return set of task names (may be empty)
+     * @return set of task names (might be empty)
      */
     Set<String> getExecutedTasks(int itemId);
 
     /**
      * Returns a merged map of all extra attributes contributed by every task
-     * that has been run on the given item.  When multiple tasks set the same
-     * key the result of the most-recently stored task wins.
+     * that has been run on the given item. When multiple tasks set the same
+     * key, the result of the most-recently stored task wins.
      *
      * <p>The default implementation queries each task individually; concrete
-     * implementations may override this with a single-query optimisation.</p>
+     * implementations may override this with a single-query optimization.</p>
      *
      * @param itemId IPED item identifier
      * @return mutable map (caller may modify freely)
@@ -72,7 +70,7 @@ public interface IAdditionalDataSource extends Closeable {
         Map<String, Object> merged = new LinkedHashMap<>();
         for (String taskName : getExecutedTasks(itemId)) {
             getTaskResult(itemId, taskName)
-                    .ifPresent(d -> merged.putAll(d.getExtraAttributes()));
+                    .ifPresent(d -> merged.putAll(d.extraAttributes()));
         }
         return merged;
     }

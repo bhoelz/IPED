@@ -10,30 +10,36 @@ class SeekableInputStreamTest {
 
     @Test
     void markSupported_whenCalled_thenReturnsTrue() {
-        InMemorySeekableInputStream stream = new InMemorySeekableInputStream(new byte[] { 1, 2, 3 });
-
-        assertTrue(stream.markSupported());
+        try (InMemorySeekableInputStream stream = new InMemorySeekableInputStream(new byte[]{1, 2, 3})) {
+            assertTrue(stream.markSupported());
+        } catch (IOException e) {
+            fail(e);
+        }
     }
 
     @Test
     void reset_whenNotMarked_thenThrowsIOException() {
-        InMemorySeekableInputStream stream = new InMemorySeekableInputStream(new byte[] { 1, 2, 3 });
-
-        assertThrows(IOException.class, stream::reset);
+        try (InMemorySeekableInputStream stream = new InMemorySeekableInputStream(new byte[]{1, 2, 3})) {
+            assertThrows(IOException.class, stream::reset);
+        } catch (IOException e) {
+            fail(e);
+        }
     }
 
     @Test
     void markAndReset_whenMarked_thenReturnsToMarkedPosition() throws IOException {
-        InMemorySeekableInputStream stream = new InMemorySeekableInputStream(new byte[] { 10, 20, 30 });
-        stream.read();
-        stream.mark(0);
-        stream.read();
-        stream.read();
+        try (InMemorySeekableInputStream stream = new InMemorySeekableInputStream(new byte[]{10, 20, 30})) {
+            stream.read();
+            stream.mark(0);
+            stream.read();
+            stream.read();
+            stream.reset();
 
-        stream.reset();
-
-        assertEquals(1, stream.position());
-        assertEquals(20, stream.read());
+            assertEquals(1, stream.position());
+            assertEquals(20, stream.read());
+        } catch (IOException e) {
+            fail(e);
+        }
     }
 
     private static class InMemorySeekableInputStream extends SeekableInputStream {

@@ -3,7 +3,8 @@ package iped.search;
 import java.util.Objects;
 
 /**
- * Neutral query representation for API contracts.
+ * Neutral query representation for API contracts, wrapping a query expression
+ * string without depending on a specific query parser.
  */
 public final class SearchQueryDefinition {
 
@@ -13,10 +14,19 @@ public final class SearchQueryDefinition {
         this.expression = expression;
     }
 
+    /**
+     * Creates a query definition from a query expression string.
+     *
+     * @param expression the query expression
+     * @return a new instance wrapping the given expression
+     */
     public static SearchQueryDefinition of(String expression) {
         return new SearchQueryDefinition(expression);
     }
 
+    /**
+     * @return the wrapped query expression
+     */
     public String expression() {
         return expression;
     }
@@ -36,10 +46,9 @@ public final class SearchQueryDefinition {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof SearchQueryDefinition)) {
+        if (!(obj instanceof SearchQueryDefinition other)) {
             return false;
         }
-        SearchQueryDefinition other = (SearchQueryDefinition) obj;
         return Objects.equals(expression, other.expression);
     }
 }

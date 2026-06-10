@@ -58,9 +58,8 @@ class IPEDExceptionTest {
     void shouldBeRuntimeException() {
         // When
         IPEDException exception = new IPEDException("test");
-
         // Then
-        assertTrue(exception instanceof RuntimeException);
+        assertInstanceOf(RuntimeException.class, exception);
     }
 
     @Test

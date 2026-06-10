@@ -32,7 +32,7 @@ public interface ObjectManager<T> {
     /**
      * Gets the list of components registered with the platform's core.
      *
-     * @return the list of components registered with the platform's core.
+     * @return the set of components registered with the platform's core.
      */
     Set<T> getObjects();
 

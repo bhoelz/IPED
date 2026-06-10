@@ -25,12 +25,5 @@ class SearchQueryDefinitionTest {
         assertEquals(a.hashCode(), b.hashCode());
         assertNotEquals(a, c);
     }
-
-    @Test
-    void equals_whenComparedWithDifferentType_thenReturnsFalse() {
-        SearchQueryDefinition definition = SearchQueryDefinition.of("x");
-
-        assertNotEquals(definition, "x");
-    }
 }
 

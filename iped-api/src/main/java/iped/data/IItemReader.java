@@ -13,6 +13,11 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.*;
 
+/**
+ * Read-only view of an evidence item: identity, names, dates, hashes,
+ * metadata and content streams. This is the interface exposed to scripts and
+ * external consumers that must not modify the item.
+ */
 public interface IItemReader extends IStreamSource {
     /**
      *
@@ -61,11 +66,17 @@ public interface IItemReader extends IStreamSource {
         return mediaType == null ? null : MediaTypeValue.of(mediaType.toString());
     }
 
+    /**
+     * @return the media type as a string, or {@code null} if not detected yet
+     */
     default String getMediaTypeString() {
         MediaTypeValue mediaTypeValue = getMediaTypeValue();
         return mediaTypeValue == null ? null : mediaTypeValue.value();
     }
 
+    /**
+     * @return the categories assigned to this item
+     */
     HashSet<String> getCategorySet();
 
     /**
@@ -130,8 +141,15 @@ public interface IItemReader extends IStreamSource {
      */
     File getTempFile() throws IOException;
 
+    /**
+     * @return this item's identifier within its data source, e.g. a file path
+     *         or object id, used with {@link #getInputStreamFactory()}
+     */
     String getIdInDataSource();
 
+    /**
+     * @return the factory used to open content streams for this item
+     */
     ISeekableInputStreamFactory getInputStreamFactory();
 
     /**
@@ -141,18 +159,52 @@ public interface IItemReader extends IStreamSource {
      */
     File getViewFile();
 
+    /**
+     * @return {@code true} if a preview was generated for this item
+     */
     boolean hasPreview();
 
+    /**
+     * @return the case folder under which preview files are stored
+     */
     File getPreviewBaseFolder();
 
+    /**
+     * @return the file extension of this item's preview, e.g. {@code "html"}
+     */
     String getPreviewExt();
 
+    /**
+     * Opens a new seekable stream over this item's preview content.
+     *
+     * @return a new stream over the preview content
+     * @throws SQLException if the preview is stored in a database and reading
+     *                      it fails
+     * @throws IOException  if the preview cannot be opened
+     */
     SeekableInputStream getPreviewSeekeableInputStream() throws SQLException, IOException;
 
+    /**
+     * @return this item's thumbnail image bytes, or {@code null} if absent
+     */
     byte[] getThumb();
 
+    /**
+     * Opens a new buffered stream over this item's content. The caller is
+     * responsible for closing it.
+     *
+     * @return a new buffered stream over the content
+     * @throws IOException if the content cannot be opened
+     */
     BufferedInputStream getBufferedInputStream() throws IOException;
 
+    /**
+     * Opens a new image input stream over this item's content. The caller is
+     * responsible for closing it.
+     *
+     * @return a new image input stream over the content
+     * @throws IOException if the content cannot be opened
+     */
     ImageInputStream getImageInputStream() throws IOException;
 
     /**
@@ -160,16 +212,37 @@ public interface IItemReader extends IStreamSource {
      */
     Date getModDate();
 
+    /**
+     * @return file creation date, or {@code null} if unknown
+     */
     Date getCreationDate();
 
+    /**
+     * @return file last access date, or {@code null} if unknown
+     */
     Date getAccessDate();
 
+    /**
+     * @return file metadata change date, or {@code null} if unknown
+     */
     Date getChangeDate();
 
+    /**
+     * Gets an extra attribute set by a processing task.
+     *
+     * @param key the attribute name
+     * @return the attribute value, or {@code null} if absent
+     */
     Object getExtraAttribute(String key);
 
+    /**
+     * @return all extra attributes set by processing tasks, keyed by name
+     */
     Map<String, Object> getExtraAttributeMap();
 
+    /**
+     * @return the data source (evidence) this item belongs to
+     */
     IDataSource getDataSource();
 
     /**
@@ -192,6 +265,13 @@ public interface IItemReader extends IStreamSource {
         return map;
     }
 
+    /**
+     * Gets the first value of a metadata entry reflectively, without a compile
+     * dependency on the metadata implementation.
+     *
+     * @param key the metadata entry name
+     * @return the first value, or {@code null} if absent or metadata is null
+     */
     default String getMetadataValue(String key) {
         Object metadata = getMetadata();
         if (metadata == null) {
@@ -206,6 +286,13 @@ public interface IItemReader extends IStreamSource {
         }
     }
 
+    /**
+     * Gets all values of a metadata entry reflectively, without a compile
+     * dependency on the metadata implementation.
+     *
+     * @param key the metadata entry name
+     * @return all values of the entry, or {@code null} if metadata is null
+     */
     default String[] getMetadataValues(String key) {
         Object metadata = getMetadata();
         if (metadata == null) {

@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Compile-check tests for configuration interfaces. Each test instantiates a
  * minimal anonymous implementation, confirming the interface contract is
- * satisfiable and that JaCoCo counts the bytecode.
+ * satisfied and that JaCoCo counts the bytecode.
  */
 class InterfaceCompileChecksTest {
 

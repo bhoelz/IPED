@@ -4,7 +4,7 @@ Módulo de contratos públicos do IPED.
 
 ## Objetivo
 
-O `iped-api` concentra interfaces, tipos de valor e exceções compartilhadas entre módulos do ecossistema IPED.  
+O `iped-api` concentra *interfaces*, tipos de valor e exceções compartilhadas entre módulos do ecossistema IPED.  
 Ele define o "núcleo de comunicação" da aplicação, reduzindo acoplamento entre implementação (`iped-engine`, `iped-app`, `iped-parsers`, etc.) e consumidores de API.
 
 ## O que este módulo contém
@@ -37,7 +37,7 @@ Ele define o "núcleo de comunicação" da aplicação, reduzindo acoplamento en
 
 ## Diretrizes de evolução
 
-- Mudanças em interfaces públicas devem priorizar compatibilidade.
+- Mudanças em *interfaces* públicas devem priorizar compatibilidade.
 - Quando necessário, introduzir métodos neutros/adaptadores antes de remoções definitivas.
 - Evitar inserir lógica de negócio pesada neste módulo; foco em contrato e tipos.
 - Novas dependências externas devem ser avaliadas com rigor para preservar o papel de núcleo.

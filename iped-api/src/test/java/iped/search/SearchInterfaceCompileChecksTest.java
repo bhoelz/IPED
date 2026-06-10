@@ -26,14 +26,41 @@ class SearchInterfaceCompileChecksTest {
     @Test
     void iIPEDSearcher_isImplementable() throws Exception {
         IIPEDSearcher searcher = new IIPEDSearcher() {
-            @Override public void cancel() {}
-            @Override public Object getQueryObject() { return null; }
-            @Override public SearchQueryDefinition getQueryDefinition() { return null; }
-            @Override public IMultiSearchResult multiSearch() { return null; }
-            @Override public SearchResult search() { return null; }
-            @Override public void setQueryObject(Object q) {}
-            @Override public void setQueryDefinition(SearchQueryDefinition d) {}
-            @Override public void setTreeQuery(boolean t) {}
+            @Override
+            public void cancel() {
+            }
+
+            @Override
+            public Object getQueryObject() {
+                return null;
+            }
+
+            @Override
+            public SearchQueryDefinition getQueryDefinition() {
+                return null;
+            }
+
+            @Override
+            public IMultiSearchResult multiSearch() {
+                return null;
+            }
+
+            @Override
+            public SearchResult search() {
+                return null;
+            }
+
+            @Override
+            public void setQueryObject(Object q) {
+            }
+
+            @Override
+            public void setQueryDefinition(SearchQueryDefinition d) {
+            }
+
+            @Override
+            public void setTreeQuery(boolean t) {
+            }
         };
 
         assertNull(searcher.getQueryObject());
@@ -44,15 +71,29 @@ class SearchInterfaceCompileChecksTest {
 
     @Test
     void iItemSearcher_isImplementable() throws Exception {
-        IItemSearcher searcher = new IItemSearcher() {
-            @Override public List<IItemReader> search(String q) { return List.of(); }
-            @Override public Iterable<IItemReader> searchIterable(String q) { return List.of(); }
-            @Override public String escapeQuery(String s) { return s; }
-            @Override public void close() {}
-        };
+        try (IItemSearcher searcher = new IItemSearcher() {
+            @Override
+            public List<IItemReader> search(String q) {
+                return List.of();
+            }
 
-        assertEquals(List.of(), searcher.search("*:*"));
-        assertEquals("safe+query", searcher.escapeQuery("safe+query"));
+            @Override
+            public Iterable<IItemReader> searchIterable(String q) {
+                return List.of();
+            }
+
+            @Override
+            public String escapeQuery(String s) {
+                return s;
+            }
+
+            @Override
+            public void close() {
+            }
+        }) {
+            assertEquals(List.of(), searcher.search("*:*"));
+            assertEquals("safe+query", searcher.escapeQuery("safe+query"));
+        }
     }
 
     // ── IMultiSearchResult ───────────────────────────────────────────────────
@@ -60,11 +101,30 @@ class SearchInterfaceCompileChecksTest {
     @Test
     void iMultiSearchResult_isImplementable() {
         IMultiSearchResult result = new IMultiSearchResult() {
-            @Override public IItemId getItem(int i) { return null; }
-            @Override public IIPEDSource getIPEDSource() { return null; }
-            @Override public Iterable<IItemId> getIterator() { return List.of(); }
-            @Override public int getLength() { return 0; }
-            @Override public float getScore(int i) { return 0f; }
+            @Override
+            public IItemId getItem(int i) {
+                return null;
+            }
+
+            @Override
+            public IIPEDSource getIPEDSource() {
+                return null;
+            }
+
+            @Override
+            public Iterable<IItemId> getIterator() {
+                return List.of();
+            }
+
+            @Override
+            public int getLength() {
+                return 0;
+            }
+
+            @Override
+            public float getScore(int i) {
+                return 0f;
+            }
         };
 
         assertEquals(0, result.getLength());

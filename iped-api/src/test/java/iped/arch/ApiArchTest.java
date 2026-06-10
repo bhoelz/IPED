@@ -23,19 +23,21 @@ public class ApiArchTest {
     /**
      * Types whose simple name matches {@code I[UpperCase]...} (e.g. {@code IItem},
      * {@code IDataSource}) must be interfaces. The {@code iped.exception} package is
-     * excluded because {@code IPEDException} intentionally breaks the pattern.
+     * excluded because {@code IPEDException} intentionally breaks the pattern, and
+     * {@code IHashValue} is a legacy abstract class kept for API compatibility.
      */
     @ArchTest
     static final ArchRule types_prefixed_with_I_must_be_interfaces =
         classes()
-            .that().haveSimpleNameMatching("I[A-Z].*")
+            .that().haveNameMatching(".*\\.I[A-Z][^.]*")
             .and().resideOutsideOfPackage("iped.exception..")
+            .and().doNotHaveFullyQualifiedName("iped.data.IHashValue")
             .should().beInterfaces()
             .because("the 'I' prefix in IPED API packages is reserved for interface types");
 
     /**
      * Every class that extends {@link Exception} must have a name ending with
-     * {@code Exception}, making exception types immediately recognisable.
+     * {@code Exception}, making exception types immediately recognizable.
      */
     @ArchTest
     static final ArchRule exceptions_must_end_with_Exception =

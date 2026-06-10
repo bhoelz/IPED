@@ -22,8 +22,7 @@ class ExceptionsTest {
     @Test
     void parseException_whenCreated_thenIsException() {
         ParseException ex = new ParseException();
-
-        assertTrue(ex instanceof Exception);
+        assertInstanceOf(Exception.class, ex);
     }
 
     @Test

@@ -9,6 +9,8 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
+ * A hash value (MD5, SHA-1, etc.) backed by its raw bytes, comparable and
+ * usable as a map key. Two hash values are equal when their bytes are equal.
  *
  * @author Nassif
  */
@@ -17,8 +19,14 @@ public abstract class IHashValue implements Comparable<IHashValue>, Serializable
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * @return the raw bytes of this hash value
+     */
     public abstract byte[] getBytes();
 
+    /**
+     * @return this hash encoded as an upper-case hexadecimal string
+     */
     public String toString() {
         StringBuilder result = new StringBuilder();
         for (byte b : getBytes()) {
@@ -27,6 +35,13 @@ public abstract class IHashValue implements Comparable<IHashValue>, Serializable
         return result.toString();
     }
 
+    /**
+     * Compares hashes byte by byte, treating each byte as unsigned.
+     *
+     * @param hash the hash to compare against; must have the same length
+     * @return a negative integer, zero, or a positive integer as this hash is
+     *         less than, equal to, or greater than the given one
+     */
     @Override
     public int compareTo(IHashValue hash) {
         byte[] compBytes = hash.getBytes();

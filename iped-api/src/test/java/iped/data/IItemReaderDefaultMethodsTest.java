@@ -76,7 +76,7 @@ class IItemReaderDefaultMethodsTest {
 
         public String get(String key) {
             List<String> list = values.get(key);
-            return list == null || list.isEmpty() ? null : list.get(0);
+            return list == null || list.isEmpty() ? null : list.getFirst();
         }
 
         public String[] getValues(String key) {

@@ -140,9 +140,7 @@ class ExceptionTestSuite {
     void queryNodeException_withNullCause_shouldHandle() {
         // When/Then
         // Constructor requires a non-null cause based on source
-        assertThrows(NullPointerException.class, () -> {
-            new QueryNodeException(null);
-        });
+        assertThrows(NullPointerException.class, () -> new QueryNodeException(null));
     }
 
     // ============== Exception Hierarchy Tests ==============

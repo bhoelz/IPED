@@ -1,10 +1,6 @@
 package iped.datasource;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 /**
  * Manages one or more {@link IAdditionalDataSource} instances associated with
@@ -52,7 +48,7 @@ public interface IAdditionalDataSourceManager {
      * across all registered sources.
      *
      * @param itemId IPED item identifier
-     * @return set of task names (may be empty)
+     * @return set of task names (might be empty)
      */
     default Set<String> getAllExecutedTasks(int itemId) {
         Set<String> tasks = new LinkedHashSet<>();

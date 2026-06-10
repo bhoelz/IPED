@@ -43,8 +43,6 @@ class MessagesTest {
     @Test
     @DisplayName("getExternalBundle with non-existent bundle should throw exception")
     void getExternalBundle_withNonExistentBundle_shouldThrow() {
-        assertThrows(Exception.class, () -> {
-            Messages.getExternalBundle("non-existent-bundle-xyz", Locale.getDefault());
-        });
+        assertThrows(Exception.class, () -> Messages.getExternalBundle("non-existent-bundle-xyz", Locale.getDefault()));
     }
 }
