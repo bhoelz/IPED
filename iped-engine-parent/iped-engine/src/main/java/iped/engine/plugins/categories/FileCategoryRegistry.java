@@ -1,7 +1,7 @@
 package iped.engine.plugins.categories;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
  *
  * Thread-safe for concurrent access from multiple workers.
  */
+@Slf4j
 public class FileCategoryRegistry {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileCategoryRegistry.class);
 
     /**
      * Root of category hierarchy.
@@ -52,7 +52,7 @@ public class FileCategoryRegistry {
             existing.icon = icon;
             existing.description = description;
             existing.componentId = componentId;
-            LOGGER.debug("Updated category: {}", path);
+            log.debug("Updated category: {}", path);
             return;
         }
 
@@ -80,7 +80,7 @@ public class FileCategoryRegistry {
         currentNode.description = description;
         currentNode.componentId = componentId;
 
-        LOGGER.debug("Registered category: {} ({})", path, displayName);
+        log.debug("Registered category: {} ({})", path, displayName);
     }
 
     /**
@@ -238,7 +238,7 @@ public class FileCategoryRegistry {
     public void clearRegistry() {
         categoryMap.clear();
         root.children.clear();
-        LOGGER.info("Cleared file category registry");
+        log.info("Cleared file category registry");
     }
 
     /**

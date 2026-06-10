@@ -8,16 +8,15 @@ import iped.parsers.util.Util;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
+@Slf4j
 public class ExternalFileOpen {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ExternalFileOpen.class);
 
     public static void open(final int luceneId) {
         new Thread() {
@@ -31,7 +30,7 @@ public class ExternalFileOpen {
                 }
                 try {
                     if (IOUtil.isToOpenExternally(item.getName(), item.getType())) {
-                        LOGGER.info("Externally Opening file " + item.getPath()); //$NON-NLS-1$
+                        log.info("Externally Opening file " + item.getPath()); //$NON-NLS-1$
                         File file = Util.getFileWithRightExt(item);
                         open(file);
                     }

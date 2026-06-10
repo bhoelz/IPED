@@ -26,6 +26,7 @@ import iped.parsers.util.MetadataUtil;
 import iped.parsers.util.Util;
 import iped.properties.ExtraProperties;
 import iped.utils.SimpleHTMLEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.TikaException;
@@ -42,8 +43,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.microsoft.rtf.RTFParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -67,9 +66,9 @@ import java.util.stream.Collectors;
  * @author Nassif
  *
  */
+@Slf4j
 public class OutlookPSTParser extends AbstractParser {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(OutlookPSTParser.class);
     private static final long serialVersionUID = 5552796814190294332L;
     public static final String OUTLOOK_MSG_MIME = "message/outlook-pst"; //$NON-NLS-1$
     public static final String OUTLOOK_CONTACT_MIME = "application/outlook-contact"; //$NON-NLS-1$
@@ -156,25 +155,25 @@ public class OutlookPSTParser extends AbstractParser {
             }
 
         } catch (InterruptedException e) {
-            LOGGER.error("Extraction of emails was interrupted on " + fileName + " " + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+            log.error("Extraction of emails was interrupted on " + fileName + " " + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             throw new TikaException(this.getClass().getSimpleName() + " interrupted", e); //$NON-NLS-1$
 
         } catch (Exception e) {
             if (e instanceof IOException && tmpFile == null) {
-                LOGGER.error("Tempfile creation and processing failed on " + fileName + " " + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+                log.error("Tempfile creation and processing failed on " + fileName + " " + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
                 throw (IOException) e;
             } else if (e instanceof TikaException && e.getCause() instanceof InterruptedException)
                 throw (TikaException) e;
             else {
                 boolean throwException = false;
                 if (useLibpffParser && !libpffCalled) {
-                    LOGGER.warn("java-libpst failed, using libpff on " + fileName, e); //$NON-NLS-1$
+                    log.warn("java-libpst failed, using libpff on " + fileName, e); //$NON-NLS-1$
                     libpffParser.setExtractOnlyDeleted(false);
                     if (!recoverDeleted)
                         libpffParser.setExtractOnlyActive(true);
                     libpffParser.parse(tis, handler, metadata, context);
                 } else {
-                    LOGGER.error("PST/OST parsing failed on {}", fileName); //$NON-NLS-1$
+                    log.error("PST/OST parsing failed on {}", fileName); //$NON-NLS-1$
                     throwException = true;
                 }
 
@@ -245,7 +244,7 @@ public class OutlookPSTParser extends AbstractParser {
         } catch (InterruptedException e) {
             throw e;
         } catch (Exception e) {
-            LOGGER.warn("Exception walking email folder {}\t{}", path, e.toString()); //$NON-NLS-1$
+            log.warn("Exception walking email folder {}\t{}", path, e.toString()); //$NON-NLS-1$
             // e.printStackTrace();
         }
 
@@ -260,7 +259,7 @@ public class OutlookPSTParser extends AbstractParser {
         } catch (InterruptedException e) {
             throw e;
         } catch (Exception e) {
-            LOGGER.warn("Exception recursing into subfolders of {}\t{}", path, e.toString()); //$NON-NLS-1$
+            log.warn("Exception recursing into subfolders of {}\t{}", path, e.toString()); //$NON-NLS-1$
             // e.printStackTrace();
         }
 
@@ -376,7 +375,7 @@ public class OutlookPSTParser extends AbstractParser {
                 extractor.parseEmbedded(stream, xhtml, metadata, true);
 
         } catch (Exception e) {
-            LOGGER.warn("Exception extracting object {}>>{}", path, obj.getDisplayName()); //$NON-NLS-1$
+            log.warn("Exception extracting object {}>>{}", path, obj.getDisplayName()); //$NON-NLS-1$
             // e.printStackTrace();
         }
 
@@ -567,7 +566,7 @@ public class OutlookPSTParser extends AbstractParser {
             /* Issue #65 - End */
 
         } catch (Exception e) {
-            LOGGER.warn("Exception extracting email: {}>>{}\t{}", path, email.getSubject(), e.toString()); //$NON-NLS-1$
+            log.warn("Exception extracting email: {}>>{}\t{}", path, email.getSubject(), e.toString()); //$NON-NLS-1$
             // e.printStackTrace();
         }
 
@@ -606,7 +605,7 @@ public class OutlookPSTParser extends AbstractParser {
                         metadata.add(Message.MESSAGE_RAW_HEADER_PREFIX + name, value);
                     }
                 } else {
-                    LOGGER.warn("Unexpected header syntax: {}", field);
+                    log.warn("Unexpected header syntax: {}", field);
                 }
             }
         }
@@ -669,7 +668,7 @@ public class OutlookPSTParser extends AbstractParser {
                 }
 
             } catch (Exception e) {
-                LOGGER.warn("Exception extracting attachment {}:{}>>{}\t{}", x, path, filename, e.toString()); //$NON-NLS-1$
+                log.warn("Exception extracting attachment {}:{}>>{}\t{}", x, path, filename, e.toString()); //$NON-NLS-1$
                 // e.printStackTrace();
 
             } finally {

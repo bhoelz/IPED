@@ -11,9 +11,8 @@ import iped.engine.hashdb.LedHashDB;
 import iped.engine.hashdb.LedItem;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.security.MessageDigest;
@@ -27,11 +26,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 public class LedCarveTask extends BaseCarveTask {
 
     private static final String ENABLE_PARAM = "enableLedCarving";
 
-    private static Logger logger = LoggerFactory.getLogger(LedCarveTask.class);
 
     /**
      * Indica se a tarefa está habilitada ou não.
@@ -108,36 +107,36 @@ public class LedCarveTask extends BaseCarveTask {
                     LocalConfig localConfig = (LocalConfig) configurationManager.findObject(LocalConfig.class);
                     File hashDBFile = localConfig.getHashDbFile();
                     if (hashDBFile == null) {
-                        logger.error("Hashes database path (hashesDB) must be configured in {}", Configuration.LOCAL_CONFIG);
+                        log.error("Hashes database path (hashesDB) must be configured in {}", Configuration.LOCAL_CONFIG);
                     } else {
                         if (!hashDBFile.exists() || !hashDBFile.canRead() || !hashDBFile.isFile()) {
                             String msg = (!hashDBFile.exists() ? "Missing": "Invalid") + " hashes database file: " + hashDBFile.getAbsolutePath();
                             if (hasIpedDatasource()) {
-                                logger.warn(msg);
+                                log.warn(msg);
                             } else {
-                                logger.error(msg);
+                                log.error(msg);
                             }
                         } else {
                             hashDBDataSource = new HashDBDataSource(hashDBFile);
                             long t = System.currentTimeMillis();
                             if (readCache(hashDBFile)) {
-                                logger.info("Load from cache file {}.", cachePath);
+                                log.info("Load from cache file {}.", cachePath);
                             } else {
                                 ledHashDB = hashDBDataSource.readLedHashDB();
                                 if (ledHashDB == null || ledHashDB.size() == 0) {
-                                    logger.error("LED hashes must be loaded into IPED hashes database to enable LedCarveTask.");
+                                    log.error("LED hashes must be loaded into IPED hashes database to enable LedCarveTask.");
                                 } else if (writeCache(hashDBFile)) {
-                                    logger.info("Cache file {} was created.", cachePath);
+                                    log.info("Cache file {} was created.", cachePath);
                                 }
                             }
                             if (ledHashDB != null && ledHashDB.size() > 0) {
-                                logger.info("{} LED Hashes loaded in {} ms.", ledHashDB.size(), System.currentTimeMillis() - t);
+                                log.info("{} LED Hashes loaded in {} ms.", ledHashDB.size(), System.currentTimeMillis() - t);
                                 taskEnabled = true;
                             }
                         }
                     }
                 }
-                logger.info("Task {}.", taskEnabled ? "enabled" : "disabled");
+                log.info("Task {}.", taskEnabled ? "enabled" : "disabled");
                 init.set(true);
             }
         }
@@ -154,9 +153,9 @@ public class LedCarveTask extends BaseCarveTask {
                 hashDBDataSource.close();
                 ledCarved.clear();
                 NumberFormat nf = new DecimalFormat("#,##0");
-                logger.info("Carved files: " + nf.format(numCarvedItems.get()));
-                logger.info("512 blocks (Hits / Total): " + nf.format(num512hit.get()) + " / " + nf.format(num512total.get()));
-                logger.info("Bytes hashed: " + nf.format(bytesHashed.get()));
+                log.info("Carved files: " + nf.format(numCarvedItems.get()));
+                log.info("512 blocks (Hits / Total): " + nf.format(num512hit.get()) + " / " + nf.format(num512total.get()));
+                log.info("Bytes hashed: " + nf.format(bytesHashed.get()));
                 finished.set(true);
             }
         }
@@ -232,7 +231,7 @@ public class LedCarveTask extends BaseCarveTask {
                 offset += read512;
             }
         } catch (Exception e) {
-            logger.warn(evidence.toString(), e);
+            log.warn(evidence.toString(), e);
         } finally {
             IOUtil.closeQuietly(is);
         }
@@ -269,7 +268,7 @@ public class LedCarveTask extends BaseCarveTask {
             IOUtil.writeIntArray(os, ledHashDB.getHashIds());
             ret = true;
         } catch (Exception e) {
-            logger.warn("Error writing cache file " + cacheFile.getPath(), e);
+            log.warn("Error writing cache file " + cacheFile.getPath(), e);
             return false;
         } finally {
             IOUtil.closeQuietly(os);
@@ -310,7 +309,7 @@ public class LedCarveTask extends BaseCarveTask {
                 }
             }
         } catch (Exception e) {
-            logger.warn("Error reading cache file " + cacheFile.getPath(), e);
+            log.warn("Error reading cache file " + cacheFile.getPath(), e);
             return false;
         } finally {
             IOUtil.closeQuietly(is);

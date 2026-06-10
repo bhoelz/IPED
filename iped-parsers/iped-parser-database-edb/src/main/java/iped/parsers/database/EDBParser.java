@@ -2,6 +2,7 @@ package iped.parsers.database;
 
 import iped.properties.ExtraProperties;
 import iped.utils.SimpleHTMLEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.tika.exception.TikaException;
@@ -15,8 +16,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -26,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
 
+@Slf4j
 public class EDBParser extends AbstractParser {
 
     /**
@@ -35,7 +35,6 @@ public class EDBParser extends AbstractParser {
 
     public static final MediaType EDB = MediaType.application("x-edb");
 
-    private static Logger LOGGER = LoggerFactory.getLogger(EDBParser.class);
     private static Set<MediaType> SUPPORTED_TYPES = Collections.singleton(EDB); //$NON-NLS-1$
     private static String TOOL_NAME = "esedbexport"; //$NON-NLS-1$
     private static String OUT_SUFFIX = ".export"; //$NON-NLS-1$
@@ -59,7 +58,7 @@ public class EDBParser extends AbstractParser {
                         throw new Exception();
 
                 } catch (Exception e) {
-                    LOGGER.error("Error testing esedbexport (libesedb): EDB databases will NOT be parsed!"); //$NON-NLS-1$
+                    log.error("Error testing esedbexport (libesedb): EDB databases will NOT be parsed!"); //$NON-NLS-1$
                     SUPPORTED_TYPES = Collections.EMPTY_SET;
                 }
             tested = true;

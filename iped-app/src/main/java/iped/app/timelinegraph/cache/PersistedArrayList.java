@@ -3,8 +3,7 @@ package iped.app.timelinegraph.cache;
 import iped.app.timelinegraph.cache.persistance.CachePersistance;
 import iped.app.timelinegraph.cache.persistance.CachePersistance.CacheFileIterator;
 import iped.app.timelinegraph.datasets.IpedTimelineDatasetManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.jfree.data.time.TimePeriod;
 
 import java.io.File;
@@ -13,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class PersistedArrayList implements Set<CacheTimePeriodEntry> {
     int docCount = 0;
     Map<Long, CacheTimePeriodEntry> inMemoryEntries = new TreeMap<Long, CacheTimePeriodEntry>();
@@ -21,7 +21,6 @@ public class PersistedArrayList implements Set<CacheTimePeriodEntry> {
     List<Future> flushes = new ArrayList<Future>();
     boolean isFlushing = false;
 
-    private static final Logger logger = LogManager.getLogger(PersistedArrayList.class);
 
     AtomicInteger size = new AtomicInteger(0);
     File indexDirectory;
@@ -78,7 +77,7 @@ public class PersistedArrayList implements Set<CacheTimePeriodEntry> {
                 iterators[i] = new CacheFileIterator(f);
                 i++;
             }
-            logger.info("Number of intermediary flushes to create {} index: {}. Merging them.", timePeriod, flushCount);
+            log.info("Number of intermediary flushes to create {} index: {}. Merging them.", timePeriod, flushCount);
             return new CombinedIterators(iterators);
         }
     }

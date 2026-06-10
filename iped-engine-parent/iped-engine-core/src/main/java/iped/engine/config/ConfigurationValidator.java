@@ -22,8 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import iped.configuration.Configurable;
 import iped.engine.config.schema.SchemaValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,8 +33,8 @@ import java.util.Map;
  * Validates configurations against their JSON schemas.
  * Provides runtime validation of all Configurable components.
  */
+@Slf4j
 public class ConfigurationValidator {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationValidator.class);
 
     private final SchemaValidator schemaValidator = new SchemaValidator();
     private final ObjectMapper mapper = new ObjectMapper();
@@ -58,23 +57,23 @@ public class ConfigurationValidator {
             ObjectNode schema = loadSchema(componentName);
 
             if (schema == null) {
-                logger.debug("No schema found for component: {}", componentName);
+                log.debug("No schema found for component: {}", componentName);
                 return true;
             }
 
             SchemaValidator.ValidationResult result = schemaValidator.validate(config, schema);
 
             if (!result.isValid()) {
-                logger.warn("Configuration validation failed for {}:\n{}",
+                log.warn("Configuration validation failed for {}:\n{}",
                     componentName, result.getErrorReport());
                 return false;
             }
 
-            logger.debug("Configuration validation passed for: {}", componentName);
+            log.debug("Configuration validation passed for: {}", componentName);
             return true;
 
         } catch (Exception e) {
-            logger.error("Error during configuration validation", e);
+            log.error("Error during configuration validation", e);
             return false;
         }
     }
@@ -102,11 +101,11 @@ public class ConfigurationValidator {
                 }
             }
 
-            logger.info("Configuration validation summary: {} passed, {} failed",
+            log.info("Configuration validation summary: {} passed, {} failed",
                 stats.successCount, stats.failureCount);
 
         } catch (Exception e) {
-            logger.error("Error validating configuration manager", e);
+            log.error("Error validating configuration manager", e);
         }
 
         return stats;

@@ -9,19 +9,25 @@ import iped.distributed.kafka.*;
 import iped.distributed.status.ItemStatusProducer;
 import iped.engine.datasource.DatasourceRegistry;
 import iped.engine.datasource.IDatasourceRegistry;
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.clients.producer.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -47,9 +53,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * <p>Task code is completely unchanged — it never imports anything from this class.
  */
+@Slf4j
 public class TaskAgent implements AutoCloseable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaskAgent.class);
 
     // ---- Configuration -----------------------------------------------------
 
@@ -126,7 +132,7 @@ public class TaskAgent implements AutoCloseable {
         this.producer      = buildProducer(cfg);
         this.statusProducer = new ItemStatusProducer(cfg.getKafkaBootstrapServers());
 
-        LOGGER.info("TaskAgent created: taskType={}, stage={}, input={}, output={}, parallelism={}",
+        log.info("TaskAgent created: taskType={}, stage={}, input={}, output={}, parallelism={}",
                 taskType, stageNumber, inputTopic, outputTopic, parallelism);
     }
 
@@ -141,7 +147,7 @@ public class TaskAgent implements AutoCloseable {
                 java.net.InetAddress.getLoopbackAddress().getHostName()));
 
         consumer.subscribe(Collections.singletonList(inputTopic));
-        LOGGER.info("TaskAgent '{}' (type={}) subscribed to '{}'", agentId, taskType, inputTopic);
+        log.info("TaskAgent '{}' (type={}) subscribed to '{}'", agentId, taskType, inputTopic);
 
         Thread heartbeatThread = new Thread(this::heartbeatLoop, taskType + "-heartbeat");
         heartbeatThread.setDaemon(true);
@@ -167,7 +173,7 @@ public class TaskAgent implements AutoCloseable {
                 }
             }
         } finally {
-            LOGGER.info("TaskAgent '{}' consumer loop exiting", agentId);
+            log.info("TaskAgent '{}' consumer loop exiting", agentId);
             executor.shutdown();
             try { executor.awaitTermination(60, TimeUnit.SECONDS); } catch (InterruptedException ignored) {}
             consumer.close();
@@ -188,7 +194,7 @@ public class TaskAgent implements AutoCloseable {
     private void processRecord(KafkaItemMessage msg) {
         long startMs = System.currentTimeMillis();
         try {
-            LOGGER.debug("Processing item '{}' ({})", msg.getItemUuid(), msg.getPath());
+            log.debug("Processing item '{}' ({})", msg.getItemUuid(), msg.getPath());
             statusProducer.publishStarted(msg, taskType);
 
             // Deserialise to IItem
@@ -211,18 +217,18 @@ public class TaskAgent implements AutoCloseable {
             producer.send(new ProducerRecord<>(outputTopic, updated.getItemUuid(), updated),
                     (meta, ex) -> {
                         if (ex != null) {
-                            LOGGER.error("Failed to forward item '{}' to '{}'",
+                            log.error("Failed to forward item '{}' to '{}'",
                                     msg.getItemUuid(), outputTopic, ex);
                         }
                     });
 
             long durationMs = System.currentTimeMillis() - startMs;
             statusProducer.publishCompleted(msg, taskType, durationMs);
-            LOGGER.debug("Completed item '{}' in {}ms", msg.getItemUuid(), durationMs);
+            log.debug("Completed item '{}' in {}ms", msg.getItemUuid(), durationMs);
 
         } catch (Exception e) {
             long durationMs = System.currentTimeMillis() - startMs;
-            LOGGER.error("Error processing item '{}' in task '{}': {}",
+            log.error("Error processing item '{}' in task '{}': {}",
                     msg.getItemUuid(), taskType, e.getMessage(), e);
             statusProducer.publishError(msg, taskType, durationMs, e);
             sendToDeadLetterQueue(msg, e);
@@ -273,9 +279,9 @@ public class TaskAgent implements AutoCloseable {
         String dlqTopic = inputTopic + cfg.getDeadLetterTopicSuffix();
         try {
             producer.send(new ProducerRecord<>(dlqTopic, msg.getItemUuid(), msg));
-            LOGGER.info("Item '{}' sent to DLQ '{}'", msg.getItemUuid(), dlqTopic);
+            log.info("Item '{}' sent to DLQ '{}'", msg.getItemUuid(), dlqTopic);
         } catch (Exception ex) {
-            LOGGER.error("Could not send item '{}' to DLQ '{}'", msg.getItemUuid(), dlqTopic, ex);
+            log.error("Could not send item '{}' to DLQ '{}'", msg.getItemUuid(), dlqTopic, ex);
         }
     }
 
@@ -292,7 +298,7 @@ public class TaskAgent implements AutoCloseable {
                 Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                LOGGER.warn("Heartbeat failed: {}", e.getMessage());
+                log.warn("Heartbeat failed: {}", e.getMessage());
             }
         }
     }

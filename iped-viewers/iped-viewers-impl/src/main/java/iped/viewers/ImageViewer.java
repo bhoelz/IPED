@@ -13,9 +13,8 @@ import iped.viewers.api.AbstractViewer;
 import iped.viewers.components.ImageViewPanel;
 import iped.viewers.localization.Messages;
 import iped.viewers.util.ImageMetadataUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -36,9 +35,9 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class ImageViewer extends AbstractViewer implements ActionListener {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ImageViewer.class);
 
     protected ImageViewPanel imagePanel;
     protected JToolBar toolBar;
@@ -346,7 +345,7 @@ public class ImageViewer extends AbstractViewer implements ActionListener {
         try {
             externalImageConverter.close();
         } catch (IOException e) {
-            LOGGER.warn("Error closing " + externalImageConverter, e);
+            log.warn("Error closing " + externalImageConverter, e);
         }
     }
 

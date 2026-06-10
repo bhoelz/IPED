@@ -5,6 +5,7 @@ import iped.parsers.sqlite.SQLite3Parser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.EmptyInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -16,8 +17,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.ToXMLContentHandler;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -39,6 +38,7 @@ import java.util.Set;
  *
  * @author Paulo César Herrmann Wanner <herrmann.pchw@pf.gov.br>
  */
+@Slf4j
 public class SafariSqliteParser extends AbstractSqliteBrowserParser {
 
     /**
@@ -59,7 +59,6 @@ public class SafariSqliteParser extends AbstractSqliteBrowserParser {
 
     private static Set<MediaType> SUPPORTED_TYPES = MediaType.set(SAFARI_SQLITE);
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SafariSqliteParser.class);
 
     private SQLite3Parser sqliteParser = new SQLite3Parser();
 
@@ -240,7 +239,7 @@ public class SafariSqliteParser extends AbstractSqliteBrowserParser {
                     + "INNER JOIN (SELECT history_item, title, MAX(visit_time) AS latest FROM history_visits GROUP BY history_item) " //$NON-NLS-1$
                     + "ON history_items.id = history_item ORDER BY history_items.visit_count DESC"; //$NON-NLS-1$
 
-            LOGGER.info("SQL Query: " + sql);
+            log.info("SQL Query: " + sql);
             ResultSet rs = st.executeQuery(sql);
 
             while (rs.next()) {
@@ -250,12 +249,12 @@ public class SafariSqliteParser extends AbstractSqliteBrowserParser {
                 // rs.getString(3), rs.getLong(4), rs.getLong(5)*1000L);
                 // SafariVisits sv3 = new SafariVisits(rs.getLong(1), rs.getString(2),
                 // rs.getString(3), rs.getLong(4), rs.getLong(5)/1000);
-                // LOGGER.info("ID: " + rs.getLong(1) + " TITLE: " + rs.getString(2) + " URL: "
+                // log.info("ID: " + rs.getLong(1) + " TITLE: " + rs.getString(2) + " URL: "
                 // + rs.getString(3) + " VISIT_COUNT: " + rs.getLong(4) + " VISIT_TIME: " +
                 // rs.getLong(5));
-                // LOGGER.info("SV1: " + sv1.getLastVisitDateAsString());
-                // LOGGER.info("SV2: " + sv2.getLastVisitDateAsString());
-                // LOGGER.info("SV3: " + sv3.getLastVisitDateAsString());
+                // log.info("SV1: " + sv1.getLastVisitDateAsString());
+                // log.info("SV2: " + sv2.getLastVisitDateAsString());
+                // log.info("SV3: " + sv3.getLastVisitDateAsString());
                 resumedHistory.add(new SafariResumedVisit(rs.getLong(1), rs.getString(2), rs.getString(3),
                         rs.getLong(4), rs.getLong(5)));
             }

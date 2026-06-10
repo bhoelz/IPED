@@ -4,8 +4,7 @@ import iped.app.timelinegraph.IpedChartsPanel;
 import iped.app.timelinegraph.cache.persistance.CachePersistance;
 import iped.engine.core.Manager;
 import iped.viewers.api.IMultiSearchResultProvider;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.jfree.data.time.TimePeriod;
 import org.roaringbitmap.RoaringBitmap;
 
@@ -16,9 +15,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class IndexTimeStampCache implements TimeStampCache {
 
-    private static final Logger logger = LogManager.getLogger(IndexTimeStampCache.class);
 
     ArrayList<Class<? extends TimePeriod>> periodClassesToCache = new ArrayList<Class<? extends TimePeriod>>();
 
@@ -73,7 +72,7 @@ public class IndexTimeStampCache implements TimeStampCache {
 
             if (!cacheExists) {
                 Date d1 = new Date();
-                logger.info("Starting to build time cache of [{}]...", periodClassesToCache.toString());
+                log.info("Starting to build time cache of [{}]...", periodClassesToCache.toString());
 
                 ArrayList<EventTimestampCache> cacheLoaders = new ArrayList<EventTimestampCache>();
 
@@ -117,7 +116,7 @@ public class IndexTimeStampCache implements TimeStampCache {
                         newCache.createOrLoadUpperPeriodIndex(this);
 
                         Date d2 = new Date();
-                        logger.info("Time to build timeline index of [{}]: {}ms", periodClassesToCache.toString(), (d2.getTime() - d1.getTime()));
+                        log.info("Time to build timeline index of [{}]: {}ms", periodClassesToCache.toString(), (d2.getTime() - d1.getTime()));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

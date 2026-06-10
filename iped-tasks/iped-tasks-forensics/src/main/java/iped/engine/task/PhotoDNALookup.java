@@ -13,16 +13,15 @@ import iped.engine.hashdb.PhotoDnaItem;
 import iped.engine.hashdb.PhotoDnaTree;
 import iped.utils.HashValue;
 import iped.utils.IOUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class PhotoDNALookup extends AbstractTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(PhotoDNALookup.class);
 
     private static final String cachePath = System.getProperty("user.home") + "/.iped/photodnalookup.cache";
 
@@ -68,28 +67,28 @@ public class PhotoDNALookup extends AbstractTask {
                         Class<?> c = Class.forName("br.dpf.sepinf.photodna.PhotoDNATransforms");
                         transforms = (PhotoDNATransforms) c.getDeclaredConstructor().newInstance();
                     } catch (ClassNotFoundException e) {
-                        LOGGER.error(PhotoDNATask.PDNA_NOT_FOUND_MSG);
+                        log.error(PhotoDNATask.PDNA_NOT_FOUND_MSG);
                         init.set(true);
                         return;
                     }
                     LocalConfig localConfig = (LocalConfig) configurationManager.findObject(LocalConfig.class);
                     if (localConfig.getHashDbFile() == null) {
-                        LOGGER.error("Hashes database path (hashesDB) must be configured in {}", Configuration.LOCAL_CONFIG);
+                        log.error("Hashes database path (hashesDB) must be configured in {}", Configuration.LOCAL_CONFIG);
                     } else {
                         File hashDBFile = localConfig.getHashDbFile();
                         if (!hashDBFile.exists() || !hashDBFile.canRead() || !hashDBFile.isFile()) {
                             String msg = (!hashDBFile.exists() ? "Missing": "Invalid") + " hashes database file: " + hashDBFile.getAbsolutePath();
                             if (hasIpedDatasource()) {
-                                LOGGER.warn(msg);
+                                log.warn(msg);
                             } else {
-                                LOGGER.error(msg);
+                                log.error(msg);
                             }
                         } else {
                             long t = System.currentTimeMillis();
                             hashDBDataSource = new HashDBDataSource(hashDBFile);
                             readCache(hashDBFile, pdnaLookupConfig.getStatusHashDBFilter());
                             if (pdnaTree != null) {
-                                LOGGER.info("Load from cache file {} in {} ms.", cachePath, System.currentTimeMillis() - t);
+                                log.info("Load from cache file {} in {} ms.", cachePath, System.currentTimeMillis() - t);
                                 taskEnabled = true;
                             } else {
                                 Set<String> statusFilter = null;
@@ -105,23 +104,23 @@ public class PhotoDNALookup extends AbstractTask {
                                 }
                                 ArrayList<PhotoDnaItem> photoDNAHashSet = hashDBDataSource.readPhotoDNA(statusFilter);
                                 if (photoDNAHashSet == null || photoDNAHashSet.isEmpty()) {
-                                    LOGGER.error("PhotoDNA hashes must be loaded into IPED hashes database to enable PhotoDNALookup.");
+                                    log.error("PhotoDNA hashes must be loaded into IPED hashes database to enable PhotoDNALookup.");
                                 } else {
-                                    LOGGER.info("{} PhotoDNA hashes loaded in {} ms.", photoDNAHashSet.size(), System.currentTimeMillis() - t);
+                                    log.info("{} PhotoDNA hashes loaded in {} ms.", photoDNAHashSet.size(), System.currentTimeMillis() - t);
                                     t = System.currentTimeMillis();
                                     pdnaTree = new PhotoDnaTree(photoDNAHashSet.toArray(new PhotoDnaItem[0]));
-                                    LOGGER.info("Data structure built in {} ms.", System.currentTimeMillis() - t);
+                                    log.info("Data structure built in {} ms.", System.currentTimeMillis() - t);
                                     taskEnabled = true;
                                     t = System.currentTimeMillis();
                                     if (writeCache(hashDBFile, pdnaLookupConfig.getStatusHashDBFilter())) {
-                                        LOGGER.info("Cache file {} was created in {} ms.", cachePath, System.currentTimeMillis() - t);
+                                        log.info("Cache file {} was created in {} ms.", cachePath, System.currentTimeMillis() - t);
                                     }
                                 }
                             }
                         }
                     }
                 }
-                LOGGER.info("Task {}.", taskEnabled ? "enabled" : "disabled");
+                log.info("Task {}.", taskEnabled ? "enabled" : "disabled");
                 init.set(true);
             }
         }
@@ -290,7 +289,7 @@ public class PhotoDNALookup extends AbstractTask {
             os.writeObject(pdnaTree);
             ret = true;
         } catch (Exception e) {
-            LOGGER.warn("Error writing cache file " + cacheFile.getPath(), e);
+            log.warn("Error writing cache file " + cacheFile.getPath(), e);
             return false;
         } finally {
             IOUtil.closeQuietly(os);
@@ -341,7 +340,7 @@ public class PhotoDNALookup extends AbstractTask {
                 }
             }
         } catch (Exception e) {
-            LOGGER.warn("Error reading cache file " + cacheFile.getPath(), e);
+            log.warn("Error reading cache file " + cacheFile.getPath(), e);
         } finally {
             IOUtil.closeQuietly(is);
             if (pdnaTree == null) {

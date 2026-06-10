@@ -5,10 +5,9 @@ import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.graph.PathQueryListener;
 import iped.engine.graph.links.SearchLinksQuery;
 import iped.engine.graph.links.SearchLinksQueryProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.*;
@@ -18,9 +17,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class SearchLinksWorker extends SwingWorker<Void, Void> implements PathQueryListener {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SearchLinksWorker.class);
 
     private AppGraphAnalytics app;
 
@@ -51,7 +50,7 @@ public class SearchLinksWorker extends SwingWorker<Void, Void> implements PathQu
 
             executor = Executors.newWorkStealingPool();
             CompletionService<Void> completionService = new ExecutorCompletionService<>(executor);
-            LOGGER.info("Running queries {}.", queries.stream().collect(Collectors.joining(", ")));
+            log.info("Running queries {}.", queries.stream().collect(Collectors.joining(", ")));
 
             List<Runnable> runnables = new ArrayList<>();
             for (String queryName : queries) {
@@ -77,7 +76,7 @@ public class SearchLinksWorker extends SwingWorker<Void, Void> implements PathQu
             }
 
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             if (executor != null) {
                 executor.shutdown();
@@ -125,13 +124,13 @@ public class SearchLinksWorker extends SwingWorker<Void, Void> implements PathQu
         @Override
         public void run() {
             try {
-                LOGGER.info("Running query {}.", queryName);
+                log.info("Running query {}.", queryName);
                 GraphDatabaseService graphDb = GraphServiceFactoryImpl.getInstance().getGraphService().getGraphDb();
                 SearchLinksQuery query = SearchLinksQueryProvider.get().getQuery(queryName);
                 query.search(start, end, graphDb, listener);
-                LOGGER.info("Done query {}.", queryName);
+                log.info("Done query {}.", queryName);
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             } finally {
                 listener.doneQuery();
             }

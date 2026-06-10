@@ -7,11 +7,10 @@ import iped.engine.lucene.SlowCompositeReaderWrapper;
 import iped.engine.lucene.analysis.AppAnalyzer;
 import iped.engine.search.LuceneSearchResult;
 import iped.exception.IPEDException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
 import org.sleuthkit.datamodel.TskCoreException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,9 +19,9 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class IPEDMultiSource extends IPEDSource {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(IPEDMultiSource.class);
 
     private static ArrayList<Integer> baseDocCache = new ArrayList<Integer>();
 
@@ -56,7 +55,7 @@ public class IPEDMultiSource extends IPEDSource {
         for (final File src : files) {
             Callable<IPEDSource> openCase = new Callable<IPEDSource>() {
                 public IPEDSource call() {
-                    LOGGER.info("Loading " + src.getAbsolutePath()); //$NON-NLS-1$
+                    log.info("Loading " + src.getAbsolutePath()); //$NON-NLS-1$
                     return new IPEDSource(src);
                 }
             };
@@ -107,7 +106,7 @@ public class IPEDMultiSource extends IPEDSource {
     }
 
     private List<File> searchCasesinFolder(File folder) {
-        LOGGER.info("Searching cases in " + folder.getPath()); //$NON-NLS-1$
+        log.info("Searching cases in " + folder.getPath()); //$NON-NLS-1$
         ArrayList<File> files = new ArrayList<File>();
         File[] subFiles = folder.listFiles();
         if (subFiles != null)
@@ -153,7 +152,7 @@ public class IPEDMultiSource extends IPEDSource {
 
         analyzer = AppAnalyzer.get();
 
-        LOGGER.info("Loaded " + cases.size() + " cases."); //$NON-NLS-1$ //$NON-NLS-2$
+        log.info("Loaded " + cases.size() + " cases."); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private void loadCategories() {
@@ -182,14 +181,14 @@ public class IPEDMultiSource extends IPEDSource {
         for (IPEDSource iCase : cases)
             readers[i++] = iCase.reader;
 
-        LOGGER.info("Opening MultiReader..."); //$NON-NLS-1$
+        log.info("Opening MultiReader..."); //$NON-NLS-1$
 
         reader = new MultiReader(readers, false);
 
         // TODO get rid of deprecated SlowCompositeReaderWrapper
         atomicReader = SlowCompositeReaderWrapper.wrap(reader);
 
-        LOGGER.info("MultiReader opened"); //$NON-NLS-1$
+        log.info("MultiReader opened"); //$NON-NLS-1$
 
         openSearcher();
 

@@ -38,9 +38,8 @@ import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.utils.LocalizedFormat;
 import iped.viewers.util.ImageMetadataUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -65,9 +64,9 @@ import java.util.stream.Collectors;
  *
  * @author Wladimir Leite
  */
+@Slf4j
 public class HTMLReportTask extends AbstractTask {
 
-    private static Logger logger = LoggerFactory.getLogger(HTMLReportTask.class);
     private static final String VIDEO_PREVIEW_EXT = "jpg"; //$NON-NLS-1$
 
     private IPEDSource ipedCase;
@@ -209,9 +208,9 @@ public class HTMLReportTask extends AbstractTask {
 
         if (!init.get()) {
             if (htmlReportConfig.isEnabled()) {
-                logger.info("Task enabled."); //$NON-NLS-1$
+                log.info("Task enabled."); //$NON-NLS-1$
             } else {
-                logger.info("Task disabled."); //$NON-NLS-1$
+                log.info("Task disabled."); //$NON-NLS-1$
                 init.set(true);
                 return;
             }
@@ -226,7 +225,7 @@ public class HTMLReportTask extends AbstractTask {
             if (args != null) {
                 File infoFile = args.getAsap();
                 if (infoFile != null) {
-                    logger.info("Processing case info file: " + infoFile.getAbsolutePath()); //$NON-NLS-1$
+                    log.info("Processing case info file: " + infoFile.getAbsolutePath()); //$NON-NLS-1$
                     if (!infoFile.exists()) {
                         throw new RuntimeException("File not found: " + infoFile.getAbsolutePath()); //$NON-NLS-1$
                     }
@@ -269,7 +268,7 @@ public class HTMLReportTask extends AbstractTask {
 
             String reportRoot = Messages.getString("HTMLReportTask.ReportFileName"); //$NON-NLS-1$
             if (new File(reportSubFolder.getParentFile(), reportRoot).exists()) {
-                logger.error("Html report already exists, report update not implemented yet!"); //$NON-NLS-1$
+                log.error("Html report already exists, report update not implemented yet!"); //$NON-NLS-1$
                 return;
             }
 
@@ -285,9 +284,9 @@ public class HTMLReportTask extends AbstractTask {
                 templatesFolder = new File(new File(codePath), "htmlreport/" + localeConf.getLocale().toLanguageTag()); //$NON-NLS-1$
             }
 
-            logger.info("Selected report properties: " + selectedProperties.toString());
-            logger.info("Report folder: " + reportSubFolder.getAbsolutePath()); //$NON-NLS-1$
-            logger.info("Template folder: " + templatesFolder.getAbsolutePath()); //$NON-NLS-1$
+            log.info("Selected report properties: " + selectedProperties.toString());
+            log.info("Report folder: " + reportSubFolder.getAbsolutePath()); //$NON-NLS-1$
+            log.info("Template folder: " + templatesFolder.getAbsolutePath()); //$NON-NLS-1$
             if (!templatesFolder.exists()) {
                 throw new FileNotFoundException("Template folder not found!"); //$NON-NLS-1$
             }
@@ -330,7 +329,7 @@ public class HTMLReportTask extends AbstractTask {
             copyFiles(new File(templatesFolder, "res"), new File(reportSubFolder, "res")); //$NON-NLS-1$ //$NON-NLS-2$
 
             t = (System.currentTimeMillis() - t + 500) / 1000;
-            logger.info("Report creation time (seconds): " + t); //$NON-NLS-1$
+            log.info("Report creation time (seconds): " + t); //$NON-NLS-1$
 
             externalImageConverter.close();
         }

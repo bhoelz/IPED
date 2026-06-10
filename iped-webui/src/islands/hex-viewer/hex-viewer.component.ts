@@ -1,13 +1,5 @@
 import {HttpClient, HttpResponse} from '@angular/common/http';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostListener,
-  inject,
-  Input,
-  OnChanges,
-  signal,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostListener, inject, Input, OnChanges, signal,} from '@angular/core';
 
 /**
  * Hex viewer island (`<iped-hex-viewer>`).

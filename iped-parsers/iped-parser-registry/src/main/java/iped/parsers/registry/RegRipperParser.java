@@ -8,6 +8,7 @@ import iped.parsers.util.ItemInfo;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
 import iped.utils.SimpleHTMLEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -19,8 +20,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -30,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
+@Slf4j
 public class RegRipperParser extends AbstractParser {
 
     /**
@@ -39,7 +39,6 @@ public class RegRipperParser extends AbstractParser {
 
     public static final String FULL_REPORT_SUFFIX = "_Full_Report";
 
-    private static Logger LOGGER = LoggerFactory.getLogger(RegRipperParser.class);
 
     private final static String timeBiasStartTag = "Bias           -&gt; ";
     private final static String timeBiasEndTag = " (";
@@ -87,9 +86,9 @@ public class RegRipperParser extends AbstractParser {
                             + " Check if perl module 'Parse::Win32Registry' is installed."; //$NON-NLS-1$
                     // are we in analysis app?
                     if (System.getProperty("iped.javaVersionChecked") != null)
-                        LOGGER.warn(msg);
+                        log.warn(msg);
                     else
-                        LOGGER.error(msg);
+                        log.error(msg);
 
                     SUPPORTED_TYPES = Collections.EMPTY_SET;
                 }

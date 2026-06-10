@@ -16,6 +16,7 @@ import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
 import iped.utils.EmptyInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,8 +36,6 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.apache.tika.sax.xpath.Matcher;
 import org.apache.tika.sax.xpath.MatchingContentHandler;
 import org.apache.tika.sax.xpath.XPathParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -52,11 +51,11 @@ import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class UfedEmailParser extends AbstractParser {
 
     private static final long serialVersionUID = -4583682558447807906L;
 
-    private static final Logger logger = LoggerFactory.getLogger(UfedEmailParser.class);
 
     private static final Set<MediaType> SUPPORTED_TYPES = Collections.singleton(MediaTypes.UFED_EMAIL_MIME);
 
@@ -132,7 +131,7 @@ public class UfedEmailParser extends AbstractParser {
                 xhtml.endDocument();
             }
         } catch (Exception e) {
-            logger.error("Error processing Email", e);
+            log.error("Error processing Email", e);
             throw e;
         }
     }
@@ -276,7 +275,7 @@ public class UfedEmailParser extends AbstractParser {
                                 attachData = IOUtils.toByteArray(is);
                                 contentType = StringUtils.firstNonBlank(a.getContentType(), a.getReferencedFile().getItem().getMediaType().toString());
                             } catch (IOException e) {
-                                logger.warn("Error reading attachment referenced file: " + a, e);
+                                log.warn("Error reading attachment referenced file: " + a, e);
                             }
                         } else if (a.getUnreferencedContent() != null) {
                             attachData = a.getUnreferencedContent();
@@ -293,7 +292,7 @@ public class UfedEmailParser extends AbstractParser {
 
                     // If a data URI was successfully created, replace the original src attribute.
                     if (newSrc != null) {
-                        logger.info("Found replaced src attribute: " + email + " / " + src);
+                        log.info("Found replaced src attribute: " + email + " / " + src);
                         AttributesImpl newAtts = new AttributesImpl(atts);
                         newAtts.removeAttribute(atts.getIndex(SRC_ATTR));
                         newAtts.addAttribute("", SRC_ATTR, SRC_ATTR, "", newSrc);

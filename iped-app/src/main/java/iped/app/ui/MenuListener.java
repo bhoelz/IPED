@@ -34,8 +34,7 @@ import iped.properties.ExtraProperties;
 import iped.utils.SeekableFileInputStream;
 import iped.utils.SpinnerDialog;
 import iped.viewers.api.AbstractViewer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -51,9 +50,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class MenuListener implements ActionListener {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MenuListener.class);
 
     static String CSV = ".csv"; //$NON-NLS-1$
     static JFileChooser fileChooser, fileChooserImportKeywords;
@@ -156,7 +155,7 @@ public class MenuListener implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        LOGGER.debug("MenuListener Aktion Event Performed " + e.toString() + " " + e.getSource());
+        log.debug("MenuListener Aktion Event Performed " + e.toString() + " " + e.getSource());
         if (e.getSource() == menu.toggleTimelineView) {
             App.get().timelineListener.toggleTimelineTableView();
 
@@ -413,7 +412,7 @@ public class MenuListener implements ActionListener {
             int selIdx = App.get().resultsTable.getSelectedRow();
             IItemId itemId = App.get().ipedResult.getItem(App.get().resultsTable.convertRowIndexToModel(selIdx));
             IItem item = App.get().appCase.getItemByItemId(itemId);
-            LOGGER.info("Externally Opening preview of " + item.getPath()); //$NON-NLS-1$
+            log.info("Externally Opening preview of " + item.getPath()); //$NON-NLS-1$
             if (item.getViewFile() != null) {
                 ExternalFileOpen.open(item.getViewFile());
             } else if (item.hasPreview()) {

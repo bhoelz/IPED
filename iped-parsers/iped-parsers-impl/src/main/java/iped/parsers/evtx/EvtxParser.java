@@ -6,6 +6,7 @@ import iped.parsers.util.ItemInfo;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
 import iped.utils.EmptyInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -17,8 +18,6 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -31,8 +30,8 @@ import java.util.Map.Entry;
 /*
  * Parser that extract event records grouped by EventID
  */
+@Slf4j
 public class EvtxParser extends AbstractParser {
-    private static Logger LOGGER = LoggerFactory.getLogger(EvtxParser.class);
 
     private static final long serialVersionUID = 9091294620647570196L;
 

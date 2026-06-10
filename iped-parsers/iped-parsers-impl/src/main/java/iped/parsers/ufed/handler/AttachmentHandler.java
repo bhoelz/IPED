@@ -6,19 +6,18 @@ import iped.parsers.ufed.model.Attachment;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+@Slf4j
 public class AttachmentHandler extends BaseModelHandler<Attachment> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AttachmentHandler.class);
 
     public AttachmentHandler(Attachment model, IItemReader parentItem) {
         super(model, parentItem);
@@ -37,7 +36,7 @@ public class AttachmentHandler extends BaseModelHandler<Attachment> {
             List<IItemReader> fileItems = searcher.search(query);
             if (!fileItems.isEmpty()) {
                 if (fileItems.size() > 1) {
-                    logger.warn("Found more than 1 file for attachment [0]: {}", fileItems);
+                    log.warn("Found more than 1 file for attachment [0]: {}", fileItems);
                 }
                 model.setReferencedFile(fileItems.get(0));
                 return;
@@ -52,7 +51,7 @@ public class AttachmentHandler extends BaseModelHandler<Attachment> {
                 List<IItemReader> fileItems = searcher.search(query);
                 if (!fileItems.isEmpty()) {
                     if (fileItems.size() > 1) {
-                        logger.warn("Found more than 1 file for attachment [1]: {}", fileItems);
+                        log.warn("Found more than 1 file for attachment [1]: {}", fileItems);
                     }
                     model.setReferencedFile(fileItems.get(0));
                     return;
@@ -74,7 +73,7 @@ public class AttachmentHandler extends BaseModelHandler<Attachment> {
                     List<IItemReader> fileItems = searcher.search(query);
                     if (!fileItems.isEmpty()) {
                         if (fileItems.size() > 1) {
-                            logger.warn("Found more than 1 file for attachment [2]: {}", fileItems);
+                            log.warn("Found more than 1 file for attachment [2]: {}", fileItems);
                         }
                         model.setReferencedFile(fileItems.get(0));
 
@@ -84,7 +83,7 @@ public class AttachmentHandler extends BaseModelHandler<Attachment> {
                     }
                     return;
                 } catch (IOException e) {
-                    logger.error("Error reading attachment unreferencedContent {}", model);
+                    log.error("Error reading attachment unreferencedContent {}", model);
                 }
             }
         }
@@ -92,7 +91,7 @@ public class AttachmentHandler extends BaseModelHandler<Attachment> {
         if (!StringUtils.endsWith(model.getFilename(), ".enc")                  // don´t log ".enc" files not found - e.g. WhatsApp
                 && !StringUtils.equalsIgnoreCase(model.getContentType(), "URL") // don't log URL attachments
         ) {
-            logger.warn("Attachment file reference was not found: {}", model);
+            log.warn("Attachment file reference was not found: {}", model);
         }
     }
 

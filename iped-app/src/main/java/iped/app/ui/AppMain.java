@@ -12,8 +12,7 @@ import iped.engine.core.Manager;
 import iped.engine.util.Util;
 import iped.io.URLUtil;
 import iped.utils.IOUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.io.ByteArrayOutputStream;
@@ -22,6 +21,7 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+@Slf4j
 public class AppMain {
 
     private static final String appLogFileName = "IPED-SearchApp.log"; //$NON-NLS-1$
@@ -168,11 +168,10 @@ public class AppMain {
                 logConfiguration = new LogConfiguration(libDir.getParentFile().getAbsolutePath(), logFile);
                 logConfiguration.configureLogParameters(nolog);
 
-                Logger LOGGER = LoggerFactory.getLogger(AppMain.class);
-                LOGGER.info(Version.APP_NAME);
-                LOGGER.info("   Java Version: " + System.getProperty("java.version"));
-                LOGGER.info("   Java Home: " + System.getProperty("java.home"));
-                LOGGER.info("   Java VM Name: " + System.getProperty("java.vm.name"));
+                log.info(Version.APP_NAME);
+                log.info("   Java Version: " + System.getProperty("java.version"));
+                log.info("   Java Home: " + System.getProperty("java.home"));
+                log.info("   Java VM Name: " + System.getProperty("java.vm.name"));
 
                 Configuration.getInstance().loadIpedRoot();
             }

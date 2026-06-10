@@ -6,11 +6,10 @@ import iped.io.SeekableInputStream;
 import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import iped.utils.SeekableInputStreamFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.sleuthkit.datamodel.Content;
 import org.sleuthkit.datamodel.SleuthkitCase;
 import org.sleuthkit.datamodel.TskCoreException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteException;
 
 import java.io.File;
@@ -20,9 +19,9 @@ import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+@Slf4j
 public class SleuthkitInputStreamFactory extends SeekableInputStreamFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(SleuthkitInputStreamFactory.class);
 
     private SleuthkitCase sleuthkitCase;
     private Content content;
@@ -158,7 +157,7 @@ public class SleuthkitInputStreamFactory extends SeekableInputStreamFactory {
         if (e.getCause() instanceof SQLiteException) {
             long now = System.currentTimeMillis() / 1000;
             int errorCode = ((SQLiteException) e.getCause()).getErrorCode();
-            logger.warn("SQLite error " + errorCode + " after " + (now - start)
+            log.warn("SQLite error " + errorCode + " after " + (now - start)
                     + "s reading sleuthkit DB, trying again...");
             if (now - start > 3600)
                 throw new RuntimeException("Timeout after 1h retrying!", e); //$NON-NLS-1$

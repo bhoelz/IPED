@@ -1,6 +1,5 @@
 package iped.parsers.vcard;
 
-import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.junit.jupiter.api.Test;

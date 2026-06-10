@@ -5,8 +5,7 @@ import iped.parsers.sqlite.SQLite3DBParser;
 import iped.parsers.sqlite.SQLiteRecordValidator;
 import iped.parsers.sqlite.SQLiteUndelete;
 import iped.parsers.sqlite.SQLiteUndeleteTable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.sql.Connection;
@@ -16,9 +15,9 @@ import java.sql.Statement;
 
 import static iped.parsers.whatsapp.Util.nullToEmpty;
 
+@Slf4j
 public abstract class WAContactsExtractorAndroid extends WAContactsExtractor {
 
-    private static Logger logger = LoggerFactory.getLogger(WAContactsExtractorAndroid.class);
 
     private static final String SELECT_CONTACT_NAMES = "SELECT * FROM wa_contacts"; //$NON-NLS-1$
 
@@ -42,7 +41,7 @@ public abstract class WAContactsExtractorAndroid extends WAContactsExtractor {
                 undelete.addRecordValidator("wa_contacts", new WAAndroidContactValidator()); //$NON-NLS-1$
                 undeletedContactsTable = undelete.undeleteData().get("wa_contacts"); //$NON-NLS-1$
             } catch (Exception e) {
-                logger.warn("Error recovering deleted records from Android WhatsApp Contacts Database", e);
+                log.warn("Error recovering deleted records from Android WhatsApp Contacts Database", e);
             }
         }
 

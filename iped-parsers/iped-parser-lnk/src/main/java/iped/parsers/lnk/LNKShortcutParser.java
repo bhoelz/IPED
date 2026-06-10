@@ -24,6 +24,7 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
 import iped.utils.DateUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.tika.exception.TikaException;
@@ -35,8 +36,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -57,11 +56,11 @@ import java.util.*;
  *
  * @author Gabriel
  */
+@Slf4j
 public class LNKShortcutParser extends AbstractParser {
 
     private static final long serialVersionUID = -3156133141331973368L;
 
-    private static Logger logger = LoggerFactory.getLogger(LNKShortcutParser.class);
 
     public static final MediaType LNK_MEDIA_TYPE = MediaType.application("x-lnk");
     private static final Set<MediaType> SUPPORTED_TYPES = Collections.singleton(LNK_MEDIA_TYPE);
@@ -177,7 +176,7 @@ public class LNKShortcutParser extends AbstractParser {
             try {
                 makeReference(metadata, context, lnkObj, fullLocalPath);
             } catch (Exception e) {
-                logger.warn("Error making reference from LNK to file", e);
+                log.warn("Error making reference from LNK to file", e);
             }
         }
     }
@@ -375,7 +374,7 @@ public class LNKShortcutParser extends AbstractParser {
         IItemReader item;
         if (items.size() > 1) {
             item = selectBestItem(lnkObj, items);
-            logger.warn("More than one file referenced to the link. Using only the best one. {}",
+            log.warn("More than one file referenced to the link. Using only the best one. {}",
                     items.stream().map(IItemReader::getPath).toString());
         } else {
             item = items.get(0);
@@ -386,7 +385,7 @@ public class LNKShortcutParser extends AbstractParser {
         if (trackId != null) {
             metadata.set(ExtraProperties.LINKED_ITEMS, BasicProps.TRACK_ID + ":" + trackId);
         } else {
-            logger.warn("Referenced item has no trackId: {}", item);
+            log.warn("Referenced item has no trackId: {}", item);
         }
 
         Date created = item.getCreationDate();

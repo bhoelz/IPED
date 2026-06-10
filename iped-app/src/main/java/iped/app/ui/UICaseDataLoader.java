@@ -29,18 +29,17 @@ import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.task.ParsingTaskBootstrap;
 import iped.engine.task.SignatureTask;
 import iped.parsers.standard.StandardParser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.MatchAllDocsQuery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+@Slf4j
 public class UICaseDataLoader extends SwingWorker<Void, Integer> {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(UICaseDataLoader.class);
 
     private boolean updateItems;
 
@@ -101,7 +100,7 @@ public class UICaseDataLoader extends SwingWorker<Void, Integer> {
                     try {
                         PreviewRepositoryManager.configureReadOnly(ipedCase.getModuleDir());
                     } catch (IOException e) {
-                        LOGGER.error("Error configuring PreviewRepositoryManager", e);
+                        log.error("Error configuring PreviewRepositoryManager", e);
                         showErrorDialog(e);
                     }
                 });
@@ -110,7 +109,7 @@ public class UICaseDataLoader extends SwingWorker<Void, Integer> {
             if (!updateItems) {
                 App.get().appGraphAnalytics.initGraphService();
 
-                LOGGER.info("Loading Columns"); //$NON-NLS-1$
+                log.info("Loading Columns"); //$NON-NLS-1$
                 App.get().resultsModel.initCols();
                 App.get().resultsTable.setRowSorter(new ResultTableRowSorter());
 
@@ -122,10 +121,10 @@ public class UICaseDataLoader extends SwingWorker<Void, Integer> {
                 FileProcessor exibirAjuda = new FileProcessor(-1, false);
                 exibirAjuda.execute();
 
-                LOGGER.info("Listing all items"); //$NON-NLS-1$
+                log.info("Listing all items"); //$NON-NLS-1$
                 UICaseSearcherFilter pesquisa = new UICaseSearcherFilter(new MatchAllDocsQuery());
                 pesquisa.execute();
-                LOGGER.info("Listing all items Finished"); //$NON-NLS-1$
+                log.info("Listing all items Finished"); //$NON-NLS-1$
             } else {
                 App.get().notifyCaseDataChanged();
             }

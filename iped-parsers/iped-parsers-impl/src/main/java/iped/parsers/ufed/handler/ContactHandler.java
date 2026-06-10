@@ -6,10 +6,9 @@ import iped.parsers.ufed.model.ContactEntry;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,9 +19,9 @@ import java.util.stream.Stream;
 /**
  * Handles all processing logic for a Contact model.
  */
+@Slf4j
 public class ContactHandler extends AccountableHandler<Contact> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContactHandler.class);
 
     public ContactHandler(Contact model, IItemReader item) {
         super(model, item);
@@ -55,12 +54,12 @@ public class ContactHandler extends AccountableHandler<Contact> {
         List<IItemReader> contactItems = searcher.search(query);
         if (!contactItems.isEmpty()) {
             if (contactItems.size() > 1) {
-                logger.warn("Found more than 1 contact for shared contact: {}", contactItems);
+                log.warn("Found more than 1 contact for shared contact: {}", contactItems);
             }
             model.setReferencedContact(contactItems.get(0));
 
         } else {
-            logger.debug("Contact reference was not found: {}", model);
+            log.debug("Contact reference was not found: {}", model);
         }
     }
 

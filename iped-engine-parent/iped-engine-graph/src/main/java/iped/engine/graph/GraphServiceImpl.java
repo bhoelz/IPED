@@ -1,19 +1,18 @@
 package iped.engine.graph;
 
+import lombok.extern.slf4j.Slf4j;
 import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.dbms.api.DatabaseManagementServiceBuilder;
 import org.neo4j.graphdb.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class GraphServiceImpl implements GraphService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(GraphServiceImpl.class);
 
     private DatabaseManagementService managementService;
     private GraphDatabaseService graphDB;
@@ -23,7 +22,7 @@ public class GraphServiceImpl implements GraphService {
     public void start(File dbHome) {
         if (!started) {
             this.dbHome = dbHome;
-            LOGGER.info("Starting neo4j service at " + dbHome.getAbsolutePath());
+            log.info("Starting neo4j service at " + dbHome.getAbsolutePath());
 
             managementService = new DatabaseManagementServiceBuilder(dbHome.toPath()).build();
             graphDB = managementService.database(GraphConstants.DB_NAME);
@@ -31,17 +30,17 @@ public class GraphServiceImpl implements GraphService {
             started = true;
 
         } else {
-            LOGGER.info("Service already started.");
+            log.info("Service already started.");
         }
     }
 
     public synchronized void stop() {
         if (started) {
-            LOGGER.info("Shutting down neo4j service.");
+            log.info("Shutting down neo4j service.");
             managementService.shutdown();
             started = false;
         } else {
-            LOGGER.info("Service already stopped.");
+            log.info("Service already stopped.");
         }
     }
 
@@ -533,7 +532,7 @@ public class GraphServiceImpl implements GraphService {
 
             tx.commit();
         } catch (Exception e) {
-            LOGGER.error("Error executing query.", e);
+            log.error("Error executing query.", e);
         } finally {
             tx.close();
         }

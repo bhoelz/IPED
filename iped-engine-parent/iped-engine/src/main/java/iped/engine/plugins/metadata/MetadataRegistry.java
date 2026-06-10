@@ -1,7 +1,7 @@
 package iped.engine.plugins.metadata;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
  *
  * Thread-safe for concurrent access from multiple workers.
  */
+@Slf4j
 public class MetadataRegistry {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MetadataRegistry.class);
 
     /**
      * Registry of all metadata properties by name.
@@ -39,9 +39,9 @@ public class MetadataRegistry {
         MetadataPropertyDescriptor previous = properties.put(key, descriptor);
 
         if (previous == null) {
-            LOGGER.debug("Registered metadata property: {} ({})", key, descriptor.displayName());
+            log.debug("Registered metadata property: {} ({})", key, descriptor.displayName());
         } else {
-            LOGGER.debug("Updated metadata property: {} ({})", key, descriptor.displayName());
+            log.debug("Updated metadata property: {} ({})", key, descriptor.displayName());
         }
     }
 
@@ -153,7 +153,7 @@ public class MetadataRegistry {
      */
     public void clearRegistry() {
         properties.clear();
-        LOGGER.info("Cleared metadata property registry");
+        log.info("Cleared metadata property registry");
     }
 
     /**

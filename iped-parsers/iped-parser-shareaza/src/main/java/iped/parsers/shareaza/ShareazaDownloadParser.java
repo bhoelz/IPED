@@ -7,6 +7,7 @@ import iped.parsers.util.P2PUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -17,8 +18,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -35,9 +34,9 @@ import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.util.*;
 
+@Slf4j
 public class ShareazaDownloadParser extends AbstractParser {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ShareazaDownloadParser.class);
 
     private static final long serialVersionUID = 1L;
     public static final String SHAREAZA_DOWNLOAD_META = "application/x-shareaza-download";

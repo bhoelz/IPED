@@ -8,6 +8,7 @@ import iped.io.SeekableInputStream;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
 import iped.utils.SimpleInputStreamFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
@@ -16,8 +17,6 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypesFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,9 +27,9 @@ import java.util.List;
 /**
  * Análise de assinatura utilizando biblioteca Apache Tika.
  */
+@Slf4j
 public class SignatureTask extends AbstractTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SignatureTask.class);
 
     private static final String[] HFS_ATTR_SUFFIX = { ":DATA", ":DECOMP", ":RSRC" };
 
@@ -74,7 +73,7 @@ public class SignatureTask extends AbstractTask {
                         type = getDetector().detect(tis, metadata).getBaseType();
 
                     } catch (IOException e) {
-                        LOGGER.warn("{} Error detecting signature: {} ({} bytes)\t\t{}", //$NON-NLS-1$
+                        log.warn("{} Error detecting signature: {} ({} bytes)\t\t{}", //$NON-NLS-1$
                                 Thread.currentThread().getName(), evidence.getPath(), evidence.getLength(),
                                 e.toString());
                     } finally {
@@ -119,7 +118,7 @@ public class SignatureTask extends AbstractTask {
             } catch (Throwable e) {
                 type = MediaType.OCTET_STREAM;
 
-                LOGGER.warn("{} Error detecting signature: {} ({} bytes)\t\t{}", Thread.currentThread().getName(), //$NON-NLS-1$
+                log.warn("{} Error detecting signature: {} ({} bytes)\t\t{}", Thread.currentThread().getName(), //$NON-NLS-1$
                         evidence.getPath(), evidence.getLength(), e.toString());
             }
         }

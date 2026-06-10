@@ -6,11 +6,10 @@ import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
 import iped.engine.CmdLineArgs;
 import iped.engine.config.ConfigurationManager;
 import iped.exception.IPEDException;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.concurrent.Semaphore;
@@ -19,9 +18,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class MicrosoftTranscriptTask extends AbstractTranscriptTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MicrosoftTranscriptTask.class);
 
     private static final String SUBSCRIPTION_KEY = "azureSubscriptionKey";
 
@@ -106,14 +105,14 @@ public class MicrosoftTranscriptTask extends AbstractTranscriptTask {
 
                     } else if (e.getResult().getReason() == ResultReason.NoMatch) {
                         ok.set(false);
-                        LOGGER.warn("NOMATCH: Speech could not be recognized with {}", evidence.getPath());
+                        log.warn("NOMATCH: Speech could not be recognized with {}", evidence.getPath());
                     }
                 });
 
                 recognizer.canceled.addEventListener((s, e) -> {
                     if (e.getReason() == CancellationReason.Error) {
                         ok.set(false);
-                        LOGGER.error("Transcription of {} failed errorCode={} details={}", evidence.getPath(),
+                        log.error("Transcription of {} failed errorCode={} details={}", evidence.getPath(),
                                 e.getErrorCode(), e.getErrorDetails());
                     }
                     stopTranslationWithFileSemaphore.release();
@@ -143,11 +142,11 @@ public class MicrosoftTranscriptTask extends AbstractTranscriptTask {
                 textAndScore.text = result.toString();
                 textAndScore.score = score.doubleValue() / (frags.intValue() != 0 ? frags.intValue() : 1);
 
-                LOGGER.debug("MS Transcript of {}: {}", evidence.getPath(), result.toString());
+                log.debug("MS Transcript of {}: {}", evidence.getPath(), result.toString());
 
             } catch (Exception ex) {
-                LOGGER.error("Error transcribing {} {}", evidence.getPath(), ex.toString());
-                LOGGER.warn("", ex);
+                log.error("Error transcribing {} {}", evidence.getPath(), ex.toString());
+                log.warn("", ex);
 
             } finally {
                 maxConcurrentRequests.release();

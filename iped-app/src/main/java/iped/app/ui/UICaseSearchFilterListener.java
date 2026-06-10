@@ -6,19 +6,18 @@ import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.utils.LocalizedFormat;
 import iped.viewers.util.ProgressDialog;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Dialog.ModalityType;
 import java.io.IOException;
 import java.util.Set;
 
+@Slf4j
 public class UICaseSearchFilterListener implements CaseSearchFilterListener {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(UICaseSearchFilterListener.class);
     ProgressDialog progressDialog;
     CaseSearcherFilter caseSearcherFilter;
 
@@ -90,7 +89,7 @@ public class UICaseSearchFilterListener implements CaseSearchFilterListener {
 
     @Override
     public void onCancel(boolean mayInterruptIfRunning) {
-        LOGGER.error(Messages.getString("UISearcher.Canceled")); //$NON-NLS-1$
+        log.error(Messages.getString("UISearcher.Canceled")); //$NON-NLS-1$
         caseSearcherFilter.searcher.cancel();
         try {
             App.get().appCase.reopen();

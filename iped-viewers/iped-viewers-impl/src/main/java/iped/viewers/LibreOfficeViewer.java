@@ -42,8 +42,7 @@ import iped.utils.IOUtil;
 import iped.utils.ProcessUtil;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -64,9 +63,9 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class LibreOfficeViewer extends AbstractViewer {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(LibreOfficeViewer.class);
 
     private IOfficeApplication officeApplication;
     private NativeView nat;
@@ -196,7 +195,7 @@ public class LibreOfficeViewer extends AbstractViewer {
             officeApplication.activate();
             officeApplication.getDesktopService().addDocumentListener(new DocumentAdapter());
 
-            LOGGER.info("LibreOffice running."); //$NON-NLS-1$
+            log.info("LibreOffice running."); //$NON-NLS-1$
 
         } catch (Exception e1) {
             String msg = e1.toString().toLowerCase();
@@ -219,12 +218,12 @@ public class LibreOfficeViewer extends AbstractViewer {
         try {
             if (!System.getProperty("os.name").startsWith("Windows")
                     && !"gen".equals(System.getenv("SAL_USE_VCLPLUGIN")))
-                LOGGER.error("LibreOffice viewer may not work properly. Set environment var SAL_USE_VCLPLUGIN='gen'");
+                log.error("LibreOffice viewer may not work properly. Set environment var SAL_USE_VCLPLUGIN='gen'");
 
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    LOGGER.info("Constructing LibreOffice frame..."); //$NON-NLS-1$
+                    log.info("Constructing LibreOffice frame..."); //$NON-NLS-1$
                     if (System.getProperty("os.name").startsWith("Windows")) {
                         File msvcr100 = new File(nativelib, "64bit/msvcr100.dll");
                         System.load(msvcr100.getAbsolutePath());
@@ -247,7 +246,7 @@ public class LibreOfficeViewer extends AbstractViewer {
 
                     try {
                         officeFrame = officeApplication.getDesktopService().constructNewOfficeFrame(nat);
-                        LOGGER.info("LibreOffice frame ok"); //$NON-NLS-1$
+                        log.info("LibreOffice frame ok"); //$NON-NLS-1$
 
                     } catch (DesktopException e1) {
                         e1.printStackTrace();
@@ -347,7 +346,7 @@ public class LibreOfficeViewer extends AbstractViewer {
                         document = officeApplication.getDocumentService().loadDocument(officeFrame,
                                 lastFile.toURI().toURL().toString(), descriptor);
                         if (document != null && document.equalsTo(prevDocument)) {
-                            LOGGER.info("Failed to load Office document.");
+                            log.info("Failed to load Office document.");
                             cleanDocument(descriptor);
                         }
                         adjustLayout();
@@ -370,8 +369,8 @@ public class LibreOfficeViewer extends AbstractViewer {
 
                     loading = false;
 
-                    LOGGER.info(e.toString());
-                    LOGGER.debug("", e);
+                    log.info(e.toString());
+                    log.debug("", e);
 
                     if (e.toString().contains("Document not found")) { //$NON-NLS-1$
                         noaPanel.setVisible(false);
@@ -421,7 +420,7 @@ public class LibreOfficeViewer extends AbstractViewer {
                     }
 
                     if (blocked && lastFile != null) {
-                        LOGGER.info("UI freeze detected! Restarting viewer..."); //$NON-NLS-1$
+                        log.info("UI freeze detected! Restarting viewer..."); //$NON-NLS-1$
                         synchronized (startLOLock) {
                             restartLO();
                         }
@@ -439,7 +438,7 @@ public class LibreOfficeViewer extends AbstractViewer {
     }
 
     private void restartLO() {
-        LOGGER.info("Restarting LibreOffice..."); //$NON-NLS-1$
+        log.info("Restarting LibreOffice..."); //$NON-NLS-1$
         restartCalled = true;
 
         ProcessUtil.killProcess("soffice.bin", "--accept=pipe");
@@ -468,7 +467,7 @@ public class LibreOfficeViewer extends AbstractViewer {
         startLO();
         constructLOFrame();
 
-        LOGGER.info("LibreOffice restarted."); //$NON-NLS-1$
+        log.info("LibreOffice restarted."); //$NON-NLS-1$
     }
 
     private volatile File tempFile = null;
@@ -657,7 +656,7 @@ public class LibreOfficeViewer extends AbstractViewer {
                                 spreadsheets.getByName(sheetName));
                         XProtectable protectable = UnoRuntime.queryInterface(XProtectable.class, sheet);
                         if (protectable.isProtected()) {
-                            LOGGER.info("Protected sheet: {}", sheetName); //$NON-NLS-1$
+                            log.info("Protected sheet: {}", sheetName); //$NON-NLS-1$
                         }
                         // protectable.unprotect("");
                         XSearchable xSearchable = UnoRuntime.queryInterface(XSearchable.class, sheet);
@@ -823,7 +822,7 @@ public class LibreOfficeViewer extends AbstractViewer {
             }
 
         } catch (Exception e) {
-            LOGGER.info("Error/Highlight interrupted"); //$NON-NLS-1$
+            log.info("Error/Highlight interrupted"); //$NON-NLS-1$
             // e.printStackTrace();
         }
     }
@@ -890,7 +889,7 @@ public class LibreOfficeViewer extends AbstractViewer {
 
                 } catch (Exception e) {
                     // e.printStackTrace();
-                    LOGGER.info("Error scrolling to hit"); //$NON-NLS-1$
+                    log.info("Error scrolling to hit"); //$NON-NLS-1$
                 }
 
             }

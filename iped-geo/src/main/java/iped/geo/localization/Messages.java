@@ -1,19 +1,18 @@
 package iped.geo.localization;
 
 import iped.localization.LocaleResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+@Slf4j
 public class Messages {
 
     private static final String BUNDLE_NAME = "iped-geo-messages"; //$NON-NLS-1$
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Messages.class);
 
     private static ResourceBundle RESOURCE_BUNDLE;
 
@@ -29,7 +28,7 @@ public class Messages {
             if (finalLocale.equals("und")) //$NON-NLS-1$
                 finalLocale = "en"; //$NON-NLS-1$
             if (!locale.toLanguageTag().equals(finalLocale))
-                LOGGER.error("Bundle for Locale '" + locale.toLanguageTag() //$NON-NLS-1$
+                log.error("Bundle for Locale '" + locale.toLanguageTag() //$NON-NLS-1$
                         + "' not found. Using bundle for " + finalLocale); //$NON-NLS-1$
         }
         try {

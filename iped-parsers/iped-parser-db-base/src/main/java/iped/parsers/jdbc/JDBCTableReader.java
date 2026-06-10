@@ -17,6 +17,7 @@ package iped.parsers.jdbc;
  */
 
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
@@ -30,8 +31,6 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MimeTypes;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -48,6 +47,7 @@ import java.util.List;
 /**
  * General base class to iterate through rows of a JDBC table
  */
+@Slf4j
 public class JDBCTableReader {
 
     private final static Attributes EMPTY_ATTRIBUTES = new AttributesImpl();
@@ -60,7 +60,6 @@ public class JDBCTableReader {
     private Detector detector = null;
     private MimeTypes mimeTypes = null;
     private EmbeddedDocumentExtractor ex;
-    private static Logger LOGGER = LoggerFactory.getLogger(JDBCTableReader.class);
 
     public JDBCTableReader(Connection connection, String tableName, ParseContext context) {
         this.connection = connection;
@@ -98,7 +97,7 @@ public class JDBCTableReader {
             handler.endElement(XHTMLContentHandler.XHTML, "tr", "tr"); //$NON-NLS-1$ //$NON-NLS-2$
 
         } catch (Exception e2) {
-            LOGGER.warn("Error reading sqlite row {} from table {}", rows, tableName); //$NON-NLS-1$
+            log.warn("Error reading sqlite row {} from table {}", rows, tableName); //$NON-NLS-1$
         }
         rows++;
         return true;

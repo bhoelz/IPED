@@ -22,8 +22,7 @@ import iped.app.ui.parallelsorter.ParallelTableRowSorter;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.api.events.RowSorterTableDataChange;
 import iped.viewers.util.ProgressDialog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,11 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class ResultTableRowSorter extends ParallelTableRowSorter<ResultTableSortModel> {
 
     private static final int MAX_COMPARATOR_CACHE = 3;
 
-    private static Logger logger = LoggerFactory.getLogger(ResultTableRowSorter.class);
 
     private static volatile Map<Integer, RowComparator> comparatorCache = new LinkedHashMap<Integer, RowComparator>(16, 0.75f, true) {
         /**
@@ -108,11 +107,11 @@ public class ResultTableRowSorter extends ParallelTableRowSorter<ResultTableSort
         @Override
         protected Object doInBackground() {
             List<String> sortKeysString = getSortKeysString(sortKeys);
-            logger.info("Sorting by {}...", sortKeysString);
+            log.info("Sorting by {}...", sortKeysString);
             long t = System.currentTimeMillis();
             sorter.setSortKeysSuper(sortKeys);
             t = System.currentTimeMillis() - t;
-            logger.info("Sorting by {} took {}ms", sortKeysString, t);
+            log.info("Sorting by {} took {}ms", sortKeysString, t);
             return null;
         }
 

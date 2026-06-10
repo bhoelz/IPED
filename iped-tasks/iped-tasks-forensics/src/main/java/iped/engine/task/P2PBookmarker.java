@@ -25,11 +25,10 @@ import iped.parsers.whatsapp.WhatsAppParser;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.search.SearchResult;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.Document;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
@@ -38,9 +37,9 @@ import java.util.List;
 
 import static iped.properties.ExtraProperties.*;
 
+@Slf4j
 public class P2PBookmarker {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(P2PBookmarker.class);
 
     private boolean isIpedReport = false;
 
@@ -73,7 +72,7 @@ public class P2PBookmarker {
         if (isIpedReport)
             return;
 
-        LOGGER.info("Searching for shared items...");
+        log.info("Searching for shared items...");
 
         HashMap<String, P2PProgram> p2pPrograms = new HashMap<String, P2PProgram>();
 
@@ -161,7 +160,7 @@ public class P2PBookmarker {
                 searcher = new IPEDSearcher(ipedSrc, queryBuilder.toString());
 
                 SearchResult result = searcher.search();
-                LOGGER.info("Items shared by " + program.appName + " found: " + result.getLength()); //$NON-NLS-1$ //$NON-NLS-2$
+                log.info("Items shared by " + program.appName + " found: " + result.getLength()); //$NON-NLS-1$ //$NON-NLS-2$
                 if (result.getLength() == 0)
                     continue;
 

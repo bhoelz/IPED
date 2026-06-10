@@ -3,6 +3,7 @@ package iped.viewers;
 import iped.io.IStreamSource;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
+import lombok.extern.slf4j.Slf4j;
 import org.icepdf.core.pobjects.Catalog;
 import org.icepdf.core.pobjects.Document;
 import org.icepdf.core.pobjects.Page;
@@ -16,8 +17,6 @@ import org.icepdf.ri.common.views.DocumentViewController;
 import org.icepdf.ri.common.views.DocumentViewControllerImpl;
 import org.icepdf.ri.common.views.DocumentViewModelImpl;
 import org.icepdf.ri.util.ViewerPropertiesManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,9 +25,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
 
+@Slf4j
 public class IcePDFViewer extends AbstractViewer {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(IcePDFViewer.class);
 
     private volatile SwingController pdfController;
     private volatile JPanel viewerPanel;
@@ -135,7 +134,7 @@ public class IcePDFViewer extends AbstractViewer {
         panel.add(viewerPanel, BorderLayout.CENTER);
         panel.setMinimumSize(new Dimension());
 
-        LOGGER.info("{} took {}ms to be initialized.", this.getClass().getSimpleName(), System.currentTimeMillis() - t);
+        log.info("{} took {}ms to be initialized.", this.getClass().getSimpleName(), System.currentTimeMillis() - t);
 
     }
 
@@ -295,7 +294,7 @@ public class IcePDFViewer extends AbstractViewer {
                 }
             }
         } catch (Exception e) {
-            LOGGER.info("Error/Highlight interrupted"); //$NON-NLS-1$
+            log.info("Error/Highlight interrupted"); //$NON-NLS-1$
         }
 
     }

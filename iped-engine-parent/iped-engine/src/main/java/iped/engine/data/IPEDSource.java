@@ -30,6 +30,7 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.datasource.SleuthkitReader;
 import iped.engine.index.IndexExtraAttributes;
 import iped.engine.index.IndexMetadata;
+import iped.engine.io.ImagePathResolverProvider;
 import iped.engine.localization.Messages;
 import iped.engine.lucene.ConfiguredFSDirectory;
 import iped.engine.lucene.SlowCompositeReaderWrapper;
@@ -43,7 +44,7 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
 import iped.utils.IOUtil;
-import iped.engine.io.ImagePathResolverProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
@@ -53,8 +54,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Bits;
 import org.sleuthkit.datamodel.SleuthkitCase;
 import org.sleuthkit.datamodel.TskCoreException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,9 +63,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class IPEDSource implements IIPEDSource {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(IPEDSource.class);
 
     public static final String MODULE_DIR = "iped"; //$NON-NLS-1$
     public static final String INDEX_DIR = "index"; //$NON-NLS-1$
@@ -270,7 +269,7 @@ public class IPEDSource implements IIPEDSource {
 
     public void populateLuceneIdToIdMap() throws IOException {
 
-        LOGGER.info("Creating LuceneId to ID mapping..."); //$NON-NLS-1$
+        log.info("Creating LuceneId to ID mapping..."); //$NON-NLS-1$
         ids = new int[reader.maxDoc()];
         for (int i = 0; i < ids.length; i++) {
             ids[i] = -1;
@@ -470,7 +469,7 @@ public class IPEDSource implements IIPEDSource {
     }
 
     private void openIndex(File index, IndexWriter iw) throws IOException {
-        LOGGER.info("Opening index " + index.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Opening index " + index.getAbsolutePath()); //$NON-NLS-1$
 
         if (iw == null) {
             Directory directory = ConfiguredFSDirectory.open(index);
@@ -484,7 +483,7 @@ public class IPEDSource implements IIPEDSource {
 
         openSearcher();
 
-        LOGGER.info("Index opened"); //$NON-NLS-1$
+        log.info("Index opened"); //$NON-NLS-1$
     }
 
     protected void openSearcher() {
@@ -593,9 +592,9 @@ public class IPEDSource implements IIPEDSource {
             try {
                 LuceneAdditionalDataSource ads = new LuceneAdditionalDataSource(additionalIndexPath);
                 additionalDataSourceManager.register(ads);
-                LOGGER.info("Additional processing index loaded from {}", additionalIndexPath); //$NON-NLS-1$
+                log.info("Additional processing index loaded from {}", additionalIndexPath); //$NON-NLS-1$
             } catch (IOException e) {
-                LOGGER.error("Could not open additional processing index at {}", additionalIndexPath, e); //$NON-NLS-1$
+                log.error("Could not open additional processing index at {}", additionalIndexPath, e); //$NON-NLS-1$
             }
         }
     }
@@ -647,7 +646,7 @@ public class IPEDSource implements IIPEDSource {
                     sleuthCase.setImagePaths(id, newPaths);
             }
         } catch (Exception e) {
-            LOGGER.error("Error converting image references to relative paths"); //$NON-NLS-1$
+            log.error("Error converting image references to relative paths"); //$NON-NLS-1$
         }
     }
 

@@ -19,9 +19,8 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
+import lombok.extern.slf4j.Slf4j;
 import netscape.javascript.JSObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import javax.swing.*;
@@ -38,9 +37,9 @@ import java.util.Set;
  * @author Nassif
  *
  */
+@Slf4j
 public class HtmlLinkViewer extends HtmlViewer implements SelectionListener {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(HtmlLinkViewer.class);
 
     public static final String PREVIEW_WITH_LINKS_MIME = "application/x-preview-with-links"; //$NON-NLS-1$
 
@@ -154,7 +153,7 @@ public class HtmlLinkViewer extends HtmlViewer implements SelectionListener {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
-                            LOGGER.info("Attachment not found by query " + luceneQuery); //$NON-NLS-1$
+                            log.info("Attachment not found by query " + luceneQuery); //$NON-NLS-1$
                             JOptionPane.showMessageDialog(null, Messages.getString("HtmlLinkViewer.AttachNotFound")); //$NON-NLS-1$
                         }
                     });

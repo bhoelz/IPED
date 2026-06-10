@@ -2,17 +2,16 @@ package iped.engine.sleuthkit;
 
 import iped.engine.sleuthkit.SleuthkitServer.FLAGS;
 import iped.io.SeekableInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 public class SleuthkitClientInputStream extends SeekableInputStream {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SleuthkitClientInputStream.class);
 
     private static AtomicLong next = new AtomicLong();
 
@@ -106,7 +105,7 @@ public class SleuthkitClientInputStream extends SeekableInputStream {
 
         } catch (IOException e) {
             client.setServerError(true);
-            LOGGER.error("Wait response error: " + getCrashMsg());
+            log.error("Wait response error: " + getCrashMsg());
             throw e;
 
         } finally {
@@ -121,11 +120,11 @@ public class SleuthkitClientInputStream extends SeekableInputStream {
                     time = System.currentTimeMillis();
                 }
                 Thread.sleep(1);
-                LOGGER.warn("Waiting " + getServerId() + " memory write..."); //$NON-NLS-1$
+                log.warn("Waiting " + getServerId() + " memory write..."); //$NON-NLS-1$
 
                 if (System.currentTimeMillis() - time >= TIMEOUT) {
                     client.setServerError(true);
-                    LOGGER.error("MemoryReadTimeout waiting " + getServerId() + ": " + path); //$NON-NLS-1$
+                    log.error("MemoryReadTimeout waiting " + getServerId() + ": " + path); //$NON-NLS-1$
                     throw new IOException("MemoryReadTimeout waiting " + getServerId() + ": " + path); //$NON-NLS-1$
                 }
 
@@ -153,7 +152,7 @@ public class SleuthkitClientInputStream extends SeekableInputStream {
             SleuthkitServer.notify(client.os);
         } catch (IOException e) {
             client.setServerError(true);
-            LOGGER.error("Notify error: " + getCrashMsg());
+            log.error("Notify error: " + getCrashMsg());
             throw e;
         }
     }

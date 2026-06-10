@@ -4,10 +4,9 @@ import iped.configuration.IConfigurationDirectory;
 import iped.engine.config.AudioTranscriptConfig;
 import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.HardwareAbstractionLayer;
@@ -18,9 +17,9 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Log4j2
 public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
 
-    private static Logger logger = LogManager.getLogger(Wav2Vec2TranscriptTask.class);
 
     private static final String SCRIPT_PATH = "/scripts/tasks/Wav2Vec2Process.py";
     protected static final String TRANSCRIPTION_FINISHED = "transcription_finished";
@@ -76,7 +75,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
             if (!new File(ipedRoot, "python/python.exe").exists()) {
                 // Possibly generating report on a machine that have never run iped processing.
                 this.transcriptConfig.setEnabled(false);
-                logger.warn("Python.exe not found, disabling transcription module.");
+                log.warn("Python.exe not found, disabling transcription module.");
                 return;
             }
         }
@@ -96,7 +95,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
                 } catch (Exception e) {
                     if (hasIpedDatasource()) {
                         transcriptConfig.setEnabled(false);
-                        logger.warn("Could not initialize audio transcription. Task disabled.");
+                        log.warn("Could not initialize audio transcription. Task disabled.");
                     } else {
                         throw e;
                     }
@@ -156,8 +155,8 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
         int cudaCount = Integer.valueOf(reader.readLine());
         if (numProcesses == null) {
             int cpus = getNumProcessors();
-            logger.info("Number of CUDA devices detected: {}", cudaCount);
-            logger.info("Number of CPU devices detected: {}", cpus);
+            log.info("Number of CUDA devices detected: {}", cudaCount);
+            log.info("Number of CPU devices detected: {}", cpus);
             if (cudaCount > 0) {
                 numProcesses = cudaCount;
             } else {
@@ -175,7 +174,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
 
         line = reader.readLine();
 
-        logger.info("Model loaded on device={}", line);
+        log.info("Model loaded on device={}", line);
 
         Server server = new Server();
         server.process = process;
@@ -192,7 +191,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
                 int read = 0;
                 try {
                     while ((read = is.read(buf)) != -1) {
-                        logger.log(logLevel, new String(buf, 0, read).trim());
+                        log.log(logLevel, new String(buf, 0, read).trim());
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -240,7 +239,7 @@ public class Wav2Vec2TranscriptTask extends AbstractTranscriptTask {
                 throw new IOException("ping not returned fine");
             }
         } catch (IOException e) {
-            logger.warn("Fail to ping transcription process pid={} exception={}", server.process.pid(), e.toString());
+            log.warn("Fail to ping transcription process pid={} exception={}", server.process.pid(), e.toString());
         }
         return false;
     }

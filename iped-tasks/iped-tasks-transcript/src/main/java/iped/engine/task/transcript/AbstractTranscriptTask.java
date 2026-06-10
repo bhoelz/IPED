@@ -11,12 +11,11 @@ import iped.engine.task.AbstractTask;
 import iped.exception.IPEDException;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.utils.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteConfig.SynchronousMode;
 
@@ -39,10 +38,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
+@Slf4j
 public abstract class AbstractTranscriptTask extends AbstractTask {
     private static final String MPLAYER_WIN_PATH = "tools/mplayer/mplayer.exe"; //$NON-NLS-1$
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AbstractTranscriptTask.class);
 
     protected static final MediaType wav = MediaType.audio("vnd.wave");
 
@@ -238,7 +237,7 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
                 IOUtil.closeQuietly(aOut);
             }
         } catch (Exception e) {
-            LOGGER.warn("Failed to split audio file: " + itemPath, e);
+            log.warn("Failed to split audio file: " + itemPath, e);
         } finally {
             IOUtil.closeQuietly(aOut);
             IOUtil.closeQuietly(aIn);
@@ -274,12 +273,12 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
         long timeoutSecs = MIN_TIMEOUT / 3 + TIMEOUT_PER_MB * input.length() / (1 << 20);
         boolean finished = p.waitFor(timeoutSecs, TimeUnit.SECONDS);
         if (!finished) {
-            LOGGER.warn("Timeout after {}s converting to wav: {}", timeoutSecs, itemPath);
-            LOGGER.warn("Trying to kill mplayer process...");
+            log.warn("Timeout after {}s converting to wav: {}", timeoutSecs, itemPath);
+            log.warn("Trying to kill mplayer process...");
             p.destroy();
             p.waitFor(3, TimeUnit.SECONDS);
             if (p.isAlive()) {
-                LOGGER.warn("Trying to forcibly kill mplayer process...");
+                log.warn("Trying to forcibly kill mplayer process...");
                 p.destroyForcibly();
                 p.waitFor(3, TimeUnit.SECONDS);
             }
@@ -287,15 +286,15 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
         int exit = p.exitValue();
         if (exit != 0) {
             tmpFile.delete();
-            LOGGER.warn("Error converting to wav exitCode={} item={}", exit, itemPath);
+            log.warn("Error converting to wav exitCode={} item={}", exit, itemPath);
             tmpFile = null;
         } else {
             if (!tmpFile.exists()) {
-                LOGGER.warn("Conversion to wav failed, no wav generated: {} ", itemPath);
+                log.warn("Conversion to wav failed, no wav generated: {} ", itemPath);
                 tmpFile = null;
             } else if (tmpFile.length() == 0) {
                 tmpFile.delete();
-                LOGGER.warn("Conversion to wav failed, empty wav generated: {} ", itemPath);
+                log.warn("Conversion to wav failed, empty wav generated: {} ", itemPath);
                 tmpFile = null;
             }
         }
@@ -314,22 +313,22 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
 
         long totWavConversions = wavSuccess.longValue() + wavFail.longValue();
         if (totWavConversions != 0) {
-            LOGGER.info("Total conversions to WAV: " + totWavConversions);
-            LOGGER.info("Successful conversions to WAV: " + wavSuccess.intValue());
-            LOGGER.info("Failed conversions to WAV: " + wavFail.intValue());
-            LOGGER.info("Average conversion to WAV time (ms/audio): " + (wavTime.longValue() / totWavConversions));
+            log.info("Total conversions to WAV: " + totWavConversions);
+            log.info("Successful conversions to WAV: " + wavSuccess.intValue());
+            log.info("Failed conversions to WAV: " + wavFail.intValue());
+            log.info("Average conversion to WAV time (ms/audio): " + (wavTime.longValue() / totWavConversions));
             wavSuccess.set(0);
             wavFail.set(0);
         }
 
         long totTranscriptions = transcriptionSuccess.longValue() + transcriptionFail.longValue();
         if (totTranscriptions != 0) {
-            LOGGER.info("Total transcriptions: " + totTranscriptions);
-            LOGGER.info("Successful transcriptions: " + transcriptionSuccess.intValue());
-            LOGGER.info("Failed transcriptions: " + transcriptionFail.intValue());
-            LOGGER.info("Total transcription output characters: " + transcriptionChars.longValue());
-            LOGGER.info("Average transcription time (ms/audio): " + (transcriptionTime.longValue() / (totTranscriptions)));
-            LOGGER.info("Total transcription throughput (audios/s): " + (1000 * this.worker.manager.getNumWorkers() * totTranscriptions / transcriptionTime.longValue()));
+            log.info("Total transcriptions: " + totTranscriptions);
+            log.info("Successful transcriptions: " + transcriptionSuccess.intValue());
+            log.info("Failed transcriptions: " + transcriptionFail.intValue());
+            log.info("Total transcription output characters: " + transcriptionChars.longValue());
+            log.info("Average transcription time (ms/audio): " + (transcriptionTime.longValue() / (totTranscriptions)));
+            log.info("Total transcription throughput (audios/s): " + (1000 * this.worker.manager.getNumWorkers() * totTranscriptions / transcriptionTime.longValue()));
             transcriptionSuccess.set(0);
             transcriptionFail.set(0);
         }
@@ -384,7 +383,7 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
         try {
             evidence.getTempFile();
         } catch (IOException e) {
-            LOGGER.warn("Error creating temp file {} ({} bytes) {}", evidence.getPath(), evidence.getLength(), e.toString());
+            log.warn("Error creating temp file {} ({} bytes) {}", evidence.getPath(), evidence.getLength(), e.toString());
             return;
         }
 
@@ -415,7 +414,7 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
             if (e instanceof TooManyConnectException || e instanceof IPEDException || e instanceof NoRouteToHostException) {
                 throw e;
             }
-            LOGGER.error("Unexpected exception while transcribing: " + evidence.getPath(), e);
+            log.error("Unexpected exception while transcribing: " + evidence.getPath(), e);
         } finally {
             tmp.close();
         }

@@ -20,8 +20,7 @@ import iped.properties.BasicProps;
 import iped.utils.IconUtil;
 import iped.viewers.api.*;
 import iped.viewers.api.events.RowSorterTableDataChange;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.index.TermsEnum;
@@ -69,6 +68,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class IpedChartsPanel extends JPanel implements ResultSetViewer, TableModelListener, ListSelectionListener, IQueryFilterer, ComponentListener {
     JTable resultsTable;
     IMultiSearchResultProvider resultsProvider;
@@ -79,7 +79,6 @@ public class IpedChartsPanel extends JPanel implements ResultSetViewer, TableMod
 
     static ThreadPoolExecutor swExecutor = new ThreadPoolExecutor(1, 1, 20000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
-    private static final Logger logger = LogManager.getLogger(IpedChartsPanel.class);
 
     boolean syncViewWithTableSelection = false;
 

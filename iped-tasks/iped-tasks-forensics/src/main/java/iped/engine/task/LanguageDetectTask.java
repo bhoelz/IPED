@@ -12,9 +12,8 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
 import iped.engine.data.Item;
 import iped.parsers.standard.StandardParser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -22,9 +21,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 public class LanguageDetectTask extends AbstractTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(LanguageDetectTask.class);
 
     private static final String ENABLE_PARAM = "enableLanguageDetect"; //$NON-NLS-1$
 
@@ -99,7 +98,7 @@ public class LanguageDetectTask extends AbstractTask {
         try {
             langs = detector.getProbabilities(text);
         } catch (RuntimeException e) {
-            LOGGER.info("Error detecting language from " + evidence.getPath(), e); //$NON-NLS-1$
+            log.info("Error detecting language from " + evidence.getPath(), e); //$NON-NLS-1$
             return;
         }
 

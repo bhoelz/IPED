@@ -30,6 +30,7 @@ import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
 import iped.utils.EmptyInputStream;
 import iped.utils.SimpleHTMLEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -41,8 +42,6 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -56,9 +55,9 @@ import java.util.*;
  *
  * @author André Rodrigues Costa <andre.arc@pf.gov.br>
  */
+@Slf4j
 public class ThreemaParser extends SQLite3DBParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(ThreemaParser.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -127,7 +126,7 @@ public class ThreemaParser extends SQLite3DBParser {
 
         } catch (Exception e) {
             // log all threma exceptions
-            logger.warn("Error parsing ThreemaData", e);
+            log.warn("Error parsing ThreemaData", e);
             throw e;
         }
     }
@@ -203,7 +202,7 @@ public class ThreemaParser extends SQLite3DBParser {
                         extractor.parseEmbedded(is, handler, embedFileData, false);
 
                     } catch (Exception e) {
-                        logger.warn("Error trying to parse Threema Database embedded files", e);
+                        log.warn("Error trying to parse Threema Database embedded files", e);
                     }
                 }
             }
@@ -311,7 +310,7 @@ public class ThreemaParser extends SQLite3DBParser {
                         break;
                     }
                 } catch (Exception e) {
-                    logger.warn("Error parsing Threema Account", e);
+                    log.warn("Error parsing Threema Account", e);
                 }
             }
         }

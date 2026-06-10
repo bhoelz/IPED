@@ -3,8 +3,7 @@ package iped.engine.preview;
 import com.zaxxer.hikari.HikariDataSource;
 import iped.data.IItemReader;
 import iped.utils.SeekableFileInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,9 +16,9 @@ import java.util.zip.InflaterInputStream;
  * Handles storage and retrieval of item previews in an H2 database.
  * Instances of this class are managed by {@link PreviewRepositoryManager}.
  */
+@Slf4j
 public class PreviewRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(PreviewRepository.class);
 
     private static final String INSERT_DATA_SQL = "MERGE INTO previews (id, data) VALUES (?, ?)";
     private static final String SELECT_DATA_SQL = "SELECT data FROM previews WHERE id=?";
@@ -49,9 +48,9 @@ public class PreviewRepository {
                     // After a shutdown command, H2 throws an exception because the connection is closed.
                     // This is expected behavior. The error code for a successful shutdown is 90121.
                     if ("90121".equals(e.getSQLState())) {
-                        logger.info("Database has been shut down and compacted successfully.");
+                        log.info("Database has been shut down and compacted successfully.");
                     } else {
-                        logger.error("An error occurred during shutdown: " + e.getSQLState(), e);
+                        log.error("An error occurred during shutdown: " + e.getSQLState(), e);
                     }
                 }
             }

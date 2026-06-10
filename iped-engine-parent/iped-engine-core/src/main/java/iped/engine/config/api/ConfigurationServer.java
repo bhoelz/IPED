@@ -19,19 +19,18 @@
 package iped.engine.config.api;
 
 import iped.engine.config.Configuration;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Server;
 import org.glassfish.jersey.servlet.ServletContainer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Embedded Jetty server for Configuration API.
  * Starts JAX-RS/Jersey service on configurable port.
  */
+@Slf4j
 public class ConfigurationServer {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationServer.class);
     private Server server;
     private int port;
 
@@ -53,12 +52,12 @@ public class ConfigurationServer {
         // Initialize Configuration Manager to load schemas
         try {
             Configuration.getInstance();
-            logger.info("Configuration Manager initialized successfully");
+            log.info("Configuration Manager initialized successfully");
         } catch (NoClassDefFoundError e) {
             // Viewer/UI classes not available in API-only mode
-            logger.info("Running in API-only mode without viewer support: {}", e.getMessage());
+            log.info("Running in API-only mode without viewer support: {}", e.getMessage());
         } catch (Exception e) {
-            logger.warn("Configuration Manager initialization warning: {}", e.getMessage());
+            log.warn("Configuration Manager initialization warning: {}", e.getMessage());
         }
 
         server = new Server(port);
@@ -76,7 +75,7 @@ public class ConfigurationServer {
         context.addServlet(jerseyServlet, "/*");
 
         server.start();
-        logger.info("Configuration API server started on port {}", port);
+        log.info("Configuration API server started on port {}", port);
     }
 
     /**
@@ -87,7 +86,7 @@ public class ConfigurationServer {
     public void stop() throws Exception {
         if (server != null) {
             server.stop();
-            logger.info("Configuration API server stopped");
+            log.info("Configuration API server stopped");
         }
     }
 

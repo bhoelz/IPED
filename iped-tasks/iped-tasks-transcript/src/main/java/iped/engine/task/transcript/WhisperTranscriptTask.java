@@ -5,9 +5,8 @@ import iped.engine.config.AudioTranscriptConfig;
 import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
 import iped.exception.IPEDException;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -16,9 +15,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Log4j2
 public class WhisperTranscriptTask extends Wav2Vec2TranscriptTask {
 
-    private static Logger logger = LogManager.getLogger(Wav2Vec2TranscriptTask.class);
 
     private static final String SCRIPT_PATH = "/scripts/tasks/WhisperProcess.py";
     private static final String LIBRARY_LOADED = "library_loaded";
@@ -84,7 +83,7 @@ public class WhisperTranscriptTask extends Wav2Vec2TranscriptTask {
         }
 
         line = reader.readLine();
-        logger.info("Transcription library loaded: {}", line);
+        log.info("Transcription library loaded: {}", line);
 
         if ("whisperx".equals(line) && !ffmpegFound) {
             throw new IPEDException("FFmpeg not found on PATH, it is needed by WhisperX python library.");
@@ -101,8 +100,8 @@ public class WhisperTranscriptTask extends Wav2Vec2TranscriptTask {
             throw new StartupException("Error converting the number of cuda devices: " + line);
         }
         if (numProcesses == null) {
-            logger.info("Number of CUDA devices detected: {}", cudaCount);
-            logger.info("Number of CPU devices detected: {}", cpus);
+            log.info("Number of CUDA devices detected: {}", cudaCount);
+            log.info("Number of CPU devices detected: {}", cpus);
             if (cudaCount > 0) {
                 numProcesses = cudaCount;
             } else {
@@ -120,7 +119,7 @@ public class WhisperTranscriptTask extends Wav2Vec2TranscriptTask {
 
         line = reader.readLine();
 
-        logger.info("Model loaded on device={}", line);
+        log.info("Model loaded on device={}", line);
 
         Server server = new Server();
         server.process = process;
@@ -206,9 +205,9 @@ public class WhisperTranscriptTask extends Wav2Vec2TranscriptTask {
                             }
                         }
                         if (ignore) {
-                            logger.warn(msg);
+                            log.warn(msg);
                         } else {
-                            logger.log(logLevel, msg);
+                            log.log(logLevel, msg);
                         }
                     }
                 } catch (IOException e) {

@@ -4,9 +4,8 @@ import iped.engine.config.*;
 import iped.engine.datasource.DatasourceRegistry;
 import iped.engine.sleuthkit.SleuthkitServer.FLAGS;
 import iped.io.SeekableInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.utils.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.MappedByteBuffer;
@@ -18,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class SleuthkitClient implements Comparable<SleuthkitClient> {
 
-    private static Logger logger = LoggerFactory.getLogger(SleuthkitClient.class);
 
     private static final int MAX_STREAMS = 10000;
     private static final int TIMEOUT_SECONDS = 3600;
@@ -92,11 +91,11 @@ public class SleuthkitClient implements Comparable<SleuthkitClient> {
         if (requestTime == 0)
             return;
         if (SleuthkitServer.getByte(mbb, 0) != FLAGS.SQLITE_READ) {
-            logger.info("Waiting SleuthkitServer {} database read...", id); //$NON-NLS-1$
+            log.info("Waiting SleuthkitServer {} database read...", id); //$NON-NLS-1$
             return;
         }
         if (System.currentTimeMillis() / 1000 - requestTime >= TIMEOUT_SECONDS) {
-            logger.error("Timeout waiting SleuthkitServer " + id + " response! Restarting...");
+            log.error("Timeout waiting SleuthkitServer " + id + " response! Restarting...");
             serverError = true;
             requestTime = 0;
             finishProcess(false);
@@ -194,7 +193,7 @@ public class SleuthkitClient implements Comparable<SleuthkitClient> {
                 Configuration.getInstance().appRoot, pipePath };
 
         try {
-            logger.info("Starting SleuthkitServer " + id + ": " + Arrays.asList(cmd));
+            log.info("Starting SleuthkitServer " + id + ": " + Arrays.asList(cmd));
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.environment().putAll(newEnvVars);
@@ -229,7 +228,7 @@ public class SleuthkitClient implements Comparable<SleuthkitClient> {
                 throw new Exception("Error starting SleuthkitServer " + id); //$NON-NLS-1$
             }
 
-            logger.info("Starting SleuthkitServer {} started.", id);
+            log.info("Starting SleuthkitServer {} started.", id);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -246,7 +245,7 @@ public class SleuthkitClient implements Comparable<SleuthkitClient> {
                     while ((r = is.read(b)) != -1) {
                         String msg = new String(b, 0, r).trim();
                         if (!msg.isEmpty())
-                            logger.info("SleuthkitServer " + id + ": " + msg); //$NON-NLS-1$ //$NON-NLS-2$
+                            log.info("SleuthkitServer " + id + ": " + msg); //$NON-NLS-1$ //$NON-NLS-2$
                     }
 
                 } catch (Exception e) {
@@ -276,11 +275,11 @@ public class SleuthkitClient implements Comparable<SleuthkitClient> {
             return false;
         }
         if (!ping()) {
-            logger.warn("Ping SleuthkitServer " + this.id + " failed! Restarting..."); //$NON-NLS-1$ //$NON-NLS-2$
+            log.warn("Ping SleuthkitServer " + this.id + " failed! Restarting..."); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
         if (openedStreams > MAX_STREAMS && currentStreams.size() == 0) {
-            logger.info("Restarting SleuthkitServer {} to clean possible resource leaks.", id); //$NON-NLS-1$
+            log.info("Restarting SleuthkitServer {} to clean possible resource leaks.", id); //$NON-NLS-1$
             return false;
         }
         return true;
@@ -346,7 +345,7 @@ public class SleuthkitClient implements Comparable<SleuthkitClient> {
             int tries = 10;
             do {
                 System.gc();
-                logger.info("Trying to delete " + pipe.getAbsolutePath());
+                log.info("Trying to delete " + pipe.getAbsolutePath());
             } while (!pipe.delete() && tries-- > 0);
         }
     }

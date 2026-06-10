@@ -20,14 +20,13 @@ import iped.utils.StringUtil;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IResultSetFilter;
 import iped.viewers.api.IResultSetFilterer;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.queryparser.complexPhrase.ComplexPhraseQueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery.Builder;
 import org.apache.lucene.search.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -42,9 +41,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class MetadataPanel extends JPanel implements ActionListener, ListSelectionListener, ChangeListener, IResultSetFilterer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MetadataPanel.class);
 
     private static final String RES_PATH = "/" + MetadataPanel.class.getPackageName().replace('.', '/') + '/';
     private static final String SORT_COUNT = Messages.getString("MetadataPanel.Hits"); //$NON-NLS-1$
@@ -532,7 +531,7 @@ public class MetadataPanel extends JPanel implements ActionListener, ListSelecti
 
         filteredArray = filter(array);
 
-        LOGGER.info("Metadata value counting took {}ms", (System.currentTimeMillis() - time));
+        log.info("Metadata value counting took {}ms", (System.currentTimeMillis() - time));
 
         sortAndUpdateList(filteredArray);
     }
@@ -567,7 +566,7 @@ public class MetadataPanel extends JPanel implements ActionListener, ListSelecti
             }
         }
 
-        LOGGER.info("Metadata value sorting took {}ms", (System.currentTimeMillis() - time));
+        log.info("Metadata value sorting took {}ms", (System.currentTimeMillis() - time));
 
         updateList(sortedArray);
 

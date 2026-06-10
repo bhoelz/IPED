@@ -7,17 +7,16 @@ import iped.engine.core.Worker;
 import iped.engine.localization.Messages;
 import iped.engine.task.AbstractTask;
 import iped.utils.LocalizedFormat;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 
+@Log4j2
 public class ProgressConsole implements PropertyChangeListener {
 
-    private static Logger LOGGER = LogManager.getLogger(ProgressConsole.class);
 
     private static final int LOG_ITEMS_INTERVAL_MILLIS = 60000;
 
@@ -43,14 +42,14 @@ public class ProgressConsole implements PropertyChangeListener {
             update();
 
         } else if ("mensagem".equals(evt.getPropertyName())) { //$NON-NLS-1$
-            LOGGER.log(MSG, (String) evt.getNewValue());
+            log.log(MSG, (String) evt.getNewValue());
 
         } else if ("workers".equals(evt.getPropertyName())) { //$NON-NLS-1$
             workers = (Worker[]) evt.getNewValue();
 
         } else if ("uiWarning".equals(evt.getPropertyName())) { //$NON-NLS-1$
             EngineMessage msg = (EngineMessage) evt.getNewValue();
-            LOGGER.warn("{}: {}", msg.title(), msg.body()); //$NON-NLS-1$
+            log.warn("{}: {}", msg.title(), msg.body()); //$NON-NLS-1$
         }
     }
 
@@ -85,7 +84,7 @@ public class ProgressConsole implements PropertyChangeListener {
             msg += Messages.getString("ProgressConsole.FinishIn") + secsToEnd / 3600 + "h " + (secsToEnd / 60) % 60
                     + "m " + secsToEnd % 60 + "s";
         }
-        LOGGER.log(MSG, msg);
+        log.log(MSG, msg);
 
         if (System.currentTimeMillis() - lastTime >= LOG_ITEMS_INTERVAL_MILLIS) {
             if (lastTime != 0) {
@@ -118,7 +117,7 @@ public class ProgressConsole implements PropertyChangeListener {
             } else {
                 msg.append(" [no item]");
             }
-            LOGGER.log(MSG, msg);
+            log.log(MSG, msg);
         }
     }
 }

@@ -16,13 +16,12 @@
  */
 package iped.parsers.external;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.utils.SystemUtils;
 import org.apache.tika.utils.XMLReaderUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,9 +46,9 @@ import java.util.regex.Pattern;
  *  TODO XML DTD Here
  * </pre>
  */
+@Slf4j
 public final class ExternalParsersConfigReader implements ExternalParsersConfigReaderMetKeys {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ExternalParsersConfigReader.class);
 
     private static Map<String, Boolean> cmdCheckResultCache = new ConcurrentHashMap<>();
 
@@ -135,7 +134,7 @@ public final class ExternalParsersConfigReader implements ExternalParsersConfigR
                 boolean present = readCheckTagAndCheck(checkElement, parser.getToolPath());
                 if (!present) {
                     if (firstCheck)
-                        LOGGER.error("Error testing " + parser.getParserName()
+                        log.error("Error testing " + parser.getParserName()
                                 + ". Disable it in conf/ExternalParsers.xml or install '" + tool + "'");
                     return null;
                 }

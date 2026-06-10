@@ -10,9 +10,8 @@ import iped.parsers.whatsapp.Message.MessageQuotedType;
 import iped.parsers.whatsapp.Message.MessageStatus;
 import iped.parsers.whatsapp.Message.MessageType;
 import iped.parsers.whatsapp.ProtoBufDecoder.Part;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.*;
@@ -28,9 +27,9 @@ import static iped.parsers.whatsapp.Message.MessageType.*;
  *
  * @author Fabio Melo Pfeifer <pfeifer.fmp@pf.gov.br>
  */
+@Slf4j
 public abstract class ExtractorIOS extends Extractor {
 
-    private static Logger logger = LoggerFactory.getLogger(ExtractorIOS.class);
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$
 
@@ -88,7 +87,7 @@ public abstract class ExtractorIOS extends Extractor {
                 groupMembersUndeletedTable = undeleteTables.get("ZWAGROUPMEMBER"); //$NON-NLS-1$
                 chatSessionUndeleteTable = undeleteTables.get("ZWACHATSESSION"); //$NON-NLS-1$
             } catch (Exception e) {
-                logger.warn("Error recovering deleted records from iOS WhatsApp Database " + itemPath, e);
+                log.warn("Error recovering deleted records from iOS WhatsApp Database " + itemPath, e);
             }
         }
 
@@ -178,7 +177,7 @@ public abstract class ExtractorIOS extends Extractor {
                     if (!activeChats.contains(c.getId())) {
                         list.add(c);
                         if (firstTry && c.isDeleted()) {
-                            logger.info("Recovered deleted chat for database " + itemPath //$NON-NLS-1$
+                            log.info("Recovered deleted chat for database " + itemPath //$NON-NLS-1$
                                     + " :" + c.getSubject() + " (" //$NON-NLS-1$ //$NON-NLS-2$
                                     + c.getRemote().getFullId() + ")"); //$NON-NLS-1$
                         }
@@ -221,9 +220,9 @@ public abstract class ExtractorIOS extends Extractor {
 
                 if (recoverDeletedRecords && !firstTry) {
                     if (list.size() > 0 && undeletedMessages.size() > 0) {
-                        logger.info("Recovered deleted messages from corrupted database " + itemPath); //$NON-NLS-1$
+                        log.info("Recovered deleted messages from corrupted database " + itemPath); //$NON-NLS-1$
                     } else {
-                        logger.info("Was not able to recover messages from corrupted database " + itemPath); //$NON-NLS-1$
+                        log.info("Was not able to recover messages from corrupted database " + itemPath); //$NON-NLS-1$
                         if (parsingException != null) {
                             throw parsingException;
                         }
@@ -240,7 +239,7 @@ public abstract class ExtractorIOS extends Extractor {
                     // try again, ignoring error and recovering deleted records
                     if (isSqliteCorruptException(ex)) {
                         tryAgain = true;
-                        logger.warn("Database " + itemPath + " is corrupt. Trying to recover data with fqlite");
+                        log.warn("Database " + itemPath + " is corrupt. Trying to recover data with fqlite");
                     }
                 }
                 if (!tryAgain) {
@@ -332,9 +331,9 @@ public abstract class ExtractorIOS extends Extractor {
                         }
                     }
                 } catch (SQLException e) {
-                    logger.warn("Error creating undelete message for whatsapp ios", e); //$NON-NLS-1$
+                    log.warn("Error creating undelete message for whatsapp ios", e); //$NON-NLS-1$
                 } catch (RuntimeException e) {
-                    logger.warn("Error creating undelete message for whatsapp ios", e); //$NON-NLS-1$
+                    log.warn("Error creating undelete message for whatsapp ios", e); //$NON-NLS-1$
                 }
             }
 
@@ -1739,7 +1738,7 @@ public abstract class ExtractorIOS extends Extractor {
             ex = e;
         }
         if (ex != null) {
-            logger.warn("Error reading push names from WhatsApp iOS database " + itemPath, ex);
+            log.warn("Error reading push names from WhatsApp iOS database " + itemPath, ex);
         }
     }
 

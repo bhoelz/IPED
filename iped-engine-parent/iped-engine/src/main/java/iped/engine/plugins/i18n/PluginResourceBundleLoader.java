@@ -1,7 +1,7 @@
 package iped.engine.plugins.i18n;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,9 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Thread-safe for concurrent access from multiple workers.
  */
+@Slf4j
 public class PluginResourceBundleLoader {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginResourceBundleLoader.class);
 
     /**
      * Supported locales for IPED (in order of preference).
@@ -86,13 +86,13 @@ public class PluginResourceBundleLoader {
                 String cacheKey = getCacheKey(componentId, localeStr);
                 bundleCache.put(cacheKey, bundle);
 
-                LOGGER.debug("Loaded resource bundle for {} locale {}", componentId, localeStr);
+                log.debug("Loaded resource bundle for {} locale {}", componentId, localeStr);
 
             } catch (MissingResourceException e) {
                 // OK - locale not supported by this plugin
-                LOGGER.trace("No resource bundle for {} locale {}", componentId, localeStr);
+                log.trace("No resource bundle for {} locale {}", componentId, localeStr);
             } catch (Exception e) {
-                LOGGER.warn("Error loading resource bundle for {} locale {}", componentId, localeStr, e);
+                log.warn("Error loading resource bundle for {} locale {}", componentId, localeStr, e);
             }
         }
     }
@@ -130,7 +130,7 @@ public class PluginResourceBundleLoader {
                 return getMessage(componentId, key, LOCALE_MAP.get("pt_BR"), args);
             }
             // Not found in any locale, return key
-            LOGGER.trace("Message key not found: {}.{}", componentId, key);
+            log.trace("Message key not found: {}.{}", componentId, key);
             return key;
         }
 
@@ -141,7 +141,7 @@ public class PluginResourceBundleLoader {
             }
             return message;
         } catch (MissingResourceException e) {
-            LOGGER.trace("Message key not found in bundle: {}.{}", componentId, key);
+            log.trace("Message key not found in bundle: {}.{}", componentId, key);
             // Try fallback to Portuguese
             if (!localeStr.equals("pt_BR")) {
                 return getMessage(componentId, key, LOCALE_MAP.get("pt_BR"), args);
@@ -167,7 +167,7 @@ public class PluginResourceBundleLoader {
         try {
             return java.text.MessageFormat.format(pattern, params);
         } catch (Exception e) {
-            LOGGER.warn("Error formatting message: {}.{}", componentId, key, e);
+            log.warn("Error formatting message: {}.{}", componentId, key, e);
             return pattern;
         }
     }
@@ -181,7 +181,7 @@ public class PluginResourceBundleLoader {
     public void setCurrentLocale(Locale locale) {
         if (locale != null && LOCALE_MAP.containsValue(locale)) {
             this.currentLocale = locale;
-            LOGGER.info("Changed application locale to: {}", locale);
+            log.info("Changed application locale to: {}", locale);
         }
     }
 
@@ -250,7 +250,7 @@ public class PluginResourceBundleLoader {
      */
     public void clearCache() {
         bundleCache.clear();
-        LOGGER.info("Cleared resource bundle cache");
+        log.info("Cleared resource bundle cache");
     }
 
     /**

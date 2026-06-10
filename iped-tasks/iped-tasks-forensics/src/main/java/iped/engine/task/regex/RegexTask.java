@@ -15,15 +15,15 @@ import iped.engine.task.AbstractTask;
 import iped.engine.task.PhotoDNALookup;
 import iped.engine.task.index.IndexItem;
 import iped.properties.ExtraProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.nustaq.serialization.FSTConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
 
+@Slf4j
 public class RegexTask extends AbstractTask {
 
     public static final String REGEX_PREFIX = "Regex:"; //$NON-NLS-1$
@@ -32,7 +32,6 @@ public class RegexTask extends AbstractTask {
 
     private static final int MAX_RESULTS = 50000; // OOME protection for files with tons of hits
 
-    private static Logger logger = LoggerFactory.getLogger(RegexTask.class);
 
     private static final File cacheFile = new File(System.getProperty("user.home"), ".iped/regexAutomata.cache");
 
@@ -154,10 +153,10 @@ public class RegexTask extends AbstractTask {
 
         if (regexConfig.isEnabled() && regexList == null) {
 
-            logger.info("Loaded {} regexes from configuration.", regexConfig.getRegexList().size());
+            log.info("Loaded {} regexes from configuration.", regexConfig.getRegexList().size());
 
             if (loadCache(regexConfig, exportConfig)) {
-                logger.info("Regex cache loaded from {}", cacheFile.getAbsolutePath());
+                log.info("Regex cache loaded from {}", cacheFile.getAbsolutePath());
             } else {
                 regexList = new ArrayList<Regex>();
                 for (RegexEntry e : regexConfig.getRegexList()) {
@@ -165,7 +164,7 @@ public class RegexTask extends AbstractTask {
                             e.getRegex()));
                 }
                 int num = regexList.size();
-                logger.info("Created {} automata for each regex configured.", num);
+                log.info("Created {} automata for each regex configured.", num);
 
                 if (exportConfig.isEnabled()) {
                     for (String keyword : exportConfig.getKeywords()) {
@@ -173,7 +172,7 @@ public class RegexTask extends AbstractTask {
                         regexList.add(new Regex(KEYWORDS_NAME, 0, 0, true, true, regex));
                     }
                 }
-                logger.info("Created {} automata for each keyword to export configured.", regexList.size() - num);
+                log.info("Created {} automata for each keyword to export configured.", regexList.size() - num);
 
                 ArrayList<Automaton> automatonList = new ArrayList<Automaton>();
                 for (Regex regex : regexList) {
@@ -181,10 +180,10 @@ public class RegexTask extends AbstractTask {
                 }
                 Automaton automata = BasicOperations.union(automatonList);
                 regexFull = new Regex("FULL", automata); //$NON-NLS-1$
-                logger.info("Created the unique automaton for all regexes.");
+                log.info("Created the unique automaton for all regexes.");
 
                 writeCache(regexConfig, exportConfig);
-                logger.info("Regex cache saved to {}", cacheFile.getAbsolutePath());
+                log.info("Regex cache saved to {}", cacheFile.getAbsolutePath());
             }
 
             initValidators(new File(output, "scripts"));

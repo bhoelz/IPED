@@ -5,7 +5,6 @@ import com.beust.jcommander.converters.IParameterSplitter;
 import iped.data.ICaseData;
 import iped.engine.task.SkipCommitedTaskSupport;
 import iped.engine.util.Util;
-import iped.exception.IPEDException;
 
 import java.io.File;
 import java.util.*;
@@ -28,26 +27,26 @@ public class CmdLineArgsImpl implements CmdLineArgs {
     private static class NoSplitter implements IParameterSplitter {
         @Override
         public List<String> split(String value) {
-            return Arrays.asList(value);
+            return Collections.singletonList(value);
         }
     }
 
-    @Parameter(names = { "-d", "-data" }, description = "input data (can be used multiple times): "
-            + "DD, 001, E01, Ex01, VHD, VHDX, VMDK, Physical Drive, ISO, AFF (on Linux), AD1, UFDR, folder "
-            + "or *.iped file (with tagged files to export and reindex)", validateWith = DatasourceExistsValidator.class, order = 0, splitter = NoSplitter.class)
+    @Parameter(names = {"-d", "-data"}, description = "input data (can be used multiple times): "
+                                                      + "DD, 001, E01, Ex01, VHD, VHDX, VMDK, Physical Drive, ISO, AFF (on Linux), AD1, UFDR, folder "
+                                                      + "or *.iped file (with tagged files to export and reindex)", validateWith = DatasourceExistsValidator.class, order = 0, splitter = NoSplitter.class)
     private List<File> datasources;
 
     @Parameter(names = "-dname", description = "display name (optional) of data added with -d", order = 1, splitter = NoSplitter.class)
     private List<String> dname;
 
-    @Parameter(names = { "-o", "-output" }, description = "output folder", order = 2)
+    @Parameter(names = {"-o", "-output"}, description = "output folder", order = 2)
     private File outputDir;
 
-    @Parameter(names = { "-remove" }, description = "removes the evidence with specified name")
+    @Parameter(names = {"-remove"}, description = "removes the evidence with specified name")
     private String evidenceToRemove;
 
-    @Parameter(names = { "-l", "-keywordlist" }, description = "line file with keywords to be imported into case. "
-            + "Keywords with no hits are filtered out.", validateWith = FileExistsValidator.class)
+    @Parameter(names = {"-l", "-keywordlist"}, description = "line file with keywords to be imported into case. "
+                                                             + "Keywords with no hits are filtered out.", validateWith = FileExistsValidator.class)
     private File keywords;
 
     @Parameter(names = "-ocr", description = "only run OCR on a specific category or bookmark (can be used multiple times)", splitter = NoSplitter.class)
@@ -62,18 +61,18 @@ public class CmdLineArgsImpl implements CmdLineArgs {
     @Parameter(names = "-nocontent", description = "do not export to report file contents of a specific category/bookmark, only thumbs and properties", splitter = NoSplitter.class)
     private List<String> nocontent;
 
-    @Parameter(names = { "-tz", "-timezone" }, description = "original timezone of FAT devices: GMT-3, GMT-4... "
-            + "If unspecified, local system timezone is used.")
+    @Parameter(names = {"-tz", "-timezone"}, description = "original timezone of FAT devices: GMT-3, GMT-4... "
+                                                           + "If unspecified, local system timezone is used.")
     private String timezone;
 
-    @Parameter(names = { "-b", "-blocksize" }, description = "sector block size (bytes), must set to 4k sector devices")
+    @Parameter(names = {"-b", "-blocksize"}, description = "sector block size (bytes), must set to 4k sector devices")
     private int blocksize;
 
-    @Parameter(names = { "-p", "-password" }, description = "password for encrypted images/volumes", splitter = NoSplitter.class)
+    @Parameter(names = {"-p", "-password"}, description = "password for encrypted images/volumes", splitter = NoSplitter.class)
     private List<String> passwords;
 
     @Parameter(names = "-profile", description = "use a processing profile: forensic, pedo, "
-            + "fastmode, blind, triage. More details in manual.")
+                                                 + "fastmode, blind, triage. More details in manual.")
     private String profile;
 
     @Parameter(names = "--addowner", description = "index file owner info when processing local folders (slow over network)")
@@ -107,10 +106,10 @@ public class CmdLineArgsImpl implements CmdLineArgs {
     @Parameter(names = "--downloadInternetData", description = "download Internet data to enrich evidence data processing. E.g. media files still available in WhatsApp servers and not found in the evidence")
     private boolean downloadInternetData;
 
-    @Parameter(names = { "-splash" }, description = "custom message to be shown in the splash screen")
+    @Parameter(names = {"-splash"}, description = "custom message to be shown in the splash screen")
     private String splashMessage;
 
-    @Parameter(names = { "--help", "-h", "/?" }, help = true, description = "display this help")
+    @Parameter(names = {"--help", "-h", "/?"}, help = true, description = "display this help")
     private boolean help;
 
     @DynamicParameter(names = "-X", description = "used to specify extra module options")
@@ -124,35 +123,138 @@ public class CmdLineArgsImpl implements CmdLineArgs {
     // CmdLineArgs interface
     // -------------------------------------------------------------------------
 
-    @Override public boolean isDownloadInternetData() { return downloadInternetData; }
-    @Override public List<File> getDatasources() { return datasources; }
-    @Override public List<String> getDname() { return dname; }
-    @Override public File getOutputDir() { return outputDir; }
-    @Override public File getKeywords() { return keywords; }
-    @Override public List<String> getOcr() { return ocr; }
-    @Override public File getLogFile() { return logFile; }
-    @Override public File getAsap() { return asap; }
-    @Override public List<String> getNocontent() { return nocontent; }
-    @Override public String getTimezone() { return timezone; }
-    @Override public int getBlocksize() { return blocksize; }
-    @Override public List<String> getPasswords() { return passwords; }
-    @Override public String getProfile() { return profile; }
-    @Override public boolean isAddowner() { return addowner; }
-    @Override public boolean isAppendIndex() { return appendIndex; }
-    @Override public boolean isContinue() { return isContinue; }
-    @Override public boolean isRestart() { return restart; }
-    @Override public boolean isNogui() { return nogui; }
-    @Override public boolean isNologfile() { return nologfile; }
-    @Override public boolean isNopstattachs() { return nopstattachs; }
-    @Override public boolean isNoLinkedItems() { return noLinkedItems; }
-    @Override public boolean isPortable() { return portable; }
-    @Override public String getSplashMessage() { return splashMessage; }
-    @Override public boolean isHelp() { return help; }
-    @Override public Map<String, String> getExtraParams() { return extraParams; }
+    @Override
+    public boolean isDownloadInternetData() {
+        return downloadInternetData;
+    }
 
-    public String getEvidenceToRemove() { return evidenceToRemove; }
+    @Override
+    public List<File> getDatasources() {
+        return datasources;
+    }
 
-    public HashSet<String> getEvidenceNames() { return evidenceNames; }
+    @Override
+    public List<String> getDname() {
+        return dname;
+    }
+
+    @Override
+    public File getOutputDir() {
+        return outputDir;
+    }
+
+    @Override
+    public File getKeywords() {
+        return keywords;
+    }
+
+    @Override
+    public List<String> getOcr() {
+        return ocr;
+    }
+
+    @Override
+    public File getLogFile() {
+        return logFile;
+    }
+
+    @Override
+    public File getAsap() {
+        return asap;
+    }
+
+    @Override
+    public List<String> getNocontent() {
+        return nocontent;
+    }
+
+    @Override
+    public String getTimezone() {
+        return timezone;
+    }
+
+    @Override
+    public int getBlocksize() {
+        return blocksize;
+    }
+
+    @Override
+    public List<String> getPasswords() {
+        return passwords;
+    }
+
+    @Override
+    public String getProfile() {
+        return profile;
+    }
+
+    @Override
+    public boolean isAddowner() {
+        return addowner;
+    }
+
+    @Override
+    public boolean isAppendIndex() {
+        return appendIndex;
+    }
+
+    @Override
+    public boolean isContinue() {
+        return isContinue;
+    }
+
+    @Override
+    public boolean isRestart() {
+        return restart;
+    }
+
+    @Override
+    public boolean isNogui() {
+        return nogui;
+    }
+
+    @Override
+    public boolean isNologfile() {
+        return nologfile;
+    }
+
+    @Override
+    public boolean isNopstattachs() {
+        return nopstattachs;
+    }
+
+    @Override
+    public boolean isNoLinkedItems() {
+        return noLinkedItems;
+    }
+
+    @Override
+    public boolean isPortable() {
+        return portable;
+    }
+
+    @Override
+    public String getSplashMessage() {
+        return splashMessage;
+    }
+
+    @Override
+    public boolean isHelp() {
+        return help;
+    }
+
+    @Override
+    public Map<String, String> getExtraParams() {
+        return extraParams;
+    }
+
+    public String getEvidenceToRemove() {
+        return evidenceToRemove;
+    }
+
+    public HashSet<String> getEvidenceNames() {
+        return evidenceNames;
+    }
 
     @Override
     public String getDataSourceName(File datasource) {

@@ -1,13 +1,13 @@
 package iped.webui.session;
 
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.SessionScope;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.SessionScope;
 
 /**
  * Per-session filter state: the set of named filters the analyst has applied

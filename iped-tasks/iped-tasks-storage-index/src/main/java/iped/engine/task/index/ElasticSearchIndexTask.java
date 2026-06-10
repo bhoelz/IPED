@@ -20,6 +20,7 @@ import iped.io.ISeekableInputStreamFactory;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -48,8 +49,6 @@ import org.opensearch.common.settings.Settings.Builder;
 import org.opensearch.common.unit.TimeValue;
 import org.opensearch.common.xcontent.XContentBuilder;
 import org.opensearch.common.xcontent.XContentFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -59,9 +58,9 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class ElasticSearchIndexTask extends AbstractTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ElasticSearchIndexTask.class);
 
     private static final String MAX_FIELDS_KEY = "index.mapping.total_fields.limit";
     private static final String IGNORE_MALFORMED = "index.mapping.ignore_malformed";
@@ -315,7 +314,7 @@ public class ElasticSearchIndexTask extends AbstractTask {
             return;
         UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", "Commiting to ElasticSearch...");
         for (ElasticSearchIndexTask instance : taskInstances) {
-            LOGGER.info("Commiting Worker-" + instance.worker.id + " ElasticSearchTask..."); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info("Commiting Worker-" + instance.worker.id + " ElasticSearchTask..."); //$NON-NLS-1$ //$NON-NLS-2$
             instance.onCommit.set(true);
             instance.sendBulkRequest();
         }
@@ -387,7 +386,7 @@ public class ElasticSearchIndexTask extends AbstractTask {
         }
 
         if (textReader == null) {
-            LOGGER.warn("Null text reader: " + item.getPath() + " ("
+            log.warn("Null text reader: " + item.getPath() + " ("
                     + (item.getLength() != null ? item.getLength() : "null") + " bytes)");
             textReader = new StringReader(""); //$NON-NLS-1$
         }
@@ -426,7 +425,7 @@ public class ElasticSearchIndexTask extends AbstractTask {
 
                 idToPath.put(contenttrackID, item.getPath());
 
-                LOGGER.debug("Added to bulk request {}", item.getPath());
+                log.debug("Added to bulk request {}", item.getPath());
 
                 if (bulkRequest.estimatedSizeInBytes() >= elasticConfig.getMin_bulk_size()
                         || bulkRequest.numberOfActions() >= elasticConfig.getMin_bulk_items()) {
@@ -465,7 +464,7 @@ public class ElasticSearchIndexTask extends AbstractTask {
                     new BulkResponseListener(idToPath, bulkRequest, retries));
 
         } catch (Exception e) {
-            LOGGER.error("Error indexing to ElasticSearch " + bulkRequest.getDescription(), e);
+            log.error("Error indexing to ElasticSearch " + bulkRequest.getDescription(), e);
             throw new IOException("Error indexing to ElasticSearch" + bulkRequest.getDescription());
         }
     }
@@ -509,18 +508,18 @@ public class ElasticSearchIndexTask extends AbstractTask {
 
                     // Some documents probable have already been indexed in previous attempts
                     if (msg.contains("document already exists")) {
-                        LOGGER.warn("Elastic failure result {}: {}", path, msg);
+                        log.warn("Elastic failure result {}: {}", path, msg);
                         continue;
                     }
 
-                    LOGGER.error("Elastic failure result {}: {}", path, msg); //$NON-NLS-1$
+                    log.error("Elastic failure result {}: {}", path, msg); //$NON-NLS-1$
 
                     temp = new IOException(String.format("Elastic failure result {}: {}", path, msg));
 
                     break;
 
                 } else {
-                    LOGGER.debug("Elastic result {} {}", bulkItemResponse.getResponse().getResult(),
+                    log.debug("Elastic result {} {}", bulkItemResponse.getResponse().getResult(),
                             idPathMap.get(bulkItemResponse.getId()));
                 }
             }
@@ -531,7 +530,7 @@ public class ElasticSearchIndexTask extends AbstractTask {
 
         @Override
         public void onFailure(Exception e) {
-            LOGGER.error("Error indexing to ElasticSearch ", e);
+            log.error("Error indexing to ElasticSearch ", e);
             retryOrError(new IOException("Error indexing to ElasticSearch ", e));
         }
 

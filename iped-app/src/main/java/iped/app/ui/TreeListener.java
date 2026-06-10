@@ -27,14 +27,13 @@ import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IQueryFilterer;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -50,9 +49,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+@Slf4j
 public class TreeListener extends MouseAdapter implements TreeSelectionListener, ActionListener, TreeExpansionListener, IQueryFilterer {
 
-    private static final Logger logger = LoggerFactory.getLogger(TreeListener.class);
 
     private Query treeQuery, recursiveTreeQuery;
     boolean rootSelected = false;
@@ -140,7 +139,7 @@ public class TreeListener extends MouseAdapter implements TreeSelectionListener,
             } while (parentId != null);
 
         } catch (Exception e) {
-            logger.error("Navigate to parent failed!", e);
+            log.error("Navigate to parent failed!", e);
             return;
         }
 

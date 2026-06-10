@@ -1,14 +1,13 @@
 package iped.engine.additionalindex;
 
-import iped.data.AdditionalItemData;
+import iped.datasource.AdditionalItemData;
 import iped.datasource.IAdditionalDataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -49,9 +48,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Concurrent {@link #storeTaskResult} calls are safe (Lucene IndexWriter is
  * thread-safe).  Reader refresh is protected by a read-write lock.
  */
+@Slf4j
 public class LuceneAdditionalDataSource implements IAdditionalDataSource {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LuceneAdditionalDataSource.class);
 
     /** Field name for the synthetic primary key {@code "<itemId>_<taskName>"}. */
     static final String F_DOC_KEY     = "_docKey";       //$NON-NLS-1$
@@ -142,7 +141,7 @@ public class LuceneAdditionalDataSource implements IAdditionalDataSource {
             Document doc = searcher.storedFields().document(top.scoreDocs[0].doc);
             return Optional.of(docToData(doc));
         } catch (IOException e) {
-            LOGGER.error("Error reading additional data for item {} task {}", itemId, taskName, e);
+            log.error("Error reading additional data for item {} task {}", itemId, taskName, e);
             return Optional.empty();
         } finally {
             searchLock.readLock().unlock();
@@ -156,7 +155,7 @@ public class LuceneAdditionalDataSource implements IAdditionalDataSource {
         try {
             return searcher.count(new TermQuery(new Term(F_DOC_KEY, docKey(itemId, taskName)))) > 0;
         } catch (IOException e) {
-            LOGGER.error("Error checking additional data for item {} task {}", itemId, taskName, e);
+            log.error("Error checking additional data for item {} task {}", itemId, taskName, e);
             return false;
         } finally {
             searchLock.readLock().unlock();
@@ -177,7 +176,7 @@ public class LuceneAdditionalDataSource implements IAdditionalDataSource {
             }
             return names;
         } catch (IOException e) {
-            LOGGER.error("Error reading executed tasks for item {}", itemId, e);
+            log.error("Error reading executed tasks for item {}", itemId, e);
             return Collections.emptySet();
         } finally {
             searchLock.readLock().unlock();
@@ -202,7 +201,7 @@ public class LuceneAdditionalDataSource implements IAdditionalDataSource {
             }
             return merged;
         } catch (IOException e) {
-            LOGGER.error("Error merging extra attributes for item {}", itemId, e);
+            log.error("Error merging extra attributes for item {}", itemId, e);
             return Collections.emptyMap();
         } finally {
             searchLock.readLock().unlock();
@@ -246,7 +245,7 @@ public class LuceneAdditionalDataSource implements IAdditionalDataSource {
                 searcher = new IndexSearcher(reader);
             }
         } catch (IOException e) {
-            LOGGER.warn("Could not refresh additional index reader", e);
+            log.warn("Could not refresh additional index reader", e);
         } finally {
             searchLock.writeLock().unlock();
         }

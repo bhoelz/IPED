@@ -1,9 +1,8 @@
 package iped.parsers.evtx.model;
 
 import iped.parsers.evtx.template.TemplateData;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.util.ArrayUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -13,9 +12,9 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+@Slf4j
 public class EvtxFile {
 
-    private static final Logger logger = LoggerFactory.getLogger(EvtxFile.class);
 
     HashMap<Integer, TemplateData> templateDatas = new HashMap<Integer, TemplateData>();
     HashMap<Integer, EvtxXmlFragment> templateXmls = new HashMap<Integer, EvtxXmlFragment>();
@@ -72,9 +71,9 @@ public class EvtxFile {
                     if (e instanceof EvtxInvalidChunkHeaderException) {
                         if (i < chunckCount) {
                             if (!dirty) {
-                                logger.warn("Invalid chunk header found on non dirty evtx file: {}", ((EvtxInvalidChunkHeaderException) e).getHeader());
+                                log.warn("Invalid chunk header found on non dirty evtx file: {}", ((EvtxInvalidChunkHeaderException) e).getHeader());
                             } else {
-                                logger.warn("Invalid chunk header found before end of chunckcount on evtx file: {}", ((EvtxInvalidChunkHeaderException) e).getHeader());
+                                log.warn("Invalid chunk header found before end of chunckcount on evtx file: {}", ((EvtxInvalidChunkHeaderException) e).getHeader());
                             }
                         }
                         // if the file is dirty ignores parsing with no error because it can be normal

@@ -36,11 +36,10 @@ import iped.utils.ExternalImageConverter;
 import iped.utils.HashValue;
 import iped.utils.ImageUtil;
 import iped.viewers.util.ImageMetadataUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.util.BytesRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -57,11 +56,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Slf4j
 public class GalleryModel extends AbstractTableModel {
 
     private static final long serialVersionUID = 1L;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(GalleryModel.class);
 
     /**
      * Max Sleuthkit connection pool size. Using more threads than this sometimes
@@ -222,7 +221,7 @@ public class GalleryModel extends AbstractTableModel {
 
                     if (logRendering) {
                         String path = doc.get(IndexItem.PATH);
-                        LOGGER.info("Gallery rendering " + path); //$NON-NLS-1$
+                        log.info("Gallery rendering " + path); //$NON-NLS-1$
                     }
 
                     final String mediaType = doc.get(IndexItem.CONTENTTYPE);

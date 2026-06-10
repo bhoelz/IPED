@@ -6,11 +6,10 @@ import iped.parsers.ufed.model.Party;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,9 +18,9 @@ import java.util.stream.Collectors;
 
 import static iped.properties.ExtraProperties.*;
 
+@Slf4j
 public class PartyHandler extends BaseModelHandler<Party> {
 
-    private static final Logger logger = LoggerFactory.getLogger(PartyHandler.class);
 
     private String source;
     private Map<String, IItemReader> cache;
@@ -89,14 +88,14 @@ public class PartyHandler extends BaseModelHandler<Party> {
                     return Integer.compare(((Metadata) item2.getMetadata()).names().length,
                             ((Metadata) item1.getMetadata()).names().length);
                 });
-                logger.warn("Found more than 1 party reference: size=[{}] \t query=[{}] \t items=[{}]", results.size(), query, StringUtils.truncate(results.toString(), 0, 1000));
+                log.warn("Found more than 1 party reference: size=[{}] \t query=[{}] \t items=[{}]", results.size(), query, StringUtils.truncate(results.toString(), 0, 1000));
             }
             IItemReader result = results.get(0);
             cache.put(identifier, result);
             model.setReferencedContact(result);
         } else {
             cache.put(identifier, null);
-            logger.debug("Party reference was not found: {}", model);
+            log.debug("Party reference was not found: {}", model);
         }
     }
 

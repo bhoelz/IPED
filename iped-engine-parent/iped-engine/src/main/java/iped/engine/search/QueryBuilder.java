@@ -13,6 +13,7 @@ import iped.exception.QueryNodeException;
 import iped.localization.LocalizedProperties;
 import iped.properties.BasicProps;
 import iped.utils.LocalizedFormat;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
@@ -29,17 +30,15 @@ import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 import org.apache.lucene.util.BytesRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class QueryBuilder {
 
-    private static Logger logger = LoggerFactory.getLogger(QueryBuilder.class);
 
     private static Analyzer spaceAnalyzer = new WhitespaceAnalyzer();
 
@@ -334,7 +333,7 @@ query = getQuery(queryText, ((IPEDSource) ipedCase).getAnalyzer());
             }
         }
 
-        logger.info("Expanded query terms: {}", result.toString());
+        log.info("Expanded query terms: {}", result.toString());
 
         return result;
     }

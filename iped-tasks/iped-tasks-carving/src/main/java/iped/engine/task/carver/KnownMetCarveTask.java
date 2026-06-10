@@ -26,9 +26,8 @@ import iped.io.SeekableInputStream;
 import iped.parsers.emule.KnownMetDecoder;
 import iped.parsers.emule.KnownMetEntry;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.util.Arrays;
@@ -41,11 +40,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author Wladimir Leite
  */
+@Slf4j
 public class KnownMetCarveTask extends BaseCarveTask {
 
     private static final String ENABLE_PARAM = "enableKnownMetCarving";
 
-    private static Logger logger = LoggerFactory.getLogger(KnownMetCarveTask.class);
 
     /**
      * Indica se a tarefa está habilitada ou não.
@@ -116,9 +115,9 @@ public class KnownMetCarveTask extends BaseCarveTask {
             if (!init.get()) {
                 taskEnabled = configurationManager.getEnableTaskProperty(ENABLE_PARAM);
                 if (taskEnabled) {
-                    logger.info("Task enabled."); //$NON-NLS-1$
+                    log.info("Task enabled."); //$NON-NLS-1$
                 } else {
-                    logger.info("Task disabled."); //$NON-NLS-1$
+                    log.info("Task disabled."); //$NON-NLS-1$
                 }
                 init.set(true);
             }
@@ -133,7 +132,7 @@ public class KnownMetCarveTask extends BaseCarveTask {
         synchronized (finished) {
             if (taskEnabled && !finished.get()) {
                 finished.set(true);
-                logger.info("Carved Items: " + numCarvedItems.get()); //$NON-NLS-1$
+                log.info("Carved Items: " + numCarvedItems.get()); //$NON-NLS-1$
             }
         }
     }
@@ -250,7 +249,7 @@ public class KnownMetCarveTask extends BaseCarveTask {
                 offset += step;
             }
         } catch (Exception e) {
-            logger.warn(evidence.toString(), e);
+            log.warn(evidence.toString(), e);
         } finally {
             IOUtil.closeQuietly(is);
         }

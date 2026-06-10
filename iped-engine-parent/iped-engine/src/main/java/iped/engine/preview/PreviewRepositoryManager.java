@@ -5,8 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.LocalConfig;
 import iped.engine.core.Manager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Manages the lifecycle of PreviewRepository instances, ensuring one instance
  * per database folder (case).
  */
+@Slf4j
 public class PreviewRepositoryManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(PreviewRepositoryManager.class);
 
     private static final String DB_NAME = "previews";
 
@@ -75,7 +74,7 @@ public class PreviewRepositoryManager {
             throw new IllegalStateException("Repository already configured: " + baseFolder);
         }
 
-        logger.info("Configuring {} PreviewRepository for: {}", readOnly ? "read-only" : "writable", baseFolder);
+        log.info("Configuring {} PreviewRepository for: {}", readOnly ? "read-only" : "writable", baseFolder);
 
         // Use the "async" mode to prevent FileChannel from being closed with
         // ClosedByInterruptException when the thread is interrupted.
@@ -145,7 +144,7 @@ public class PreviewRepositoryManager {
             repository = new PreviewRepository(dataSource, config.getJdbcUrl().contains("ACCESS_MODE_DATA=r"));
             repositoryMap.put(key, repository);
             repositoryConfigMap.put(key, null);
-            logger.info("Created and initialized PreviewRepository for: {}", baseFolder);
+            log.info("Created and initialized PreviewRepository for: {}", baseFolder);
 
             return repository;
         }
@@ -162,7 +161,7 @@ public class PreviewRepositoryManager {
         PreviewRepository repository = repositoryMap.remove(key);
         if (repository != null) {
             repository.close();
-            logger.info("Closed PreviewRepository for: {}", baseFolder);
+            log.info("Closed PreviewRepository for: {}", baseFolder);
         }
     }
 }

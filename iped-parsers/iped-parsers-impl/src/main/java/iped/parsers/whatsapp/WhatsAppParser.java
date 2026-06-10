@@ -35,6 +35,7 @@ import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
 import iped.utils.EmptyInputStream;
 import iped.utils.SimpleHTMLEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.config.Field;
@@ -49,8 +50,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
 import org.apache.xerces.impl.io.MalformedByteSequenceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -72,9 +71,9 @@ import java.util.stream.Collectors;
  *
  * @author Fabio Melo Pfeifer <pfeifer.fmp@pf.gov.br>
  */
+@Slf4j
 public class WhatsAppParser extends SQLite3DBParser {
 
-    private static Logger logger = LoggerFactory.getLogger(WhatsAppParser.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -164,10 +163,10 @@ public class WhatsAppParser extends SQLite3DBParser {
     public Set<MediaType> getSupportedTypes(ParseContext arg0) {
         if (!hashDependenciesChecked.getAndSet(true)) {
             if (!Boolean.valueOf(System.getProperty(HASH_TASK_ENABLED_SYSPROP, "false"))) {
-                logger.error("HashTask is disabled. WhatsAppParser needs it to link attachments to chats!");
+                log.error("HashTask is disabled. WhatsAppParser needs it to link attachments to chats!");
             }
             if (!Boolean.valueOf(System.getProperty(SHA256_ENABLED_SYSPROP, "false"))) { //$NON-NLS-1$
-                logger.error("SHA-256 is disabled. WhatsAppParser needs it to link attachments to chats!"); //$NON-NLS-1$
+                log.error("SHA-256 is disabled. WhatsAppParser needs it to link attachments to chats!"); //$NON-NLS-1$
             }
         }
         return SUPPORTED_TYPES;
@@ -260,9 +259,9 @@ public class WhatsAppParser extends SQLite3DBParser {
         } catch (Exception e) {
             // log all whatsapp exceptions
             if (e.getCause() != null && (e.getCause() instanceof MalformedByteSequenceException)) {
-                logger.warn("Possibly corrupted file: {} > {}", item, e.getMessage());
+                log.warn("Possibly corrupted file: {} > {}", item, e.getMessage());
             } else {
-                logger.error("Error parsing WhatsApp: " + item, e);
+                log.error("Error parsing WhatsApp: " + item, e);
             }
 
             throw e;
@@ -504,7 +503,7 @@ public class WhatsAppParser extends SQLite3DBParser {
         try {
             Message.closeStaticResources();
         } catch (IOException e) {
-            logger.warn("Fail to clear resources from WhatsAppParser", e);
+            log.warn("Fail to clear resources from WhatsAppParser", e);
         }
         if (executor != null) {
             executor.shutdown();
@@ -545,7 +544,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                 handler.endDocument();
             }
             if (downloadedFiles.get() > 0) {
-                logger.info("Downloaded {} files from {}", downloadedFiles.get(), wcontext.getItem().getName());
+                log.info("Downloaded {} files from {}", downloadedFiles.get(), wcontext.getItem().getName());
             }
         }
 
@@ -651,9 +650,9 @@ public class WhatsAppParser extends SQLite3DBParser {
                         other.setParsingError(true);
                         other.setMainDB(false);
                         other.setBackup(false);
-                        logger.warn("Could not parse DB {} ({} bytes): {}", other.getItem().getPath(),
+                        log.warn("Could not parse DB {} ({} bytes): {}", other.getItem().getPath(),
                                 other.getItem().getLength(), e.toString());
-                        logger.debug("", e);
+                        log.debug("", e);
                     }
                 }
 
@@ -748,7 +747,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                     if (wcontext == mainDb) {
                         // merge backup in the main chat list
                         int numMsgRecovered = cm.mergeChatList(other.getChalist());
-                        logger.info("Recovered {} messages from {}", numMsgRecovered, other.getItem().getPath()); //$NON-NLS-1$
+                        log.info("Recovered {} messages from {}", numMsgRecovered, other.getItem().getPath()); //$NON-NLS-1$
                         mainDb.setChalist(mainDBChatList);
                         dbChatList = mainDBChatList;
                     }
@@ -771,7 +770,7 @@ public class WhatsAppParser extends SQLite3DBParser {
 
             if (!wcontext.isMainDB() && !wcontext.isBackup()) {
                 // if this is a "backup" but its main db was not found
-                logger.info("Creating separate report for {}", DB.getPath()); //$NON-NLS-1$
+                log.info("Creating separate report for {}", DB.getPath()); //$NON-NLS-1$
             }
 
             // create report for main dbs and backups which main db was not found
@@ -788,7 +787,7 @@ public class WhatsAppParser extends SQLite3DBParser {
         } finally {
             if (dbsFound.size() == backupsMerged.get() + dbsSearchedForAndAdded) {
                 // just merged backups left in map, clear all remaining heavy data
-                logger.info("Clearing remaining whatsapp decoded data from cache.");
+                log.info("Clearing remaining whatsapp decoded data from cache.");
                 dbsFound.values().stream().filter(wacontext -> wacontext.getChalist() != null)
                         .forEach(wacontext -> wacontext.getChalist().clear());
             }
@@ -855,7 +854,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                 account.setStatus(c.getStatus());
             }
         } catch (Exception e) {
-            logger.warn("Error filling WhatsApp account with contact data: " + account.getFullId(), e);
+            log.warn("Error filling WhatsApp account with contact data: " + account.getFullId(), e);
         }
     }
 
@@ -874,7 +873,7 @@ public class WhatsAppParser extends SQLite3DBParser {
         }
         // Append sub folder and expected filename
         filePath += "/files/me.jpg";
-        logger.debug("AccountAvatar path: " + filePath);
+        log.debug("AccountAvatar path: " + filePath);
 
         String query = BasicProps.PATH + ":\"" + searcher.escapeQuery(filePath) + "\""; //$NON-NLS-1$ //$NON-NLS-2$
         List<IItemReader> result = searcher.search(query);
@@ -884,7 +883,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                 IOUtils.copy(is, bos);
                 account.setAvatar(bos.toByteArray());
             } catch (IOException e) {
-                logger.warn("Error getting WhatsApp account avatar: " + account.getFullId(), e);
+                log.warn("Error getting WhatsApp account avatar: " + account.getFullId(), e);
             }
         }
     }
@@ -939,7 +938,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                         }
                     }
                 } catch (Exception e) {
-                    logger.warn("Error trying to get user account from {}: {}", item, e);
+                    log.warn("Error trying to get user account from {}: {}", item, e);
                 }
             }
         }
@@ -1202,7 +1201,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                     contact.setAvatar(bos.toByteArray());
 
                 } catch (IOException e) {
-                    logger.warn("Error setting avatar for contact {}: {}", contact.getFullId(), e);
+                    log.warn("Error setting avatar for contact {}: {}", contact.getFullId(), e);
                 }
             }
         }
@@ -1721,7 +1720,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                                     if (messageList != null) {
                                         for (Message m : messageList) {
                                             if (m.getMediaItem() == null) {
-                                                logger.info("Item matched by long path {}", mediaPath);
+                                                log.info("Item matched by long path {}", mediaPath);
                                                 m.setMediaItem(item);
                                                 if (item.getHash() != null) {
                                                     m.setMediaQuery(
@@ -1751,7 +1750,7 @@ public class WhatsAppParser extends SQLite3DBParser {
 
                 } catch (Exception e) {
                     // cannot extract link
-                    logger.warn("Could not extract links from database " + dbPath, e);
+                    log.warn("Could not extract links from database " + dbPath, e);
                     return futures;
                 }
 
@@ -1789,7 +1788,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                                 // do not log this error as it is expected
 
                             } catch (Exception e) {
-                                logger.warn("Error trying to download medias referenced by " + dbPath, e);
+                                log.warn("Error trying to download medias referenced by " + dbPath, e);
                             }
 
                         }

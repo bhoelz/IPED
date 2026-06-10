@@ -40,6 +40,7 @@ import iped.io.SeekableInputStream;
 import iped.parsers.util.ExportFolder;
 import iped.properties.ExtraProperties;
 import iped.utils.*;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -49,8 +50,6 @@ import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.SortedDocValues;
@@ -83,11 +82,11 @@ import java.util.zip.Deflater;
  * em casos de extração automática de dados ou em casos de extração de itens
  * selecionados após análise.
  */
+@Log4j2
 public class ExportFileTask extends AbstractTask {
 
     private static final String ENABLE_PARAM = ExportByCategoriesConfig.ENABLE_PARAM;
 
-    private static Logger LOGGER = LogManager.getLogger(ExportFileTask.class);
     private final Level CONSOLE = Level.forName("MSG", 250);
 
     public static final String EXTRACT_DIR = Messages.getString("ExportFileTask.ExportFolder"); //$NON-NLS-1$
@@ -369,7 +368,7 @@ public class ExportFileTask extends AbstractTask {
             extractFile(is, evidence, null);
 
         } catch (IOException e) {
-            LOGGER.warn("{} Error exporting {} \t{}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
+            log.warn("{} Error exporting {} \t{}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
                     e.toString());
 
         } finally {
@@ -400,14 +399,14 @@ public class ExportFileTask extends AbstractTask {
                     evidence.setHasPreview(false);
                     evidence.setViewFile(destFile.toFile());
                 } catch (IOException e) {
-                    LOGGER.warn("Error copying viewFile -> viewFile: {}", evidence);
-                    LOGGER.warn("", e);
+                    log.warn("Error copying viewFile -> viewFile: {}", evidence);
+                    log.warn("", e);
                 } finally {
                     if (tmpFile != null) {
                         try {
                             Files.deleteIfExists(tmpFile);
                         } catch (IOException e) {
-                            LOGGER.warn("Error deleting tmpFile", e);
+                            log.warn("Error deleting tmpFile", e);
                         }
                     }
                 }
@@ -425,8 +424,8 @@ public class ExportFileTask extends AbstractTask {
                         evidence.setViewFile(null);
                     }
                 } catch (IOException | SQLException e) {
-                    LOGGER.warn("Error copying viewFile -> previewRepository: {}", evidence);
-                    LOGGER.warn("", e);
+                    log.warn("Error copying viewFile -> previewRepository: {}", evidence);
+                    log.warn("", e);
                 }
             }
         } else if (evidence.hasPreview()) {
@@ -455,14 +454,14 @@ public class ExportFileTask extends AbstractTask {
                                 try {
                                     Files.deleteIfExists(tmpFile);
                                 } catch (IOException e) {
-                                    LOGGER.warn("Error deleting tmpFile", e);
+                                    log.warn("Error deleting tmpFile", e);
                                 }
                             }
                         }
                     });
                 } catch (IOException | SQLException e) {
-                    LOGGER.warn("Error copying previewRepository -> viewFile: {}", evidence);
-                    LOGGER.warn("", e);
+                    log.warn("Error copying previewRepository -> viewFile: {}", evidence);
+                    log.warn("", e);
                 }
             } else {
                 // previewRepository -> previewRepository
@@ -478,8 +477,8 @@ public class ExportFileTask extends AbstractTask {
                         // evidence.setViewFile(null); -- already set
                     });
                 } catch (IOException | SQLException e) {
-                    LOGGER.warn("Error copying previewRepository -> previewRepository: {}", evidence);
-                    LOGGER.warn("", e);
+                    log.warn("Error copying previewRepository -> previewRepository: {}", evidence);
+                    log.warn("", e);
                 }
             }
         }
@@ -529,11 +528,11 @@ public class ExportFileTask extends AbstractTask {
                         if (hashFile.exists()) {
                             changeTargetFile(evidence, hashFile);
                             if (!file.delete()) {
-                                LOGGER.warn("{} Error deleting {}", Thread.currentThread().getName(), //$NON-NLS-1$
+                                log.warn("{} Error deleting {}", Thread.currentThread().getName(), //$NON-NLS-1$
                                         file.getAbsolutePath());
                             }
                         } else {
-                            LOGGER.warn("{} Error renaming to hash: {}", Thread.currentThread().getName(), //$NON-NLS-1$
+                            log.warn("{} Error renaming to hash: {}", Thread.currentThread().getName(), //$NON-NLS-1$
                                     file.getAbsolutePath());
                             e.printStackTrace();
                         }
@@ -542,7 +541,7 @@ public class ExportFileTask extends AbstractTask {
                 } else {
                     changeTargetFile(evidence, hashFile);
                     if (!file.equals(hashFile) && !file.delete()) {
-                        LOGGER.warn("{} Error Deleting {}", Thread.currentThread().getName(), file.getAbsolutePath()); //$NON-NLS-1$
+                        log.warn("{} Error Deleting {}", Thread.currentThread().getName(), file.getAbsolutePath()); //$NON-NLS-1$
                     }
                 }
             }
@@ -687,11 +686,11 @@ public class ExportFileTask extends AbstractTask {
                     // corrupted subitems
                 } catch (Exception e) {
                     if (e instanceof IOException && IOUtil.isDiskFull((IOException) e))
-                        LOGGER.error("Error exporting {}\t{}", evidence.getPath(), "No space left on output disk!"); //$NON-NLS-1$ //$NON-NLS-2$
+                        log.error("Error exporting {}\t{}", evidence.getPath(), "No space left on output disk!"); //$NON-NLS-1$ //$NON-NLS-2$
                     else
-                        LOGGER.warn("Error exporting {}\t{}", evidence.getPath(), e.toString()); //$NON-NLS-1$
+                        log.warn("Error exporting {}\t{}", evidence.getPath(), e.toString()); //$NON-NLS-1$
 
-                    LOGGER.debug("", e);
+                    log.debug("", e);
 
                 } finally {
                     if (bos != null) {
@@ -831,7 +830,7 @@ public class ExportFileTask extends AbstractTask {
             throw new IPEDException("Inconsistent configuration: " + ENABLE_PARAM + "=true but " + ExportByCategoriesConfig.CONFIG_FILE + "/" + ExportByKeywordsConfig.CONFIG_FILE + " not configured!");
         }
         if (!automaticExportEnabled && (exportByCategories.hasCategoryToExport() || exportByKeywords.isEnabled()) && !warned.getAndSet(true)) {
-            LOGGER.log(CONSOLE, ExportByCategoriesConfig.CONFIG_FILE + "/" + ExportByKeywordsConfig.CONFIG_FILE + " configured but {}=false, files won't be exported. Is your configuration OK?", ENABLE_PARAM);
+            log.log(CONSOLE, ExportByCategoriesConfig.CONFIG_FILE + "/" + ExportByKeywordsConfig.CONFIG_FILE + " configured but {}=false, files won't be exported. Is your configuration OK?", ENABLE_PARAM);
         }
 
         if (isAutomaticExportEnabled()) {
@@ -860,7 +859,7 @@ public class ExportFileTask extends AbstractTask {
                 if (con != null && !con.isClosed() && !con.getAutoCommit()) {
                     con.commit();
                     con.close();
-                    LOGGER.info("Closed connection to storage " + entry.getKey());
+                    log.info("Closed connection to storage " + entry.getKey());
                 }
             }
             storageCon.remove(output);
@@ -942,7 +941,7 @@ public class ExportFileTask extends AbstractTask {
                     try (PreparedStatement ps = con.prepareStatement(SELECT_IDS_WITH_DATA);
                             PreparedStatement ps2 = con.prepareStatement(CLEAR_DATA);
                             Statement ps3 = con.createStatement()) {
-                        LOGGER.info("Deleting data from storage {}", storage);
+                        log.info("Deleting data from storage {}", storage);
                         SortedDocValues sdv = ipedCase.getAtomicReader().getSortedDocValues(IndexItem.ID_IN_SOURCE);
                         ResultSet rs = ps.executeQuery();
                         while (rs.next()) {
@@ -956,9 +955,9 @@ public class ExportFileTask extends AbstractTask {
                         }
                         con.commit();
                         con.setAutoCommit(true);
-                        LOGGER.info("Running VACUUM on storage {}", storage);
+                        log.info("Running VACUUM on storage {}", storage);
                         ps3.executeUpdate("VACUUM");
-                        LOGGER.info("Closing storage {}", storage);
+                        log.info("Closing storage {}", storage);
                         con.close();
                     } catch (SQLException | IOException e1) {
                         throw new RuntimeException(e1);
@@ -970,7 +969,7 @@ public class ExportFileTask extends AbstractTask {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
-                LOGGER.error("Error deleting data from storage.", e);
+                log.error("Error deleting data from storage.", e);
             }
         }
         return deleted.intValue();

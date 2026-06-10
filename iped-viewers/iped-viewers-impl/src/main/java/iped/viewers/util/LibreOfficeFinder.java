@@ -3,14 +3,13 @@ package iped.viewers.util;
 import ag.ion.bion.officelayer.application.IApplicationAssistant;
 import ag.ion.bion.officelayer.application.ILazyApplicationInfo;
 import ag.ion.bion.officelayer.internal.application.ApplicationAssistant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 
+@Slf4j
 public class LibreOfficeFinder {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(LibreOfficeFinder.class);
 
     private static final String targetName = "libreoffice6";
 
@@ -46,9 +45,9 @@ public class LibreOfficeFinder {
                     IApplicationAssistant ass = new ApplicationAssistant(null); // $NON-NLS-1$
                     ILazyApplicationInfo[] ila = ass.getLocalApplications();
                     if (ila.length != 0) {
-                        LOGGER.info("Detected LibreOffice {} {}", ila[0].getMajorVersion(), ila[0].getHome()); //$NON-NLS-1$
+                        log.info("Detected LibreOffice {} {}", ila[0].getMajorVersion(), ila[0].getHome()); //$NON-NLS-1$
                         if (ila[0].getMajorVersion() > 6) {
-                            LOGGER.error("LibreOffice {} not tested!", ila[0].getMajorVersion()); //$NON-NLS-1$
+                            log.error("LibreOffice {} not tested!", ila[0].getMajorVersion()); //$NON-NLS-1$
                         }
                         detectedPath = ila[0].getHome();
                     }

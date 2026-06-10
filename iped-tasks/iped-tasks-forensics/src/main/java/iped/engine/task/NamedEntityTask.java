@@ -9,13 +9,12 @@ import iped.exception.IPEDException;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.IgnoreContentHandler;
 import iped.utils.EmptyInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.ner.NamedEntityParser;
 import org.apache.tika.parser.ner.corenlp.CoreNLPNERecogniser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -26,6 +25,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class NamedEntityTask extends AbstractTask {
 
     public static final String NER_PREFIX = NamedEntityParser.MD_KEY_PREFIX;
@@ -34,7 +34,6 @@ public class NamedEntityTask extends AbstractTask {
 
     private static final int MAX_ENTITY_BYTES_LEN = 32766;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NamedEntityTask.class);
 
     private static AtomicBoolean inited = new AtomicBoolean();
 
@@ -67,7 +66,7 @@ public class NamedEntityTask extends AbstractTask {
                 Class.forName("edu.stanford.nlp.ie.crf.CRFClassifier"); //$NON-NLS-1$
 
             } catch (ClassNotFoundException e) {
-                LOGGER.error("StanfordCoreNLP not found. Did you put the jar in 'plugins' folder?");
+                log.error("StanfordCoreNLP not found. Did you put the jar in 'plugins' folder?");
                 nerConfig.setEnabled(false);
                 return;
             }
@@ -81,7 +80,7 @@ public class NamedEntityTask extends AbstractTask {
 
             URL modelResource = this.getClass().getResource("/" + modelPath); //$NON-NLS-1$
             if (modelResource == null) {
-                LOGGER.error(modelPath + " not found. Did you put the model in 'plugins' folder?");
+                log.error(modelPath + " not found. Did you put the model in 'plugins' folder?");
                 nerConfig.setEnabled(false);
                 return;
             }

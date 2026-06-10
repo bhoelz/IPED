@@ -7,6 +7,7 @@ import iped.parsers.standard.StandardParser;
 import iped.properties.BasicProps;
 import iped.utils.DateUtil;
 import iped.utils.EmptyInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.exception.TikaException;
@@ -15,7 +16,6 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -26,11 +26,11 @@ import java.util.Map.Entry;
 
 import static iped.parsers.plist.PListHelper.*;
 
+@Slf4j
 public class NSKeyedArchiverParser extends AbstractPListParser<NSKeyedArchiverParser.Extra> {
 
     private static final long serialVersionUID = -2634688360813722393L;
 
-    private static final Logger logger = LoggerFactory.getLogger(NSKeyedArchiverParser.class);
 
     private static final Set<MediaType> SUPPORTED_TYPES = Collections.singleton(PListDetector.NSKEYEDARCHIVER_PLIST);
     private static final String JS_UID_ID_PREFIX = "uid-";
@@ -86,7 +86,7 @@ public class NSKeyedArchiverParser extends AbstractPListParser<NSKeyedArchiverPa
 
     @Override
     protected Logger getLogger() {
-        return logger;
+        return log;
     }
 
     @Override
@@ -102,7 +102,7 @@ public class NSKeyedArchiverParser extends AbstractPListParser<NSKeyedArchiverPa
     protected void processAndGenerateHTMLContent(NSObject nso, State state) throws SAXException, TikaException {
 
         if (!(nso instanceof NSDictionary) || !PListDetector.isNSKeyedArchiver((NSDictionary) nso)) {
-            logger.error("NSKeyedArchiver is unexpectedly invalid: {}", state.context.get(IItemReader.class));
+            log.error("NSKeyedArchiver is unexpectedly invalid: {}", state.context.get(IItemReader.class));
             processAsPList(nso, state);
             return;
         }
@@ -114,13 +114,13 @@ public class NSKeyedArchiverParser extends AbstractPListParser<NSKeyedArchiverPa
         NSObject objects = map.get(OBJECTS_KEY);
 
         if (!(objects instanceof NSArray) || !((top instanceof NSDictionary))) {
-            logger.warn("NSKeyedArchiver has no valid $object or $top: {}", state.context.get(IItemReader.class));
+            log.warn("NSKeyedArchiver has no valid $object or $top: {}", state.context.get(IItemReader.class));
             processAsPList(nso, state);
             return;
         }
 
         if (((NSDictionary) top).size() == 0) {
-            logger.warn("NSKeyedArchiver has no $top element: {}", state.context.get(IItemReader.class));
+            log.warn("NSKeyedArchiver has no $top element: {}", state.context.get(IItemReader.class));
             processAsPList(nso, state);
             return;
         }
@@ -142,9 +142,9 @@ public class NSKeyedArchiverParser extends AbstractPListParser<NSKeyedArchiverPa
             state.xhtml.endElement("script");
 
         } catch (IOException e) {
-            logger.error("Error reading JS", e);
+            log.error("Error reading JS", e);
         } catch (Exception e) {
-            logger.error("Error parsing object", e);
+            log.error("Error parsing object", e);
             throw e;
         }
     }
@@ -245,7 +245,7 @@ public class NSKeyedArchiverParser extends AbstractPListParser<NSKeyedArchiverPa
                 super.processObject(obj, path, state, open);
 
             } else {
-                logger.error("Unexpected object: {}", obj);
+                log.error("Unexpected object: {}", obj);
             }
         }
     }

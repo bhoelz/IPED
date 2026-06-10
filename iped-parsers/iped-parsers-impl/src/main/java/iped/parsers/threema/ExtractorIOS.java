@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import iped.parsers.threema.Message.MessageStatus;
 import iped.parsers.threema.Message.MessageType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.io.TemporaryResources;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -28,9 +27,9 @@ import static iped.parsers.threema.Message.MessageType.*;
  *
  * @author André Rodrigues Costa <andre.arc@pf.gov.br>
  */
+@Slf4j
 public abstract class ExtractorIOS extends Extractor {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExtractorIOS.class);
 
     public ExtractorIOS(TemporaryResources tmp, String itemPath, File databaseFile, ThreemaAccount account, boolean recoverDeletedRecords) {
         super(tmp, itemPath, databaseFile, account, recoverDeletedRecords);
@@ -82,7 +81,7 @@ public abstract class ExtractorIOS extends Extractor {
             }
 
         } catch (Exception ex) {
-            logger.warn("Database " + itemPath + " is corrupt.");
+            log.warn("Database " + itemPath + " is corrupt.");
         }
 
         return cleanChatList(list);
@@ -102,7 +101,7 @@ public abstract class ExtractorIOS extends Extractor {
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Database " + itemPath + " is corrupt.");
+            log.warn("Database " + itemPath + " is corrupt.");
         }
 
         return messages;
@@ -238,7 +237,7 @@ public abstract class ExtractorIOS extends Extractor {
                     Files.copy(bais, temp, StandardCopyOption.REPLACE_EXISTING);
                     m.setData(temp.toFile());
                 } catch (IOException e1) {
-                    logger.error("Unable to extract Threema attachment from {} {}", itemPath, e1.toString());
+                    log.error("Unable to extract Threema attachment from {} {}", itemPath, e1.toString());
                 }
             }
         }
@@ -254,7 +253,7 @@ public abstract class ExtractorIOS extends Extractor {
                 if (media_description != null)
                     m.setMediaDescription(media_description.asText());
             } catch (JsonProcessingException e) {
-                logger.warn("Error parsing Threema Message JSON: " + rs.getString("MESSAGE_JSON"));
+                log.warn("Error parsing Threema Message JSON: " + rs.getString("MESSAGE_JSON"));
             }
         }
 
@@ -276,7 +275,7 @@ public abstract class ExtractorIOS extends Extractor {
                 }
 
             } catch (JsonProcessingException e) {
-                logger.warn("Error parsing Threema Message JSON: " + rs.getString("MESSAGE_JSON"));
+                log.warn("Error parsing Threema Message JSON: " + rs.getString("MESSAGE_JSON"));
             }
         }
 

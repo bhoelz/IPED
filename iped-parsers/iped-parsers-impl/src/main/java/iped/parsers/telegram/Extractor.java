@@ -25,10 +25,9 @@ import iped.parsers.sqlite.SQLite3DBParser;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +35,9 @@ import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.*;
 
+@Slf4j
 public class Extractor {
 
-    private static final Logger logger = LoggerFactory.getLogger(Extractor.class);
 
     protected static final String DECODER_CLASS = "telegramdecoder.DecoderTelegram";
 
@@ -145,7 +144,7 @@ public class Extractor {
 
     protected List<Chat> extractChatList() throws Exception {
         List<Chat> l = new ArrayList<>();
-        logger.debug("Extracting chat list Android");
+        log.debug("Extracting chat list Android");
         try (PreparedStatement stmt = conn.prepareStatement(CHATS_SQL_V2)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -192,7 +191,7 @@ public class Extractor {
                     group.setParticipantsCount(participantsCount);
                 }
                 if (cg != null) {
-                    logger.debug("Telegram chat id ", cg.getId());
+                    log.debug("Telegram chat id ", cg.getId());
                     l.add(cg);
                 }
             }
@@ -237,7 +236,7 @@ public class Extractor {
     protected ArrayList<Chat> extractChatListIOS() throws SQLException {
         ArrayList<Chat> l = new ArrayList<>();
         if (conn != null) {
-            logger.debug("Extracting chat list iOS");
+            log.debug("Extracting chat list iOS");
             try (PreparedStatement stmt = conn.prepareStatement(CHATS_SQL_IOS)) {
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
@@ -260,7 +259,7 @@ public class Extractor {
 
                     cg.setDeleted(rs.getBoolean("deleted"));
 
-                    logger.debug("Telegram chat id ", cg.getId());
+                    log.debug("Telegram chat id ", cg.getId());
                     l.add(cg);
                 }
             }
@@ -302,7 +301,7 @@ public class Extractor {
                     chat = chatList.get(index);
                 }
                 if (chat == null) {
-                    logger.warn("Chat with id {} not found in chat list, creating a new one",
+                    log.warn("Chat with id {} not found in chat list, creating a new one",
                             chatId);
                     Contact c = getContact(chatId);
                     chat = new Chat(chatId, c, c.getFullname());
@@ -322,14 +321,14 @@ public class Extractor {
             Message message = new Message(mid, chat);
             if (data == null) {
                 data = msgsResultSet.getBytes("mediaData");
-                logger.debug("Message with mid {} has no data, trying to decode media data", mid);
+                log.debug("Message with mid {} has no data, trying to decode media data", mid);
                 message.setDeleted(true);
                 message.setRecoveryString(Messages.getString("TelegramReport.RecoveredMessage"));
             }
             // if has media data use it to decode the message
             if (msgsResultSet.getBytes("mediaData") != null) {
                 data = msgsResultSet.getBytes("mediaData");
-                logger.debug("Message with mid {} has media data", mid);
+                log.debug("Message with mid {} has media data", mid);
             }
 
 
@@ -369,7 +368,7 @@ public class Extractor {
                 message.setType(msg_decoded);
             }
             if (msgs.size() > 0 && msgs.get(msgs.size() - 1).getId() == message.getId()) {
-                logger.debug("Message with mid {} is part of a media group, adding to the last MessageMultiMedia", mid);
+                log.debug("Message with mid {} is part of a media group, adding to the last MessageMultiMedia", mid);
                 MessageMultiMedia last = msgs.get(msgs.size() - 1);
                 last.addMessage(message);
 
@@ -497,7 +496,7 @@ public class Extractor {
                 if (message.getMediaMime() == null) {
                     message.setMediaMime(item.getMediaTypeString());
                 }
-                logger.debug("Document mediaType: {}", message.getMediaMime());
+                log.debug("Document mediaType: {}", message.getMediaMime());
                 message.setMediaHash(item.getHash());
                 message.setThumb(item.getThumb());
                 message.setMediaExtension(item.getType());

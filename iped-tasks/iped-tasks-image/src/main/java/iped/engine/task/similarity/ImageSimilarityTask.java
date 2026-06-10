@@ -6,9 +6,8 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
 import iped.engine.task.AbstractTask;
 import iped.parsers.util.MetadataUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,6 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Wladimir Leite
  */
+@Slf4j
 public class ImageSimilarityTask extends AbstractTask {
 
     public static final String enableParam = "enableImageSimilarity"; //$NON-NLS-1$
@@ -39,7 +39,6 @@ public class ImageSimilarityTask extends AbstractTask {
 
     private ImageSimilarity imageSimilarity;
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageSimilarityTask.class);
 
     public boolean isEnabled() {
         return taskEnabled;
@@ -60,7 +59,7 @@ public class ImageSimilarityTask extends AbstractTask {
                 taskEnabled = configurationManager.getEnableTaskProperty(enableParam);
 
                 if (!taskEnabled) {
-                    logger.info("Task disabled."); //$NON-NLS-1$
+                    log.info("Task disabled."); //$NON-NLS-1$
                     init.set(true);
                     return;
                 }
@@ -68,7 +67,7 @@ public class ImageSimilarityTask extends AbstractTask {
                 checkDependency("iped.engine.task.HashTask");
                 checkDependency("iped.engine.task.ImageThumbTask");
 
-                logger.info("Task enabled."); //$NON-NLS-1$
+                log.info("Task enabled."); //$NON-NLS-1$
                 init.set(true);
             }
         }
@@ -81,11 +80,11 @@ public class ImageSimilarityTask extends AbstractTask {
         synchronized (finished) {
             if (taskEnabled && !finished.get()) {
                 finished.set(true);
-                logger.info("Total images processed: " + totalProcessed); //$NON-NLS-1$
-                logger.info("Total images not processed: " + totalFailed); //$NON-NLS-1$
+                log.info("Total images processed: " + totalProcessed); //$NON-NLS-1$
+                log.info("Total images not processed: " + totalFailed); //$NON-NLS-1$
                 long total = totalProcessed.longValue() + totalFailed.longValue();
                 if (total != 0) {
-                    logger.info("Average processing time (milliseconds/image): " + (totalTime.longValue() / total)); //$NON-NLS-1$
+                    log.info("Average processing time (milliseconds/image): " + (totalTime.longValue() / total)); //$NON-NLS-1$
                 }
             }
         }
@@ -119,7 +118,7 @@ public class ImageSimilarityTask extends AbstractTask {
             t = System.currentTimeMillis() - t;
             totalTime.addAndGet(t);
         } catch (Exception e) {
-            logger.warn(evidence.toString(), e);
+            log.warn(evidence.toString(), e);
         }
     }
 }

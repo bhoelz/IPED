@@ -19,9 +19,8 @@
 package iped.parsers.telegram;
 
 import dpf.ap.gpinf.interfacetelegram.PhotoData;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -31,9 +30,9 @@ import java.util.*;
  * @author ADMHauck
  * @author Wladimir Leite
  */
+@Slf4j
 public class PostBoxCoding {
 
-    private static final Logger logger = LoggerFactory.getLogger(PostBoxCoding.class);
 
     private static final int tInt32 = 0;
     private static final int tInt64 = 1;
@@ -339,7 +338,7 @@ public class PostBoxCoding {
                 loadThumb(im, m);
                 if (sizes != null && sizes.length > 0) {
                     mimeType = "link/image";
-                    logger.debug("url: {}", url);
+                    log.debug("url: {}", url);
                     files = getPhotos(sizes);
                 }
             } else {
@@ -369,14 +368,14 @@ public class PostBoxCoding {
 
                         // byte[] thumb = media.getBytes("itd");
 
-                        logger.debug("v: {}", volume);
-                        logger.debug("l: {}", local);
-                        logger.debug("n: {}", size);
-                        logger.debug("action: {}", action);
+                        log.debug("v: {}", volume);
+                        log.debug("l: {}", local);
+                        log.debug("n: {}", size);
+                        log.debug("action: {}", action);
 
                         if (fname != null) {
                             Photo f = new Photo();
-                            logger.debug("name: {}", fname);
+                            log.debug("name: {}", fname);
                             f.setName(fname);
                             f.setSize(size);
                             files.add(f);
@@ -384,7 +383,7 @@ public class PostBoxCoding {
 
                         if (id != 0) {
                             Photo f = new Photo();
-                            logger.debug("name: {}", id);
+                            log.debug("name: {}", id);
                             f.setName(String.valueOf(id));
                             f.setSize(size);
                             files.add(f);
@@ -393,7 +392,7 @@ public class PostBoxCoding {
                         if (volume != 0 && local != 0) {
                             Photo f = new Photo();
                             f.setName(volume + "_" + local);
-                            logger.debug("name: {}", f.getName());
+                            log.debug("name: {}", f.getName());
                             f.setSize(size);
                             files.add(f);
                         }
@@ -426,7 +425,7 @@ public class PostBoxCoding {
             }
 
             // m.setThumb(thumb);
-            logger.debug("mimeType: {}", mimeType);
+            log.debug("mimeType: {}", mimeType);
             m.setMediaMime(mimeType);
             if (files.size() == 1) {
                 m.setMediaSize(files.get(0).getSize());
@@ -710,7 +709,7 @@ public class PostBoxCoding {
                     break;
 
                 default:
-                    logger.warn("Unknown type while decoding PostBox {}", type);
+                    log.warn("Unknown type while decoding PostBox {}", type);
                     break;
             }
             obj.fields.put(key, val);

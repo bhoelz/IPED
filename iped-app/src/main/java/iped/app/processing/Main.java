@@ -24,20 +24,20 @@ import iped.app.processing.ui.ProgressConsole;
 import iped.app.processing.ui.ProgressFrame;
 import iped.app.processing.ui.ProgressJLine;
 import iped.app.processing.ui.SelectImagePathWithDialog;
-import iped.engine.CmdLineArgsImpl;
-import iped.engine.io.ImagePathResolverProvider;
 import iped.app.ui.App;
 import iped.app.ui.splash.StartUpControlClient;
 import iped.app.ui.utils.UiScale;
+import iped.engine.CmdLineArgs;
+import iped.engine.CmdLineArgsImpl;
 import iped.engine.Version;
 import iped.engine.config.Configuration;
 import iped.engine.core.Manager;
+import iped.engine.io.ImagePathResolverProvider;
 import iped.engine.localization.Messages;
 import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.exception.IPEDException;
 import iped.io.URLUtil;
-import iped.parsers.ocr.OCRParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,21 +77,6 @@ public class Main {
      */
     private static Main lastInstance;
 
-    /**
-     * Construtor utilizado pelo AsAP
-     */
-    public Main(List<File> reports, File output, String configPath, File logFile, File keywordList) {
-        this(reports, output, configPath, logFile, keywordList, null, null);
-    }
-
-    /**
-     * Construtor utilizado pelo AsAP
-     */
-    public Main(List<File> reports, File output, String configPath, File logFile, File keywordList,
-            List<String> bookmarksToOCR) {
-        this(reports, output, configPath, logFile, keywordList, null, bookmarksToOCR);
-    }
-
     public String getRootPath() {
         return this.rootPath;
     }
@@ -116,22 +101,9 @@ public class Main {
         return this.configPath;
     }
 
-    /**
-     * Construtor utilizado pelo AsAP
-     */
-    public Main(List<File> reports, File output, String configPath, File logFile, File keywordList,
-            Boolean ignore, List<String> bookmarksToOCR) {
-        lastInstance = this;
-        this.dataSource = reports;
-        this.output = output;
-        this.keywords = keywordList;
-        this.configPath = configPath;
-        this.logFile = logFile;
 
-        String list = "";
-        for (String o : bookmarksToOCR)
-            list += o + OCRParser.SUBSET_SEPARATOR;
-        System.setProperty(OCRParser.SUBSET_TO_OCR, list);
+    public Main(CmdLineArgs args) {
+        applyArgs(args);
     }
 
     /**
@@ -184,7 +156,7 @@ public class Main {
      * Applies the parsed command-line arguments to this Main instance.
      * This logic was previously in CmdLineArgsImpl.handleSpecificArgs().
      */
-    private void applyArgs(CmdLineArgsImpl args) {
+    private void applyArgs(CmdLineArgs args) {
         dataSource = new ArrayList<File>();
 
         if ((args.getDatasources() == null || args.getDatasources().isEmpty()) && args.getEvidenceToRemove() == null) {
@@ -229,7 +201,7 @@ public class Main {
                 for (File source : dataSource) {
                     if (file.getAbsoluteFile().equals(source.getAbsoluteFile())) {
                         throw new com.beust.jcommander.ParameterException(
-                                "The output folder can not be equal or a subfolder of an input!");
+                            "The output folder can not be equal or a subfolder of an input!");
                     }
                 }
                 file = file.getParentFile();
@@ -237,9 +209,9 @@ public class Main {
         }
 
         if ((args.isAppendIndex() || args.isContinue() || args.isRestart())
-                && outputDir != null && !(new File(outputDir, "iped").exists())) {
+            && outputDir != null && !(new File(outputDir, "iped").exists())) {
             throw new iped.exception.IPEDException(
-                    "You cannot use --append, --continue or --restart with an inexistent or invalid case folder.");
+                "You cannot use --append, --continue or --restart with an inexistent or invalid case folder.");
         }
 
         System.setProperty(iped.engine.config.LocalConfig.SYS_PROP_APPEND, Boolean.toString(args.isAppendIndex()));
@@ -247,7 +219,7 @@ public class Main {
         checkIfAppendingToCompatibleCase(args);
     }
 
-    private void checkIfAppendingToCompatibleCase(CmdLineArgsImpl args) {
+    private void checkIfAppendingToCompatibleCase(CmdLineArgs args) {
         if (!args.isAppendIndex()) {
             return;
         }
@@ -263,17 +235,17 @@ public class Main {
         try {
             Process process = pb.start();
             line = org.apache.commons.io.IOUtils.readLines(process.getInputStream(),
-                    java.nio.charset.Charset.defaultCharset()).get(0);
+                java.nio.charset.Charset.defaultCharset()).get(0);
         } catch (java.io.IOException e) {
             throw new RuntimeException(e);
         }
         String thisVersion = iped.engine.Version.APP_VERSION.substring(0,
-                iped.engine.Version.APP_VERSION.lastIndexOf('.'));
+            iped.engine.Version.APP_VERSION.lastIndexOf('.'));
         String fullVersion = line.replace(iped.engine.Version.APP_NAME_PREFIX, "").trim();
         String version = fullVersion.substring(0, fullVersion.lastIndexOf('.'));
         if (!version.equals(thisVersion)) {
             throw new iped.exception.IPEDException(
-                    "Appending to case with old version " + fullVersion + " not supported.");
+                "Appending to case with old version " + fullVersion + " not supported.");
         }
     }
 
@@ -296,7 +268,7 @@ public class Main {
 
             if (e instanceof OutOfMemoryError || (e.getCause() instanceof OutOfMemoryError))
                 LOGGER.error("Processing aborted because of OutOfMemoryError. See the possible workarounds at " //$NON-NLS-1$
-                        + "https://github.com/sepinf-inc/IPED/wiki/Troubleshooting"); //$NON-NLS-1$
+                             + "https://github.com/sepinf-inc/IPED/wiki/Troubleshooting"); //$NON-NLS-1$
 
         } finally {
             if (manager != null)
@@ -454,13 +426,5 @@ public class Main {
 
         if (getInstance().manager == null || !getInstance().manager.isSearchAppOpen())
             System.exit((success) ? 0 : 1);
-
-        // PARA ASAP:
-        // Main iped = new Main(List<File> reports, File
-        // output, String configPath, File logFile, File keywordList);
-        // keywordList e logFile podem ser null. Nesse caso, o último é criado
-        // na pasta log dentro de configPath
-        // boolean success = iped.executar();
     }
-
 }

@@ -31,10 +31,9 @@ import iped.utils.FileInputStreamFactory;
 import iped.utils.IOUtil;
 import iped.utils.LocalizedFormat;
 import iped.utils.SimpleHTMLEncoder;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.tika.metadata.Message;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.Property;
@@ -60,9 +59,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@Log4j2
 public class UfedXmlReader extends DataSourceReader {
 
-    private static Logger LOGGER = LogManager.getLogger(UfedXmlReader.class);
 
     private final Level CONSOLE = Level.getLevel("MSG"); //$NON-NLS-1$
 
@@ -256,7 +255,7 @@ public class UfedXmlReader extends DataSourceReader {
         try {
             supportedApps = new HashSet<String>(Arrays.asList(parsingConfig.getInternalParsersList().split("\\s*,\\s*")));
         } catch (Exception e) {
-            LOGGER.warn("Failed to parse {} parameter from {}. Using default internal value: {}", ParsingTaskConfig.SOURCES_WITH_PARSERS, ParsingTaskConfig.CONF_FILE, supportedApps.toString());
+            log.warn("Failed to parse {} parameter from {}. Using default internal value: {}", ParsingTaskConfig.SOURCES_WITH_PARSERS, ParsingTaskConfig.CONF_FILE, supportedApps.toString());
         }
 
         if (!TelegramParser.isEnabledForUfdr()) {
@@ -846,7 +845,7 @@ public class UfedXmlReader extends DataSourceReader {
                     setMediaResult(item);
                     String trackId = DatasourceRegistry.get().getTrackID(item);
                     if (!addedTrackIds.add(trackId)) {
-                        LOGGER.log(CONSOLE, "Unexpected UFDR report.xml structure, item with duplicated track id {}: {}.\nPlease report this to project"
+                        log.log(CONSOLE, "Unexpected UFDR report.xml structure, item with duplicated track id {}: {}.\nPlease report this to project"
                                 + " developers sending the UFDR report.xml to add proper support for the new structure.", trackId, item.getPath());
                     }
                     try {
@@ -1177,7 +1176,7 @@ public class UfedXmlReader extends DataSourceReader {
                     }
                 }
             } catch (Exception e) {
-                LOGGER.error("Failed to parse " + item.getPath(), e.toString());
+                log.error("Failed to parse " + item.getPath(), e.toString());
                 e.printStackTrace();
             } finally {
                 if (file != null)
@@ -1235,7 +1234,7 @@ public class UfedXmlReader extends DataSourceReader {
                 try (InputStream is = new FileInputStream(file)) {
                     mediaResults = readMediaResults(is);
                 } catch (IOException e) {
-                    LOGGER.warn("Error reading UFED mediaResult {}: {}", path, e.toString());
+                    log.warn("Error reading UFED mediaResult {}: {}", path, e.toString());
                 }
             } else {
                 try {
@@ -1246,7 +1245,7 @@ public class UfedXmlReader extends DataSourceReader {
                         mediaResults = readMediaResults(is);
                     }
                 } catch (IOException e) {
-                    LOGGER.warn("Error reading UFDR mediaResult {}: {}", path, e.toString());
+                    log.warn("Error reading UFDR mediaResult {}: {}", path, e.toString());
                 }
             }
             if (mediaResults != null) {
@@ -1469,7 +1468,7 @@ double score = TaskRuntime.invokeVideoScoreList("iped.engine.task.die.DIETask", 
                 item.setSumVolume(false);
                 itemSeq.push(item);
             } catch (SAXException e) {
-                LOGGER.error("Error creating model Item", e);
+                log.error("Error creating model Item", e);
             }
         }
 
@@ -1497,7 +1496,7 @@ double score = TaskRuntime.invokeVideoScoreList("iped.engine.task.die.DIETask", 
             try {
                 processItem(item);
             } catch (SAXException e) {
-                LOGGER.error("Error on sending model to process", e);
+                log.error("Error on sending model to process", e);
             }
         }
     }

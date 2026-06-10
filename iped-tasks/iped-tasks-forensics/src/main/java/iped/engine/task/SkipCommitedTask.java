@@ -13,8 +13,7 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
 import iped.utils.HashValue;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
 import org.apache.lucene.util.BytesRef;
@@ -32,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Luis Nassif
  *
  */
+@Slf4j
 public class SkipCommitedTask extends AbstractTask {
     private static final String TEXT_SPLITTED = "textSplitted";
 
@@ -43,7 +43,6 @@ public class SkipCommitedTask extends AbstractTask {
 
     public static final String IS_COMMITTED = SkipCommitDataKeys.IS_COMMITTED;
 
-    private static Logger logger = LogManager.getLogger(SkipCommitedTask.class);
 
     private static HashValue[] commitedtrackIDs;
 
@@ -148,8 +147,8 @@ public class SkipCommitedTask extends AbstractTask {
 
             caseData.putCaseObject(PARENTS_WITH_LOST_SUBITEMS, parentsWithLostSubitems);
 
-            logger.info("Commited items: {}", commitedtrackIDs.length);
-            logger.info("Parents with lost subitems: {}", parentsWithLostSubitems.size());
+            log.info("Commited items: {}", commitedtrackIDs.length);
+            log.info("Parents with lost subitems: {}", parentsWithLostSubitems.size());
 
         } catch (IndexNotFoundException e) {
             commitedtrackIDs = new HashValue[0];

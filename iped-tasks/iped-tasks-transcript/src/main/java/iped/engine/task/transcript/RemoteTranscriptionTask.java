@@ -8,8 +8,7 @@ import iped.engine.core.Manager;
 import iped.engine.io.TimeoutException;
 import iped.engine.task.transcript.RemoteTranscriptionService.MESSAGES;
 import iped.exception.IPEDException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.io.TemporaryResources;
 
 import java.io.*;
@@ -27,9 +26,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 public class RemoteTranscriptionTask extends AbstractTranscriptTask {
 
-    private static Logger logger = LogManager.getLogger(Wav2Vec2TranscriptTask.class);
 
     private static final int MAX_CONNECT_ERRORS = 60;
 
@@ -104,7 +103,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
 
         if (disable) {
             transcriptConfig.setEnabled(false);
-            logger.warn("Remote transcription module disabled, service address not configured.");
+            log.warn("Remote transcription module disabled, service address not configured.");
             return;
         }
 
@@ -115,7 +114,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                 } catch (Exception e) {
                     if (hasIpedDatasource()) {
                         transcriptConfig.setEnabled(false);
-                        logger.warn("Could not initialize remote transcription. Task disabled.");
+                        log.warn("Could not initialize remote transcription. Task disabled.");
                     } else {
                         throw e;
                     }
@@ -147,7 +146,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                 server.ip = ipPort[0];
                 server.port = Integer.parseInt(ipPort[1]);
                 servers.add(server);
-                logger.info("Transcription server discovered: {}:{}", server.ip, server.port);
+                log.info("Transcription server discovered: {}:{}", server.ip, server.port);
             }
             RemoteTranscriptionTask.servers = servers;
             lastUpdateServersTime = System.currentTimeMillis();
@@ -156,7 +155,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
             if (servers.isEmpty()) {
                 throw new IPEDException(msg);
             } else {
-                logger.warn(msg);
+                log.warn(msg);
             }
         }
     }
@@ -172,8 +171,8 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
         if (isEnabled() && !statsPrinted.getAndSet(true)) {
             int numWorkers = this.worker.manager.getNumWorkers();
             DecimalFormat df = new DecimalFormat();
-            logger.info("Time spent to send audios: {}s", df.format(audioSendingTime.get() / (1000 * numWorkers)));
-            logger.info("Time spent to receive transcriptions: {}s", df.format(transcriptReceiveTime.get() / (1000 * numWorkers)));
+            log.info("Time spent to send audios: {}s", df.format(audioSendingTime.get() / (1000 * numWorkers)));
+            log.info("Time spent to receive transcriptions: {}s", df.format(transcriptReceiveTime.get() / (1000 * numWorkers)));
         }
     }
 
@@ -221,16 +220,16 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
 
                 String response = reader.readLine();
                 if (response == null || MESSAGES.BUSY.toString().equals(response)) {
-                    logger.debug("Transcription server {} busy, trying another one.", server);
+                    log.debug("Transcription server {} busy, trying another one.", server);
                     sleepBeforeRetry(requestTime);
                     continue;
                 }
                 if (!MESSAGES.ACCEPTED.toString().equals(response)) {
-                    logger.error("Error 0 in communication with {}. The audio will be retried.", server);
+                    log.error("Error 0 in communication with {}. The audio will be retried.", server);
                     continue;
                 }
 
-                logger.debug("Transcription server {} accepted connection", server);
+                log.debug("Transcription server {} accepted connection", server);
 
                 long t0 = System.currentTimeMillis();
 
@@ -252,7 +251,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                 response = reader.readLine();
 
                 while (MESSAGES.PING.toString().equals(response)) {
-                    logger.debug("ping {}", response);
+                    log.debug("ping {}", response);
                     response = reader.readLine();
                 }
 
@@ -266,7 +265,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                     } else if (warn.contains(SocketTimeoutException.class.getName()) || warn.contains(SocketException.class.getName())) {
                         tryAgain = true;
                     }
-                    logger.warn("Fail to transcribe on server: {} audio: {} error: {}.{}", server, evidence.getPath(), warn, (tryAgain ? " The audio will be retried." : ""));
+                    log.warn("Fail to transcribe on server: {} audio: {} error: {}.{}", server, evidence.getPath(), warn, (tryAgain ? " The audio will be retried." : ""));
                     if (tryAgain) {
                         continue;
                     }
@@ -274,7 +273,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                 }
                 if (MESSAGES.ERROR.toString().equals(response) || response == null) {
                     String error = response != null ? reader.readLine() : "Remote server process crashed or node was turned off!";
-                    logger.error("Error 1 in communication with {}: {}. The audio will be retried.", server, error);
+                    log.error("Error 1 in communication with {}: {}. The audio will be retried.", server, error);
                     throw new SocketException(error);
                 }
 
@@ -285,7 +284,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                 long t2 = System.currentTimeMillis();
 
                 if (!MESSAGES.DONE.toString().equals(reader.readLine())) {
-                    logger.error("Error 2 in communication with {}. The audio will be retried.", server);
+                    log.error("Error 2 in communication with {}. The audio will be retried.", server);
                     throw new SocketException("Error receiving transcription.");
                 }
 
@@ -303,7 +302,7 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
                     sleepBeforeRetry(requestTime);
                     requestServers(true);
                 } else {
-                    logger.warn("Network error communicating to server: " + server + ", retrying audio: " + evidence.getPath(), e);
+                    log.warn("Network error communicating to server: " + server + ", retrying audio: " + evidence.getPath(), e);
                 }
             }
         }

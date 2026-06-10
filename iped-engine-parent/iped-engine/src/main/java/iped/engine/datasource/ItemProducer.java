@@ -27,8 +27,7 @@ import iped.engine.localization.Messages;
 import iped.engine.task.SkipCommitDataKeys;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.utils.HashValue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Closeable;
 import java.io.File;
@@ -45,9 +44,9 @@ import java.util.Set;
  * casos do IPED.
  *
  */
+@Slf4j
 public class ItemProducer extends Thread implements Closeable {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ItemProducer.class);
 
     private final ICaseData caseData;
     private final boolean listOnly;
@@ -116,7 +115,7 @@ public class ItemProducer extends Thread implements Closeable {
                 if (listOnly) {
                     UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", 0, //$NON-NLS-1$
                             Messages.getString("ItemProducer.Adding") + source.getAbsolutePath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-                    LOGGER.info("Adding '{}'", source.getAbsolutePath()); //$NON-NLS-1$
+                    log.info("Adding '{}'", source.getAbsolutePath()); //$NON-NLS-1$
                 }
 
                 for (DataSourceReader srcReader : supportedReaders) {
@@ -149,7 +148,7 @@ public class ItemProducer extends Thread implements Closeable {
                 Manager.getInstance().addItemToQueue(evidence);
 
             } else {
-                LOGGER.info("Total items found: {}", caseData.getDiscoveredEvidences()); //$NON-NLS-1$
+                log.info("Total items found: {}", caseData.getDiscoveredEvidences()); //$NON-NLS-1$
             }
             UIPropertyListenerProvider.getInstance().firePropertyChange("discoverEnded", 0, 0);
 

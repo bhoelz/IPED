@@ -5,14 +5,13 @@ import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
 import iped.engine.mcp.client.WebApiClient;
 import iped.engine.mcp.tools.ToolRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CountDownLatch;
 
+@Slf4j
 public class IpedMcpServer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IpedMcpServer.class);
 
     public static void main(String[] args) throws Exception {
         // Parse CLI arguments
@@ -25,7 +24,7 @@ public class IpedMcpServer {
         // Redirect all logging to stderr; stdout is reserved for stdio transport
         System.setProperty("org.slf4j.simpleLogger.logFile", "System.err");
 
-        LOG.info("Starting iped-mcp, connecting to {}", cli.webapiUrl());
+        log.info("Starting iped-mcp, connecting to {}", cli.webapiUrl());
 
         // Create HTTP client
         WebApiClient client = new WebApiClient(cli.webapiUrl());
@@ -33,7 +32,7 @@ public class IpedMcpServer {
         // Probe connectivity — fail fast with clear message
         try {
             client.getGlobalStats();
-            LOG.info("Connected to iped-webapi successfully.");
+            log.info("Connected to iped-webapi successfully.");
         } catch (Exception e) {
             System.err.println("ERROR: Cannot reach iped-webapi at " + cli.webapiUrl()
                 + " — " + e.getMessage());
@@ -56,14 +55,14 @@ public class IpedMcpServer {
             .tools(registry.tools())
             .build();
 
-        LOG.info("iped-mcp ready (transport={}), {} tools registered",
+        log.info("iped-mcp ready (transport={}), {} tools registered",
             cli.transport(), registry.tools().size());
 
         // Keep the JVM alive until terminated; stdio transport runs on background
         // threads. A shutdown hook closes the server gracefully on SIGINT/SIGTERM.
         CountDownLatch shutdownLatch = new CountDownLatch(1);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            LOG.info("Shutting down iped-mcp...");
+            log.info("Shutting down iped-mcp...");
             server.closeGracefully();
             shutdownLatch.countDown();
         }));

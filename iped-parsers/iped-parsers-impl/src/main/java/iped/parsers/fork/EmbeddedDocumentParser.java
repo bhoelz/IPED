@@ -3,13 +3,12 @@ package iped.parsers.fork;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.Messages;
 import iped.properties.ExtraProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.parser.ParseContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 
+@Slf4j
 public class EmbeddedDocumentParser implements EmbeddedDocumentExtractor, Serializable {
 
     /**
@@ -28,7 +28,6 @@ public class EmbeddedDocumentParser implements EmbeddedDocumentExtractor, Serial
     // corrompidos
     private static int NAME_MAX_LEN = 256;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(EmbeddedDocumentParser.class);
 
     private transient ParseContext context;
 
@@ -70,7 +69,7 @@ public class EmbeddedDocumentParser implements EmbeddedDocumentExtractor, Serial
 
         } catch (Exception e) {
             // do not interrupt parsing of parent doc if parsing of child doc fails
-            LOGGER.warn("{} Error while parsing subitem {}\t\t{}", Thread.currentThread().getName(), subitemPath, //$NON-NLS-1$
+            log.warn("{} Error while parsing subitem {}\t\t{}", Thread.currentThread().getName(), subitemPath, //$NON-NLS-1$
                     e.toString());
         }
 

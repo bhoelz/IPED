@@ -1,15 +1,14 @@
 package iped.engine.graph.links;
 
 import iped.io.URLUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URL;
 import java.util.*;
 
+@Slf4j
 public class SearchLinksQueryProvider {
 
-    private Logger LOGGER = LoggerFactory.getLogger(SearchLinksQueryProvider.class);
 
     private static final SearchLinksQueryProvider INSTANCE = new SearchLinksQueryProvider();
 
@@ -42,7 +41,7 @@ public class SearchLinksQueryProvider {
                         "Multiple query registered with name " + queryName + " (" + first + " and " + second + ")");
             }
 
-            LOGGER.info("Query " + query.getClass().getName() + " found with name " + queryName);
+            log.info("Query " + query.getClass().getName() + " found with name " + queryName);
         }
     }
 

@@ -6,6 +6,7 @@ import iped.parsers.util.ItemInfo;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.EmptyInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -18,8 +19,6 @@ import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.ToXMLContentHandler;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -36,6 +35,7 @@ import java.util.Set;
  *
  * @author Paulo César Herrmann Wanner <herrmann.pchw@pf.gov.br>
  */
+@Slf4j
 public class SafariPlistParser extends AbstractParser {
 
     /**
@@ -56,7 +56,6 @@ public class SafariPlistParser extends AbstractParser {
 
     private static Set<MediaType> SUPPORTED_TYPES = MediaType.set(SAFARI_PLIST);
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SafariPlistParser.class);
 
     protected boolean extractEntries = true;
 

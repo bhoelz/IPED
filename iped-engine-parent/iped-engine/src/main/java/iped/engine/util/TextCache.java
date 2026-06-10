@@ -2,10 +2,9 @@ package iped.engine.util;
 
 import iped.data.IItem;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.input.BoundedReader;
 import org.apache.commons.io.input.RandomAccessFileInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -13,9 +12,9 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class TextCache implements Closeable, Cloneable {
 
-    private static Logger logger = LoggerFactory.getLogger(TextCache.class);
 
     private static int MAX_MEMORY_CHARS = 10000000;
 
@@ -95,7 +94,7 @@ public class TextCache implements Closeable, Cloneable {
                 }
 
             } catch (FileSystemException | FileNotFoundException e) {
-                logger.error("Error reading extracted text file{}, maybe your antivirus blocked or deleted it? {}",
+                log.error("Error reading extracted text file{}, maybe your antivirus blocked or deleted it? {}",
                         sourceItem != null ? " from " + sourceItem.getPath() : "", e.toString());
                 e.printStackTrace();
                 return new StringReader("");

@@ -1,10 +1,13 @@
 package iped.distributed.coordinator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -18,9 +21,9 @@ import java.util.stream.Collectors;
  * <p>This registry is held by the {@link CoordinatorServer} and is the
  * source of truth for agent availability queries.
  */
+@Slf4j
 public class AgentRegistry {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgentRegistry.class);
 
     private final int expirySeconds;
     private final Map<String, AgentRegistration> agents = new ConcurrentHashMap<>();
@@ -34,7 +37,7 @@ public class AgentRegistry {
     public void register(AgentRegistration reg) {
         reg.setLastHeartbeat(Instant.now());
         agents.put(reg.getAgentId(), reg);
-        LOGGER.info("Agent registered: id={}, type={}, stage={}, host={}",
+        log.info("Agent registered: id={}, type={}, stage={}, host={}",
                 reg.getAgentId(), reg.getTaskType(), reg.getStageNumber(), reg.getHostname());
     }
 
@@ -45,14 +48,14 @@ public class AgentRegistry {
             reg.setFreeSlots(freeSlots);
             reg.setCurrentLoad(currentLoad);
         } else {
-            LOGGER.warn("Heartbeat from unknown agent '{}'", agentId);
+            log.warn("Heartbeat from unknown agent '{}'", agentId);
         }
     }
 
     public void unregister(String agentId) {
         AgentRegistration removed = agents.remove(agentId);
         if (removed != null) {
-            LOGGER.info("Agent unregistered: id={}, type={}", agentId, removed.getTaskType());
+            log.info("Agent unregistered: id={}, type={}", agentId, removed.getTaskType());
         }
     }
 
@@ -98,7 +101,7 @@ public class AgentRegistry {
         agents.entrySet().removeIf(entry -> {
             boolean expired = entry.getValue().getLastHeartbeat().isBefore(threshold);
             if (expired) {
-                LOGGER.warn("Agent '{}' (type={}) expired — last heartbeat was {}",
+                log.warn("Agent '{}' (type={}) expired — last heartbeat was {}",
                         entry.getKey(),
                         entry.getValue().getTaskType(),
                         entry.getValue().getLastHeartbeat());

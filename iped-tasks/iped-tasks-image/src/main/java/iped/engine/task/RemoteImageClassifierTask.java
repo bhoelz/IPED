@@ -14,6 +14,7 @@ import iped.engine.task.index.IndexItem;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
 import iped.utils.ImageUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -33,8 +34,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.net.ssl.SSLContext;
@@ -62,9 +61,9 @@ import java.util.zip.ZipOutputStream;
  *           Stores classification results in evidence's extra attributes.
  *           Attributes' names are controlled by the remote classifier (usually prefixed by 'AI').
  */
+@Slf4j
 public class RemoteImageClassifierTask extends AbstractTask {
 
-    private static Logger logger = LoggerFactory.getLogger(RemoteImageClassifierTask.class);
 
     private RemoteImageClassifierConfig config;
 
@@ -283,7 +282,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                         if (thumb_size != null) {
                             thumbSize = thumb_size.asInt();
                         }
-                        logger.info(
+                        log.info(
                                 "RemoteImageClassifierTask: Connected to remote image classifier at '{}' - protocol_version: {} model_version: {} thumbnail_size: {}", urlVersion, protocol_version, model_version, thumbSize);
                         if (!protocol_version.startsWith("v1")) {
                             throw new RuntimeException("Incompatible protocol version: " + protocol_version);
@@ -302,7 +301,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
         catch (UnknownHostException | HttpHostConnectException e) {
             // Disable task in case of failure to connect to remote image classifier
             enabled = false;
-            logger.error("Task disabled. Failed to connect to remote image classifier at '" + urlVersion + "': " + e.getMessage());
+            log.error("Task disabled. Failed to connect to remote image classifier at '" + urlVersion + "': " + e.getMessage());
         }
 
         if (isEnabled() && thumbSize != 0) {
@@ -336,38 +335,38 @@ public class RemoteImageClassifierTask extends AbstractTask {
         if (!finishNow.getAndSet(true)) {
             long totClassifications = classificationSuccess.longValue() + classificationFail.longValue();
             long totSkipCount = skipSizeCount.longValue() + skipDimensionCount.longValue() + skipHashDBFilesCount.longValue() + skipDuplicatesCount.longValue();
-            logger.info("Total count of files processed: {}", (totClassifications + totSkipCount));
+            log.info("Total count of files processed: {}", (totClassifications + totSkipCount));
 
             // Statistics for files sent for classification
             if (totClassifications != 0) {
-                logger.info(" Files sent for classification: {}", totClassifications);
-                logger.info("  Successful classifications: {}", classificationSuccess.intValue());
-                logger.info("  Failed classifications: {}", classificationFail.intValue());
+                log.info(" Files sent for classification: {}", totClassifications);
+                log.info("  Successful classifications: {}", classificationSuccess.intValue());
+                log.info("  Failed classifications: {}", classificationFail.intValue());
                 if (countImageThumbs.intValue() > 0)
-                    logger.info("  Image files: {} (1 thumb/image)", countImageThumbs.intValue());
+                    log.info("  Image files: {} (1 thumb/image)", countImageThumbs.intValue());
                 if (countVideoFiles.intValue() > 0)
-                    logger.info("  Video files: {} ({} thumbs/video)", countVideoFiles.intValue(), (countVideoThumbs.intValue() / countVideoFiles.intValue()));
+                    log.info("  Video files: {} ({} thumbs/video)", countVideoFiles.intValue(), (countVideoThumbs.intValue() / countVideoFiles.intValue()));
                 long totThumbs = countImageThumbs.intValue() + countVideoThumbs.intValue();
                 if (totThumbs != 0) {
                     long totSendBytes = sendImageBytes.longValue() + sendVideoBytes.longValue();
                     float sendThroughput = (float) totSendBytes / ((float) (classificationTime.longValue()) / 1000);
-                    logger.info("  Thumbs sent: {} ({}); average throughput: {}/s", totThumbs, formatNumberToKMGUnits(totSendBytes), formatNumberToKMGUnits(sendThroughput));
+                    log.info("  Thumbs sent: {} ({}); average throughput: {}/s", totThumbs, formatNumberToKMGUnits(totSendBytes), formatNumberToKMGUnits(sendThroughput));
                     if (countImageThumbs.intValue() > 0)
-                        logger.info("   Image thumbs: {} ({}); average thumb size: {}", countImageThumbs.intValue(), formatNumberToKMGUnits(sendImageBytes.longValue()), formatNumberToKMGUnits(sendImageBytes.longValue() / countImageThumbs.intValue()));
+                        log.info("   Image thumbs: {} ({}); average thumb size: {}", countImageThumbs.intValue(), formatNumberToKMGUnits(sendImageBytes.longValue()), formatNumberToKMGUnits(sendImageBytes.longValue() / countImageThumbs.intValue()));
                     if (countVideoThumbs.intValue() > 0)
-                        logger.info("   Videos thumbs: {} ({}); average thumb size: {}", countVideoThumbs.intValue(), formatNumberToKMGUnits(sendVideoBytes.longValue()), formatNumberToKMGUnits(sendVideoBytes.longValue() / countVideoThumbs.intValue()));
-                    logger.info("   Average thumb classification time (ms/thumb): {}", String.format("%.3f", (((float) classificationTime.longValue() / this.worker.manager.getNumWorkers()) / totThumbs)));
-                    logger.info("   Average thumb classification throughput (thumbs/s): {}", ((int) (totThumbs / ((float) classificationTime.longValue() / this.worker.manager.getNumWorkers()) * 1000)));
+                        log.info("   Videos thumbs: {} ({}); average thumb size: {}", countVideoThumbs.intValue(), formatNumberToKMGUnits(sendVideoBytes.longValue()), formatNumberToKMGUnits(sendVideoBytes.longValue() / countVideoThumbs.intValue()));
+                    log.info("   Average thumb classification time (ms/thumb): {}", String.format("%.3f", (((float) classificationTime.longValue() / this.worker.manager.getNumWorkers()) / totThumbs)));
+                    log.info("   Average thumb classification throughput (thumbs/s): {}", ((int) (totThumbs / ((float) classificationTime.longValue() / this.worker.manager.getNumWorkers()) * 1000)));
                 }
             }
 
             // Statistics for files with skipped classification
             if (totSkipCount != 0) {
-                logger.info(" Files with skipped classification: {}", totSkipCount);
-                logger.info("  Skipped classification by size: {}", skipSizeCount.intValue());
-                logger.info("  Skipped classification by dimension: {}", skipDimensionCount.intValue());
-                logger.info("  Skipped classification by hashDBFiles: {}", skipHashDBFilesCount.intValue());
-                logger.info("  Skipped classification by duplicates: {}", skipDuplicatesCount.intValue());
+                log.info(" Files with skipped classification: {}", totSkipCount);
+                log.info("  Skipped classification by size: {}", skipSizeCount.intValue());
+                log.info("  Skipped classification by dimension: {}", skipDimensionCount.intValue());
+                log.info("  Skipped classification by hashDBFiles: {}", skipHashDBFilesCount.intValue());
+                log.info("  Skipped classification by duplicates: {}", skipDuplicatesCount.intValue());
             }
         }
     }
@@ -396,7 +395,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
     private void processResult(InputStream responseStream) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonResponse = objectMapper.readTree(responseStream);
-        logger.debug("Server Response: {}", jsonResponse.toPrettyString());
+        log.debug("Server Response: {}", jsonResponse.toPrettyString());
 
         // Queue to store 'name' of failed evidences
         Set<String> queueFail = new HashSet<>();
@@ -411,7 +410,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                 String name = item.get("filename").asText();
                 ResultItem res = null;
                 if (name == null) {
-                    logger.warn("Invalid/missing 'filename' field");
+                    log.warn("Invalid/missing 'filename' field");
                     continue;
                 }
                 // The two 'if' conditions below allow for:
@@ -462,12 +461,12 @@ public class RemoteImageClassifierTask extends AbstractTask {
                             classificationFail.incrementAndGet();
                             // Add classification status
                             evidence.setExtraAttribute(AI_CLASSIFICATION_STATUS_ATTR, AI_CLASSIFICATION_FAIL_NO_CLASS);
-                            logger.warn("ClassificationFail::EvidenceNoClass: Invalid/missing 'class' field for filename: {}", name);
+                            log.warn("ClassificationFail::EvidenceNoClass: Invalid/missing 'class' field for filename: {}", name);
                         }
                     }
                     else {
                         // No matching evidence found
-                        logger.warn("ClassificationFail::EvidenceNotFound: Invalid/missing 'class' field for filename: {}. No matching evidence found.", name);
+                        log.warn("ClassificationFail::EvidenceNotFound: Invalid/missing 'class' field for filename: {}. No matching evidence found.", name);
                     }
                 }
             }
@@ -479,7 +478,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                 IItem evidence;
                 if (name == null || (evidence = queue.get(name)) == null) {
                     // No matching evidence found
-                    logger.warn("No matching evidence found");
+                    log.warn("No matching evidence found");
                     continue;
                 }
                 // Check if evidence is in fail queue
@@ -534,7 +533,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                 // Add classification status
                 evidence.setExtraAttribute(AI_CLASSIFICATION_STATUS_ATTR, AI_CLASSIFICATION_FAIL_NO_RESULTS);
             }
-            logger.error("ClassificationFail::NoResults: 'results' array is missing in JSON response. Classification fail for a batch of {} files", queue.size());
+            log.error("ClassificationFail::NoResults: 'results' array is missing in JSON response. Classification fail for a batch of {} files", queue.size());
         }
     }
 
@@ -590,7 +589,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
 
     private void sendZipFile(File zipFile) throws IOException {
         currentBatch = lastBatch.incrementAndGet();
-        logger.info("Send ZIP file #{} (files: {})", currentBatch, zip.getFileCount());
+        log.info("Send ZIP file #{} (files: {})", currentBatch, zip.getFileCount());
 
         try (CloseableHttpClient client = getClient()) {
             HttpPost post = new HttpPost(urlZip);
@@ -639,7 +638,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                 // Abort if unknown host on URL
                 if (e instanceof UnknownHostException) {
                     if (!abortNow.getAndSet(true)) {
-                        logger.error("ClassificationFail::UnknownHost:{} Unknown host on '{}': {}", baseMsg, urlZip, e.getClass().getName());
+                        log.error("ClassificationFail::UnknownHost:{} Unknown host on '{}': {}", baseMsg, urlZip, e.getClass().getName());
                         throw new RuntimeException("Unknown host on '" + urlZip + "': " + e.getMessage(), e);
                     }
                 }
@@ -648,7 +647,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                     HttpResponseStatusException eHTTP = (HttpResponseStatusException) e;
                     if (eHTTP.getStatusCode() != HttpStatus.SC_SERVICE_UNAVAILABLE && eHTTP.getStatusCode() != HttpStatus.SC_GATEWAY_TIMEOUT) {
                         if (!abortNow.getAndSet(true)) {
-                            logger.error("ClassificationFail::HttpStatusNotOK: {}", e.getMessage());
+                            log.error("ClassificationFail::HttpStatusNotOK: {}", e.getMessage());
                             throw new RuntimeException("HTTP Status Not OK on '" + urlZip + "': " + e.getMessage(), e);
                         }
                     }
@@ -679,12 +678,12 @@ public class RemoteImageClassifierTask extends AbstractTask {
                     msg += String.format("ClassificationFail::IOProblem:%s I/O error occurred during HTTP request to '%s': %s: %s", baseMsg, urlZip, e.getClass().getName(), e.getMessage());
                 if (retryCount < MAX_RETRY) {
                     // Log warning and retry
-                    logger.warn(msg);
+                    log.warn(msg);
                 } else {
                     // Log error and abort case processing
                     if (!abortNow.getAndSet(true)) {
-                        logger.error(msg);
-                        logger.error("ClassificationFail::TooManyErrors: Aborting case processing");
+                        log.error(msg);
+                        log.error("ClassificationFail::TooManyErrors: Aborting case processing");
                         throw new RuntimeException(
                                 "Too many errors while communicating with '" + urlZip + "': " + e.getMessage(), e);
                     }
@@ -743,7 +742,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                         height = Integer.parseInt(evidence.getMetadataValue("image:Height"));
                 }
                 catch (NumberFormatException e) {
-                    logger.warn("Invalid dimension for image file '{}': width:{}; height:{}", evidence.getName(), evidence.getMetadataValue("image:Width"), evidence.getMetadataValue("image:Height"));
+                    log.warn("Invalid dimension for image file '{}': width:{}; height:{}", evidence.getName(), evidence.getMetadataValue("image:Width"), evidence.getMetadataValue("image:Height"));
                 }
             }
             else if (mediaType.startsWith("video")) {
@@ -754,7 +753,7 @@ public class RemoteImageClassifierTask extends AbstractTask {
                         height = Integer.parseInt(evidence.getMetadataValue("video:Height"));
                 }
                 catch (NumberFormatException e) {
-                    logger.warn("Invalid dimension for video file '{}': width:{}; height:{}", evidence.getName(), evidence.getMetadataValue("video:Width"), evidence.getMetadataValue("video:Height"));
+                    log.warn("Invalid dimension for video file '{}': width:{}; height:{}", evidence.getName(), evidence.getMetadataValue("video:Width"), evidence.getMetadataValue("video:Height"));
                 }
             }
             if ((skipDimension > width || skipDimension > height) && width > 0 && height > 0) {

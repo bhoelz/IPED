@@ -1,9 +1,8 @@
 package iped.engine.graph;
 
 import iped.io.URLUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.neo4j.cli.AdminTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -16,9 +15,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class GraphImportRunner {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(GraphImportRunner.class);
 
     public static final String ARGS_FILE_NAME = "import-tool-args";
 
@@ -55,7 +54,7 @@ public class GraphImportRunner {
                 while ((line = reader.readLine()) != null) {
                     if (listener != null)
                         listener.output(line);
-                    LOGGER.info(line);
+                    log.info(line);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -84,7 +83,7 @@ public class GraphImportRunner {
 
         ExecutorService executorService = null;
 
-        LOGGER.info("Running " + args.stream().collect(Collectors.joining(" ")));
+        log.info("Running " + args.stream().collect(Collectors.joining(" ")));
 
         ProcessBuilder processBuilder = new ProcessBuilder(args);
         processBuilder.redirectErrorStream(true);

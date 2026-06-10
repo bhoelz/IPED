@@ -4,6 +4,7 @@ import iped.io.IStreamSource;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.ItemInfo;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
@@ -16,8 +17,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.EmbeddedContentHandler;
 import org.apache.tika.utils.ParserUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -33,6 +32,7 @@ import java.util.*;
  * @author Nassif
  *
  */
+@Slf4j
 public class MultipleParser extends AbstractParser {
 
     /**
@@ -40,7 +40,6 @@ public class MultipleParser extends AbstractParser {
      */
     private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = LoggerFactory.getLogger(MultipleParser.class);
 
     private List<Parser> parsers = new ArrayList<>();
 
@@ -120,7 +119,7 @@ public class MultipleParser extends AbstractParser {
                 } catch (Throwable e) {
                     ParserUtils.recordParserFailure(parser, e, newMetadata);
                     String filepath = itemInfo != null ? itemInfo.getPath() : "file";
-                    logger.warn("Exception from {} on {}: {}", parser.getClass().getName(), filepath, e.toString());
+                    log.warn("Exception from {} on {}: {}", parser.getClass().getName(), filepath, e.toString());
                     if (tikaException == null) {
                         tikaException = new TikaException("Exception from " + parser.getClass().getName());
                     }

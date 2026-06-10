@@ -31,12 +31,11 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.metadata.Message;
 import org.apache.tika.metadata.Metadata;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.RelationshipType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,9 +44,9 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class GraphTask extends AbstractTask {
 
-    private static final Logger logger = LoggerFactory.getLogger(GraphTask.class);
 
     public static final String DB_NAME = GraphConstants.DB_NAME;
     public static final String DB_HOME_DIR = GraphConstants.DB_HOME_DIR;
@@ -110,7 +109,7 @@ public class GraphTask extends AbstractTask {
                         configuration.getDefaultEntity());
 
                 if (configuration.getProcessProximityRelationships() && caseData.isIpedReport()) {
-                    logger.warn(
+                    log.warn(
                             "process-proximity-relationships not supported in reports yet, it will be ignored, resulting in different graphs!");
                 }
             }
@@ -133,27 +132,27 @@ public class GraphTask extends AbstractTask {
 
     public static void commit() throws IOException {
         if (graphFileWriter != null) {
-            logger.info("Commiting graph CSVs...");
+            log.info("Commiting graph CSVs...");
             graphFileWriter.flush();
-            logger.info("Commiting graph CSVs finished.");
+            log.info("Commiting graph CSVs finished.");
         }
     }
 
     private void finishGraphGeneration() throws IOException {
         UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", "Generating graph database...");
-        logger.info("Generating graph database...");
+        log.info("Generating graph database...");
         File graphDbHome = new File(output, DB_HOME_DIR);
         File graphCSVs = new File(output, CSVS_PATH);
         GraphGenerator graphGenerator = new GraphGenerator();
         graphGenerator.generate(graphDbHome, graphCSVs);
-        logger.info("Generating graph database finished.");
+        log.info("Generating graph database finished.");
     }
 
     @Override
     public void finish() throws Exception {
         if (graphFileWriter != null) {
             UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", "Finishing graph CSVs...");
-            logger.info("Finishing graph CSVs...");
+            log.info("Finishing graph CSVs...");
             List<File> srcCases = (List<File>) caseData.getCaseObject(IPEDReader.REPORTING_CASES);
             // TODO merge multicase nodes, copying nodes from single case reports for now
             if (caseData.isIpedReport() && srcCases != null && srcCases.size() == 1) {
@@ -173,12 +172,12 @@ public class GraphTask extends AbstractTask {
             } else {
                 graphFileWriter.close();
             }
-            logger.info("Finishing graph CSVs finished.");
+            log.info("Finishing graph CSVs finished.");
             finishGraphGeneration();
             UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", "Compressing graph CSVs...");
-            logger.info("Compressing graph CSVs...");
+            log.info("Compressing graph CSVs...");
             graphFileWriter.compressGeneratedCSVFiles();
-            logger.info("Compressing graph CSVs finished.");
+            log.info("Compressing graph CSVs finished.");
             graphFileWriter = null;
         }
     }

@@ -14,10 +14,9 @@ import iped.parsers.util.Util;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.viewers.util.LibreOfficeFinder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -32,6 +31,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 public class DocThumbTask extends ThumbTask {
 
     private static final String thumbTimeout = "thumbTimeout"; //$NON-NLS-1$
@@ -45,7 +45,6 @@ public class DocThumbTask extends ThumbTask {
 
     private static final AtomicBoolean init = new AtomicBoolean(false);
     private static final AtomicBoolean finished = new AtomicBoolean(false);
-    private static final Logger logger = LoggerFactory.getLogger(DocThumbTask.class);
 
     private static final AtomicLong totalPdfProcessed = new AtomicLong();
     private static final AtomicLong totalPdfFailed = new AtomicLong();
@@ -74,17 +73,17 @@ public class DocThumbTask extends ThumbTask {
                 docThumbsConfig = configurationManager.findObject(DocThumbTaskConfig.class);
                 if (docThumbsConfig.isEnabled()) {
                     checkDependency("iped.engine.task.HashTask");
-                    logger.info("Thumb Size: " + docThumbsConfig.getThumbSize());
-                    logger.info("LibreOffice Conversion: " + (docThumbsConfig.isLoEnabled() ? "enabled" : "disabled"));
+                    log.info("Thumb Size: " + docThumbsConfig.getThumbSize());
+                    log.info("LibreOffice Conversion: " + (docThumbsConfig.isLoEnabled() ? "enabled" : "disabled"));
                     if (docThumbsConfig.isLoEnabled()) {
                         URL url = URLUtil.getURL(this.getClass());
                         File jarDir = new File(url.toURI()).getParentFile();
                         LibreOfficeFinder loFinder = new LibreOfficeFinder(jarDir);
                         loPath = loFinder.getLOPath(true);
-                        logger.info("LibreOffice Path: " + loPath);
+                        log.info("LibreOffice Path: " + loPath);
                     }
 
-                    logger.info("PDF Conversion: " + (docThumbsConfig.isPdfEnabled() ? "enabled" : "disabled"));
+                    log.info("PDF Conversion: " + (docThumbsConfig.isPdfEnabled() ? "enabled" : "disabled"));
                     if (docThumbsConfig.isPdfEnabled()) {
                         String conversionMode = docThumbsConfig.isExternalPdfConversion() ? "external" : "internal";
                         ParsingTaskConfig parsingConfig = configurationManager.findObject(ParsingTaskConfig.class);
@@ -94,10 +93,10 @@ public class DocThumbTask extends ThumbTask {
                             System.setProperty(PDFTextParser.THUMB_SIZE, Integer.toString(docThumbsConfig.getThumbSize()));
                             conversionMode = "external parsing";
                         }
-                        logger.info("PDF Conversion: " + conversionMode);
+                        log.info("PDF Conversion: " + conversionMode);
                     }
                 }
-                logger.info("Task " + (docThumbsConfig.isEnabled() ? "enabled" : "disabled"));
+                log.info("Task " + (docThumbsConfig.isEnabled() ? "enabled" : "disabled"));
                 init.set(true);
             }
         }
@@ -138,21 +137,21 @@ public class DocThumbTask extends ThumbTask {
                     executor.shutdownNow();
                 }
                 if (isEnabled()) {
-                    logger.info("Total PDF processed: " + totalPdfProcessed);
-                    logger.info("Total PDF not processed: " + totalPdfFailed);
-                    logger.info("Total PDF timeout: " + totalPdfTimeout);
+                    log.info("Total PDF processed: " + totalPdfProcessed);
+                    log.info("Total PDF not processed: " + totalPdfFailed);
+                    log.info("Total PDF timeout: " + totalPdfTimeout);
                     long totalPdf = totalPdfProcessed.longValue() + totalPdfFailed.longValue();
                     if (totalPdf != 0) {
-                        logger.info("Average PDF processing time (ms/item): " + (totalPdfTime.longValue() / totalPdf));
+                        log.info("Average PDF processing time (ms/item): " + (totalPdfTime.longValue() / totalPdf));
                     }
-                    logger.info("Total LibreOffice processed: " + totalLoProcessed);
-                    logger.info("Total LibreOffice not procesed: " + totalLoFailed);
-                    logger.info("Total LibreOffice timeout: " + totalLoTimeout);
+                    log.info("Total LibreOffice processed: " + totalLoProcessed);
+                    log.info("Total LibreOffice not procesed: " + totalLoFailed);
+                    log.info("Total LibreOffice timeout: " + totalLoTimeout);
                     long totalLO = totalLoProcessed.longValue() + totalLoFailed.longValue();
                     if (totalLO != 0) {
-                        logger.info("Average LibreOffice processing time (ms/item): " + (totalLoTime.longValue() / totalLO));
+                        log.info("Average LibreOffice processing time (ms/item): " + (totalLoTime.longValue() / totalLO));
                     }
-                    logger.info("Task finished.");
+                    log.info("Task finished.");
                 }
                 finished.set(true);
             }
@@ -185,7 +184,7 @@ public class DocThumbTask extends ThumbTask {
                 future.cancel(true);
                 stats.incTimeouts();
                 item.setExtraAttribute(thumbTimeout, "true");
-                logger.warn("Timeout creating thumb: " + item);
+                log.warn("Timeout creating thumb: " + item);
                 totalPdfTimeout.incrementAndGet();
             } finally {
                 pdfThumbCreator.close();
@@ -208,7 +207,7 @@ public class DocThumbTask extends ThumbTask {
             future.cancel(true);
             stats.incTimeouts();
             item.setExtraAttribute(thumbTimeout, "true");
-            logger.warn("Timeout creating thumb: " + item);
+            log.warn("Timeout creating thumb: " + item);
             totalLoTimeout.incrementAndGet();
         }
     }
@@ -276,11 +275,11 @@ public class DocThumbTask extends ThumbTask {
                     String[] cmd = { "java", "-cp", classpath, "-Xmx" + docThumbsConfig.getMaxPdfExternalMemory() + "M",
                             PDFToThumb.class.getCanonicalName(), file.getAbsolutePath(),
                             String.valueOf(docThumbsConfig.getThumbSize()), item.toString(),
-                            Boolean.toString(logger.isDebugEnabled()) };
+                            Boolean.toString(log.isDebugEnabled()) };
 
                     ProcessBuilder pb = new ProcessBuilder(cmd);
                     convertProcess = pb.start();
-                    Util.logInputStream(convertProcess.getErrorStream(), logger);
+                    Util.logInputStream(convertProcess.getErrorStream(), log);
                     Future<?> resultFuture = executor.submit(new ResultRunnable(convertProcess, baos));
                     try {
                         resultFuture.get();
@@ -313,8 +312,8 @@ public class DocThumbTask extends ThumbTask {
                     throw exception;
                 }
             } catch (Throwable e) {
-                logger.warn("Error creating PDF thumb for {} {}", item.toString(), e.toString());
-                logger.debug("", e);
+                log.warn("Error creating PDF thumb for {} {}", item.toString(), e.toString());
+                log.debug("", e);
             } finally {
                 if (docThumbsConfig.isExternalPdfConversion()) {
                     finishProcess(convertProcess);
@@ -434,7 +433,7 @@ public class DocThumbTask extends ThumbTask {
             }
             saveThumb(item, thumbFile);
         } catch (Throwable e) {
-            logger.warn(item.toString(), e);
+            log.warn(item.toString(), e);
         } finally {
             finishProcess(convertProcess);
             convertProcess = null;
@@ -506,7 +505,7 @@ public class DocThumbTask extends ThumbTask {
             cfgIn.delete();
             cfgOut.renameTo(cfgIn);
         } catch (Exception e) {
-            logger.warn("Error setting LibreOffice temp directory!", e);
+            log.warn("Error setting LibreOffice temp directory!", e);
         }
     }
 }

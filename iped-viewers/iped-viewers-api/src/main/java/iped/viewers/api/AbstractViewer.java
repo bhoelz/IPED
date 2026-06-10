@@ -3,9 +3,8 @@ package iped.viewers.api;
 import iped.io.IStreamSource;
 import iped.properties.MediaTypes;
 import iped.viewers.search.HitsUpdater;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,9 +18,9 @@ import java.util.Set;
  *
  * @author Luis Filipe Nassif
  */
+@Slf4j
 public abstract class AbstractViewer {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AbstractViewer.class);
 
     protected static final String resPath = "/iped/viewers/res/";
 
@@ -207,7 +206,7 @@ public abstract class AbstractViewer {
 
         @Override
         public void lostOwnership(Clipboard arg0, Transferable arg1) {
-            LOGGER.info("Lost Clipboard Ownership"); //$NON-NLS-1$
+            log.info("Lost Clipboard Ownership"); //$NON-NLS-1$
 
         }
     }

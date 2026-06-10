@@ -2,17 +2,16 @@ package iped.engine.lucene;
 
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.IndexTaskConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 
+@Slf4j
 public class ConfiguredFSDirectory {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ConfiguredFSDirectory.class);
 
     public static FSDirectory open(File indexDir) throws IOException {
         IndexTaskConfig config = ConfigurationManager.get().findObject(IndexTaskConfig.class);
@@ -23,7 +22,7 @@ public class ConfiguredFSDirectory {
         } else {
             result = FSDirectory.open(indexDir.toPath());
         }
-        LOGGER.info("Using " + result.getClass().getSimpleName() + " to open index...");
+        log.info("Using " + result.getClass().getSimpleName() + " to open index...");
         return result;
 
     }

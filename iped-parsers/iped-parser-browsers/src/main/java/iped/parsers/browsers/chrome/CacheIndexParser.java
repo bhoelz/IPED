@@ -8,6 +8,7 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -16,8 +17,6 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 public class CacheIndexParser extends AbstractParser {
 
     // TODO
@@ -37,7 +37,6 @@ public class CacheIndexParser extends AbstractParser {
     public static final MediaType CHROME_INDEX_MIME_TYPE = MediaType.application("x-chrome-cache-index");
     private static final Set<MediaType> SUPPORTED_TYPES = Collections.singleton(CHROME_INDEX_MIME_TYPE);
 
-    private static Logger LOGGER = LoggerFactory.getLogger(CacheIndexParser.class);
 
     private static final String HTTP_META_PREFIX = "http:";
     public static final String METADATA_PREFIX = "chromeCache:";
@@ -126,7 +125,7 @@ public class CacheIndexParser extends AbstractParser {
                         try {
                             is = ce.getResponseDataSize() > 0 ? ce.getResponseDataStream(contentEncoding) : new ByteArrayInputStream(new byte[] {});
                         } catch (InputStreamNotAvailable e) {
-                            LOGGER.warn("Input Stream for entry not found:" + requestUrl + " in item " + item.getPath());
+                            log.warn("Input Stream for entry not found:" + requestUrl + " in item " + item.getPath());
                             is = new ByteArrayInputStream(new byte[] {});
                         }
 

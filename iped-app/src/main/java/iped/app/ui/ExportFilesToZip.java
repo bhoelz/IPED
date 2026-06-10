@@ -22,12 +22,11 @@ import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
 import iped.data.IItem;
 import iped.engine.data.ItemId;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.zip.X000A_NTFS;
 import org.apache.commons.compress.archivers.zip.X5455_ExtendedTimestamp;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
@@ -36,9 +35,9 @@ import java.io.*;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 
+@Slf4j
 public class ExportFilesToZip extends SwingWorker<Boolean, Integer> implements PropertyChangeListener {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ExportFilesToZip.class);
 
     ArrayList<ItemId> uniqueIds;
     File file, subdir;
@@ -60,7 +59,7 @@ public class ExportFilesToZip extends SwingWorker<Boolean, Integer> implements P
         if (!file.getName().toLowerCase().endsWith(".zip")) //$NON-NLS-1$
             file = new File(file.getAbsolutePath() + ".zip"); //$NON-NLS-1$
 
-        LOGGER.info("Exporting files to " + file.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Exporting files to " + file.getAbsolutePath()); //$NON-NLS-1$
 
         try {
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
@@ -92,7 +91,7 @@ public class ExportFilesToZip extends SwingWorker<Boolean, Integer> implements P
 
                 zaos.putArchiveEntry(entry);
 
-                LOGGER.info("Exporting file " + e.getPath()); //$NON-NLS-1$
+                log.info("Exporting file " + e.getPath()); //$NON-NLS-1$
 
                 try (InputStream in = e.getBufferedInputStream()) {
                     int len = 0;
@@ -162,7 +161,7 @@ public class ExportFilesToZip extends SwingWorker<Boolean, Integer> implements P
             entry.addExtraField(ntfsDates);
 
         } catch (Exception e) {
-            LOGGER.error("Error exporting Dates of item {} to ZIP package: {}", item.getPath(), e.toString());
+            log.error("Error exporting Dates of item {} to ZIP package: {}", item.getPath(), e.toString());
         }
 
     }
@@ -171,7 +170,7 @@ public class ExportFilesToZip extends SwingWorker<Boolean, Integer> implements P
     protected void done() {
         if (hos != null && !error) {
             String hash = hos.hash().toString().toUpperCase();
-            LOGGER.info("MD5 of " + file.getAbsolutePath() + ": " + hash); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info("MD5 of " + file.getAbsolutePath() + ": " + hash); //$NON-NLS-1$ //$NON-NLS-2$
             ExportFileTree.appendHashSuffixIfTriageMode(hash, file);
             HashDialog dialog = new HashDialog(hash);
             dialog.setVisible(true);

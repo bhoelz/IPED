@@ -8,6 +8,7 @@ import iped.utils.FileContentSource;
 import iped.utils.IOUtil;
 import iped.utils.SimpleHTMLEncoder;
 import iped.viewers.localization.Messages;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hmef.attribute.MAPIRtfAttribute;
@@ -21,8 +22,6 @@ import org.apache.tika.parser.html.HtmlEncodingDetector;
 import org.apache.tika.parser.microsoft.rtf.RTFParser;
 import org.bbottema.rtftohtml.RTF2HTMLConverter;
 import org.bbottema.rtftohtml.impl.RTF2HTMLConverterRFCCompliant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -41,9 +40,9 @@ import java.util.regex.Pattern;
  * @author guilherme.dutra
  */
 
+@Slf4j
 public class MsgViewer extends HtmlViewer {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MsgViewer.class);
 
     private HtmlEncodingDetector detector = new HtmlEncodingDetector();
     private Charset win1252 = Charset.forName("windows-1252");
@@ -127,7 +126,7 @@ public class MsgViewer extends HtmlViewer {
             parseMsg(msg, preview, attachs, index);
 
         } catch (Exception e) {
-            LOGGER.warn("Failed to parse msg e-mail file. Error:{}", e.toString());
+            log.warn("Failed to parse msg e-mail file. Error:{}", e.toString());
             e.printStackTrace();
             if (!started) {
                 String bodyStart = "<body ";

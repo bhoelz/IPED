@@ -9,6 +9,7 @@ import iped.engine.graph.GraphImportRunner.ImportListener;
 import iped.utils.IOUtil;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.util.ProgressDialog;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.swing.*;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 class LoadGraphDatabaseWorker extends SwingWorker<Void, Void> {
 
     private final AppGraphAnalytics app;
@@ -56,7 +58,7 @@ class LoadGraphDatabaseWorker extends SwingWorker<Void, Void> {
                 loaded = initGraphService(multiCaseGraphPath);
             }
         }
-        AppGraphAnalytics.LOGGER.info("Init graph database took {}s", (System.currentTimeMillis() - t) / 1000);
+        log.info("Init graph database took {}s", (System.currentTimeMillis() - t) / 1000);
         return null;
     }
 
@@ -136,7 +138,7 @@ class LoadGraphDatabaseWorker extends SwingWorker<Void, Void> {
         try {
             File dbDataDir = new File(neo4jHome, GraphTask.DB_DATA_DIR);
             if (!dbDataDir.exists()) {
-                AppGraphAnalytics.LOGGER.error("Graph database not found: " + dbDataDir.getAbsolutePath());
+                log.error("Graph database not found: " + dbDataDir.getAbsolutePath());
                 return false;
             }
             if (!IOUtil.canWrite(dbDataDir)) {
@@ -147,7 +149,7 @@ class LoadGraphDatabaseWorker extends SwingWorker<Void, Void> {
             graphService.start(neo4jHome);
             return true;
         } catch (Throwable e) {
-            AppGraphAnalytics.LOGGER.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }

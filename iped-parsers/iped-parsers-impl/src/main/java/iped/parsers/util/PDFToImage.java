@@ -20,6 +20,7 @@ package iped.parsers.util;
 
 import iped.io.URLUtil;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
@@ -32,8 +33,6 @@ import org.icepdf.core.pobjects.Document;
 import org.icepdf.core.pobjects.PDimension;
 import org.icepdf.core.pobjects.Page;
 import org.icepdf.core.util.GraphicsRenderingHints;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -50,8 +49,8 @@ import java.net.URL;
  * @author Nassif
  *
  */
+@Slf4j
 public class PDFToImage implements Closeable {
-    private static Logger LOGGER = LoggerFactory.getLogger(PDFToImage.class);
 
     private static float RESOLUTION_SCALE_RATIO = 72f;
     private static String PDFBOX = "pdfbox"; //$NON-NLS-1$
@@ -193,7 +192,7 @@ public class PDFToImage implements Closeable {
             throw e;
 
         } catch (Exception e) {
-            LOGGER.warn("{} error creating image of page {} of {}: {}", Thread.currentThread().getName(), page, //$NON-NLS-1$
+            log.warn("{} error creating image of page {} of {}: {}", Thread.currentThread().getName(), page, //$NON-NLS-1$
                     input.getAbsolutePath(), e.toString());
         }
         return success;

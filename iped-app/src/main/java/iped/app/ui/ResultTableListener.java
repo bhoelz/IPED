@@ -26,10 +26,9 @@ import iped.engine.search.MultiSearchResult;
 import iped.viewers.ATextViewer;
 import iped.viewers.components.HitsTableModel;
 import iped.viewers.util.ProgressDialog;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.RowSorter.SortKey;
@@ -44,11 +43,11 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+@Slf4j
 public class ResultTableListener implements ListSelectionListener, MouseListener, KeyListener {
 
     public static boolean syncingSelectedItems = false;
     private static volatile int lastTableDoc = -1;
-    private static Logger logger = LoggerFactory.getLogger(ResultTableListener.class);
 
     private long lastKeyTime = -1;
     private String lastKeyString = ""; //$NON-NLS-1$
@@ -331,7 +330,7 @@ public class ResultTableListener implements ListSelectionListener, MouseListener
                         task.setRewritequery(false);
                         MultiSearchResult result = task.multiSearch();
                         if (result.getLength() > 0) {
-                            logger.debug("Found {} results of sourceId {} id {}", result.getLength(), selectedItemId.getSourceId(), selectedItemId.getId());
+                            log.debug("Found {} results of sourceId {} id {}", result.getLength(), selectedItemId.getSourceId(), selectedItemId.getId());
                             for (IItemId subItem : result.getIterator()) {
                                 App.get().appCase.getMultiBookmarks().setChecked((Boolean) value, subItem);
                             }
@@ -344,7 +343,7 @@ public class ResultTableListener implements ListSelectionListener, MouseListener
                     }
                 }
             } catch (Exception e) {
-                logger.error("Error selecting item and its query results", e);
+                log.error("Error selecting item and its query results", e);
             } finally {
                 SwingUtilities.invokeLater(() -> {
                     dialog.close();

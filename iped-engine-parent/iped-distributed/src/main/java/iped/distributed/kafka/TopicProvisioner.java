@@ -1,9 +1,11 @@
 package iped.distributed.kafka;
 
-import org.apache.kafka.clients.admin.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.errors.TopicExistsException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -17,9 +19,9 @@ import java.util.concurrent.ExecutionException;
  *   iped.status                — global status topic (not created here; must exist)
  * </pre>
  */
+@Slf4j
 public class TopicProvisioner implements AutoCloseable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TopicProvisioner.class);
 
     /** Prefix used for all per-case pipeline topics. */
     public static final String TOPIC_PREFIX = "iped.";
@@ -56,7 +58,7 @@ public class TopicProvisioner implements AutoCloseable {
         for (int i = 0; i <= taskCount; i++) {
             String name = stageTopic(caseId, i);
             topics.add(new NewTopic(name, partitions, replication));
-            LOGGER.info("Provisioning topic '{}' (partitions={}, replication={})", name, partitions, replication);
+            log.info("Provisioning topic '{}' (partitions={}, replication={})", name, partitions, replication);
         }
         // Also ensure the status topic exists
         topics.add(new NewTopic("iped.status", partitions, replication));
@@ -65,12 +67,12 @@ public class TopicProvisioner implements AutoCloseable {
         result.values().forEach((name, future) -> {
             try {
                 future.get();
-                LOGGER.info("Topic '{}' created", name);
+                log.info("Topic '{}' created", name);
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof TopicExistsException) {
-                    LOGGER.debug("Topic '{}' already exists — reusing", name);
+                    log.debug("Topic '{}' already exists — reusing", name);
                 } else {
-                    LOGGER.error("Failed to create topic '{}'", name, e.getCause());
+                    log.error("Failed to create topic '{}'", name, e.getCause());
                     throw new RuntimeException("Topic creation failed: " + name, e.getCause());
                 }
             } catch (InterruptedException e) {
@@ -90,9 +92,9 @@ public class TopicProvisioner implements AutoCloseable {
         }
         try {
             admin.deleteTopics(names).all().get();
-            LOGGER.info("Deleted {} pipeline topics for case '{}'", names.size(), caseId);
+            log.info("Deleted {} pipeline topics for case '{}'", names.size(), caseId);
         } catch (Exception e) {
-            LOGGER.warn("Could not fully delete topics for case '{}': {}", caseId, e.getMessage());
+            log.warn("Could not fully delete topics for case '{}': {}", caseId, e.getMessage());
         }
     }
 

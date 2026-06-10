@@ -6,8 +6,7 @@ import iped.app.ui.Messages;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.api.IMultiSearchResultProvider;
 import iped.viewers.util.ProgressDialog;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.roaringbitmap.RoaringBitmap;
 
 import javax.swing.*;
@@ -21,9 +20,9 @@ import java.util.concurrent.Semaphore;
  * Worker that highlights list of docids setted in a bitset
  * Opens a modal progress dialog while executing.
  */
+@Slf4j
 public class BitSetHighlightWorker extends CancelableWorker<Void, Void> {
 
-    private static final Logger logger = LogManager.getLogger(BitSetHighlightWorker.class);
 
     IMultiSearchResultProvider resultsProvider;
     IpedDateAxis domainAxis;
@@ -117,7 +116,7 @@ public class BitSetHighlightWorker extends CancelableWorker<Void, Void> {
                             processResultsItem(t, i);
                         }
                     } catch (Exception e) {
-                        logger.warn("Exception while iterating on i=" + i);
+                        log.warn("Exception while iterating on i=" + i);
                         e.printStackTrace();
                     }
                 }
@@ -160,7 +159,7 @@ public class BitSetHighlightWorker extends CancelableWorker<Void, Void> {
         } finally {
             executor.shutdownNow();
             Date d2 = new Date();
-            logger.info("Selection 2 finished in:" + (d2.getTime() - d1.getTime()));
+            log.info("Selection 2 finished in:" + (d2.getTime() - d1.getTime()));
             t.getSelectionModel().setValueIsAdjusting(false);
         }
     }
@@ -189,7 +188,7 @@ public class BitSetHighlightWorker extends CancelableWorker<Void, Void> {
             e.printStackTrace();
         } finally {
             Date d2 = new Date();
-            logger.info("Selection 2 finished in " + (d2.getTime() - d1.getTime()));
+            log.info("Selection 2 finished in " + (d2.getTime() - d1.getTime()));
             t.getSelectionModel().setValueIsAdjusting(false);
         }
     }

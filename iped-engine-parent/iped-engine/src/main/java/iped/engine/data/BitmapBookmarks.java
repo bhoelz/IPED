@@ -18,18 +18,16 @@
  */
 package iped.engine.data;
 
+import iped.data.BookmarkShortcut;
 import iped.data.IBookmarks;
 import iped.engine.Version;
 import iped.engine.util.SaveStateThread;
 import iped.engine.util.Util;
 import iped.search.SearchResult;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 import org.roaringbitmap.RoaringBitmap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.data.BookmarkShortcut;
 
 import java.awt.*;
 import java.io.File;
@@ -39,6 +37,7 @@ import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
 
+@Slf4j
 public class BitmapBookmarks implements IBookmarks {
 
     /**
@@ -46,7 +45,6 @@ public class BitmapBookmarks implements IBookmarks {
      */
     private static final long serialVersionUID = 1L;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(BitmapBookmarks.class);
 
     public static String EXT = "." + Version.APP_EXT.toLowerCase(); //$NON-NLS-1$
     public static String STATEFILENAME = "bookmarks" + EXT; //$NON-NLS-1$
@@ -416,7 +414,7 @@ public class BitmapBookmarks implements IBookmarks {
 
     @Override
     public void saveState(File file, boolean synchronous) throws IOException {
-        LOGGER.info("Saving state sync={} to file {}", synchronous, file.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Saving state sync={} to file {}", synchronous, file.getAbsolutePath()); //$NON-NLS-1$
         if (synchronous) {
             synchronized (this) {
                 Util.writeObject(this, file.getAbsolutePath());
@@ -508,12 +506,12 @@ public class BitmapBookmarks implements IBookmarks {
     }
 
     public static BitmapBookmarks load(File file) throws ClassNotFoundException, IOException {
-        LOGGER.info("Loading state from file " + file.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Loading state from file " + file.getAbsolutePath()); //$NON-NLS-1$
         return (BitmapBookmarks) Util.readObject(file.getAbsolutePath());
     }
 
     private static Bookmarks loadOldBookmarks(File file) throws ClassNotFoundException, IOException {
-        LOGGER.info("Loading state from file " + file.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Loading state from file " + file.getAbsolutePath()); //$NON-NLS-1$
         return (Bookmarks) Util.readObject(file.getAbsolutePath());
     }
 

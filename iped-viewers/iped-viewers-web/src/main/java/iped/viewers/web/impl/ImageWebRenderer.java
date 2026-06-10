@@ -1,8 +1,7 @@
 package iped.viewers.web.impl;
 
 import iped.viewers.web.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -20,9 +19,9 @@ import java.util.Set;
  * Renders image items (including multi-page TIFF) as PNG using headless ImageIO.
  * TwelveMonkeys plugins on the classpath extend format support transparently.
  */
+@Slf4j
 public class ImageWebRenderer implements WebRenderer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ImageWebRenderer.class);
 
     @Override
     public String id() {
@@ -80,7 +79,7 @@ public class ImageWebRenderer implements WebRenderer {
                 reader.dispose();
             }
         } catch (Exception e) {
-            LOGGER.warn("Failed to decode image for item {}: {}", request.getItem().getName(), e.getMessage());
+            log.warn("Failed to decode image for item {}: {}", request.getItem().getName(), e.getMessage());
             throw new IOException("Image decoding failed", e);
         }
     }

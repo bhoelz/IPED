@@ -5,10 +5,9 @@ import iped.engine.graph.ExportLinksQuery;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.graph.LinkQueryListener;
+import lombok.extern.slf4j.Slf4j;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,9 +15,9 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
+@Slf4j
 public class ExportLinksWorker extends SwingWorker<Void, Void> implements LinkQueryListener {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ExportLinksWorker.class);
 
     private GraphModel model;
     private ExportLinksDialog dialog;
@@ -102,7 +101,7 @@ public class ExportLinksWorker extends SwingWorker<Void, Void> implements LinkQu
         try {
             graphService.findLinks(query, this);
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
 
         dialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

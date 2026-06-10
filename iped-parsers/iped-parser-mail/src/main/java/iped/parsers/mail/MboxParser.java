@@ -22,6 +22,7 @@ import iped.parsers.standard.StandardParser;
 import iped.parsers.util.IgnoreContentHandler;
 import iped.parsers.util.Messages;
 import iped.properties.ExtraProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -31,8 +32,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -46,9 +45,9 @@ import java.util.Set;
  * @author Nassif
  *
  */
+@Slf4j
 public class MboxParser extends AbstractParser {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MboxParser.class);
     /** Serial version UID */
     private static final long serialVersionUID = -1762689436731160661L;
 
@@ -110,7 +109,7 @@ public class MboxParser extends AbstractParser {
                         if (count == 1)
                             throw new TikaException("MboxParser Exception", t); //$NON-NLS-1$
 
-                        LOGGER.warn("Error extracting email {} from {}\t{}", count, name, t.toString()); //$NON-NLS-1$
+                        log.warn("Error extracting email {} from {}\t{}", count, name, t.toString()); //$NON-NLS-1$
                     }
 
                 }

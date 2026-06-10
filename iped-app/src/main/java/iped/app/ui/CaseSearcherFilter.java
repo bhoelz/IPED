@@ -27,13 +27,12 @@ import iped.engine.search.QueryBuilder;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.viewers.api.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.roaringbitmap.RoaringBitmap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.lang.ref.SoftReference;
@@ -41,8 +40,8 @@ import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 
+@Slf4j
 public class CaseSearcherFilter extends CancelableWorker<MultiSearchResult, Object> {
-    private static Logger LOGGER = LoggerFactory.getLogger(CaseSearcherFilter.class);
     ArrayList<CaseSearchFilterListener> listeners = new ArrayList<CaseSearchFilterListener>();
     RoaringBitmap[] unionsArray;
     RoaringBitmap[] excludeUnionsArray;
@@ -154,7 +153,7 @@ public class CaseSearcherFilter extends CancelableWorker<MultiSearchResult, Obje
                 }
 
                 Query q = searcher.getQuery();
-                // LOGGER.info("Searching for query " + (q != null ? q.toString() : queryText));
+                // log.info("Searching for query " + (q != null ? q.toString() : queryText));
                 // //$NON-NLS-1$
 
                 if (q instanceof MatchAllDocsQuery && allItemsCache != null)
@@ -217,7 +216,7 @@ public class CaseSearcherFilter extends CancelableWorker<MultiSearchResult, Obje
             result.setIPEDSource(ipedCase);
 
             Date d2 = new Date();
-            LOGGER.info("Search and filtering took {}ms", d2.getTime() - d1.getTime());
+            log.info("Search and filtering took {}ms", d2.getTime() - d1.getTime());
 
             return result;
         }

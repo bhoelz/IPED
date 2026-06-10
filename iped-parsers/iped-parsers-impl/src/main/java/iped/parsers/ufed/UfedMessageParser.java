@@ -21,6 +21,7 @@ import iped.properties.BasicProps;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
 import iped.utils.EmptyInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -34,8 +35,6 @@ import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.html.HtmlParser;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -47,11 +46,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class UfedMessageParser extends AbstractParser {
 
     private static final long serialVersionUID = -4738095481615972119L;
 
-    private static final Logger logger = LoggerFactory.getLogger(UfedMessageParser.class);
 
     private static final Set<MediaType> SUPPORTED_TYPES = Set.of(MediaTypes.UFED_MESSAGE_MIME);
 
@@ -165,7 +164,7 @@ public class UfedMessageParser extends AbstractParser {
             }
 
         } catch (Exception e) {
-            logger.error("Error processing InstantMessage", e);
+            log.error("Error processing InstantMessage", e);
             throw e;
         }
     }

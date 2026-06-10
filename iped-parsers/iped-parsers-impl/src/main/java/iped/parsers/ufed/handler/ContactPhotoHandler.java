@@ -4,14 +4,13 @@ import iped.data.IItemReader;
 import iped.parsers.ufed.model.ContactPhoto;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 public class ContactPhotoHandler extends BaseModelHandler<ContactPhoto> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContactPhotoHandler.class);
 
     protected ContactPhotoHandler(ContactPhoto model) {
         super(model, null);
@@ -25,7 +24,7 @@ public class ContactPhotoHandler extends BaseModelHandler<ContactPhoto> {
             List<IItemReader> result = searcher.search(query);
             if (!result.isEmpty()) {
                 if (result.size() > 1) {
-                    logger.warn("Found more than 1 contact photo: {}", result);
+                    log.warn("Found more than 1 contact photo: {}", result);
                 }
                 IItemReader contactPhoto = result.get(0);
                 model.setReferencedFile(contactPhoto);

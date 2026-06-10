@@ -4,9 +4,8 @@ import iped.data.IItem;
 import iped.distributed.agent.InputStreamFactoryRegistry;
 import iped.engine.datasource.DatasourceRegistry;
 import iped.io.ISeekableInputStreamFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -20,9 +19,9 @@ import java.util.*;
  * worker node can call {@link InputStreamFactoryRegistry#reconstruct} to obtain a
  * live factory — provided the datasource files are reachable via shared storage.
  */
+@Slf4j
 public final class ItemConverter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ItemConverter.class);
 
     /** Temp-attribute key used to store the originating message inside the item. */
     public static final String ATTR_KAFKA_MSG     = "__distributed.kafkaMessage";
@@ -214,7 +213,7 @@ public final class ItemConverter {
                         msg.getInputStreamFactoryParams());
                 item.setInputStreamFactory(factory);
             } catch (Exception e) {
-                LOGGER.warn("Could not reconstruct InputStreamFactory '{}' for item '{}': {}",
+                log.warn("Could not reconstruct InputStreamFactory '{}' for item '{}': {}",
                         msg.getInputStreamFactoryClass(), msg.getItemUuid(), e.getMessage());
             }
         }

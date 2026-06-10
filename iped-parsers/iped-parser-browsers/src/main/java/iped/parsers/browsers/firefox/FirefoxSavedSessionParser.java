@@ -2,6 +2,7 @@ package iped.parsers.browsers.firefox;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import net.jpountz.lz4.LZ4Exception;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4SafeDecompressor;
@@ -12,8 +13,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -23,13 +22,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
+@Slf4j
 public class FirefoxSavedSessionParser extends AbstractParser {
     private static final long serialVersionUID = 1L;
     private static final MediaType X_FIREFOX_SAVEDSESSION_MIME_TYPE = MediaType.application("x-firefox-savedsession");
     private static final int MAX_MEM_BYTES = 1 << 27;
     private static final String MAX_MEM_WARNING = "Byte data exceeds max size allowed to load on memory.";
     private static LZ4Factory factory = null;
-    private static Logger LOGGER = LoggerFactory.getLogger(FirefoxSavedSessionParser.class);
 
     private final int BLOCK_SIZE = 4096;
     private final short HEADER_OFFSET = 12;
@@ -66,7 +65,7 @@ public class FirefoxSavedSessionParser extends AbstractParser {
         XHTMLContentHandler xHandler;
 
         try {
-            // LOGGER.info("Found a Mozilla JSON LZ4 session file. Trying to parse it...");
+            // log.info("Found a Mozilla JSON LZ4 session file. Trying to parse it...");
             data = decompressLZ4Data(stream, metadata);
             json = new String(data, StandardCharsets.UTF_8);
             rootNode = parseMozillaJSON(json);

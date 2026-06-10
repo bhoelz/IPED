@@ -15,9 +15,8 @@ import iped.utils.ExternalImageConverter;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.viewers.util.ImageMetadataUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -34,9 +33,9 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Wladimir Leite
  */
+@Slf4j
 public class DIETask extends AbstractTask {
 
-    private static Logger logger = LoggerFactory.getLogger(DIETask.class);
 
     /**
      * Object responsible for predicting if an image is explicit (i.e. contains nudity).
@@ -125,7 +124,7 @@ public class DIETask extends AbstractTask {
             if (!init.get()) {
                 taskEnabled = configurationManager.getEnableTaskProperty(ENABLE_PARAM);
                 if (!taskEnabled) {
-                    logger.info("Task disabled."); //$NON-NLS-1$
+                    log.info("Task disabled."); //$NON-NLS-1$
                     init.set(true);
                     return;
                 }
@@ -134,7 +133,7 @@ public class DIETask extends AbstractTask {
                 if (!dieDat.exists() || !dieDat.canRead()) {
                     String msg = "Invalid DIE database file: " + dieDat.getAbsolutePath(); //$NON-NLS-1$
                     if (hasIpedDatasource()) {
-                        logger.warn(msg);
+                        log.warn(msg);
                         taskEnabled = false;
                         init.set(true);
                         return;
@@ -147,9 +146,9 @@ public class DIETask extends AbstractTask {
                 if (predictor == null)
                     throw new IPEDException("Error loading DIE database file: " + dieDat.getAbsolutePath()); //$NON-NLS-1$
 
-                logger.info("Task enabled."); //$NON-NLS-1$
-                logger.info("Model version: " + predictor.getVersion()); //$NON-NLS-1$
-                logger.info("Trees loaded: " + predictor.size()); //$NON-NLS-1$
+                log.info("Task enabled."); //$NON-NLS-1$
+                log.info("Model version: " + predictor.getVersion()); //$NON-NLS-1$
+                log.info("Trees loaded: " + predictor.size()); //$NON-NLS-1$
 
                 externalImageConverter = new ExternalImageConverter();
 
@@ -172,15 +171,15 @@ public class DIETask extends AbstractTask {
                 predictor = null;
                 long totalImages = totalImagesProcessed.longValue() + totalImagesFailed.longValue();
                 if (totalImages != 0) {
-                    logger.info("Total images processed: " + totalImagesProcessed); //$NON-NLS-1$
-                    logger.info("Total images not processed: " + totalImagesFailed); //$NON-NLS-1$
-                    logger.info("Average image processing time (ms/image): " + (totalImagesTime.longValue() / totalImages)); //$NON-NLS-1$
+                    log.info("Total images processed: " + totalImagesProcessed); //$NON-NLS-1$
+                    log.info("Total images not processed: " + totalImagesFailed); //$NON-NLS-1$
+                    log.info("Average image processing time (ms/image): " + (totalImagesTime.longValue() / totalImages)); //$NON-NLS-1$
                 }
                 long totalVideos = totalVideosProcessed.longValue() + totalVideosFailed.longValue();
                 if (totalVideos != 0) {
-                    logger.info("Total videos processed: " + totalVideosProcessed); //$NON-NLS-1$
-                    logger.info("Total videos not processed: " + totalVideosFailed); //$NON-NLS-1$
-                    logger.info("Average video processing time (ms/video): " + (totalVideosTime.longValue() / totalVideos)); //$NON-NLS-1$
+                    log.info("Total videos processed: " + totalVideosProcessed); //$NON-NLS-1$
+                    log.info("Total videos not processed: " + totalVideosFailed); //$NON-NLS-1$
+                    log.info("Average video processing time (ms/video): " + (totalVideosTime.longValue() / totalVideos)); //$NON-NLS-1$
                 }
                 externalImageConverter.close();
                 finished.set(true);
@@ -269,7 +268,7 @@ public class DIETask extends AbstractTask {
                 totalVideosTime.addAndGet(t);
             }
         } catch (Exception e) {
-            logger.warn(evidence.toString(), e);
+            log.warn(evidence.toString(), e);
         }
     }
 

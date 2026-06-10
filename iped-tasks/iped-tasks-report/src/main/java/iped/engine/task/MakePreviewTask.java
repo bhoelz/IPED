@@ -24,6 +24,7 @@ import iped.search.IItemSearcher;
 import iped.utils.IOUtil;
 import iped.utils.LockManager;
 import iped.viewers.HtmlLinkViewer;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.io.TikaInputStream;
@@ -31,8 +32,6 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.ContentHandlerDecorator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -44,9 +43,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Slf4j
 public class MakePreviewTask extends AbstractTask {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MakePreviewTask.class);
 
     private MakePreviewConfig previewConfig;
 
@@ -124,13 +123,13 @@ public class MakePreviewTask extends AbstractTask {
                 return;
             }
 
-            LOGGER.debug("Generating preview of {} ({} bytes)", evidence.getPath(), evidence.getLength());
+            log.debug("Generating preview of {} ({} bytes)", evidence.getPath(), evidence.getLength());
             makeHtmlPreviewAndStore(evidence, mediaType, ext);
 
         } catch (Throwable e) {
-            LOGGER.warn("Error generating preview of {} ({} bytes) {}", evidence.getPath(), evidence.getLength(), //$NON-NLS-1$
+            log.warn("Error generating preview of {} ({} bytes) {}", evidence.getPath(), evidence.getLength(), //$NON-NLS-1$
                     e.toString());
-            LOGGER.debug("", e);
+            log.debug("", e);
         } finally {
             lock.unlock();
         }
@@ -220,7 +219,7 @@ public class MakePreviewTask extends AbstractTask {
                     evidence.setPreviewExt(viewExt);
                 } catch (Throwable e) {
                     exception.compareAndSet(null, e);
-                    LOGGER.info("ERROR {} {}", evidence.getHash(), e.getMessage() );
+                    log.info("ERROR {} {}", evidence.getHash(), e.getMessage() );
 
                 } finally {
                     latch.countDown();

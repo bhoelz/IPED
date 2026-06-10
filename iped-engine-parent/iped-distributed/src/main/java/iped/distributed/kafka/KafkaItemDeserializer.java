@@ -2,16 +2,15 @@ package iped.distributed.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Kafka Deserializer for {@link KafkaItemMessage} — reads from UTF-8 JSON bytes.
  */
+@Slf4j
 public class KafkaItemDeserializer implements Deserializer<KafkaItemMessage> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaItemDeserializer.class);
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule());
@@ -22,7 +21,7 @@ public class KafkaItemDeserializer implements Deserializer<KafkaItemMessage> {
         try {
             return MAPPER.readValue(data, KafkaItemMessage.class);
         } catch (Exception e) {
-            LOGGER.error("Failed to deserialize KafkaItemMessage from topic {}", topic, e);
+            log.error("Failed to deserialize KafkaItemMessage from topic {}", topic, e);
             throw new RuntimeException("KafkaItemMessage deserialization failed", e);
         }
     }

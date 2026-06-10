@@ -2,16 +2,15 @@ package iped.engine.task.regex;
 
 import iped.engine.task.regex.RegexTask.Regex;
 import iped.io.URLUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.net.URL;
 import java.util.*;
 
+@Slf4j
 public class RegexValidator {
 
-    private Logger LOGGER = LoggerFactory.getLogger(RegexValidator.class);
 
     private Map<String, RegexValidatorService> services = new HashMap<>();
 
@@ -44,7 +43,7 @@ public class RegexValidator {
                             + first + " and " + second + ")");
                 }
 
-                LOGGER.info("Validator " + validatorService.getClass().getName() + " found for " + regexName);
+                log.info("Validator " + validatorService.getClass().getName() + " found for " + regexName);
             }
         }
     }

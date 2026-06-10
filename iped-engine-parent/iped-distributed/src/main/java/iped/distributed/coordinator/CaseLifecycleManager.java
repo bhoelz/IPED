@@ -1,8 +1,7 @@
 package iped.distributed.coordinator;
 
 import iped.distributed.kafka.TopicProvisioner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,9 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * task-to-stage mapping is stored. Agents query this mapping via
  * {@link #getStageForTask(String, String)} to know which topics to consume from / produce to.
  */
+@Slf4j
 public class CaseLifecycleManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CaseLifecycleManager.class);
 
     private final TopicProvisioner topicProvisioner;
 
@@ -46,7 +45,7 @@ public class CaseLifecycleManager {
      */
     public void startCase(String caseId, List<String> orderedTaskNames,
                            int partitions, short replication) {
-        LOGGER.info("Starting case '{}' with {} tasks: {}", caseId,
+        log.info("Starting case '{}' with {} tasks: {}", caseId,
                 orderedTaskNames.size(), orderedTaskNames);
 
         // Provision Kafka topics
@@ -67,7 +66,7 @@ public class CaseLifecycleManager {
         status.startedAt      = java.time.Instant.now();
         caseStatuses.put(caseId, status);
 
-        LOGGER.info("Case '{}' started successfully", caseId);
+        log.info("Case '{}' started successfully", caseId);
     }
 
     /** Returns the stage number for a given task type in a case. */
@@ -98,7 +97,7 @@ public class CaseLifecycleManager {
         if (status != null) {
             status.state       = CaseStatus.State.COMPLETED;
             status.completedAt = java.time.Instant.now();
-            LOGGER.info("Case '{}' marked as COMPLETED", caseId);
+            log.info("Case '{}' marked as COMPLETED", caseId);
         }
     }
 

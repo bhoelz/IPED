@@ -5,8 +5,7 @@ import iped.io.URLUtil;
 import iped.utils.IOUtil;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,9 +20,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Set;
 
+@Slf4j
 public class CADViewer extends AbstractViewer {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(CADViewer.class);
 
     private static final String CAFFVIEWER_PATH = "tools/caffviewer/caffviewer.jar"; //$NON-NLS-1$
 
@@ -80,7 +79,7 @@ public class CADViewer extends AbstractViewer {
                 File caffviewerPath = new File(basePath, CAFFVIEWER_PATH);
                 // handles spaces in paths
                 String[] cmd = { "java", "-jar", caffviewerPath.getAbsolutePath(), temp.getAbsolutePath() };
-                LOGGER.debug("Openning external viewer: {}", Arrays.asList(cmd));
+                log.debug("Openning external viewer: {}", Arrays.asList(cmd));
 
                 ProcessBuilder pb = new ProcessBuilder();
                 pb.command(cmd);

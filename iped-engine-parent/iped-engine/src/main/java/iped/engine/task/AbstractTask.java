@@ -13,9 +13,8 @@ import iped.engine.data.CaseData;
 import iped.engine.io.TimeoutException;
 import iped.exception.IPEDException;
 import iped.parsers.util.CorruptedCarvedException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.HashMap;
@@ -33,9 +32,9 @@ import java.util.List;
  * recebe 01 item por vez para processar.
  *
  */
+@Slf4j
 public abstract class AbstractTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AbstractTask.class);
 
     /**
      * Worker que executará esta tarefa.
@@ -293,7 +292,7 @@ public abstract class AbstractTask {
                 this.process(evidence);
 
         } catch (TimeoutException e) {
-            LOGGER.warn("{} TIMEOUT processing {} ({} bytes)\t{}", worker.getName(), evidence.getPath(), //$NON-NLS-1$
+            log.warn("{} TIMEOUT processing {} ({} bytes)\t{}", worker.getName(), evidence.getPath(), //$NON-NLS-1$
                     evidence.getLength(), e);
             stats.incTimeouts();
             evidence.setTimeOut(true);

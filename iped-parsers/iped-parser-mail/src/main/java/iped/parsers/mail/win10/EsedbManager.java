@@ -8,8 +8,7 @@ import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 import iped.parsers.browsers.edge.EsedbLibrary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.InputStream;
@@ -17,11 +16,11 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
 
+@Slf4j
 public class EsedbManager {
     private static EsedbLibrary esedbLibrary;
     private static boolean loadFailed = false;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(EsedbManager.class);
 
     static {
         if (Platform.isWindows()) {
@@ -36,7 +35,7 @@ public class EsedbManager {
                 System.load(file.getAbsolutePath());
 
             } catch (Throwable e) {
-                LOGGER.error("Libesedb dll not loaded properly. " + Win10MailParser.class.getSimpleName()
+                log.error("Libesedb dll not loaded properly. " + Win10MailParser.class.getSimpleName()
                         + " will be disabled.", e);
                 loadFailed = true;
             }
@@ -44,10 +43,10 @@ public class EsedbManager {
         if (!loadFailed) {
             try {
                 esedbLibrary = (EsedbLibrary) Native.load("esedb", EsedbLibrary.class);
-                LOGGER.info("Libesedb library version: " + esedbLibrary.libesedb_get_version());
+                log.info("Libesedb library version: " + esedbLibrary.libesedb_get_version());
 
             } catch (Throwable e) {
-                LOGGER.error("Libesedb JNA not loaded properly. " + Win10MailParser.class.getSimpleName()
+                log.error("Libesedb JNA not loaded properly. " + Win10MailParser.class.getSimpleName()
                         + " will be disabled.");
                 e.printStackTrace();
                 loadFailed = true;
@@ -161,7 +160,7 @@ public class EsedbManager {
     }
 
     public static void printError(String function, int result, String path, PointerByReference errorPointer) {
-        LOGGER.warn("Error decoding " + path + ": Function '" + function + "'. Function result number '"
+        log.warn("Error decoding " + path + ": Function '" + function + "'. Function result number '"
                 + result + "' Error value: " + errorPointer.getValue().getString(0)); //$NON-NLS-1$
         esedbLibrary.libesedb_error_free(errorPointer);
     }
@@ -222,7 +221,7 @@ public class EsedbManager {
                 EsedbManager.printError("Table Get UTF8 Name", result, filePath, errorPointer);
 
             String tableName = tableNameRef.getString(0);
-            LOGGER.warn("While decoding '" + filePath + "': Column '" + columnCode + "' not found in table '" + tableName + "'");
+            log.warn("While decoding '" + filePath + "': Column '" + columnCode + "' not found in table '" + tableName + "'");
         }
 
         return position;

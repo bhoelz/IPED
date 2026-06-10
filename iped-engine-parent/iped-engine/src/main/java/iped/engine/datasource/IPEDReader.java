@@ -53,6 +53,7 @@ import iped.search.SearchResult;
 import iped.utils.DateUtil;
 import iped.utils.HashValue;
 import iped.utils.SeekableInputStreamFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.index.IndexableField;
@@ -62,7 +63,6 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
@@ -79,11 +79,11 @@ import java.util.logging.Logger;
 /*
  * Enfileira para processamento os arquivos selecionados via interface de pesquisa de uma indexação anterior.
  */
+@Slf4j
 public class IPEDReader extends DataSourceReader {
 
     public static final String REPORTING_CASES = "reporting_cases";
 
-    private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(IPEDReader.class);
 
     private static Map<String, SeekableInputStreamFactory> inputStreamFactories = new HashMap<>();
 
@@ -243,7 +243,7 @@ public class IPEDReader extends DataSourceReader {
         }
         if (lastId == -1) {
             // Nothing was added, skip copying bookmarks (see issue #2037)
-            LOGGER.info("No bookmarked items copied from {}", basePath);
+            log.info("No bookmarked items copied from {}", basePath);
             return;
         }
 
@@ -268,7 +268,7 @@ public class IPEDReader extends DataSourceReader {
             reportState.addBookmark(newIds, newLabelId);
             added += newIds.size();
         }
-        LOGGER.info("{} bookmarked items copied from {}", added, basePath);
+        log.info("{} bookmarked items copied from {}", added, basePath);
         reportState.saveState(true);
     }
 
@@ -382,7 +382,7 @@ public class IPEDReader extends DataSourceReader {
                 Document doc = ipedCase.getReader().storedFields().document(luceneId);
                 String[] items = doc.getValues(ExtraProperties.LINKED_ITEMS);
                 if (items.length > 0) {
-                    LOGGER.debug("Linked items to '" + doc.get(IndexItem.NAME) + "' found: " + items.length); //$NON-NLS-1$
+                    log.debug("Linked items to '" + doc.get(IndexItem.NAME) + "' found: " + items.length); //$NON-NLS-1$
                 }
                 for (String item : items) {
                     query.append("(").append(item).append(") "); //$NON-NLS-1$
@@ -402,7 +402,7 @@ public class IPEDReader extends DataSourceReader {
             e.printStackTrace();
         } finally {
             t = System.currentTimeMillis() - t;
-            LOGGER.info("Search for linked items took {} ms", t);
+            log.info("Search for linked items took {} ms", t);
         }
     }
 

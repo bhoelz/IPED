@@ -19,6 +19,7 @@ import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.utils.SimpleHTMLEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.io.input.ReaderInputStream;
@@ -37,8 +38,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -61,6 +60,7 @@ import java.util.stream.Collectors;
    *
    * @author Felipe Farias da Costa
  */
+@Slf4j
 public class Win10MailParser extends AbstractParser {
 
     public static final MediaType WIN10_MAIL_DB = MediaType.application("x-win10-mail-db");
@@ -113,7 +113,6 @@ public class Win10MailParser extends AbstractParser {
         SimpleDateFormat df = new SimpleDateFormat(Messages.getString("OutlookPSTParser.DateFormat"));
     }
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Win10MailParser.class);
 
     private static Object lock = new Object();
 
@@ -223,7 +222,7 @@ public class Win10MailParser extends AbstractParser {
                 closeFilePointer(filePointerReference, params);
             }
         } catch (Exception e) {
-            LOGGER.warn("Exception parsing Win10 Mail DB, using generic parser for " + params.itemInfo.getPath(), e);
+            log.warn("Exception parsing Win10 Mail DB, using generic parser for " + params.itemInfo.getPath(), e);
             genericParser.parse(storeVolTis, handler, metadata, context);
             throw new TikaException(this.getClass().getSimpleName() + " exception", e);
 
@@ -279,7 +278,7 @@ public class Win10MailParser extends AbstractParser {
 
                 numTables = numTablesRef.getValue();
 
-                LOGGER.info(numTables + " tables found in " + params.itemInfo.getPath());
+                log.info(numTables + " tables found in " + params.itemInfo.getPath());
             }
 
             // extract info from selected tables
@@ -723,7 +722,7 @@ public class Win10MailParser extends AbstractParser {
             // processAttachment(attach, email, params);
             // }
         } catch (Exception e) {
-            LOGGER.warn("Exception extracting email: subject='" + email.getSubject() + "' rowid='" + email.getRowId() + "' DB='" + params.itemInfo.getPath() + "'", e);
+            log.warn("Exception extracting email: subject='" + email.getSubject() + "' rowid='" + email.getRowId() + "' DB='" + params.itemInfo.getPath() + "'", e);
         }
 
     }
@@ -757,7 +756,7 @@ public class Win10MailParser extends AbstractParser {
             }
 
         } catch (Exception e) {
-            LOGGER.warn("Exception extracting attachment: name='" + filename + "' email='" + email.getSubject() + "' rowid='" + email.getRowId() + "' DB='" + params.itemInfo.getPath() + "'", e);
+            log.warn("Exception extracting attachment: name='" + filename + "' email='" + email.getSubject() + "' rowid='" + email.getRowId() + "' DB='" + params.itemInfo.getPath() + "'", e);
         }
     }
 
@@ -871,7 +870,7 @@ public class Win10MailParser extends AbstractParser {
                             body = body.replace("cid:" + attachCid, "data:image/jpeg;base64," + base64Img);
                         }
                     } catch (Exception e) {
-                        LOGGER.warn("Exception inlining attachment: name='" + attachment.getFileName() + "' email='" + email.getSubject() + "' rowid='" + email.getRowId() + "' DB='" + params.itemInfo.getPath() + "'", e);
+                        log.warn("Exception inlining attachment: name='" + attachment.getFileName() + "' email='" + email.getSubject() + "' rowid='" + email.getRowId() + "' DB='" + params.itemInfo.getPath() + "'", e);
                     }
                 }
             }

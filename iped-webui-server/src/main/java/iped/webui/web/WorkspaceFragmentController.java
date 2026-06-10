@@ -1,34 +1,15 @@
 package iped.webui.web;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import iped.webui.session.FilterState;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import views.workspace.fragments.*;
 
-import iped.webui.session.FilterState;
-import iped.webui.session.FilterState.ActiveFilter;
-import views.workspace.fragments.evidenceChildren;
-import views.workspace.fragments.exportDialog;
-import views.workspace.fragments.filterChips;
-import views.workspace.fragments.hitsPanel;
-import views.workspace.fragments.infoPanel;
-import views.workspace.fragments.itemList;
-import views.workspace.fragments.sidebar;
-import views.workspace.fragments.viewer;
+import java.util.*;
 
 /**
  * HTMX fragment endpoints: return HTML partials that HTMX swaps into
@@ -39,9 +20,9 @@ import views.workspace.fragments.viewer;
  * {@code /api/**}; the two never co-own a DOM subtree.
  */
 @Controller
+@Slf4j
 public class WorkspaceFragmentController {
 
-    private static final Logger log = LoggerFactory.getLogger(WorkspaceFragmentController.class);
 
     private static final Set<String> SIDEBAR_TABS =
             Set.of("cat", "evid", "coll", "meta", "ai", "filt");

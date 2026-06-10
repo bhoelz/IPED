@@ -8,6 +8,7 @@ import iped.parsers.util.Util;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
 import iped.utils.SimpleHTMLEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -23,8 +24,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.microsoft.rtf.RTFParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -36,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class LibpffPSTParser extends AbstractParser {
 
     /**
@@ -45,7 +45,6 @@ public class LibpffPSTParser extends AbstractParser {
     /**
      *
      */
-    private static Logger LOGGER = LoggerFactory.getLogger(LibpffPSTParser.class);
     private static Set<MediaType> SUPPORTED_TYPES = Collections.singleton(MediaType.application("vnd.ms-outlook-pst")); //$NON-NLS-1$
 
     private static String TOOL_NAME = "pffexport"; //$NON-NLS-1$
@@ -96,11 +95,11 @@ public class LibpffPSTParser extends AbstractParser {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
                     String version = reader.readLine().replace(TOOL_NAME + " ", ""); //$NON-NLS-1$ //$NON-NLS-2$
                     if (version.compareToIgnoreCase("20130722") < 0) //$NON-NLS-1$
-                        LOGGER.error(" Old version " + version //$NON-NLS-1$
+                        log.error(" Old version " + version //$NON-NLS-1$
                                 + " of pffexport (libpff) detected: OST 2013 files will NOT be parsed!"); //$NON-NLS-1$
 
                 } catch (Exception e) {
-                    LOGGER.error("Error testing pffexport (libpff): Outlook OST 2013 files will NOT be parsed!"); //$NON-NLS-1$
+                    log.error("Error testing pffexport (libpff): Outlook OST 2013 files will NOT be parsed!"); //$NON-NLS-1$
                     SUPPORTED_TYPES = Collections.EMPTY_SET;
                 }
             tested = true;
@@ -171,9 +170,9 @@ public class LibpffPSTParser extends AbstractParser {
 
         } catch (InterruptedException e) {
             if (extractOnlyDeleted)
-                LOGGER.error("Recovery of deleted emails was interrupted on " + fileName + " " + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+                log.error("Recovery of deleted emails was interrupted on " + fileName + " " + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             else
-                LOGGER.error("Extraction of emails was interrupted on " + fileName + " " + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+                log.error("Extraction of emails was interrupted on " + fileName + " " + e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 
             throw new TikaException(this.getClass().getSimpleName() + " interrupted", e); //$NON-NLS-1$
 

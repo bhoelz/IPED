@@ -1,19 +1,13 @@
 package iped.webui.web;
 
-import java.util.List;
-import java.util.Map;
-
+import iped.webui.web.WorkspaceFragmentController.EvidenceNode;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import iped.webui.web.WorkspaceFragmentController.AiClassifier;
-import iped.webui.web.WorkspaceFragmentController.AiLabel;
-import iped.webui.web.WorkspaceFragmentController.BookmarkEntry;
-import iped.webui.web.WorkspaceFragmentController.CategoryEntry;
-import iped.webui.web.WorkspaceFragmentController.EvidenceNode;
-import iped.webui.web.WorkspaceFragmentController.HitSnippet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stub v2 JSON endpoints served locally so Angular islands can make

@@ -1,8 +1,7 @@
 package iped.distributed.agent;
 
 import iped.io.ISeekableInputStreamFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,9 +30,9 @@ import java.util.function.Function;
  * );
  * }</pre>
  */
+@Slf4j
 public final class InputStreamFactoryRegistry {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InputStreamFactoryRegistry.class);
 
     private static final Map<String, Function<Map<String, String>, ISeekableInputStreamFactory>>
             BUILDERS = new ConcurrentHashMap<>();
@@ -49,7 +48,7 @@ public final class InputStreamFactoryRegistry {
     public static void register(String fqcn,
             Function<Map<String, String>, ISeekableInputStreamFactory> builder) {
         BUILDERS.put(fqcn, builder);
-        LOGGER.info("InputStreamFactory registered for class '{}'", fqcn);
+        log.info("InputStreamFactory registered for class '{}'", fqcn);
     }
 
     /**

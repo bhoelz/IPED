@@ -17,9 +17,8 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import lombok.extern.slf4j.Slf4j;
 import netscape.javascript.JSObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -35,9 +34,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 public class HtmlViewer extends AbstractViewer {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(HtmlViewer.class);
 
     private JFXPanel jfxPanel;
     private static int MAX_SIZE = 10000000;
@@ -252,7 +251,7 @@ public class HtmlViewer extends AbstractViewer {
                                     }
 
                                 } else if (tmpFile != null) {
-                                    LOGGER.info("Null DOM to highlight!");
+                                    log.info("Null DOM to highlight!");
                                     queryTerms = highlightTerms.toArray(new String[0]);
                                     currTerm = queryTerms.length > 0 ? 0 : -1;
                                     if (shouldScrollToHit()) {

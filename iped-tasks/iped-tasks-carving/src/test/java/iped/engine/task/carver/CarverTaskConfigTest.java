@@ -1,6 +1,5 @@
 package iped.engine.task.carver;
 
-import iped.utils.UTF8Properties;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

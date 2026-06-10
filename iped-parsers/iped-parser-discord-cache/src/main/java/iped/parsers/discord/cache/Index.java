@@ -4,10 +4,9 @@ import com.google.common.collect.ImmutableList;
 import iped.data.IItemReader;
 import iped.parsers.browsers.chrome.ChromeCacheException;
 import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hpsf.Filetime;
 import org.apache.poi.util.LittleEndianByteArrayInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -28,9 +27,9 @@ import java.util.List;
  *
  *
  */
+@Slf4j
 public class Index {
 
-    private static Logger logger = LoggerFactory.getLogger(Index.class);
 
     static private final long MAGIC_NUMBER_LE = 0xC103CAC3l; // magic number in little endian
     static private final List<Long> supportedVersions = ImmutableList.of(0x00020001l, 0x00030000l);
@@ -231,7 +230,7 @@ public class Index {
                         ce = new CacheEntry(naIS, dataFiles, externalFiles);
                         lst.add(ce);
                     } catch (EOFException e) {
-                        logger.warn("Entry in cache truncated or invalid.");
+                        log.warn("Entry in cache truncated or invalid.");
                         break;// avoid potential infinite loop
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -241,9 +240,9 @@ public class Index {
             } catch (InputStreamNotAvailable e) {
                 continue;
             } catch (EOFException e) {
-                logger.warn("Entry in cache truncated or invalid.");
+                log.warn("Entry in cache truncated or invalid.");
             } catch (Exception e) {
-                logger.warn("Exception reading CacheEntry of Discord Index " + path, e);
+                log.warn("Exception reading CacheEntry of Discord Index " + path, e);
             }
         }
         if (validEntryCount != entriesCont) {

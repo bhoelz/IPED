@@ -25,10 +25,9 @@ import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.Collator;
@@ -37,9 +36,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 
+@Slf4j
 public class RowComparator implements Comparator<Integer> {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(RowComparator.class);
 
     private int col;
     private boolean bookmarkCol = false;
@@ -84,10 +83,10 @@ public class RowComparator implements Comparator<Integer> {
 
             else {
                 long t = System.currentTimeMillis();
-                LOGGER.info("Loading sort data for Column {}...", fields[col]); //$NON-NLS-1$
+                log.info("Loading sort data for Column {}...", fields[col]); //$NON-NLS-1$
                 loadDocValues(fields[col]);
                 t = System.currentTimeMillis() - t;
-                LOGGER.info("Loading sort data for Column {} took {}ms", fields[col], t); //$NON-NLS-1$
+                log.info("Loading sort data for Column {} took {}ms", fields[col], t); //$NON-NLS-1$
             }
         }
     }

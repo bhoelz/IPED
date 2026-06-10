@@ -11,6 +11,7 @@ import iped.parsers.ufed.reference.ReferencedFile;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
 import iped.utils.DateUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -23,8 +24,6 @@ import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.html.HtmlParser;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -37,11 +36,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class UfedAccountableParser extends AbstractParser {
 
     private static final long serialVersionUID = -4738095481615972119L;
 
-    private static final Logger logger = LoggerFactory.getLogger(UfedAccountableParser.class);
 
     private static Set<MediaType> SUPPORTED_TYPES = Set.of(
             MediaTypes.UFED_CONTACT_MIME,
@@ -114,7 +113,7 @@ public class UfedAccountableParser extends AbstractParser {
             }
 
         } catch (Exception e) {
-            logger.error("Error processing Contact/UserAccount", e);
+            log.error("Error processing Contact/UserAccount", e);
             throw e;
         }
     }

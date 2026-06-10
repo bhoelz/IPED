@@ -18,8 +18,8 @@
  */
 package iped.app.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -28,10 +28,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+@Slf4j
 public class GalleryListener implements ListSelectionListener, MouseListener, KeyListener {
 
     private GalleryCellEditor cellEditor;
-    private static Logger logger = LoggerFactory.getLogger(ResultTableListener.class);
 
     @Override
     public void valueChanged(ListSelectionEvent e) {

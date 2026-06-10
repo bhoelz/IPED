@@ -4,8 +4,7 @@ import fqlite.base.SqliteRow;
 import iped.parsers.sqlite.*;
 import iped.parsers.whatsapp.Message.MessageQuotedType;
 import iped.parsers.whatsapp.Message.MessageStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.sql.*;
@@ -18,9 +17,9 @@ import static iped.parsers.whatsapp.Message.MessageType.*;
  *
  * @author Fabio Melo Pfeifer <pfeifer.fmp@pf.gov.br>
  */
+@Slf4j
 public abstract class ExtractorAndroid extends Extractor {
 
-    private static Logger logger = LoggerFactory.getLogger(ExtractorAndroid.class);
 
     private boolean hasSortTimestamp = false;
     private boolean hasThumbTable = true;
@@ -75,7 +74,7 @@ public abstract class ExtractorAndroid extends Extractor {
                 undeleteJIDTable = undeleteData.get("jid"); //$NON-NLS-1$
 
             } catch (Exception e) {
-                logger.warn("Error recovering deleted records from Android WhatsApp Database " + itemPath, e); //$NON-NLS-1$
+                log.warn("Error recovering deleted records from Android WhatsApp Database " + itemPath, e); //$NON-NLS-1$
             }
         }
 
@@ -157,7 +156,7 @@ public abstract class ExtractorAndroid extends Extractor {
                     if (!activeChats.contains(remoteId)) {
                         list.add(c);
                         if (firstTry && c.isDeleted()) {
-                            logger.info("Recovered deleted chat for database " //$NON-NLS-1$
+                            log.info("Recovered deleted chat for database " //$NON-NLS-1$
                                         + itemPath + " :" + c.getSubject() //$NON-NLS-1$
                                         + " (" + c.getRemote().getFullId() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                         }
@@ -182,9 +181,9 @@ public abstract class ExtractorAndroid extends Extractor {
 
                 if (recoverDeletedRecords && !firstTry) {
                     if (list.size() > 0 && undeletedMessages.size() > 0) {
-                        logger.info("Recovered deleted messages from corrupted database " + itemPath); //$NON-NLS-1$
+                        log.info("Recovered deleted messages from corrupted database " + itemPath); //$NON-NLS-1$
                     } else {
-                        logger.info("Was not able to recover messages from corrupted database " + itemPath); //$NON-NLS-1$
+                        log.info("Was not able to recover messages from corrupted database " + itemPath); //$NON-NLS-1$
                         if (parsingException != null) {
                             throw parsingException;
                         }
@@ -200,7 +199,7 @@ public abstract class ExtractorAndroid extends Extractor {
                     // try again, ignoring error and recovering deleted records
                     if (isSqliteCorruptException(ex)) {
                         tryAgain = true;
-                        logger.warn("Database " + itemPath + " is corrupt. Trying to recover data with fqlite"); //$NON-NLS-1$ //$NON-NLS-2$
+                        log.warn("Database " + itemPath + " is corrupt. Trying to recover data with fqlite"); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
                 if (!tryAgain) {
@@ -368,9 +367,9 @@ public abstract class ExtractorAndroid extends Extractor {
                         }
                     }}
                 } catch (SQLException e) {
-                    logger.warn("Error creating undeleted message", e); //$NON-NLS-1$
+                    log.warn("Error creating undeleted message", e); //$NON-NLS-1$
                 } catch (RuntimeException e) {
-                    logger.warn("Error creating undeleted message", e); //$NON-NLS-1$
+                    log.warn("Error creating undeleted message", e); //$NON-NLS-1$
                 }
             }
 

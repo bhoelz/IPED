@@ -19,11 +19,10 @@ import iped.properties.BasicProps;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.input.TaggedInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +32,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class EmbeddedDiskProcessTask extends AbstractTask {
 
-    private static Logger logger = LoggerFactory.getLogger(EmbeddedDiskProcessTask.class);
 
     private static final int MIN_DD_SIZE = 1024;
 
@@ -159,7 +158,7 @@ public class EmbeddedDiskProcessTask extends AbstractTask {
                 String query = BasicProps.PARENTID + ":" + item.getParentId() + " && " + BasicProps.NAME + ":\""
                         + QueryBuilder.escape(item.getName().substring(0, dotIdx)) + "\"";
                 List<IItemReader> possibleParts = searcher.search(query);
-                logger.info("Found {} possible image segments of {}", possibleParts.size(), item.getPath());
+                log.info("Found {} possible image segments of {}", possibleParts.size(), item.getPath());
                 // export (and process) deleted parts after allocated ones see #1660
                 Collections.sort(possibleParts, new Comparator<IItemReader>() {
                     @Override
@@ -204,7 +203,7 @@ public class EmbeddedDiskProcessTask extends AbstractTask {
         }
 
         try (SleuthkitReader reader = new SleuthkitReader(true, caseData, output)) {
-            logger.info("Decoding embedded disk image {} -> {}", item.getPath(), imageFile.getAbsolutePath());
+            log.info("Decoding embedded disk image {} -> {}", item.getPath(), imageFile.getAbsolutePath());
             reader.read(imageFile, (Item) item);
             int numSubitems = reader.getItemCount();
             if (numSubitems > 0) {
@@ -259,17 +258,17 @@ public class EmbeddedDiskProcessTask extends AbstractTask {
             }
             if (!alreadyExported) {
                 if (imageFile.length() > 0) {
-                    logger.info("Deleting incomplete exported item {} -> {}", item.getPath(), imageFile.getAbsolutePath());
+                    log.info("Deleting incomplete exported item {} -> {}", item.getPath(), imageFile.getAbsolutePath());
                     imageFile.delete();
                 }
-                logger.info("Exporting item {} -> {}", item.getPath(), imageFile.getAbsolutePath());
+                log.info("Exporting item {} -> {}", item.getPath(), imageFile.getAbsolutePath());
                 TaggedInputStream tis = null;
                 try (InputStream is = item.getBufferedInputStream()) {
                     tis = new TaggedInputStream(is);
                     Files.copy(tis, imageFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     if (tis == null || tis.isCauseOf(e)) {
-                        logger.warn("Error reading item {} ({} bytes): {}", item.getPath(), item.getLength(), e.toString());
+                        log.warn("Error reading item {} ({} bytes): {}", item.getPath(), item.getLength(), e.toString());
                     } else {
                         // exception writing data to target file
                         throw e;

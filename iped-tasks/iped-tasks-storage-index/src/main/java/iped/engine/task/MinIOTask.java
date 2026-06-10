@@ -14,6 +14,7 @@ import iped.engine.task.index.ElasticSearchIndexTask;
 import iped.io.SeekableInputStream;
 import iped.utils.SeekableFileInputStream;
 import iped.utils.SeekableInputStreamFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -22,8 +23,6 @@ import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.tika.Tika;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URI;
@@ -42,9 +41,9 @@ import java.util.zip.Deflater;
  * @author Nassif
  *
  */
+@Slf4j
 public class MinIOTask extends AbstractTask {
 
-    private static Logger logger = LoggerFactory.getLogger(MinIOTask.class);
 
     private static final int FOLDER_LEVELS = 2;
     private static final String CMD_LINE_KEY = "MinioCredentials";
@@ -128,7 +127,7 @@ public class MinIOTask extends AbstractTask {
         if (!credentialsLoaded.getAndSet(true)) {
             loadCredentials(caseData);
             if (paramBucket != null) {
-                logger.error("Passing the bucket as a parameter may prevent removing the evidence from the case.");
+                log.error("Passing the bucket as a parameter may prevent removing the evidence from the case.");
             }
         }
 
@@ -197,7 +196,7 @@ public class MinIOTask extends AbstractTask {
         for (String bucket : zipRequests.keySet()) {
             ZipRequest zp = zipRequests.get(bucket);
             if (zp.zipfile != null) {
-                logger.info("Flushing MinIOTask " + worker.id + " Sending zip containing " + zp.zipFiles + " files");
+                log.info("Flushing MinIOTask " + worker.id + " Sending zip containing " + zp.zipFiles + " files");
                 sendZipFile(bucket);
             }
         }
@@ -435,7 +434,7 @@ public class MinIOTask extends AbstractTask {
             insertWithZip(item, hash, is, item.getMediaTypeString(), false);
 
         } catch (Exception e) {
-            logger.error(e.getMessage() + "File " + item.getPath() + " (" + item.getLength() + " bytes)", e);
+            log.error(e.getMessage() + "File " + item.getPath() + " (" + item.getLength() + " bytes)", e);
             throw e;
         }
 
@@ -460,7 +459,7 @@ public class MinIOTask extends AbstractTask {
                 }
             }
         } catch (Exception e) {
-            logger.error(e.getMessage() + "Preview " + item, e);
+            log.error(e.getMessage() + "Preview " + item, e);
             throw e;
         } finally {
             IOUtils.closeQuietly(is);

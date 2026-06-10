@@ -3,6 +3,7 @@ package iped.parsers.whatsapp;
 import com.drew.lang.Charsets;
 import com.whatsapp.MediaData;
 import iped.parsers.sqlite.SQLite3DBParser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -15,16 +16,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author PCF HAUCK
  */
+@Slf4j
 public class LinkExtractor implements Closeable {
-
-    private static final Logger logger = Logger.getLogger(LinkExtractor.class.getName());
 
     private File dbFile;
     private Connection con;
@@ -47,7 +45,7 @@ public class LinkExtractor implements Closeable {
             return DriverManager.getConnection("jdbc:sqlite:" + dbname);
         } catch (Exception ex) {
             String msg = "Error getting connection when processing " + dbFile.getAbsolutePath();
-            logger.log(Level.WARNING, msg, ex);
+            log.warn(msg, ex);
         }
 
         return null;
@@ -131,7 +129,7 @@ public class LinkExtractor implements Closeable {
 
         } catch (Exception ex) {
             String msg = "Error getting cipher key when processing " + dbFile.getAbsolutePath();
-            logger.log(Level.WARNING, msg, ex);
+            log.warn(msg, ex);
         }
         return null;
 

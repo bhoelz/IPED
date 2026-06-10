@@ -7,10 +7,12 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.data.IPEDSource;
 import iped.engine.task.AbstractTask;
 import iped.task.AdditionalProcessingCapable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,9 +48,9 @@ import java.util.function.Consumer;
  * concurrent writes — {@link iped.engine.additionalindex.LuceneAdditionalDataSource}
  * satisfies this).
  */
+@Slf4j
 public class AdditionalTaskRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AdditionalTaskRunner.class);
 
     private final IPEDSource source;
     private final IAdditionalDataSource destination;
@@ -116,7 +118,7 @@ public class AdditionalTaskRunner {
                 ? annotation.displayName()
                 : taskClass.getSimpleName();
 
-        LOGGER.info("Starting additional processing '{}' on {} items using {} threads",
+        log.info("Starting additional processing '{}' on {} items using {} threads",
                 displayName, total, numThreads);
 
         AtomicInteger processed = new AtomicInteger(0);
@@ -150,13 +152,13 @@ public class AdditionalTaskRunner {
         try {
             destination.commit();
         } catch (Exception e) {
-            LOGGER.error("Error committing additional index after processing", e);
+            log.error("Error committing additional index after processing", e);
         }
 
         AdditionalTaskProgress finalProgress = new AdditionalTaskProgress(
                 displayName, processed.get(), total, errors.get());
 
-        LOGGER.info("Additional processing '{}' complete: {}/{} succeeded, {} errors",
+        log.info("Additional processing '{}' complete: {}/{} succeeded, {} errors",
                 displayName, processed.get(), total, errors.get());
 
         return finalProgress;
@@ -198,11 +200,11 @@ public class AdditionalTaskRunner {
                                     new AdditionalTaskProgress(displayName, n, total, errors.get()));
                         }
                     } else {
-                        LOGGER.warn("Item {} not found; skipping.", itemId.getId());
+                        log.warn("Item {} not found; skipping.", itemId.getId());
                         errors.incrementAndGet();
                     }
                 } catch (Exception e) {
-                    LOGGER.error("Error processing item {} with task '{}'",
+                    log.error("Error processing item {} with task '{}'",
                             itemId.getId(), displayName, e);
                     errors.incrementAndGet();
                 }
@@ -211,7 +213,7 @@ public class AdditionalTaskRunner {
             task.finish();
 
         } catch (Exception e) {
-            LOGGER.error("Fatal error in additional-processing worker {}", workerId, e);
+            log.error("Fatal error in additional-processing worker {}", workerId, e);
         }
     }
 

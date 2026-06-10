@@ -5,6 +5,7 @@ import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.br.BrazilianAnalyzer;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -18,16 +19,14 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 public class SimilarDocumentSearch {
 
-    private static Logger logger = LoggerFactory.getLogger(SimilarDocumentSearch.class);
 
     private static final CharArraySet stopSet = getStopWords();
 
@@ -85,7 +84,7 @@ public class SimilarDocumentSearch {
             List<String> keyTerms = Arrays.asList(mlt.retrieveInterestingTerms(docId));
 
             BooleanQuery.Builder query = new BooleanQuery.Builder();
-            logger.info("{} representative terms: {}", keyTerms.size(), keyTerms.toString());
+            log.info("{} representative terms: {}", keyTerms.size(), keyTerms.toString());
 
             for (String s : keyTerms) {
                 query.add(new TermQuery(new Term(IndexItem.CONTENT, s)), Occur.SHOULD);

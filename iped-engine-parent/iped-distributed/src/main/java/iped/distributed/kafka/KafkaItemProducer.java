@@ -5,10 +5,11 @@ import iped.data.IItem;
 import iped.distributed.config.DistributedConfig;
 import iped.distributed.status.ItemStatusProducer;
 import iped.engine.datasource.IDatasourceRegistry;
-import org.apache.kafka.clients.producer.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
@@ -27,9 +28,9 @@ import java.util.Properties;
  * <p>This class is <em>thread-safe</em>: multiple reader threads may call
  * {@link #addItem} concurrently.
  */
+@Slf4j
 public class KafkaItemProducer implements IDatasourceRegistry, AutoCloseable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaItemProducer.class);
 
     private final String                          caseId;
     private final String                          rawTopic;     // stage.0
@@ -66,7 +67,7 @@ public class KafkaItemProducer implements IDatasourceRegistry, AutoCloseable {
             kafkaProducer.initTransactions();
         }
 
-        LOGGER.info("KafkaItemProducer initialised for case '{}', publishing to '{}'",
+        log.info("KafkaItemProducer initialised for case '{}', publishing to '{}'",
                     caseId, rawTopic);
     }
 
@@ -94,10 +95,10 @@ public class KafkaItemProducer implements IDatasourceRegistry, AutoCloseable {
 
         kafkaProducer.send(record, (metadata, ex) -> {
             if (ex != null) {
-                LOGGER.error("Failed to publish item '{}' (path='{}') to Kafka topic '{}'",
+                log.error("Failed to publish item '{}' (path='{}') to Kafka topic '{}'",
                              msg.getItemUuid(), msg.getPath(), rawTopic, ex);
             } else {
-                LOGGER.debug("Published item '{}' → {}:{}", msg.getItemUuid(),
+                log.debug("Published item '{}' → {}:{}", msg.getItemUuid(),
                              metadata.topic(), metadata.offset());
             }
         });
@@ -148,6 +149,6 @@ public class KafkaItemProducer implements IDatasourceRegistry, AutoCloseable {
         kafkaProducer.flush();
         kafkaProducer.close();
         statusProducer.close();
-        LOGGER.info("KafkaItemProducer closed for case '{}'", caseId);
+        log.info("KafkaItemProducer closed for case '{}'", caseId);
     }
 }

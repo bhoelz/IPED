@@ -21,8 +21,7 @@ package iped.engine.config.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import iped.configuration.Configurable;
 import iped.engine.config.ConfigurationManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,8 +32,8 @@ import java.util.*;
  * API controller for configuration management.
  * Provides REST endpoints for managing configurations.
  */
+@Slf4j
 public class ConfigurationAPIController {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationAPIController.class);
     private final ObjectMapper mapper = new ObjectMapper();
     private final ConfigurationManager configManager;
     private final Map<String, String> configurationStore = new HashMap<>();
@@ -64,7 +63,7 @@ public class ConfigurationAPIController {
             response.put("count", configs.size());
             return response;
         } catch (Exception e) {
-            logger.error("Error getting current configuration", e);
+            log.error("Error getting current configuration", e);
             return errorResponse("Error getting configuration: " + e.getMessage());
         }
     }
@@ -90,7 +89,7 @@ public class ConfigurationAPIController {
             response.put("data", mapper.convertValue(config, Object.class));
             return response;
         } catch (Exception e) {
-            logger.error("Error getting configuration: " + componentName, e);
+            log.error("Error getting configuration: " + componentName, e);
             return errorResponse("Error getting configuration: " + e.getMessage());
         }
     }
@@ -118,7 +117,7 @@ public class ConfigurationAPIController {
             response.put("timestamp", System.currentTimeMillis());
             return response;
         } catch (Exception e) {
-            logger.error("Error exporting configuration", e);
+            log.error("Error exporting configuration", e);
             return errorResponse("Error exporting configuration: " + e.getMessage());
         }
     }
@@ -148,7 +147,7 @@ public class ConfigurationAPIController {
             response.put("timestamp", System.currentTimeMillis());
             return response;
         } catch (Exception e) {
-            logger.error("Error exporting all configurations", e);
+            log.error("Error exporting all configurations", e);
             return errorResponse("Error exporting configurations: " + e.getMessage());
         }
     }
@@ -179,7 +178,7 @@ public class ConfigurationAPIController {
             response.put("size", Files.size(path));
             return response;
         } catch (Exception e) {
-            logger.error("Error saving configuration", e);
+            log.error("Error saving configuration", e);
             return errorResponse("Error saving configuration: " + e.getMessage());
         }
     }
@@ -209,7 +208,7 @@ public class ConfigurationAPIController {
             response.put("count", metadata.size());
             return response;
         } catch (Exception e) {
-            logger.error("Error getting configuration metadata", e);
+            log.error("Error getting configuration metadata", e);
             return errorResponse("Error getting metadata: " + e.getMessage());
         }
     }
@@ -239,7 +238,7 @@ public class ConfigurationAPIController {
             response.put("timestamp", System.currentTimeMillis());
             return response;
         } catch (Exception e) {
-            logger.error("Error creating backup", e);
+            log.error("Error creating backup", e);
             return errorResponse("Error creating backup: " + e.getMessage());
         }
     }

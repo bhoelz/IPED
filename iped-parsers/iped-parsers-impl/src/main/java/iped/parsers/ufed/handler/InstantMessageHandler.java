@@ -5,11 +5,10 @@ import iped.parsers.ufed.model.*;
 import iped.parsers.util.ConversationConstants;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.Geographic;
 import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,9 +18,9 @@ import static iped.properties.ExtraProperties.*;
 /**
  * Handles all processing logic for an InstantMessage model.
  */
+@Slf4j
 public class InstantMessageHandler extends BaseModelHandler<InstantMessage> {
 
-    private static final Logger logger = LoggerFactory.getLogger(InstantMessageHandler.class);
 
     private Map<String, IItemReader> cache;
 
@@ -228,7 +227,7 @@ public class InstantMessageHandler extends BaseModelHandler<InstantMessage> {
             List<IItemReader> locationItems = searcher.search(query);
             if (!locationItems.isEmpty()) {
                 if (locationItems.size() > 1) {
-                    logger.warn("Found more than 1 location for coordinate: {}", locationItems);
+                    log.warn("Found more than 1 location for coordinate: {}", locationItems);
                 }
                 model.getPosition().setReferencedLocation(locationItems.get(0));
                 return;
@@ -245,7 +244,7 @@ public class InstantMessageHandler extends BaseModelHandler<InstantMessage> {
                 List<IItemReader> locationItems = searcher.search(query);
                 if (!locationItems.isEmpty()) {
                     if (locationItems.size() > 1) {
-                        logger.warn("Found more than 1 location for jumptargets: {}", locationItems);
+                        log.warn("Found more than 1 location for jumptargets: {}", locationItems);
                     }
                     model.getPosition().setReferencedLocation(locationItems.get(0));
                     return;
@@ -253,7 +252,7 @@ public class InstantMessageHandler extends BaseModelHandler<InstantMessage> {
             }
         }
 
-        logger.debug("Location reference was not found: {}", model);
+        log.debug("Location reference was not found: {}", model);
     }
 
     private void loadFileReferenceInSourceModels(IItemSearcher searcher) {

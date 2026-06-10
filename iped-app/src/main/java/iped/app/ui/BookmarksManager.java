@@ -36,6 +36,7 @@ import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
 import iped.utils.LocalizedFormat;
 import iped.viewers.util.ProgressDialog;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.SortedDocValues;
@@ -44,8 +45,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -56,9 +55,9 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
+@Slf4j
 public class BookmarksManager implements ActionListener, ListSelectionListener, KeyListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(BookmarksManager.class);
 
     private static BookmarksManager instance = new BookmarksManager();
 
@@ -379,7 +378,7 @@ public class BookmarksManager implements ActionListener, ListSelectionListener, 
 
             t = System.currentTimeMillis() - t;
 
-            logger.info("{} duplicated {} found in {}ms", duplicates, searchUsed ? "items" : "docs", t);
+            log.info("{} duplicated {} found in {}ms", duplicates, searchUsed ? "items" : "docs", t);
 
         } catch (Exception e) {
             e.printStackTrace();

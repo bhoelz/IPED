@@ -59,6 +59,7 @@ import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
 import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -73,8 +74,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.html.HtmlMapper;
 import org.apache.tika.parser.html.IdentityHtmlMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -101,9 +100,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * GRANDES NÃO TEM SEU TEXTO EXTRAÍDO ARMAZENADO EM MEMÓRIA, O QUE PODERIA
  * CAUSAR OOM.
  */
+@Slf4j
 public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ParsingTask.class);
 
     public static final String ENCRYPTED = ParsingTaskSupport.ENCRYPTED;
     public static final String HAS_SUBITEM = ParsingTaskSupport.HAS_SUBITEM;
@@ -284,7 +283,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
                 long st = task == null ? 0 : task.subitemsTime;
                 long diff = System.nanoTime() / 1000 - start;
                 if (diff < st) {
-                    LOGGER.warn("{} Negative Parsing Time: {} {} Diff={} SubItemsTime={}",
+                    log.warn("{} Negative Parsing Time: {} {} Diff={} SubItemsTime={}",
                             Thread.currentThread().getName(), evidence.getPath(), parserName, diff, st);
                 }
                 synchronized (timesPerParser) {
@@ -324,7 +323,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
             tis = (TikaInputStream) evidence.getTikaStream();
 
         } catch (IOException e) {
-            LOGGER.warn("{} Error opening: {} {}", Thread.currentThread().getName(), evidence.getPath(), e.toString()); //$NON-NLS-1$
+            log.warn("{} Error opening: {} {}", Thread.currentThread().getName(), evidence.getPath(), e.toString()); //$NON-NLS-1$
             return;
         }
 
@@ -335,7 +334,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
                     context.set(ComputeThumb.class, new ComputeThumb());
                 }
             } catch (Exception e1) {
-                LOGGER.warn("Error checking item thumbnail: " + evidence.toString(), e1);
+                log.warn("Error checking item thumbnail: " + evidence.toString(), e1);
             }
         }
 
@@ -365,7 +364,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
 
         } catch (IOException e) {
             if (e.toString().contains("Write end dead"))
-                LOGGER.error("{} Parsing thread ended without closing pipedWriter {} ({} bytes)", //$NON-NLS-1$
+                log.error("{} Parsing thread ended without closing pipedWriter {} ({} bytes)", //$NON-NLS-1$
                         Thread.currentThread().getName(), evidence.getPath(), evidence.getLength());
             else
                 throw e;
@@ -409,7 +408,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
                     saveThumb(evidence, thumbFile);
                 }
             } catch (Throwable t) {
-                LOGGER.warn("Error saving thumb of " + evidence.toString(), t);
+                log.warn("Error saving thumb of " + evidence.toString(), t);
             } finally {
                 updateHasThumb(evidence);
             }
@@ -666,17 +665,17 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
                 Thread.currentThread().interrupt();
             }
 
-            LOGGER.warn("{} SAX error while extracting subitem {}\t\t{}", Thread.currentThread().getName(), subitemPath, //$NON-NLS-1$
+            log.warn("{} SAX error while extracting subitem {}\t\t{}", Thread.currentThread().getName(), subitemPath, //$NON-NLS-1$
                     e.toString());
-            LOGGER.debug("SAX error extracting subitem " + subitemPath, (Throwable) e);
+            log.debug("SAX error extracting subitem " + subitemPath, (Throwable) e);
 
         } catch (ZipBombException e) {
             throw e;
 
         } catch (Exception e) {
-            LOGGER.warn("{} Error while extracting subitem {}\t\t{}", Thread.currentThread().getName(), subitemPath, //$NON-NLS-1$
+            log.warn("{} Error while extracting subitem {}\t\t{}", Thread.currentThread().getName(), subitemPath, //$NON-NLS-1$
                     e.toString());
-            LOGGER.debug("Error extracting subitem " + subitemPath, (Throwable) e);
+            log.debug("Error extracting subitem " + subitemPath, (Throwable) e);
 
         } finally {
             tmp.close();
@@ -748,7 +747,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
     @Override
     public void finish() throws Exception {
         if (totalText != null) {
-            LOGGER.info("Total extracted text size: " + totalText.get()); //$NON-NLS-1$
+            log.info("Total extracted text size: " + totalText.get()); //$NON-NLS-1$
             WhatsAppParser.clearStaticResources();
         }
         totalText = null;

@@ -6,8 +6,7 @@ import com.google.cloud.speech.v1p1beta1.RecognitionConfig.Builder;
 import com.google.protobuf.ByteString;
 import iped.engine.config.ConfigurationManager;
 import iped.exception.IPEDException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.InputStream;
@@ -15,9 +14,9 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class GoogleTranscriptTask extends AbstractTranscriptTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(GoogleTranscriptTask.class);
 
     // must be set in environment variable
     private static final String CREDENTIAL_KEY = "GOOGLE_APPLICATION_CREDENTIALS";
@@ -173,11 +172,11 @@ public class GoogleTranscriptTask extends AbstractTranscriptTask {
             textAndScore.text = text.toString();
             textAndScore.score = confidence / i;
 
-            LOGGER.debug("GG Transcript of {} : {}", evidence.getPath(), text.toString());
+            log.debug("GG Transcript of {} : {}", evidence.getPath(), text.toString());
 
         } catch (Exception e) {
-            LOGGER.error("Failed to transcript {} : {}", evidence.getPath(), e);
-            LOGGER.warn("", e);
+            log.error("Failed to transcript {} : {}", evidence.getPath(), e);
+            log.warn("", e);
         }
 
         return textAndScore;

@@ -6,6 +6,7 @@ import iped.properties.ExtraProperties;
 import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import iped.utils.LocalizedFormat;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.sevenzipjbinding.*;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
@@ -23,8 +24,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -35,7 +34,7 @@ import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.util.*;
 
-
+@Slf4j
 public class SevenZipParser extends AbstractParser {
 
     /**
@@ -43,7 +42,6 @@ public class SevenZipParser extends AbstractParser {
      */
     private static final long serialVersionUID = 1L;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SevenZipParser.class);
 
     private static final String ISO9660 = "x-iso9660-image"; //$NON-NLS-1$
     private static final String UDF = "x-udf-image"; //$NON-NLS-1$
@@ -356,7 +354,7 @@ public class SevenZipParser extends AbstractParser {
 
 
         } catch (SevenZipException e) {
-            LOGGER.warn("Error extracting subitem {} {}", subitemPath, e.getMessage()); //$NON-NLS-1$
+            log.warn("Error extracting subitem {} {}", subitemPath, e.getMessage()); //$NON-NLS-1$
         }
     }
 

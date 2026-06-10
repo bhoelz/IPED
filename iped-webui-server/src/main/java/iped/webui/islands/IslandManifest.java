@@ -1,15 +1,14 @@
 package iped.webui.islands;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.stereotype.Component;
 
 /**
  * Resolves the content-hashed Angular island bundle filenames produced by the
@@ -23,9 +22,9 @@ import org.springframework.stereotype.Component;
  * host element simply never upgrades.
  */
 @Component
+@Slf4j
 public class IslandManifest {
 
-    private static final Logger log = LoggerFactory.getLogger(IslandManifest.class);
     private static final String BASE = "/islands/";
 
     private final List<String> scripts;

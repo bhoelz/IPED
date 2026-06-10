@@ -1,7 +1,7 @@
 package iped.engine.graph;
 
-import org.neo4j.graphdb.RelationshipType;
 import org.junit.jupiter.api.Test;
+import org.neo4j.graphdb.RelationshipType;
 
 import static org.junit.jupiter.api.Assertions.*;
 

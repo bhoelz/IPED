@@ -34,11 +34,10 @@ import iped.utils.FileInputStreamFactory;
 import iped.viewers.ImageViewer;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.api.IFileProcessor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.io.File;
@@ -48,8 +47,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 public class FileProcessor extends CancelableWorker<Void, Void> implements IFileProcessor {
-    private static Logger LOGGER = LoggerFactory.getLogger(FileProcessor.class);
 
     private static int STATUS_LENGTH = 200;
     private volatile static FileProcessor parsingTask;
@@ -142,7 +141,7 @@ public class FileProcessor extends CancelableWorker<Void, Void> implements IFile
 
     private void process() throws InterruptedException {
 
-        LOGGER.info("Opening " + doc.get(IndexItem.PATH)); //$NON-NLS-1$
+        log.info("Opening " + doc.get(IndexItem.PATH)); //$NON-NLS-1$
 
         // TODO usar nova API e contornar exibição da Ajuda
         IPEDSource iCase = (IPEDSource) App.get().appCase.getAtomicSource(docId);

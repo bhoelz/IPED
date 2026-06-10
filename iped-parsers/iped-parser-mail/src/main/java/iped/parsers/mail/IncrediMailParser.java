@@ -20,6 +20,7 @@ package iped.parsers.mail;
 
 import iped.parsers.util.IgnoreContentHandler;
 import iped.parsers.util.Messages;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -29,8 +30,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -44,8 +43,8 @@ import java.util.Set;
  * @author Gabriel
  *
  */
+@Slf4j
 public class IncrediMailParser extends AbstractParser {
-    private static Logger LOGGER = LoggerFactory.getLogger(IncrediMailParser.class);
 
     /** Serial version UID */
     private static final long serialVersionUID = -1762689436731160661L;
@@ -196,7 +195,7 @@ public class IncrediMailParser extends AbstractParser {
                         if (count == 1)
                             throw new TikaException("IncrediMailParser Exception", t); //$NON-NLS-1$
 
-                        LOGGER.warn("Fail to extract email {} from {}\t{}", count, name, t.toString()); //$NON-NLS-1$
+                        log.warn("Fail to extract email {} from {}\t{}", count, name, t.toString()); //$NON-NLS-1$
                     }
                 }
             }

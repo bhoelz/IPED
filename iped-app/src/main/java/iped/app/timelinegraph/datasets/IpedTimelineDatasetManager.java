@@ -4,8 +4,7 @@ import iped.app.timelinegraph.IpedChartsPanel;
 import iped.app.timelinegraph.cache.IndexTimeStampCache;
 import iped.app.timelinegraph.cache.TimeStampCache;
 import iped.jfextensions.model.Minute;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.jfree.data.time.*;
 import org.jfree.data.xy.AbstractIntervalXYDataset;
 
@@ -19,10 +18,10 @@ import java.util.concurrent.*;
  *
  * Obs.: Currently it checks if there is an available cache. If not use a dataset with direct access to lucene resultset.
  */
+@Slf4j
 public class IpedTimelineDatasetManager {
     IpedChartsPanel ipedChartsPanel;
 
-    private static final Logger logger = LogManager.getLogger(IpedTimelineDatasetManager.class);
 
     List<TimeStampCache> timeStampCaches = new ArrayList<>();
     volatile boolean isCacheLoaded = false;
@@ -70,7 +69,7 @@ public class IpedTimelineDatasetManager {
         if (getAvailableMemory() > totalItems * 100) {
             poolSize = (int) Math.ceil((float) Runtime.getRuntime().availableProcessors() / 2f);
         } else {
-            logger.info("Only {}MB of free memory for {} total items. Timeline index creation will occur sequentially. ", Runtime.getRuntime().freeMemory(), totalItems);
+            log.info("Only {}MB of free memory for {} total items. Timeline index creation will occur sequentially. ", Runtime.getRuntime().freeMemory(), totalItems);
         }
         ExecutorService threadPool = Executors.newFixedThreadPool(poolSize);
         boolean first = true;

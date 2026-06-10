@@ -22,11 +22,10 @@ import iped.parsers.standard.StandardParser;
 import iped.properties.ExtraProperties;
 import iped.viewers.api.IColumnsManager;
 import iped.viewers.util.ProgressDialog;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.Document;
 import org.apache.tika.metadata.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.table.TableColumn;
 import java.io.File;
@@ -35,11 +34,11 @@ import java.io.Serializable;
 import java.text.Collator;
 import java.util.*;
 
+@Slf4j
 public class ColumnsManager implements Serializable, IColumnsManager {
 
     private static final long serialVersionUID = 1057562688829969313L;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ColumnsManager.class);
 
     private static final File globalCols = getGlobalColsFile();
 
@@ -216,7 +215,7 @@ public class ColumnsManager implements Serializable, IColumnsManager {
             }
         }
         if (!lastColsOk) {
-            LOGGER.info("Loading default columns"); //$NON-NLS-1$
+            log.info("Loading default columns"); //$NON-NLS-1$
             for (String col : defaultFields)
                 loadedFields.add(col);
             colState.visibleFields = (ArrayList<String>) loadedFields.clone();

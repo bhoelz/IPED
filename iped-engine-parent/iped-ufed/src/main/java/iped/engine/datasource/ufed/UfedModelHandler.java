@@ -2,9 +2,8 @@ package iped.engine.datasource.ufed;
 
 import iped.parsers.ufed.model.*;
 import iped.utils.DateUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -14,10 +13,9 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.util.ArrayList;
 import java.util.Stack;
 
-
+@Slf4j
 public class UfedModelHandler extends DefaultHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(UfedModelHandler.class);
 
     protected final Stack<BaseModel> modelStack = new Stack<>();
     protected final Stack<String> fieldNameStack = new Stack<>();
@@ -159,7 +157,7 @@ public class UfedModelHandler extends DefaultHandler {
                 default: return value;
             }
         } catch (Exception e) {
-            logger.error("Could not parse value '{}' for type '{}'. Defaulting to String. [{}]", value, type, e.getMessage());
+            log.error("Could not parse value '{}' for type '{}'. Defaulting to String. [{}]", value, type, e.getMessage());
             return value;
         }
     }
@@ -265,7 +263,7 @@ public class UfedModelHandler extends DefaultHandler {
                 } else if (child instanceof ReplyMessageData) {
                     extraData.setReplyMessage((ReplyMessageData) child);
                 } else {
-                    logger.error("Unknown InstantMessageExtraData child '{}' => {} (id={}). Ignoring...", fieldName, child.getClass().getSimpleName(), child.getId());
+                    log.error("Unknown InstantMessageExtraData child '{}' => {} (id={}). Ignoring...", fieldName, child.getClass().getSimpleName(), child.getId());
                 }
             } else if ("Position".equals(fieldName) && child instanceof Coordinate) {
                 message.setPosition((Coordinate) child);
@@ -304,9 +302,9 @@ public class UfedModelHandler extends DefaultHandler {
 
     private void addOtherModelField(BaseModel model, String fieldName, BaseModel child) {
         if (child instanceof GenericModel) {
-            logger.debug("Adding {} child '{}' => {} (id={}).", model.getClass().getName(), fieldName, child.getClass().getName(), child.getId());
+            log.debug("Adding {} child '{}' => {} (id={}).", model.getClass().getName(), fieldName, child.getClass().getName(), child.getId());
         } else {
-            logger.warn("Unimplemented {} child '{}' => {} (id={}).", model.getClass().getName(), fieldName, child.getClass().getName(), child.getId());
+            log.warn("Unimplemented {} child '{}' => {} (id={}).", model.getClass().getName(), fieldName, child.getClass().getName(), child.getId());
         }
         model.getOtherModelFields().computeIfAbsent(fieldName, k -> new ArrayList<>()).add(child);
     }

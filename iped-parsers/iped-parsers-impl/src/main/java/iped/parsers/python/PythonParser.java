@@ -4,13 +4,12 @@ import iped.configuration.IConfigurationDirectory;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.Messages;
 import jep.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -22,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class PythonParser extends AbstractParser {
 
     /**
@@ -29,7 +29,6 @@ public class PythonParser extends AbstractParser {
      */
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PythonParser.class);
 
     public static final String PYTHON_PARSERS_FOLDER = "PYTHON_PARSERS_FOLDER";
 
@@ -108,7 +107,7 @@ public class PythonParser extends AbstractParser {
                     } catch (JepException e) {
                         if (e.toString().contains("ModuleNotFoundError")) {
                             String msg = e.getMessage() + ". " + file.getName() + DISABLED + SEE_MANUAL;
-                            LOGGER.error(msg);
+                            log.error(msg);
                             e.printStackTrace();
                             continue;
                         } else {
@@ -169,7 +168,7 @@ public class PythonParser extends AbstractParser {
             if (e instanceof UnsatisfiedLinkError || e.getCause() instanceof UnsatisfiedLinkError) {
                 if (!jepNotFoundPrinted.getAndSet(true)) {
                     String msg = JEP_NOT_FOUND + SEE_MANUAL;
-                    LOGGER.error(msg);
+                    log.error(msg);
                     e.printStackTrace();
                 }
                 return null;
@@ -178,7 +177,7 @@ public class PythonParser extends AbstractParser {
             }
         }
 
-        // setGlobalVar(jep, "logger", LOGGER); //$NON-NLS-1$
+        // setGlobalVar(jep, "logger", log); //$NON-NLS-1$
 
         return jep;
     }

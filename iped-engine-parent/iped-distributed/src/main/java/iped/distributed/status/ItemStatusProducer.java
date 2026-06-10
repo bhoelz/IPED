@@ -3,12 +3,11 @@ package iped.distributed.status;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import iped.distributed.kafka.KafkaItemMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
@@ -19,9 +18,9 @@ import java.util.Properties;
  * Events are sent asynchronously (fire-and-forget) — the status topic is
  * observability infrastructure, not a critical data path.
  */
+@Slf4j
 public class ItemStatusProducer implements AutoCloseable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ItemStatusProducer.class);
 
     /** Name of the global status topic. */
     public static final String STATUS_TOPIC = "iped.status";
@@ -77,12 +76,12 @@ public class ItemStatusProducer implements AutoCloseable {
             producer.send(new ProducerRecord<>(STATUS_TOPIC, event.getCaseId(), json),
                     (meta, ex) -> {
                         if (ex != null) {
-                            LOGGER.warn("Failed to publish status event type={} item={}",
+                            log.warn("Failed to publish status event type={} item={}",
                                     event.getType(), event.getItemUuid(), ex);
                         }
                     });
         } catch (Exception e) {
-            LOGGER.warn("Could not serialize status event", e);
+            log.warn("Could not serialize status event", e);
         }
     }
 

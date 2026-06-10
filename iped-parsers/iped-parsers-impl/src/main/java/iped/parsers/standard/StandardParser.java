@@ -23,6 +23,7 @@ import iped.parsers.fork.ForkParser;
 import iped.parsers.util.*;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.EncryptedDocumentException;
@@ -37,8 +38,6 @@ import org.apache.tika.parser.csv.TextAndCSVParser;
 import org.apache.tika.parser.txt.TXTParser;
 import org.apache.tika.sax.ContentHandlerDecorator;
 import org.apache.tika.sax.SecureContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -55,9 +54,9 @@ import java.util.Map;
  * RawStringParser como fallback ou no caso de alguma Exceção durante o parsing
  * padrão. Finalmente, escreve os metadados ao final (inclusive de subitens).
  */
+@Slf4j
 public class StandardParser extends CompositeParser {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(StandardParser.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -215,7 +214,7 @@ public class StandardParser extends CompositeParser {
                     contentType = detector.detect(tis, metadata).toString();
 
                 } catch (IOException e) {
-                    LOGGER.warn("{} Error detecting file type: {} ({} bytes)\t\t{}", Thread.currentThread().getName(), //$NON-NLS-1$
+                    log.warn("{} Error detecting file type: {} ({} bytes)\t\t{}", Thread.currentThread().getName(), //$NON-NLS-1$
                             filePath, length, e.toString());
                     contentType = MediaType.OCTET_STREAM.toString();
                 }
@@ -291,14 +290,14 @@ public class StandardParser extends CompositeParser {
 
                 else {
                     if (e.getCause() instanceof IOException && IOUtil.isDiskFull((IOException) e.getCause()))
-                        LOGGER.error("No space on temp folder to process {} ({} bytes)", filePath, lengthStr); //$NON-NLS-1$
+                        log.error("No space on temp folder to process {} ({} bytes)", filePath, lengthStr); //$NON-NLS-1$
 
                     incParsingErrors();
                     metadata.set(PARSER_EXCEPTION, "true"); //$NON-NLS-1$
 
-                    LOGGER.warn("{} Parsing exception: {} ({} bytes)\t\t{}", Thread.currentThread().getName(), filePath, //$NON-NLS-1$
+                    log.warn("{} Parsing exception: {} ({} bytes)\t\t{}", Thread.currentThread().getName(), filePath, //$NON-NLS-1$
                             lengthStr, e.getCause() != null ? e.getCause().toString() : e.toString());
-                    LOGGER.debug(Thread.currentThread().getName() + " Parsing exception: " + filePath, e); //$NON-NLS-1$
+                    log.debug(Thread.currentThread().getName() + " Parsing exception: " + filePath, e); //$NON-NLS-1$
 
                     InputStream is = null;
                     if (errorParser != null)

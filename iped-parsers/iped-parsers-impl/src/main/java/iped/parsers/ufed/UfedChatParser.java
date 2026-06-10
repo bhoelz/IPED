@@ -14,6 +14,7 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
 import iped.utils.EmptyInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -24,8 +25,6 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -38,11 +37,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class UfedChatParser extends AbstractParser {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = LoggerFactory.getLogger(UfedChatParser.class);
 
     public static final MediaType UFED_CHAT_MIME = MediaType.application("x-ufed-chat");
 
@@ -198,7 +197,7 @@ public class UfedChatParser extends AbstractParser {
                 }
             }
         } catch (Exception e) {
-            logger.error("Error processing Chat", e);
+            log.error("Error processing Chat", e);
             e.printStackTrace();
             throw e;
         }

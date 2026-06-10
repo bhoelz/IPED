@@ -1,7 +1,7 @@
 package iped.engine.core;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit;
  * Coordinates the lifecycle of multiple forensic cases processing concurrently,
  * managing resource allocation, scheduling, and case completion.
  */
+@Slf4j
 public class ProcessingOrchestrator {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ProcessingOrchestrator.class);
 
     private static ProcessingOrchestrator instance;
 
@@ -84,7 +84,7 @@ public class ProcessingOrchestrator {
                     activeCases.put(caseId, caseContext);
                     caseContext.setState(CaseContext.CaseState.RUNNING);
                     activated = true;
-                    LOGGER.info("Case {} started processing immediately", caseId);
+                    log.info("Case {} started processing immediately", caseId);
                 } catch (IllegalStateException e) {
                     // resource limit hit concurrently, fall through to queue
                 }
@@ -92,7 +92,7 @@ public class ProcessingOrchestrator {
         }
         if (!activated) {
             caseQueue.put(new CaseProcessingRequest(caseId, caseContext));
-            LOGGER.info("Case {} enqueued for processing", caseId);
+            log.info("Case {} enqueued for processing", caseId);
         }
         return caseId;
     }
@@ -107,7 +107,7 @@ public class ProcessingOrchestrator {
             schedulerThread.setName("ProcessingOrchestrator-Scheduler");
             schedulerThread.setDaemon(true);
             schedulerThread.start();
-            LOGGER.info("Processing orchestrator started");
+            log.info("Processing orchestrator started");
         }
     }
 
@@ -121,7 +121,7 @@ public class ProcessingOrchestrator {
         if (schedulerThread != null) {
             schedulerThread.join(30000);
         }
-        LOGGER.info("Processing orchestrator stopped");
+        log.info("Processing orchestrator stopped");
     }
 
     /**
@@ -133,7 +133,7 @@ public class ProcessingOrchestrator {
         CaseContext context = activeCases.get(caseId);
         if (context != null) {
             context.setState(CaseContext.CaseState.PAUSED);
-            LOGGER.info("Case {} paused", caseId);
+            log.info("Case {} paused", caseId);
         }
     }
 
@@ -146,7 +146,7 @@ public class ProcessingOrchestrator {
         CaseContext context = activeCases.get(caseId);
         if (context != null) {
             context.setState(CaseContext.CaseState.RUNNING);
-            LOGGER.info("Case {} resumed", caseId);
+            log.info("Case {} resumed", caseId);
         }
     }
 
@@ -158,7 +158,7 @@ public class ProcessingOrchestrator {
     public void completeCaseProcessing(UUID caseId) {
         activeCases.remove(caseId);
         resourceManager.releaseResources(caseId);
-        LOGGER.info("Case {} processing completed", caseId);
+        log.info("Case {} processing completed", caseId);
     }
 
     /**
@@ -228,23 +228,23 @@ public class ProcessingOrchestrator {
                         resourceManager.acquireResources(request.caseId);
                         activeCases.put(request.caseId, request.context);
                         request.context.setState(CaseContext.CaseState.RUNNING);
-                        LOGGER.info("Case {} started processing", request.caseId);
+                        log.info("Case {} started processing", request.caseId);
                     } catch (IllegalStateException e) {
                         try {
                             caseQueue.put(request);
                         } catch (InterruptedException ie) {
-                            LOGGER.error("Error re-queueing case", ie);
+                            log.error("Error re-queueing case", ie);
                         }
                     }
                 } else if (request != null) {
                     try {
                         caseQueue.put(request);
                     } catch (InterruptedException e) {
-                        LOGGER.error("Error queueing case", e);
+                        log.error("Error queueing case", e);
                     }
                 }
             } catch (InterruptedException e) {
-                LOGGER.debug("Orchestrator scheduler interrupted");
+                log.debug("Orchestrator scheduler interrupted");
             }
         }
     }

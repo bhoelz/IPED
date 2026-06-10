@@ -5,11 +5,11 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.ProcessingPriorityConfig;
 import iped.engine.data.CaseData;
 import iped.engine.util.Util;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
+@Slf4j
 public class ProcessingQueues {
     /*
      The LinkedList's are used for prioritized items, inserted on the top of the
@@ -30,7 +30,6 @@ public class ProcessingQueues {
     private int maxQueueSize;
     private boolean randomOrder;
 
-    private static Logger logger = LogManager.getLogger(ProcessingQueues.class);
 
     private int totalItemsBeingProcessed = 0;
 
@@ -56,8 +55,8 @@ public class ProcessingQueues {
         // Enforce a very minimal size
         maxQueueSize = Math.max(1024, maxQueueSize);
 
-        logger.info("Maximum Processing Queue Size: {}{}", maxQueueSize, auto ? " (auto)" : "");
-        logger.info("Processing Queue Random Order: {}", randomOrder ? "enabled" : "disabled");
+        log.info("Maximum Processing Queue Size: {}{}", maxQueueSize, auto ? " (auto)" : "");
+        log.info("Processing Queue Random Order: {}", randomOrder ? "enabled" : "disabled");
     }
 
     private void initQueues() {

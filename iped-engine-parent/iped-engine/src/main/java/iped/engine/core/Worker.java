@@ -27,9 +27,8 @@ import iped.engine.task.TaskInstaller;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.index.IndexWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,9 +45,9 @@ import java.util.List;
  * Caso haja uma exceção não esperada, ela é armazenada para que possa ser
  * detectada pelo manager.
  */
+@Slf4j
 public class Worker extends Thread {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Worker.class);
 
     private static String workerNamePrefix = "Worker-"; //$NON-NLS-1$
 
@@ -115,7 +114,7 @@ public class Worker extends Thread {
         baseFilePath = output.getParentFile().getAbsolutePath();
 
         if (k == 0) {
-            LOGGER.info("Starting Tika"); //$NON-NLS-1$
+            log.info("Starting Tika"); //$NON-NLS-1$
         }
 
         TaskInstaller taskInstaller = new TaskInstaller();
@@ -137,7 +136,7 @@ public class Worker extends Thread {
     private void initTasks() throws Exception {
         for (AbstractTask task : tasks) {
             if (this.getName().equals(workerNamePrefix + 0)) {
-                LOGGER.info("Starting " + task.getName()); //$NON-NLS-1$
+                log.info("Starting " + task.getName()); //$NON-NLS-1$
                 UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", //$NON-NLS-1$ //$NON-NLS-2$
                         Messages.getString("Worker.Starting") + task.getName()); //$NON-NLS-1$
             }
@@ -188,7 +187,7 @@ public class Worker extends Thread {
 
         try {
 
-            LOGGER.debug("{} Processing {} ({} bytes)", getName(), evidence.getPath(), evidence.getLength()); //$NON-NLS-1$
+            log.debug("{} Processing {} ({} bytes)", getName(), evidence.getPath(), evidence.getLength()); //$NON-NLS-1$
 
             firstTask.processAndSendToNextTask(evidence);
 
@@ -249,7 +248,7 @@ public class Worker extends Thread {
     @Override
     public void run() {
 
-        LOGGER.info("{} started.", getName()); //$NON-NLS-1$
+        log.info("{} started.", getName()); //$NON-NLS-1$
 
         // Bind this worker thread's case context so Manager.getInstance() resolves correctly.
         CaseContext caseContext = manager.getContext();
@@ -293,7 +292,7 @@ public class Worker extends Thread {
                             manager.getProcessingQueues().addToCurrentQueue(queueEnd);
                             evidence = null;
 
-                            LOGGER.debug(this.getName() + " going to wait queue change.");
+                            log.debug(this.getName() + " going to wait queue change.");
                             synchronized(this) {
                                 try {
                                     waiting = true;
@@ -306,7 +305,7 @@ public class Worker extends Thread {
                             manager.getProcessingQueues().addToCurrentQueue(queueEnd);
                             long timeSinceLastItemProcessed = System.currentTimeMillis() - lastItemProcessingTime;
                             if (itemsBeingProcessed > 0 && timeSinceLastItemProcessed >= MIN_WAIT_TIME_TO_SEND_QUEUE_END) {
-                                LOGGER.debug(
+                                log.debug(
                                         this.getName() + " Queue size = "
                                                 + manager.getProcessingQueues().getCurrentQueueSize()
                                         + " itemsInThisWorker = " + itemsBeingProcessed + " itemsInAllWorkers = "
@@ -336,12 +335,12 @@ public class Worker extends Thread {
             }
 
             if (evidence == null) {
-                LOGGER.info("{} finished.", getName()); //$NON-NLS-1$
+                log.info("{} finished.", getName()); //$NON-NLS-1$
             } else {
                 AbstractTask task = runningTask;
                 if (task != null)
                     task.interrupted();
-                LOGGER.info("{} interrupted on {} ({} bytes)", getName(), evidence.getPath(), evidence.getLength()); //$NON-NLS-1$
+                log.info("{} interrupted on {} ({} bytes)", getName(), evidence.getPath(), evidence.getLength()); //$NON-NLS-1$
             }
         } finally {
             // Clear the ThreadLocal context when the worker thread exits

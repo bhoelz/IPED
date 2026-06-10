@@ -1,7 +1,7 @@
 package iped.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.*;
 
+@Slf4j
 public class ExternalImageConverter implements Closeable {
-    private static Logger logger = LoggerFactory.getLogger(ExternalImageConverter.class);
 
     private static final String prefix = "extImgConv."; //$NON-NLS-1$
 
@@ -124,7 +124,7 @@ public class ExternalImageConverter implements Closeable {
                     // fallback to legacy imagemagick command
                     CMD = Arrays.copyOfRange(CMD, 1, CMD.length);
                 } else {
-                    logger.error("Imagemagick command is not working!");
+                    log.error("Imagemagick command is not working!");
                 }
             }
         }
@@ -239,9 +239,9 @@ public class ExternalImageConverter implements Closeable {
         try {
             p = pb.start();
         } catch (IOException e) {
-            logger.error("Error executing " + (useGM ? "graphicsMagick" : "imageMagick") + ". " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            log.error("Error executing " + (useGM ? "graphicsMagick" : "imageMagick") + ". " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     + "Check if it is installed and if its path is configured!"); //$NON-NLS-1$
-            logger.warn("", e);
+            log.warn("", e);
         }
         BufferedImage result = null;
         if (p != null) {
@@ -265,7 +265,7 @@ public class ExternalImageConverter implements Closeable {
                         throw te;
                     }
                 } else {
-                    logger.warn("Timeout converting image to PNG, elapsed {} s.", timeout); //$NON-NLS-1$
+                    log.warn("Timeout converting image to PNG, elapsed {} s.", timeout); //$NON-NLS-1$
                 }
             } catch (ExecutionException e) {
                 throw new RuntimeException(e);

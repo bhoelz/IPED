@@ -1,13 +1,12 @@
 package iped.webui.web;
 
+import iped.webui.islands.IslandManifest;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.view.RedirectView;
-
-import iped.webui.islands.IslandManifest;
 import views.workspace.page;
 
 /**

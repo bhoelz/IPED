@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import iped.data.IItemReader;
 import iped.parsers.browsers.chrome.CacheIndexParser;
-import iped.parsers.discord.cache.Index;
 import iped.parsers.discord.json.DiscordAttachment;
 import iped.parsers.discord.json.DiscordAuthor;
 import iped.parsers.discord.json.DiscordRoot;
@@ -18,6 +17,7 @@ import iped.search.IItemSearcher;
 import iped.utils.DateUtil;
 import iped.utils.EmptyInputStream;
 import iped.utils.ImageUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -29,8 +29,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.brotli.dec.BrotliInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -46,6 +44,7 @@ import java.util.zip.GZIPInputStream;
  * @author PCF Patrick Dalla Bernardina
  *
  */
+@Slf4j
 public class DiscordParser extends AbstractParser {
 
     // TODO
@@ -67,7 +66,6 @@ public class DiscordParser extends AbstractParser {
 
     public static final MediaType DISCORD_ACCOUNT = MediaType.application("x-discord-account"); //$NON-NLS-1$
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Index.class);
 
     private static final Set<MediaType> SUPPORTED_TYPES = new HashSet<MediaType>(Arrays.asList(MediaType.parse(CHAT_MIME_TYPE)));
     private static final String ME_URL = "https://discord.com/api/v9/users/@me";
@@ -162,12 +160,12 @@ public class DiscordParser extends AbstractParser {
                                 }
                             }
                         } else {
-                            LOGGER.warn("JSON object ignored in DiscordParser (not a message or query):" + item.getPath());
+                            log.warn("JSON object ignored in DiscordParser (not a message or query):" + item.getPath());
                         }
                     }
                 }
             } catch (Exception ex) {
-                LOGGER.warn("Invalid JSON inside cache entry " + item.getPath(), ex);
+                log.warn("Invalid JSON inside cache entry " + item.getPath(), ex);
             }
 
             if (discordRoot == null) {
@@ -201,7 +199,7 @@ public class DiscordParser extends AbstractParser {
                                     }
                                 }
                             } catch (Exception e) {
-                                LOGGER.warn("Exception decoding Discord avatar", e);
+                                log.warn("Exception decoding Discord avatar", e);
                             }
                         }
                     }
@@ -233,7 +231,7 @@ public class DiscordParser extends AbstractParser {
                             sticker.setMediaHash(stickerItem.getHash());
                         }
                     } catch (Exception e) {
-                        LOGGER.warn("Exception decoding Discord attachment", e);
+                        log.warn("Exception decoding Discord attachment", e);
                     }
 
                     if (sticker.getMediaHash() != null) {
@@ -257,7 +255,7 @@ public class DiscordParser extends AbstractParser {
                             }
                         }
                     } catch (Exception e) {
-                        LOGGER.warn("Exception decoding Discord attachment", e);
+                        log.warn("Exception decoding Discord attachment", e);
                     }
 
                     if (da.getMediaHash() != null) {
@@ -309,13 +307,13 @@ public class DiscordParser extends AbstractParser {
                             memeta.set(StandardParser.INDEXER_CONTENT_TYPE, DISCORD_ACCOUNT.toString());
                             extractor.parseEmbedded(new ByteArrayInputStream(mebytes), handler, memeta, false);
                         } catch (Exception e) {
-                            LOGGER.warn("Failed to extract internal data from Discord account:" + mei.getName());
+                            log.warn("Failed to extract internal data from Discord account:" + mei.getName());
                         }
                     }
                 }
             }
         } catch (IOException e) {
-            LOGGER.warn("Error searching for discord account:" + e.getClass().getCanonicalName());
+            log.warn("Error searching for discord account:" + e.getClass().getCanonicalName());
         }
         return me;
     }

@@ -3,8 +3,7 @@ package iped.engine.mcp.client;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import iped.engine.mcp.client.dto.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.URI;
@@ -17,8 +16,8 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+@Slf4j
 public class WebApiClient {
-    private static final Logger LOG = LoggerFactory.getLogger(WebApiClient.class);
 
     private final String baseUrl;
     private final HttpClient http;
@@ -41,15 +40,15 @@ public class WebApiClient {
     }
 
     public CaseStatusDto getCaseStatus(String caseId) throws WebApiException {
-        return get("/cases/" + encode(caseId), CaseStatusDto.class);
+        return get("/cases/" + encodePath(caseId), CaseStatusDto.class);
     }
 
     public void pauseCase(String caseId) throws WebApiException {
-        post("/cases/" + encode(caseId) + "/pause");
+        post("/cases/" + encodePath(caseId) + "/pause");
     }
 
     public void resumeCase(String caseId) throws WebApiException {
-        post("/cases/" + encode(caseId) + "/resume");
+        post("/cases/" + encodePath(caseId) + "/resume");
     }
 
     // --- Stats ---
@@ -59,7 +58,7 @@ public class WebApiClient {
     }
 
     public CaseStatsDto getCaseStats(String caseId) throws WebApiException {
-        return get("/stats/case/" + encode(caseId), CaseStatsDto.class);
+        return get("/stats/case/" + encodePath(caseId), CaseStatsDto.class);
     }
 
     // --- Sources ---
@@ -69,7 +68,7 @@ public class WebApiClient {
     }
 
     public SourceDto getSource(String sourceId) throws WebApiException {
-        return get("/sources/" + encode(sourceId), SourceDto.class);
+        return get("/sources/" + encodePath(sourceId), SourceDto.class);
     }
 
     public void addSource(String id, String path) throws WebApiException {
@@ -90,12 +89,12 @@ public class WebApiClient {
     // --- Documents ---
 
     public DocPropsDto getDocumentMetadata(String sourceId, int docId) throws WebApiException {
-        String path = "/sources/" + encode(sourceId) + "/docs/" + docId;
+        String path = "/sources/" + encodePath(sourceId) + "/docs/" + docId;
         return get(path, DocPropsDto.class);
     }
 
     public String getDocumentText(String sourceId, int docId) throws WebApiException {
-        String path = "/sources/" + encode(sourceId) + "/docs/" + docId + "/text";
+        String path = "/sources/" + encodePath(sourceId) + "/docs/" + docId + "/text";
         String text = getText(path);
         if (text.length() > 50000) {
             return text.substring(0, 50000) + "\n[TRUNCATED — full text is " + text.length() + " chars]";
@@ -110,27 +109,27 @@ public class WebApiClient {
     }
 
     public SearchResultDto getBookmarkDocs(String name) throws WebApiException {
-        return get("/bookmarks/" + encode(name), SearchResultDto.class);
+        return get("/bookmarks/" + encodePath(name), SearchResultDto.class);
     }
 
     public void createBookmark(String name) throws WebApiException {
-        post("/bookmarks/" + encode(name));
+        post("/bookmarks/" + encodePath(name));
     }
 
     public void deleteBookmark(String name) throws WebApiException {
-        delete("/bookmarks/" + encode(name));
+        delete("/bookmarks/" + encodePath(name));
     }
 
     public void addDocsToBookmark(String name, DocRefDto[] docs) throws WebApiException {
-        putJson("/bookmarks/" + encode(name) + "/add", new DocRefRequest(docs));
+        putJson("/bookmarks/" + encodePath(name) + "/add", new DocRefRequest(docs));
     }
 
     public void removeDocsFromBookmark(String name, DocRefDto[] docs) throws WebApiException {
-        putJson("/bookmarks/" + encode(name) + "/remove", new DocRefRequest(docs));
+        putJson("/bookmarks/" + encodePath(name) + "/remove", new DocRefRequest(docs));
     }
 
     public void renameBookmark(String oldName, String newName) throws WebApiException {
-        put("/bookmarks/" + encode(oldName) + "/rename/" + encode(newName), null);
+        put("/bookmarks/" + encodePath(oldName) + "/rename/" + encodePath(newName), null);
     }
 
     // --- Selection ---
@@ -288,8 +287,14 @@ public class WebApiClient {
             throw new WebApiException("HTTP " + status + " from " + path);
     }
 
+    /** Form encoding for query parameter values (space as '+'). */
     private String encode(String value) {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
+    /** Percent encoding for URL path segments (space as %20, never '+'). */
+    private String encodePath(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     // Helper class for request bodies

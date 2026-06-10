@@ -33,11 +33,10 @@ import iped.search.IIPEDSearcher;
 import iped.search.IMultiSearchResult;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.util.ProgressDialog;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.lucene.document.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.io.*;
@@ -46,9 +45,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+@Slf4j
 public class ExportFileTree extends CancelableWorker {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ExportFileTree.class);
 
     int baseDocId;
     boolean onlyChecked, toZip;
@@ -193,7 +192,7 @@ public class ExportFileTree extends CancelableWorker {
                     Files.createDirectories(dst.toPath());
                 }
             } else {
-                LOGGER.info("Exporting file " + item.getPath()); //$NON-NLS-1$
+                log.info("Exporting file " + item.getPath()); //$NON-NLS-1$
 
                 try (InputStream in = item.getBufferedInputStream()) {
                     dst = getNonExistingFile(dst);
@@ -254,7 +253,7 @@ public class ExportFileTree extends CancelableWorker {
             zaos.putArchiveEntry(entry);
 
             if (!item.isDir() && !isParent) {
-                LOGGER.info("Exporting file " + item.getPath()); //$NON-NLS-1$
+                log.info("Exporting file " + item.getPath()); //$NON-NLS-1$
                 try (InputStream in = item.getBufferedInputStream()) {
                     int len = 0;
                     while ((len = in.read(buf)) != -1 && !this.isCancelled())
@@ -347,7 +346,7 @@ public class ExportFileTree extends CancelableWorker {
     protected void done() {
         if (hos != null && !error) {
             String hash = hos.hash().toString().toUpperCase();
-            LOGGER.info("MD5 of " + baseDir.getAbsolutePath() + ": " + hash); //$NON-NLS-1$ //$NON-NLS-2$
+            log.info("MD5 of " + baseDir.getAbsolutePath() + ": " + hash); //$NON-NLS-1$ //$NON-NLS-2$
             appendHashSuffixIfTriageMode(hash, baseDir);
             HashDialog dialog = new HashDialog(hash, baseDir.getAbsolutePath());
             dialog.setVisible(true);
@@ -425,7 +424,7 @@ public class ExportFileTree extends CancelableWorker {
                 if (toZip && !baseDir.getName().toLowerCase().endsWith(".zip")) //$NON-NLS-1$
                     baseDir = new File(baseDir.getAbsolutePath() + ".zip"); //$NON-NLS-1$
 
-                LOGGER.info("Exporting files to " + baseDir.getAbsolutePath()); //$NON-NLS-1$
+                log.info("Exporting files to " + baseDir.getAbsolutePath()); //$NON-NLS-1$
                 (new ExportFileTree(baseDir, baseDocId, onlyChecked, toZip)).execute();
             }
         } catch (Exception e) {

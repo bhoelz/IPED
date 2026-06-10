@@ -3,12 +3,11 @@ package iped.engine.graph;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.LocalConfig;
 import iped.engine.graph.GraphImportRunner.ImportListener;
+import lombok.extern.slf4j.Slf4j;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +17,9 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class GraphGenerator {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(GraphGenerator.class);
 
     private static final Pattern HASH_LIKE_CONTACT = Pattern
             .compile("[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}");
@@ -66,21 +65,21 @@ public class GraphGenerator {
             runner.run(output, GraphConstants.DB_NAME, localConfig.isOutputOnSSD());
             return true;
         } catch (Exception e) {
-            LOGGER.error("Error generating database.", e);
+            log.error("Error generating database.", e);
             return false;
         }
     }
 
     public void runPostGenerationStatements(GraphService graphService, GraphConfiguration config) {
         long start = System.currentTimeMillis();
-        LOGGER.info("Running post generation statements.");
+        log.info("Running post generation statements.");
         GraphDatabaseService graphDB = graphService.getGraphDb();
         Transaction tx = null;
         try {
             tx = graphDB.beginTx();
 
             for (String stmt : config.getPostGenerationStatements()) {
-                LOGGER.info("Running {}", stmt);
+                log.info("Running {}", stmt);
                 tx.execute(stmt);
             }
 
@@ -88,7 +87,7 @@ public class GraphGenerator {
         } finally {
             tx.close();
         }
-        LOGGER.info("Finished running post generation statements in " + (System.currentTimeMillis() - start) + "ms.");
+        log.info("Finished running post generation statements in " + (System.currentTimeMillis() - start) + "ms.");
     }
 
     public static void main(String[] args) throws Exception {
@@ -107,7 +106,7 @@ public class GraphGenerator {
             GraphGenerator graphGenerator = new GraphGenerator();
             graphGenerator.groupContacts(graphService, config);
         } catch (Exception e) {
-            LOGGER.error("Error generating database.", e);
+            log.error("Error generating database.", e);
         } finally {
             if (graphService != null) {
                 graphService.stop();
@@ -133,7 +132,7 @@ public class GraphGenerator {
 
             int count = 0;
 
-            LOGGER.info("Grouping " + label + " contacts.");
+            log.info("Grouping " + label + " contacts.");
 
             while (result.hasNext()) {
                 Map<String, Object> cols = result.next();
@@ -182,12 +181,12 @@ public class GraphGenerator {
                 count++;
 
                 if (count % 1000 == 0) {
-                    LOGGER.info("Grouped " + count + " " + label + " contacts.");
+                    log.info("Grouped " + count + " " + label + " contacts.");
                 }
             }
 
             tx.commit();
-            LOGGER.info("Grouped " + count + " " + label + " contacts.");
+            log.info("Grouped " + count + " " + label + " contacts.");
         } finally {
             tx.close();
         }

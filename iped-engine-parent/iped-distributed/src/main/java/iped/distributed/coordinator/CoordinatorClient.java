@@ -2,15 +2,13 @@ package iped.distributed.coordinator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,9 +24,9 @@ import java.util.Map;
  *
  * <p>Uses only {@code java.net.HttpURLConnection} — no external HTTP client dependency.
  */
+@Slf4j
 public class CoordinatorClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CoordinatorClient.class);
 
     private final String baseUrl;
     private final ObjectMapper mapper;
@@ -44,10 +42,10 @@ public class CoordinatorClient {
         try {
             String body = mapper.writeValueAsString(reg);
             post("/api/v1/agents/register", body);
-            LOGGER.info("Registered with coordinator as agent '{}' (type={})",
+            log.info("Registered with coordinator as agent '{}' (type={})",
                     reg.getAgentId(), reg.getTaskType());
         } catch (Exception e) {
-            LOGGER.warn("Could not register with coordinator: {}", e.getMessage());
+            log.warn("Could not register with coordinator: {}", e.getMessage());
         }
     }
 
@@ -58,7 +56,7 @@ public class CoordinatorClient {
                     agentId, freeSlots, currentLoad);
             post("/api/v1/agents/" + agentId + "/heartbeat", body);
         } catch (Exception e) {
-            LOGGER.debug("Heartbeat failed: {}", e.getMessage());
+            log.debug("Heartbeat failed: {}", e.getMessage());
         }
     }
 
@@ -66,7 +64,7 @@ public class CoordinatorClient {
         try {
             delete("/api/v1/agents/" + agentId);
         } catch (Exception e) {
-            LOGGER.warn("Could not unregister agent '{}': {}", agentId, e.getMessage());
+            log.warn("Could not unregister agent '{}': {}", agentId, e.getMessage());
         }
     }
 

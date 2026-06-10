@@ -6,13 +6,12 @@ import iped.parsers.ufed.model.BaseModel;
 import iped.parsers.util.HashUtils;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.Property;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.utils.DateUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -22,9 +21,9 @@ import static iped.properties.ExtraProperties.*;
  * Base handler for handling common operations on UFED models.
  * @param <T> The type of the BaseModel being processed.
  */
+@Slf4j
 public class BaseModelHandler<T extends BaseModel> {
 
-    private static final Logger logger = LoggerFactory.getLogger(BaseModelHandler.class);
 
     protected final T model;
     protected final IItemReader item;
@@ -88,8 +87,8 @@ public class BaseModelHandler<T extends BaseModel> {
         try {
             doLoadReferences(searcher);
         } catch (Exception e) {
-            logger.error("Error loading references of model {}: {}", model, e.getMessage());
-            logger.warn("", e);
+            log.error("Error loading references of model {}: {}", model, e.getMessage());
+            log.warn("", e);
         }
 
         model.setReferenceLoaded(true);

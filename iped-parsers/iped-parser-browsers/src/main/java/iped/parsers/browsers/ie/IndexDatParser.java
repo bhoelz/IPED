@@ -19,6 +19,7 @@
 package iped.parsers.browsers.ie;
 
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
@@ -27,8 +28,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -47,6 +46,7 @@ import java.util.Set;
  * @author Nassif
  *
  */
+@Slf4j
 public class IndexDatParser extends AbstractParser {
 
     /**
@@ -54,7 +54,6 @@ public class IndexDatParser extends AbstractParser {
      */
     private static final long serialVersionUID = 1L;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(IndexDatParser.class);
 
     private static Set<MediaType> SUPPORTED_TYPES = Collections.singleton(MediaType.application("x-msie-cache")); //$NON-NLS-1$
     private static final String TOOL_NAME = "msiecfexport"; //$NON-NLS-1$
@@ -79,7 +78,7 @@ public class IndexDatParser extends AbstractParser {
                         throw new Exception();
 
                 } catch (Exception e) {
-                    LOGGER.error("Error testing msiecfexport (libmsiecf): index.dat files will NOT be parsed"); //$NON-NLS-1$
+                    log.error("Error testing msiecfexport (libmsiecf): index.dat files will NOT be parsed"); //$NON-NLS-1$
                     SUPPORTED_TYPES = Collections.emptySet();
                 }
             tested = true;

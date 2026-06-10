@@ -18,16 +18,14 @@
  */
 package iped.engine.data;
 
+import iped.data.BookmarkShortcut;
 import iped.data.IBookmarks;
 import iped.engine.Version;
 import iped.engine.util.SaveStateThread;
 import iped.engine.util.Util;
 import iped.search.SearchResult;
 import iped.utils.IOUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import iped.data.BookmarkShortcut;
+import lombok.extern.slf4j.Slf4j;
 
 import java.awt.*;
 import java.io.File;
@@ -36,6 +34,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.List;
 
+@Slf4j
 public class Bookmarks implements IBookmarks {
 
     /**
@@ -43,7 +42,6 @@ public class Bookmarks implements IBookmarks {
      */
     private static final long serialVersionUID = 1L;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Bookmarks.class);
 
     public static String EXT = "." + Version.APP_EXT.toLowerCase(); //$NON-NLS-1$
     public static String STATEFILENAME = "bookmarks" + EXT; //$NON-NLS-1$
@@ -457,7 +455,7 @@ public class Bookmarks implements IBookmarks {
 
     @Override
     public void saveState(File file, boolean synchronous) throws IOException {
-        LOGGER.info("Saving state sync={} to file {}", synchronous, file.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Saving state sync={} to file {}", synchronous, file.getAbsolutePath()); //$NON-NLS-1$
         if (synchronous) {
             synchronized (this) {
                 Util.writeObject(this, file.getAbsolutePath());
@@ -514,7 +512,7 @@ public class Bookmarks implements IBookmarks {
     }
 
     public static Bookmarks load(File file) throws ClassNotFoundException, IOException {
-        LOGGER.info("Loading state from file " + file.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Loading state from file " + file.getAbsolutePath()); //$NON-NLS-1$
         return (Bookmarks) Util.readObject(file.getAbsolutePath());
     }
 

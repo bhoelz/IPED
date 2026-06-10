@@ -7,6 +7,7 @@ import iped.utils.SeekableFileInputStream;
 import iped.utils.UiUtil;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.exbin.deltahex.*;
 import org.exbin.deltahex.highlight.swing.HighlightCodeAreaPainter;
@@ -18,8 +19,6 @@ import org.exbin.deltahex.swing.ColorsGroup;
 import org.exbin.utils.binary_data.BinaryData;
 import org.exbin.utils.binary_data.ByteArrayEditableData;
 import org.exbin.utils.binary_data.OutOfBoundsException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -3123,6 +3122,7 @@ class FilterComboBox extends JComboBox<String> {
     }
 }
 
+@Slf4j
 class HVPSettings implements Serializable {
 
     /**
@@ -3130,7 +3130,6 @@ class HVPSettings implements Serializable {
      */
     private static final long serialVersionUID = 1L;
 
-    private static Logger LOGGER = LoggerFactory.getLogger(HVPSettings.class);
 
     public int mode = 0;
     public int codeType = 3;
@@ -3184,7 +3183,7 @@ class HVPSettings implements Serializable {
             out = new ObjectOutputStream(new FileOutputStream(file));
             out.writeObject(obj);
         } catch (Exception ex) {
-            LOGGER.warn("Failed to save HexviewerPlus settings file. Error:{}", ex.toString());
+            log.warn("Failed to save HexviewerPlus settings file. Error:{}", ex.toString());
             return false;
         } finally {
             IOUtil.closeQuietly(out);
@@ -3201,7 +3200,7 @@ class HVPSettings implements Serializable {
             in = new ObjectInputStream(new FileInputStream(path));
             obj = (HVPSettings) in.readObject();
         } catch (Exception ex) {
-            LOGGER.warn("Failed to load HexviewerPlus settings file. Corrupted?. Error:{}", ex.toString());
+            log.warn("Failed to load HexviewerPlus settings file. Corrupted?. Error:{}", ex.toString());
             return null;
         } finally {
             IOUtil.closeQuietly(in);

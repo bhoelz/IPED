@@ -10,10 +10,9 @@ import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,9 +21,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Slf4j
 public class PhotoDNATask extends AbstractTask {
 
-    private Logger LOGGER = LoggerFactory.getLogger(PhotoDNATask.class);
 
     public static final String PDNA_NOT_FOUND_MSG = "Optional photoDNA lib not found in plugins folder. If you are law enforcement, ask iped@pf.gov.br";
 
@@ -59,7 +58,7 @@ public class PhotoDNATask extends AbstractTask {
         } catch (ClassNotFoundException e) {
             pdnaConfig.setEnabled(false);
             if (!warned.getAndSet(true)) {
-                LOGGER.error(PDNA_NOT_FOUND_MSG);
+                log.error(PDNA_NOT_FOUND_MSG);
             }
         }
     }
@@ -113,7 +112,7 @@ public class PhotoDNATask extends AbstractTask {
             evidence.setExtraAttribute(PHOTO_DNA, hashStr);
 
         } catch (Throwable e) {
-            LOGGER.info("Error computing photoDNA for image " + evidence.getPath(), e);
+            log.info("Error computing photoDNA for image " + evidence.getPath(), e);
             evidence.setExtraAttribute("photodna_exception", e.toString());
         }
     }
@@ -169,7 +168,7 @@ public class PhotoDNATask extends AbstractTask {
                     String hashStr = new String(Hex.encodeHex(hash, false));
                     hashes.add(hashStr);
                 } catch (Throwable e) {
-                    LOGGER.info("Error computing photoDNA for video frame " + evidence.getPath(), e);
+                    log.info("Error computing photoDNA for video frame " + evidence.getPath(), e);
                     evidence.setExtraAttribute("photodna_exception", e.toString());
                 } finally {
                     IOUtil.closeQuietly(is);

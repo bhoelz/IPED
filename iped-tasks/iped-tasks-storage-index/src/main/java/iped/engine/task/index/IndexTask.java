@@ -22,6 +22,7 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.parsers.standard.StandardParser;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
@@ -30,8 +31,6 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,9 +51,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * consome mta memória com documentos grandes.
  *
  */
+@Slf4j
 public class IndexTask extends AbstractTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(IndexTask.class);
 
     public static final String TEXT_SIZE = "textSize"; //$NON-NLS-1$
     public static final String TEXT_SPLITTED = "textSplitted";
@@ -125,7 +124,7 @@ public class IndexTask extends AbstractTask {
                     || !BaseCarveTask.UNALLOCATED_MIMETYPE.equals(evidence.getMediaType()))) {
                 textReader = evidence.getTextReader();
                 if (textReader == null) {
-                    LOGGER.warn("Null Text reader, creating a new one for {}", evidence.getPath()); //$NON-NLS-1$
+                    log.warn("Null Text reader, creating a new one for {}", evidence.getPath()); //$NON-NLS-1$
                     try {
                         TikaInputStream tis = (TikaInputStream) evidence.getTikaStream();
                         Metadata metadata = getMetadata(evidence);
@@ -134,7 +133,7 @@ public class IndexTask extends AbstractTask {
                         ((ParsingReader) textReader).startBackgroundParsing();
 
                     } catch (IOException e) {
-                        LOGGER.warn("{} Error opening: {} {}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
+                        log.warn("{} Error opening: {} {}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
                                 e.toString());
                     }
                 }
@@ -196,7 +195,7 @@ public class IndexTask extends AbstractTask {
                     if (hasMoreContentFrags) {
                         if (++numFrags > 1) {
                             stats.incSplits();
-                            LOGGER.info("{} Splitting text of {}", Thread.currentThread().getName(), item.getPath()); //$NON-NLS-1$
+                            log.info("{} Splitting text of {}", Thread.currentThread().getName(), item.getPath()); //$NON-NLS-1$
                         }
                         // child (content) document
                         Document doc = new Document();

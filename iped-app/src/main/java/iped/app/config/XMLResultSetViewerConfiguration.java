@@ -4,8 +4,7 @@ import iped.exception.IPEDException;
 import iped.utils.XMLUtil;
 import iped.viewers.api.ResultSetViewer;
 import iped.viewers.api.ResultSetViewerConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -21,11 +20,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class XMLResultSetViewerConfiguration implements ResultSetViewerConfiguration {
 
     Document doc;
     List<ResultSetViewer> viewers = null;
-    private static Logger LOGGER = LoggerFactory.getLogger(XMLResultSetViewerConfiguration.class);
 
     public XMLResultSetViewerConfiguration(File xmlFile) throws IPEDException {
         try {
@@ -64,7 +63,7 @@ public class XMLResultSetViewerConfiguration implements ResultSetViewerConfigura
                 ResultSetViewer rsViewer = (ResultSetViewer) classe.getDeclaredConstructor().newInstance();
                 viewers.add(rsViewer);
             }catch(Exception e) {
-            	LOGGER.warn("ResultSetViewer class not found in classpath: {}.",rsViewerClass.getTextContent());
+            	log.warn("ResultSetViewer class not found in classpath: {}.",rsViewerClass.getTextContent());
             	e.printStackTrace();
             }
         }

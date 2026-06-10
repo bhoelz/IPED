@@ -33,6 +33,7 @@ import iped.properties.BasicProps;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
 import iped.utils.UTF8Properties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
 import org.sleuthkit.datamodel.*;
 import org.sleuthkit.datamodel.SleuthkitCase.CaseDbQuery;
@@ -41,10 +42,7 @@ import org.sleuthkit.datamodel.TskData.TSK_DB_FILES_TYPE_ENUM;
 import org.sleuthkit.datamodel.TskData.TSK_FS_META_FLAG_ENUM;
 import org.sleuthkit.datamodel.TskData.TSK_FS_NAME_FLAG_ENUM;
 import org.sleuthkit.datamodel.TskData.TSK_FS_TYPE_ENUM;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteException;
-
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,9 +55,9 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class SleuthkitReader extends DataSourceReader {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SleuthkitReader.class);
 
     private static final String RANGE_ID_FILE = "data/SleuthkitIdsPerImage.txt";
     private static final String PASSWORD_PER_IMAGE = "data/PasswordPerImage.txt";
@@ -234,14 +232,14 @@ public class SleuthkitReader extends DataSourceReader {
         }
 
         String tskVer = SleuthkitJNI.getVersion();
-        LOGGER.info("Sleuthkit version " + tskVer + " detected."); //$NON-NLS-1$ //$NON-NLS-2$
+        log.info("Sleuthkit version " + tskVer + " detected."); //$NON-NLS-1$ //$NON-NLS-2$
 
         String patchSufix = "-iped-patch";
         if (tskVer.contains(patchSufix)) { // $NON-NLS-1$
             isTskPatched = true;
             tskVer = tskVer.substring(0, tskVer.indexOf(patchSufix));
         } else {
-            LOGGER.error("We recommend to apply the iped patch on sleuthkit, see https://github.com/sepinf-inc/IPED/wiki/Linux#the-sleuthkit"); //$NON-NLS-1$
+            log.error("We recommend to apply the iped patch on sleuthkit, see https://github.com/sepinf-inc/IPED/wiki/Linux#the-sleuthkit"); //$NON-NLS-1$
         }
 
         String[] minVerParts = MIN_TSK_VER_TESTED.split("\\.");
@@ -256,7 +254,7 @@ public class SleuthkitReader extends DataSourceReader {
         if (majorVerExpected != majorVerFound || minorVerFound < minorVerExpected)
             throw new Exception("Sleuthkit version " + tskVer + " not supported. Install version " + MIN_TSK_VER_TESTED); //$NON-NLS-1$ //$NON-NLS-2$
         if (minorVerFound > maxMinorVerTested)
-            LOGGER.error("Sleuthkit version " + tskVer + " not tested! It may contain incompatibilities!"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.error("Sleuthkit version " + tskVer + " not tested! It may contain incompatibilities!"); //$NON-NLS-1$ //$NON-NLS-2$
 
         tskChecked = true;
     }
@@ -330,9 +328,9 @@ public class SleuthkitReader extends DataSourceReader {
                         } else {
                             DatasourceRegistry.get().onProgress("mensagem", "", //$NON-NLS-1$ //$NON-NLS-2$
                                 Messages.getString("SleuthkitReader.Creating") + dbPath); //$NON-NLS-1$
-                            LOGGER.info("Creating database {}", dbPath); //$NON-NLS-1$
+                            log.info("Creating database {}", dbPath); //$NON-NLS-1$
                             sleuthCase = SleuthkitCase.newCase(dbPath);
-                            LOGGER.info("{} database created", dbPath); //$NON-NLS-1$
+                            log.info("{} database created", dbPath); //$NON-NLS-1$
                         }
                     }
                 }
@@ -375,7 +373,7 @@ public class SleuthkitReader extends DataSourceReader {
 
                 DatasourceRegistry.get().onProgress("mensagem", "", //$NON-NLS-1$ //$NON-NLS-2$
                     Messages.getString("SleuthkitReader.WaitDecode") + image.getAbsolutePath()); //$NON-NLS-1$
-                LOGGER.info("Decoding image {}", image.getAbsolutePath()); //$NON-NLS-1$
+                log.info("Decoding image {}", image.getAbsolutePath()); //$NON-NLS-1$
 
                 firstId = sleuthCase.getLastObjectId() + 1;
 
@@ -576,19 +574,19 @@ public class SleuthkitReader extends DataSourceReader {
                 int idx2 = error.toLowerCase().indexOf("microsoft reserved partition"); //$NON-NLS-1$
                 String logMsg = error + " Image: " + image.getAbsolutePath(); //$NON-NLS-1$
                 if (idx1 != -1 && idx2 != -1) {
-                    LOGGER.warn(logMsg);
+                    log.warn(logMsg);
                 } else {
                     this.decodingError = true;
                     if (this.embeddedDisk) {
-                        LOGGER.warn(logMsg);
+                        log.warn(logMsg);
                     } else {
-                        LOGGER.error(logMsg);
+                        log.error(logMsg);
                     }
                 }
             }
         }
 
-        LOGGER.info("Image decoded: {}", image.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Image decoded: {}", image.getAbsolutePath()); //$NON-NLS-1$
 
         Long lastId = null;
         try {
@@ -743,7 +741,7 @@ public class SleuthkitReader extends DataSourceReader {
         if (e.getCause() instanceof SQLiteException) {
             long now = System.currentTimeMillis() / 1000;
             int errorCode = ((SQLiteException) e.getCause()).getErrorCode();
-            LOGGER.warn(
+            log.warn(
                 "SQLite error " + errorCode + " after " + (now - start) + "s reading sleuth.db, trying again...");
             if (now - start > 3600)
                 throw new RuntimeException("Timeout after 1h retrying!", e); //$NON-NLS-1$

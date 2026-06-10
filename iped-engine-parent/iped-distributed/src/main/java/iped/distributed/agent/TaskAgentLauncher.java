@@ -4,9 +4,8 @@ import iped.distributed.config.DistributedConfig;
 import iped.distributed.coordinator.CoordinatorClient;
 import iped.engine.config.ConfigurationDirectory;
 import iped.engine.config.ConfigurationManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import lombok.extern.slf4j.Slf4j;
 /**
  * Command-line entry point for a Task Agent process.
  *
@@ -32,15 +31,15 @@ import org.slf4j.LoggerFactory;
  *      --parallelism 8
  * </pre>
  */
+@Slf4j
 public class TaskAgentLauncher {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaskAgentLauncher.class);
 
     public static void main(String[] args) throws Exception {
         TaskAgentConfig cfg = parseArgs(args);
         if (cfg == null) { printUsage(); System.exit(1); }
 
-        LOGGER.info("Starting Task Agent: caseId={}, taskType={}, parallelism={}",
+        log.info("Starting Task Agent: caseId={}, taskType={}, parallelism={}",
                 cfg.caseId, cfg.taskType, cfg.parallelism);
 
         // 1. Load IPED configuration
@@ -60,7 +59,7 @@ public class TaskAgentLauncher {
         // 4. Resolve stage number from Coordinator
         CoordinatorClient coordinator = new CoordinatorClient(cfg.coordinatorUrl);
         int stageNumber = coordinator.getStageForTask(cfg.caseId, cfg.taskType);
-        LOGGER.info("Task '{}' is at pipeline stage {}", cfg.taskType, stageNumber);
+        log.info("Task '{}' is at pipeline stage {}", cfg.taskType, stageNumber);
 
         // 5. Instantiate the task via reflection — task code is completely unchanged
         Object taskInstance = Class.forName(cfg.taskClass).getDeclaredConstructor().newInstance();
@@ -171,7 +170,7 @@ public class TaskAgentLauncher {
             );
         } catch (ClassNotFoundException ignored) {}
 
-        LOGGER.info("Built-in InputStreamFactory builders registered");
+        log.info("Built-in InputStreamFactory builders registered");
     }
 
     private static DistributedConfig buildDistributedConfig(TaskAgentConfig cfg) {
@@ -205,7 +204,7 @@ public class TaskAgentLauncher {
                 case "--config":       cfg.configPath   = args[i+1]; break;
                 case "--parallelism":  cfg.parallelism  = Integer.parseInt(args[i+1]); break;
                 case "--sharedStorage": cfg.sharedStorageRoot = args[i+1]; break;
-                default: LOGGER.warn("Unknown argument: {}", args[i]);
+                default: log.warn("Unknown argument: {}", args[i]);
             }
         }
         if (cfg.caseId == null || cfg.taskType == null || cfg.taskClass == null) return null;

@@ -5,6 +5,7 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
@@ -130,11 +131,24 @@ public class CrossModuleArchTest {
      * {@code iped.parsers}, {@code iped.carvers}) forms a slice.  Cycles between
      * slices would make the build order indeterminate and prevent independent
      * release of modules.
+     *
+     * <p><b>Known accepted cycle:</b> {@code iped.data} &harr; {@code iped.search}
+     * (both inside the iped-api module, so the Maven build DAG is unaffected).
+     * {@link iped.data.IBookmarks} / {@link iped.data.IMultiBookmarks} expose
+     * {@code filter*} methods over {@link iped.search.SearchResult} /
+     * {@code IMultiSearchResult}, while {@code iped.search} legitimately depends
+     * on the core data model ({@code IItemId}, {@code IIPEDSource},
+     * {@code IItemReader}).  Breaking it would require either relocating the
+     * search-result types into {@code iped.data} (semantically wrong, ~40
+     * dependents) or removing the filter methods from the public bookmarks API
+     * (breaks app/engine/geo callers), so the {@code data -> search} edge is
+     * ignored explicitly here instead.</p>
      */
     @ArchTest
     static final ArchRule no_cycles_between_top_level_iped_packages =
         slices()
             .matching("iped.(*)..")
             .should().beFreeOfCycles()
+            .ignoreDependency(resideInAPackage("iped.data.."), resideInAPackage("iped.search.."))
             .because("circular dependencies between top-level iped packages break the module DAG and prevent independent releases");
 }

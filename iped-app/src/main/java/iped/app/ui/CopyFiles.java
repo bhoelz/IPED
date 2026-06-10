@@ -22,8 +22,7 @@ import iped.data.IItem;
 import iped.data.IItemId;
 import iped.engine.util.Util;
 import iped.utils.IOUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
@@ -31,9 +30,9 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.ArrayList;
 
+@Slf4j
 public class CopyFiles extends SwingWorker<Boolean, Integer> implements PropertyChangeListener {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(CopyFiles.class);
 
     ArrayList<IItemId> uniqueIds;
     File dir, subdir;
@@ -65,7 +64,7 @@ public class CopyFiles extends SwingWorker<Boolean, Integer> implements Property
     @Override
     protected Boolean doInBackground() throws Exception {
 
-        LOGGER.info("Exporting files to " + dir.getAbsolutePath()); //$NON-NLS-1$
+        log.info("Exporting files to " + dir.getAbsolutePath()); //$NON-NLS-1$
         dir.mkdirs();
 
         int progress = 0, subdirCount = 1;
@@ -89,7 +88,7 @@ public class CopyFiles extends SwingWorker<Boolean, Integer> implements Property
 
                 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(dst));
 
-                LOGGER.info("Exporting file " + e.getPath()); //$NON-NLS-1$
+                log.info("Exporting file " + e.getPath()); //$NON-NLS-1$
 
                 IOUtil.copyInputToOutputStream(in, out);
 

@@ -23,6 +23,7 @@ import iped.parsers.fork.ParsingTimeout;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.CorruptedCarvedException;
 import iped.parsers.util.ItemInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -31,8 +32,6 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.ToTextContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -52,9 +51,9 @@ import java.util.concurrent.ThreadFactory;
  *
  * @since Apache Tika 0.2
  */
+@Slf4j
 public class ParsingReader extends Reader {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ParsingReader.class);
 
     /**
      * Parser instance used for parsing the given binary stream.
@@ -244,7 +243,7 @@ public class ParsingReader extends Reader {
             } catch (CorruptedCarvedException e) {
                 ItemInfo itemInfo = context.get(ItemInfo.class);
                 String filePath = itemInfo.getPath();
-                LOGGER.warn("{} Ignoring corrupted carved file '{}' ({} bytes )\t{}", Thread.currentThread().getName(), //$NON-NLS-1$
+                log.warn("{} Ignoring corrupted carved file '{}' ({} bytes )\t{}", Thread.currentThread().getName(), //$NON-NLS-1$
                         filePath, length, e.toString());
                 throwable = e;
                 // e.printStackTrace();
@@ -252,7 +251,7 @@ public class ParsingReader extends Reader {
             } catch (OutOfMemoryError t) {
                 ItemInfo itemInfo = context.get(ItemInfo.class);
                 String filePath = itemInfo.getPath();
-                LOGGER.error("{} OutOfMemory processing '{}' ({} bytes )\t{}", Thread.currentThread().getName(), //$NON-NLS-1$
+                log.error("{} OutOfMemory processing '{}' ({} bytes )\t{}", Thread.currentThread().getName(), //$NON-NLS-1$
                         filePath, length, t.toString());
 
             } catch (Throwable t) {
@@ -264,7 +263,7 @@ public class ParsingReader extends Reader {
                 if (!(t instanceof SAXException)) {
                     ItemInfo itemInfo = context.get(ItemInfo.class);
                     String filePath = itemInfo.getPath();
-                    LOGGER.warn("{} Error processing '{}' ({} bytes )\t{}", Thread.currentThread().getName(), filePath, //$NON-NLS-1$
+                    log.warn("{} Error processing '{}' ({} bytes )\t{}", Thread.currentThread().getName(), filePath, //$NON-NLS-1$
                             length, t.toString());
                 }
 

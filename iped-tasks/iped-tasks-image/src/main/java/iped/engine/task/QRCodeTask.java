@@ -12,9 +12,8 @@ import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
 import iped.parsers.util.MetadataUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,9 +22,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 public class QRCodeTask extends AbstractTask {
 
-    private static Logger logger = LoggerFactory.getLogger(QRCodeTask.class);
     /**
      * Static object to control (synchronize) initialization process (it should run
      * only once for all threads).
@@ -77,9 +76,9 @@ public class QRCodeTask extends AbstractTask {
                 taskEnabled = configurationManager.getEnableTaskProperty(ENABLE_PARAM);
                 hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
                 if (!taskEnabled) {
-                    logger.info("Task disabled."); //$NON-NLS-1$
+                    log.info("Task disabled."); //$NON-NLS-1$
                 } else {
-                    logger.info("Task enabled."); //$NON-NLS-1$
+                    log.info("Task enabled."); //$NON-NLS-1$
                 }
             }
 
@@ -93,10 +92,10 @@ public class QRCodeTask extends AbstractTask {
             if (!finished.getAndSet(true)) {
                 long totalImages = totalImagesProcessed.longValue() + totalImagesFailed.longValue();
                 if (totalImages != 0) {
-                    logger.info("Total images processed: " + totalImagesProcessed); //$NON-NLS-1$
-                    logger.info("Total images not processed: " + totalImagesFailed); //$NON-NLS-1$
-                    logger.info("QRCodes Found: " + totalQRCodesFound.longValue()); //$NON-NLS-1$
-                    logger.info("Average image processing time (ms/image): " + (totalTime.longValue() / totalImages)); //$NON-NLS-1$
+                    log.info("Total images processed: " + totalImagesProcessed); //$NON-NLS-1$
+                    log.info("Total images not processed: " + totalImagesFailed); //$NON-NLS-1$
+                    log.info("QRCodes Found: " + totalQRCodesFound.longValue()); //$NON-NLS-1$
+                    log.info("Average image processing time (ms/image): " + (totalTime.longValue() / totalImages)); //$NON-NLS-1$
                 }
             }
 
@@ -123,7 +122,7 @@ public class QRCodeTask extends AbstractTask {
         try (BufferedInputStream in = evidence.getBufferedInputStream()) {
             img = ImageIO.read(in);
         } catch (Throwable e) {
-            logger.debug("Cannot read image file {} ({} bytes): {}", evidence.getPath(), evidence.getLength(),
+            log.debug("Cannot read image file {} ({} bytes): {}", evidence.getPath(), evidence.getLength(),
                     e.toString());
             totalImagesFailed.incrementAndGet();
         }
@@ -171,14 +170,14 @@ public class QRCodeTask extends AbstractTask {
                     // evidence.setExtraAttribute(QRCODE_TYPE, types);
                     evidence.setExtraAttribute(QRCODE_POINTS, points);
 
-                    logger.info("Found {} qrcode(s) in file {} ({} bytes)", results.length, evidence.getPath(),
+                    log.info("Found {} qrcode(s) in file {} ({} bytes)", results.length, evidence.getPath(),
                             evidence.getLength());
 
                     totalQRCodesFound.addAndGet(results.length);
                 }
 
             } catch (Throwable e) {
-                logger.debug("Error searching for qrcodes in file {} ({} bytes): {}", evidence.getPath(),
+                log.debug("Error searching for qrcodes in file {} ({} bytes): {}", evidence.getPath(),
                         evidence.getLength(), e.toString());
             }
             totalImagesProcessed.incrementAndGet();

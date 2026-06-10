@@ -10,20 +10,19 @@ import iped.engine.hashdb.HashDBDataSource;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.ChildPornHashLookup.LookupProvider;
 import iped.properties.ExtraProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 public class HashDBLookupTask extends AbstractTask {
 
     public static final String KNOWN_VALUE = "known";
     private static final String NSRL_PRODUCT_NAME_PROPERTY = "nsrlProductName";
 
-    private Logger logger = LoggerFactory.getLogger(HashDBLookupTask.class);
 
     public static int excluded;
 
@@ -64,7 +63,7 @@ public class HashDBLookupTask extends AbstractTask {
                 if (taskEnabled) {
                     HashTaskConfig hashConfig = configurationManager.findObject(HashTaskConfig.class);
                     if (!hashConfig.isEnabled()) {
-                        logger.warn("No hash enabled.");
+                        log.warn("No hash enabled.");
                         taskEnabled = false;
                     } else {
                         hashesAttributes = new String[HashDB.hashTypes.length];
@@ -77,16 +76,16 @@ public class HashDBLookupTask extends AbstractTask {
                         }
                         LocalConfig localConfig = configurationManager.findObject(LocalConfig.class);
                         if (localConfig.getHashDbFile() == null) {
-                            logger.error("Hashes database path (hashesDB) must be configured in {}", Configuration.LOCAL_CONFIG);
+                            log.error("Hashes database path (hashesDB) must be configured in {}", Configuration.LOCAL_CONFIG);
                             taskEnabled = false;
                         } else {
                             hashDBFile = localConfig.getHashDbFile();
                             if (!hashDBFile.exists() || !hashDBFile.canRead() || !hashDBFile.isFile()) {
                                 String msg = (!hashDBFile.exists() ? "Missing": "Invalid") + " hashes database file: " + hashDBFile.getAbsolutePath();
                                 if (hasIpedDatasource()) {
-                                    logger.warn(msg);
+                                    log.warn(msg);
                                 } else {
-                                    logger.error(msg);
+                                    log.error(msg);
                                 }
                                 taskEnabled = false;
                             } else {
@@ -96,16 +95,16 @@ public class HashDBLookupTask extends AbstractTask {
                                 if (hashDBConfig.getNsrlConfig() != null) {
                                     loadNsrlConfig(hashDBConfig.getNsrlConfig());
                                     if (!nsrlStatusByProdName.isEmpty()) {
-                                        logger.info("NSRL product configurations loaded: {}", nsrlStatusByProdName.size());
+                                        log.info("NSRL product configurations loaded: {}", nsrlStatusByProdName.size());
                                     }
                                 }
-                                logger.info("HashDB: {}", hashDBFile.getAbsolutePath());
-                                logger.info("Exclude Known: {}", excludeKnown);
+                                log.info("HashDB: {}", hashDBFile.getAbsolutePath());
+                                log.info("Exclude Known: {}", excludeKnown);
                             }
                         }
                     }
                 }
-                logger.info("Task {}.", taskEnabled ? "enabled" : "disabled");
+                log.info("Task {}.", taskEnabled ? "enabled" : "disabled");
                 init.set(true);
             }
         }
@@ -121,7 +120,7 @@ public class HashDBLookupTask extends AbstractTask {
                 try {
                     return hashDBDataSource.lookupSets(algorithm, hash);
                 } catch (Exception e) {
-                    logger.warn("Error in lookupHash " + algorithm + " : " + hash, e);
+                    log.warn("Error in lookupHash " + algorithm + " : " + hash, e);
                 }
                 return null;
             }
@@ -136,12 +135,12 @@ public class HashDBLookupTask extends AbstractTask {
                     hashDBDataSource.close();
                 }
                 if (excluded > 0) {
-                    logger.info("Items ignored by hash database lookup: {}", excluded);
+                    log.info("Items ignored by hash database lookup: {}", excluded);
                 }
-                logger.info("Total items processed: {}", totProcessed.longValue());
+                log.info("Total items processed: {}", totProcessed.longValue());
                 if (totProcessed.longValue() > 0) {
-                    logger.info("Total items found: {}", totFound.longValue());
-                    logger.info("Average processing time (ms/item): {}", String.format("%.2f", totTime.longValue() / 1e6 / totProcessed.longValue()));
+                    log.info("Total items found: {}", totFound.longValue());
+                    log.info("Average processing time (ms/item): {}", String.format("%.2f", totTime.longValue() / 1e6 / totProcessed.longValue()));
                 }
                 finish.set(true);
             }
@@ -195,7 +194,7 @@ public class HashDBLookupTask extends AbstractTask {
             try {
                 hashDBDataSource.lookup(hashes, properties);
             } catch (Exception e) {
-                logger.warn("Error looking up evidence " + evidence, e);
+                log.warn("Error looking up evidence " + evidence, e);
                 return;
             }
             if (!properties.isEmpty()) {
@@ -302,7 +301,7 @@ public class HashDBLookupTask extends AbstractTask {
                 }
             }
         } catch (Exception e) {
-            logger.error("Error reading NSRL configuration file: " + HashDBLookupConfig.NSRL_CONFIG_FILE, e);
+            log.error("Error reading NSRL configuration file: " + HashDBLookupConfig.NSRL_CONFIG_FILE, e);
         }
     }
 }

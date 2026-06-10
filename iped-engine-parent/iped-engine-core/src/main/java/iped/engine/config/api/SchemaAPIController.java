@@ -21,8 +21,7 @@ package iped.engine.config.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import iped.engine.config.schema.SchemaValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +34,8 @@ import java.util.Map;
  * API controller for schema operations.
  * Provides REST endpoints for accessing configuration and CLI schemas.
  */
+@Slf4j
 public class SchemaAPIController {
-    private static final Logger logger = LoggerFactory.getLogger(SchemaAPIController.class);
     private final ObjectMapper mapper = new ObjectMapper();
     private final SchemaValidator validator = new SchemaValidator();
 
@@ -104,7 +103,7 @@ public class SchemaAPIController {
 
             return response;
         } catch (Exception e) {
-            logger.error("Error loading schema: " + componentName, e);
+            log.error("Error loading schema: " + componentName, e);
             return errorResponse("Error loading schema: " + e.getMessage());
         }
     }
@@ -146,7 +145,7 @@ public class SchemaAPIController {
 
             return response;
         } catch (Exception e) {
-            logger.error("Error validating configuration", e);
+            log.error("Error validating configuration", e);
             return errorResponse("Validation error: " + e.getMessage());
         }
     }

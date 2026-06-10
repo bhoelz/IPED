@@ -5,6 +5,8 @@ import iped.data.IItem;
 import iped.datasource.IDataSource;
 import iped.engine.core.CaseContextThreadLocal;
 import iped.engine.core.Statistics;
+import iped.engine.io.ByteArrayImageInputStream;
+import iped.engine.io.LimitedSeekableInputStream;
 import iped.engine.io.ReferencedFile;
 import iped.engine.lucene.analysis.CategoryTokenizer;
 import iped.engine.preview.PreviewInputStreamFactory;
@@ -16,16 +18,13 @@ import iped.engine.util.TextCache;
 import iped.engine.util.Util;
 import iped.io.ISeekableInputStreamFactory;
 import iped.io.SeekableInputStream;
-import iped.engine.io.ByteArrayImageInputStream;
-import iped.engine.io.LimitedSeekableInputStream;
 import iped.utils.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -50,9 +49,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Wladimir Leite (GPINF/SP)
  * @author Nassif (GPINF/SP)
  */
+@Slf4j
 public class Item implements IItem {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Item.class);
 
     private static final String TIKA_OPEN_CONTAINER_KEY = "TIKA_OPEN_CONTAINER";
 
@@ -281,7 +280,7 @@ public class Item implements IItem {
             try {
                 tmpResources.close();
             } catch (Exception e) {
-                LOGGER.warn("Error closing resources of " + getPath(), e);
+                log.warn("Error closing resources of " + getPath(), e);
             }
             tmpResources = null;
         }
@@ -482,7 +481,7 @@ public class Item implements IItem {
                  * set to the previous processing id or if a previous id is not found.
                  */
                 Exception e = new Exception("Cannot use ID before adding item to queue");
-                LOGGER.error("", e);
+                log.error("", e);
             }
             synchronized (Counter.class) {
                 if (id == -1) {

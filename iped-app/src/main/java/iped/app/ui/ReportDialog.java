@@ -1,13 +1,12 @@
 package iped.app.ui;
 
 import iped.app.bootstrap.Bootstrap;
-import iped.engine.CmdLineArgsImpl;
 import iped.app.ui.bookmarks.BookmarkIcon;
 import iped.app.ui.columns.ColumnsSelectReportUI;
 import iped.data.IMultiBookmarks;
+import iped.engine.CmdLineArgsImpl;
 import iped.io.URLUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -30,9 +29,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+@Slf4j
 public class ReportDialog implements ActionListener, TableModelListener {
 
-    private static Logger logger = LoggerFactory.getLogger(ReportDialog.class);
 
     JDialog dialog = new JDialog(App.get());
     ReportInfoDialog caseInfo = new ReportInfoDialog(dialog);
@@ -276,7 +275,7 @@ public class ReportDialog implements ActionListener, TableModelListener {
         }
         String keywords = this.keywords.getText().trim();
         String output = this.output.getText().trim();
-        logger.info("Generating report to " + output); //$NON-NLS-1$
+        log.info("Generating report to " + output); //$NON-NLS-1$
 
         URL url = URLUtil.getURL(this.getClass());
         try {
@@ -316,7 +315,7 @@ public class ReportDialog implements ActionListener, TableModelListener {
                 cmd.add(label);
             }
 
-            logger.info("Report command: " + cmd.toString()); //$NON-NLS-1$
+            log.info("Report command: " + cmd.toString()); //$NON-NLS-1$
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.redirectErrorStream(true);
@@ -338,7 +337,7 @@ public class ReportDialog implements ActionListener, TableModelListener {
                     while ((r = process.getInputStream().read(b)) != -1) {
                         String msg = new String(b, 0, r).trim();
                         if (!msg.isEmpty())
-                            logger.info(msg);
+                            log.info(msg);
                     }
 
                     int result = process.waitFor();

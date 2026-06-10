@@ -6,6 +6,7 @@ import iped.parsers.util.OCROutputFolder;
 import iped.parsers.util.PDFToImage;
 import iped.parsers.util.RepoToolDownloader;
 import iped.utils.ExternalImageConverter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -16,8 +17,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -30,11 +29,11 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+@Slf4j
 public class OCRParserTest {
     private static String testRoot = System.getProperty("user.dir") + "/src/test";
     private static String osName = System.getProperty("os.name").toLowerCase();
     private static String OCR_OUTPUT_FOLDER_NAME = "ocr_output";
-    private static Logger LOGGER = LoggerFactory.getLogger(OCRParser.class);
 
     @Rule
     public TestName testName = new TestName();
@@ -54,7 +53,7 @@ public class OCRParserTest {
             System.out.println("Detected tesseract version " + tessInfo.get(0));
             System.setProperty(OCRParser.ENABLE_PROP, "true");
         } catch (IOException | InterruptedException e) {
-            LOGGER.error("Skipping tesseract tests...");
+            log.error("Skipping tesseract tests...");
             e.printStackTrace();
         }
     }
@@ -291,7 +290,7 @@ public class OCRParserTest {
                 throw new IOException("Returned error code " + result);
             }
         } catch (IOException | InterruptedException e) {
-            LOGGER.error("Skipping imagemagick tests... " + e.toString());
+            log.error("Skipping imagemagick tests... " + e.toString());
             return false;
         }
         return true;

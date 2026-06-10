@@ -1,12 +1,11 @@
 package iped.viewers.web.impl;
 
 import iped.viewers.web.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -20,9 +19,9 @@ import java.util.Set;
  * Serves PDFs as raw bytes (browser renders natively) and optionally renders
  * individual pages to PNG using PDFBox for thumbnail/search support.
  */
+@Slf4j
 public class PdfWebRenderer implements WebRenderer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PdfWebRenderer.class);
     private static final float DEFAULT_DPI = 150f;
 
     @Override
@@ -76,7 +75,7 @@ public class PdfWebRenderer implements WebRenderer {
             BufferedImage image = renderer.renderImageWithDPI(page, DEFAULT_DPI, ImageType.RGB);
             ImageIO.write(image, "png", out);
         } catch (Exception e) {
-            LOGGER.warn("Failed to render PDF page {} for item {}: {}", targetPage,
+            log.warn("Failed to render PDF page {} for item {}: {}", targetPage,
                     request.getItem().getName(), e.getMessage());
             throw new IOException("PDF page rendering failed", e);
         }

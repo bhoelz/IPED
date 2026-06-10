@@ -3,12 +3,11 @@ package iped.engine.task.transcript;
 import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
 import iped.exception.IPEDException;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.vosk.LibVosk;
 import org.vosk.Model;
 import org.vosk.Recognizer;
@@ -21,9 +20,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+@Slf4j
 public class VoskTranscriptTask extends AbstractTranscriptTask {
 
-    private static Logger logger = LoggerFactory.getLogger(VoskTranscriptTask.class);
 
     private static Model model;
 
@@ -44,7 +43,7 @@ public class VoskTranscriptTask extends AbstractTranscriptTask {
 
             List<String> langs = transcriptConfig.getLanguages();
             if (langs.size() > 1) {
-                logger.error("Vosk transcription supports only 1 language, '{}' will be used.", langs.get(0));
+                log.error("Vosk transcription supports only 1 language, '{}' will be used.", langs.get(0));
             }
             String language = langs.get(0);
             File modelDir = new File(Configuration.getInstance().appRoot, "models/vosk/" + language);
@@ -52,7 +51,7 @@ public class VoskTranscriptTask extends AbstractTranscriptTask {
                     && (!modelDir.exists() || !modelDir.isDirectory() || modelDir.listFiles().length == 0)) {
                 File enModelDir = new File(Configuration.getInstance().appRoot, "models/vosk/en");
                 if (enModelDir.exists() && enModelDir.isDirectory() && enModelDir.listFiles().length != 0) {
-                    logger.error("Invalid Vosk transcription model {}. English (en) will be used instead.",
+                    log.error("Invalid Vosk transcription model {}. English (en) will be used instead.",
                             modelDir.getAbsolutePath());
                     modelDir = enModelDir;
                 }
@@ -61,7 +60,7 @@ public class VoskTranscriptTask extends AbstractTranscriptTask {
                 String msg = "Invalid Vosk transcription model: " + modelDir.getAbsolutePath();
                 if (hasIpedDatasource()) {
                     transcriptConfig.setEnabled(false);
-                    logger.warn(msg);
+                    log.warn(msg);
                     return;
                 }
                 throw new IPEDException(msg);
@@ -127,7 +126,7 @@ public class VoskTranscriptTask extends AbstractTranscriptTask {
                 textAndScore.score = totalScore / words;
             }
         } catch (IOException | UnsupportedAudioFileException e) {
-            logger.warn("Fail to transcribe audio file " + evidence.getPath(), e);
+            log.warn("Fail to transcribe audio file " + evidence.getPath(), e);
         }
 
         return textAndScore;

@@ -15,9 +15,8 @@ import iped.utils.ExternalImageConverter;
 import iped.utils.ImageUtil;
 import iped.utils.ImageUtil.BooleanWrapper;
 import iped.viewers.util.ImageMetadataUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -29,6 +28,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class ImageThumbTask extends ThumbTask {
 
     private static final String PREVIEW_EXT = "jpg";
@@ -41,7 +41,6 @@ public class ImageThumbTask extends ThumbTask {
 
     private static final int numStats = 22;
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageThumbTask.class);
 
     private static final Map<String, long[]> performanceStatsPerType = new HashMap<String, long[]>();
     private static final AtomicBoolean logInit = new AtomicBoolean(false);
@@ -107,8 +106,8 @@ public class ImageThumbTask extends ThumbTask {
         synchronized (logInit) {
             if (isEnabled() && !logInit.get()) {
                 logInit.set(true);
-                logger.info("Thumb Size: " + getThumbSize()); //$NON-NLS-1$
-                logger.info("Extract Thumb: " + imgThumbConfig.isExtractThumb()); //$NON-NLS-1$
+                log.info("Thumb Size: " + getThumbSize()); //$NON-NLS-1$
+                log.info("Extract Thumb: " + imgThumbConfig.isExtractThumb()); //$NON-NLS-1$
             }
         }
 
@@ -225,7 +224,7 @@ public class ImageThumbTask extends ThumbTask {
                         }
                         sb.append("\n");
                     }
-                    logger.info("ImageThumbTask detailed statistics:\n\n" + sb); //$NON-NLS-1$
+                    log.info("ImageThumbTask detailed statistics:\n\n" + sb); //$NON-NLS-1$
                 }
             }
         }
@@ -260,7 +259,7 @@ public class ImageThumbTask extends ThumbTask {
             future.cancel(true);
             stats.incTimeouts();
             evidence.setExtraAttribute(THUMB_TIMEOUT, "true"); //$NON-NLS-1$
-            logger.warn("Timeout creating thumb: " + evidence); //$NON-NLS-1$
+            log.warn("Timeout creating thumb: " + evidence); //$NON-NLS-1$
         }
 
     }
@@ -329,7 +328,7 @@ public class ImageThumbTask extends ThumbTask {
                     } catch (TimeoutException e) {
                         stats.incTimeouts();
                         evidence.setExtraAttribute(THUMB_TIMEOUT, "true");
-                        logger.warn("Timeout creating view: " + evidence);
+                        log.warn("Timeout creating view: " + evidence);
                     }
                     if (img != null) {
                         PreviewRepository previewRepo = PreviewRepositoryManager.get(output);
@@ -352,7 +351,7 @@ public class ImageThumbTask extends ThumbTask {
                     } catch (TimeoutException e) {
                         stats.incTimeouts();
                         evidence.setExtraAttribute(THUMB_TIMEOUT, "true");
-                        logger.warn("Timeout creating thumb: " + evidence);
+                        log.warn("Timeout creating thumb: " + evidence);
                     }
                 }
 
@@ -414,7 +413,7 @@ public class ImageThumbTask extends ThumbTask {
             }
 
         } catch (Throwable e) {
-            logger.warn(evidence.toString(), e);
+            log.warn(evidence.toString(), e);
 
         } finally {
             updateHasThumb(evidence);

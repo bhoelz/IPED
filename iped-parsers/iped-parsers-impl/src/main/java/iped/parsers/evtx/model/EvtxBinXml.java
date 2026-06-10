@@ -1,16 +1,15 @@
 package iped.parsers.evtx.model;
 
 import iped.parsers.evtx.template.TemplateInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+@Slf4j
 public class EvtxBinXml {
 
-    private static final Logger logger = LoggerFactory.getLogger(EvtxBinXml.class);
 
     private EvtxFile evtxFile;
     private ByteBuffer bb;
@@ -42,11 +41,11 @@ public class EvtxBinXml {
                     if (tstr.startsWith("<RenderingInfo")) {
                         // rendering info. does not contains adittional data
                     } else {
-                        logger.warn("Unexpected token template instance: {}", tstr);
+                        log.warn("Unexpected token template instance: {}", tstr);
                     }
                     break;
                 default:
-                    logger.warn("Unexpected token in file {}: {}", evtxFile.getName(), b.type);
+                    log.warn("Unexpected token in file {}: {}", evtxFile.getName(), b.type);
                     return;
             }
 

@@ -24,6 +24,7 @@ import iped.parsers.util.ComputeThumb;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.PDFToThumb;
 import iped.properties.ExtraProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TemporaryResources;
@@ -40,8 +41,6 @@ import org.icepdf.core.pobjects.Document;
 import org.icepdf.core.pobjects.PDate;
 import org.icepdf.core.pobjects.PInfo;
 import org.icepdf.core.pobjects.graphics.text.PageText;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -66,9 +65,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nassif
  *
  */
+@Slf4j
 public class PDFTextParser extends PDFParser {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(PDFTextParser.class);
 
     private static AtomicBoolean checked = new AtomicBoolean();
 
@@ -111,7 +110,7 @@ public class PDFTextParser extends PDFParser {
                     reader = null;
             }
             if (reader == null)
-                LOGGER.warn("Plugin JPEG2000 not found, JPX images will not be decoded from PDFs." //$NON-NLS-1$
+                log.warn("Plugin JPEG2000 not found, JPX images will not be decoded from PDFs." //$NON-NLS-1$
                         + " You can download it from https://mvnrepository.com/artifact/com.github.jai-imageio/jai-imageio-jpeg2000/1.3.0" //$NON-NLS-1$
                         + " and put it in plugins folder. Warn: that plugin is worse to decode JPX outside of PDFs!"); //$NON-NLS-1$
         }
@@ -207,8 +206,8 @@ public class PDFTextParser extends PDFParser {
                     ocrParser.parse(tis, countHandler, metadata, context);
 
                 } catch (Exception e) {
-                    LOGGER.warn("OCRParser error on '{}' ({} bytes)\t{}", itemInfo.getPath(), file.length(), e.toString()); //$NON-NLS-1$
-                    LOGGER.debug("", e);
+                    log.warn("OCRParser error on '{}' ({} bytes)\t{}", itemInfo.getPath(), file.length(), e.toString()); //$NON-NLS-1$
+                    log.debug("", e);
                 } finally {
                     tis.close();
                 }
@@ -226,8 +225,8 @@ public class PDFTextParser extends PDFParser {
                     thumb = baos.toByteArray();
                 } catch (Throwable t) {
                     thumb = new byte[0];
-                    LOGGER.warn("PDF thumb error on '{}' ({} bytes)\t{}", itemInfo.getPath(), file.length(), t.toString()); //$NON-NLS-1$
-                    LOGGER.debug("", t);
+                    log.warn("PDF thumb error on '{}' ({} bytes)\t{}", itemInfo.getPath(), file.length(), t.toString()); //$NON-NLS-1$
+                    log.debug("", t);
                 } finally {
                     metadata.set(ExtraProperties.THUMBNAIL_BASE64, Base64.getEncoder().encodeToString(thumb));
                 }

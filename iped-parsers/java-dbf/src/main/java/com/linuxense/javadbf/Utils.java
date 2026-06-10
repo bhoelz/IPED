@@ -14,7 +14,9 @@ package com.linuxense.javadbf;
 import java.io.DataInput;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Miscelaneous functions required by the JavaDBF package.
@@ -153,7 +155,9 @@ public final class Utils {
             }
         }
 
-        DecimalFormat df = new DecimalFormat(format.toString());
+        // DBF numeric fields must use a dot decimal separator regardless of the
+        // JVM default locale, since readers parse them with Double.parseDouble
+        DecimalFormat df = new DecimalFormat(format.toString(), DecimalFormatSymbols.getInstance(Locale.US));
 
         return textPadding(df.format(doubleNum.doubleValue()).toString(), characterSetName, fieldLength, ALIGN_RIGHT);
     }

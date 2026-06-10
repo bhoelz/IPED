@@ -9,12 +9,11 @@ import iped.engine.config.FileSystemConfig;
 import iped.engine.data.Item;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
 import org.arabidopsis.ahocorasick.AhoCorasick;
 import org.arabidopsis.ahocorasick.SearchResult;
 import org.arabidopsis.ahocorasick.Searcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,13 +27,13 @@ import java.util.*;
  * proporcional ao volume de dados de entrada e ao número de padrões
  * descobertos.
  */
+@Slf4j
 public class CarverTask extends BaseCarveTask {
 
     public static boolean enableCarving = false;
     public static boolean ignoreCorrupted = true;
 
     private static CarverType[] carverTypes;
-    private static Logger LOGGER = LoggerFactory.getLogger(CarverTask.class);
     private static int largestPatternLen = 100;
 
     protected HashMap<CarverType, Carver> registeredCarvers = new HashMap<CarverType, Carver>();
@@ -111,7 +110,7 @@ public class CarverTask extends BaseCarveTask {
             findSig(tis);
 
         } catch (Exception t) {
-            LOGGER.warn("{} Error carving on {} {}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
+            log.warn("{} Error carving on {} {}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
                     t.toString());
             t.printStackTrace();
 
@@ -183,7 +182,7 @@ public class CarverTask extends BaseCarveTask {
                     try {
                         carver.notifyHit(this.evidence, hit);
                     } catch (Exception e) {
-                        LOGGER.warn("{} Skipping unexpected error carving on hit {} {} - CarverClass {}", //$NON-NLS-1$
+                        log.warn("{} Skipping unexpected error carving on hit {} {} - CarverClass {}", //$NON-NLS-1$
                                 Thread.currentThread().getName(), evidence.getPath(), hit.getOffset(),
                                 carver.getClass().getName());
                         e.printStackTrace();
@@ -214,7 +213,7 @@ public class CarverTask extends BaseCarveTask {
         enableCarving = ctConfig.isEnabled();
 
         if (carverTypes == null && enableCarving && !fsConfig.isToAddUnallocated())
-            LOGGER.error("addUnallocated is disabled, so carving will NOT be done in unallocated space!"); //$NON-NLS-1$
+            log.error("addUnallocated is disabled, so carving will NOT be done in unallocated space!"); //$NON-NLS-1$
 
         carvedItemListener = getCarvedItemListener();
 

@@ -8,10 +8,9 @@ import iped.parsers.util.Messages;
 import iped.parsers.whatsapp.WAContact;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.Metadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -20,9 +19,9 @@ import static iped.properties.ExtraProperties.*;
 /**
  * Handles all processing logic for a Chat model.
  */
+@Slf4j
 public class ChatHandler extends BaseModelHandler<Chat> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChatHandler.class);
 
     public ChatHandler(Chat model, IItemReader modelItem) {
         super(model, modelItem);
@@ -242,11 +241,11 @@ public class ChatHandler extends BaseModelHandler<Chat> {
         List<IItemReader> results = searcher.search(query);
         if (!results.isEmpty()) {
             if (results.size() > 1) {
-                logger.warn("Found more than one account for [{}]: {}", account, results);
+                log.warn("Found more than one account for [{}]: {}", account, results);
             }
             model.setReferencedAccount(results.get(0));
         } else {
-            logger.warn("User Account reference was not found: {}", account);
+            log.warn("User Account reference was not found: {}", account);
         }
     }
 

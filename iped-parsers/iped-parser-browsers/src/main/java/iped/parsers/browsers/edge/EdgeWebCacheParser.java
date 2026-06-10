@@ -12,6 +12,7 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.EmptyInputStream;
 import iped.utils.TimeConverter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -25,8 +26,6 @@ import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.ToXMLContentHandler;
 import org.apache.tika.sax.XHTMLContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -35,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+@Slf4j
 public class EdgeWebCacheParser extends AbstractParser {
 
     /**
@@ -51,7 +51,6 @@ public class EdgeWebCacheParser extends AbstractParser {
 
     private static Set<MediaType> SUPPORTED_TYPES = MediaType.set(EDGE_WEB_CACHE);
 
-    private static Logger LOGGER = LoggerFactory.getLogger(EdgeWebCacheParser.class);
 
     private static Object lock = new Object();
 
@@ -79,7 +78,7 @@ public class EdgeWebCacheParser extends AbstractParser {
                 System.load(file.getAbsolutePath());
 
             } catch (Throwable e) {
-                LOGGER.error("Libesedb dll not loaded properly. " + EdgeWebCacheParser.class.getSimpleName()
+                log.error("Libesedb dll not loaded properly. " + EdgeWebCacheParser.class.getSimpleName()
                         + " will be disabled.", e);
                 SUPPORTED_TYPES = Collections.EMPTY_SET;
             }
@@ -87,10 +86,10 @@ public class EdgeWebCacheParser extends AbstractParser {
         if (!SUPPORTED_TYPES.isEmpty())
             try {
                 esedbLibrary = (EsedbLibrary) Native.load("esedb", EsedbLibrary.class);
-                LOGGER.info("Libesedb library version: " + esedbLibrary.libesedb_get_version());
+                log.info("Libesedb library version: " + esedbLibrary.libesedb_get_version());
 
             } catch (Throwable e) {
-                LOGGER.error("Libesedb JNA not loaded properly. " + EdgeWebCacheParser.class.getSimpleName()
+                log.error("Libesedb JNA not loaded properly. " + EdgeWebCacheParser.class.getSimpleName()
                         + " will be disabled.");
                 e.printStackTrace();
                 SUPPORTED_TYPES = Collections.EMPTY_SET;
@@ -98,7 +97,7 @@ public class EdgeWebCacheParser extends AbstractParser {
     }
 
     private void printError(String function, int result, PointerByReference errorPointer, ItemInfo itemInfo) {
-        LOGGER.warn("Error decoding " + itemInfo.getPath() + ": Function '" + function + "'. Function result number '"
+        log.warn("Error decoding " + itemInfo.getPath() + ": Function '" + function + "'. Function result number '"
                 + result + "' Error value: " + errorPointer.getValue().getString(0)); //$NON-NLS-1$
         esedbLibrary.libesedb_error_free(errorPointer);
     }
@@ -329,7 +328,7 @@ public class EdgeWebCacheParser extends AbstractParser {
 
                 numTables = numberOfTables.getValue();
 
-                LOGGER.info(numTables + " tables found in " + itemInfo.getPath());
+                log.info(numTables + " tables found in " + itemInfo.getPath());
             }
 
             for (int tables = 0; tables < numTables; tables++) {

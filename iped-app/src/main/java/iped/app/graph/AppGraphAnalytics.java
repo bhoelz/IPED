@@ -5,6 +5,7 @@ import iped.app.ui.Messages;
 import iped.engine.data.ItemId;
 import iped.engine.graph.*;
 import iped.viewers.api.ClearFilterListener;
+import lombok.extern.slf4j.Slf4j;
 import org.kharon.*;
 import org.kharon.layout.HistoryEnabledLayout;
 import org.kharon.layout.graphviz.GraphVizAlgorithm;
@@ -12,8 +13,6 @@ import org.kharon.renderers.Renderers;
 import org.neo4j.graphdb.Entity;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -26,9 +25,9 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class AppGraphAnalytics extends JPanel implements ClearFilterListener {
 
-    static Logger LOGGER = LoggerFactory.getLogger(AppGraphAnalytics.class);
 
     private static final long serialVersionUID = 1882865120277226931L;
 
@@ -401,7 +400,7 @@ public class AppGraphAnalytics extends JPanel implements ClearFilterListener {
                 GraphService graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
                 long t = System.currentTimeMillis();
                 ids = graphService.getMoreConnectedNodes(10);
-                LOGGER.info("Query {} most connected nodes took {}s", ids.size(),
+                log.info("Query {} most connected nodes took {}s", ids.size(),
                         (System.currentTimeMillis() - t) / 1000);
                 for (Long id : ids) {
                     AddNodeWorker worker = new AddNodeWorker(AppGraphAnalytics.this, Collections.singleton(id));
@@ -412,7 +411,7 @@ public class AppGraphAnalytics extends JPanel implements ClearFilterListener {
                             Collections.singleton(graph.getNode(id.toString())), MAX_NEIGHBOURS);
                     expandWorker.execute();
                     expandWorker.get();
-                    LOGGER.info("Expand node {} took {}s", id, (System.currentTimeMillis() - t) / 1000);
+                    log.info("Expand node {} took {}s", id, (System.currentTimeMillis() - t) / 1000);
                 }
                 applyDefaultLayout();
 
@@ -508,7 +507,7 @@ public class AppGraphAnalytics extends JPanel implements ClearFilterListener {
                 }
 
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
                 throw new RuntimeException(e);
             }
             AppGraphAnalytics.this.graph.addElements(newNodes, newEdges);

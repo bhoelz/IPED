@@ -8,8 +8,7 @@ import iped.engine.config.LocalConfig;
 import iped.engine.config.TempFileTaskConfig;
 import iped.engine.data.Item;
 import iped.utils.IOUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -26,9 +25,9 @@ import java.util.List;
  * @author Nassif
  *
  */
+@Slf4j
 public class TempFileTask extends AbstractTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(TempFileTask.class);
     private long maxFileSize = 1L << 30;
     private boolean isEnabled = true;
 
@@ -85,7 +84,7 @@ public class TempFileTask extends AbstractTask {
                     }
                 }
             } catch (IOException e) {
-                LOGGER.warn("{} Error creating temp file {} {}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
+                log.warn("{} Error creating temp file {} {}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
                         e.toString());
             }
         }

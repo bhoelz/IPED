@@ -1,6 +1,7 @@
 package iped.parsers.mail;
 
 import iped.parsers.standard.StandardParser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -9,8 +10,6 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -20,11 +19,11 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class OutlookDBXParser extends AbstractParser {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OutlookDBXParser.class);
 
     private static final AtomicBoolean logged = new AtomicBoolean();
 
@@ -47,9 +46,9 @@ public class OutlookDBXParser extends AbstractParser {
                 String msg = "DBX parser not found, DBX mailboxes will NOT be expanded."; //$NON-NLS-1$
                 // are we in analysis app?
                 if (System.getProperty("iped.javaVersionChecked") != null)
-                    LOGGER.warn(msg);
+                    log.warn(msg);
                 else
-                    LOGGER.error(msg);
+                    log.error(msg);
             }
             return Collections.emptySet();
         }

@@ -37,6 +37,7 @@ import iped.parsers.util.ISO6709Converter;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
 import iped.utils.ImageUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
@@ -44,8 +45,6 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.metadata.XMP;
 import org.apache.tika.metadata.XMPDM;
 import org.apache.tika.mime.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -68,6 +67,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Wladimir Leite
  */
+@Slf4j
 public class VideoThumbTask extends ThumbTask {
 
     public static final String PREVIEW_EXT = "jpg";
@@ -132,7 +132,6 @@ public class VideoThumbTask extends ThumbTask {
     private static final AtomicLong totalTimeGallery = new AtomicLong();
     private static final AtomicLong totalGallery = new AtomicLong();
 
-    private static final Logger logger = LoggerFactory.getLogger(VideoThumbTask.class);
 
     /**
      * Mapa com resultado do processamento dos vídeos
@@ -213,7 +212,7 @@ public class VideoThumbTask extends ThumbTask {
                 if (videoConfig.isEnabled()) {
                     taskEnabled = true;
                 } else {
-                    logger.info("Task disabled."); //$NON-NLS-1$
+                    log.info("Task disabled."); //$NON-NLS-1$
                     init.set(true);
                     return;
                 }
@@ -226,14 +225,14 @@ public class VideoThumbTask extends ThumbTask {
                 // Testa se o MPlayer está funcionando
                 String vmp = videoThumbsMaker.getVersion();
                 if (vmp == null) {
-                    logger.error("Error testing MPLAYER!"); //$NON-NLS-1$
-                    logger.error("MPlayer Configured = " + mplayer); //$NON-NLS-1$
-                    logger.error("Check mplayer path and try to run it from terminal."); //$NON-NLS-1$
+                    log.error("Error testing MPLAYER!"); //$NON-NLS-1$
+                    log.error("MPlayer Configured = " + mplayer); //$NON-NLS-1$
+                    log.error("Check mplayer path and try to run it from terminal."); //$NON-NLS-1$
                     taskEnabled = false;
-                    logger.info("Task disabled."); //$NON-NLS-1$
+                    log.info("Task disabled."); //$NON-NLS-1$
                 } else {
-                    logger.info("Task enabled."); //$NON-NLS-1$
-                    logger.info("MPLAYER version: " + vmp); //$NON-NLS-1$
+                    log.info("Task enabled."); //$NON-NLS-1$
+                    log.info("MPLAYER version: " + vmp); //$NON-NLS-1$
                 }
                 checkDependency("iped.engine.task.HashTask");
                 init.set(true);
@@ -278,27 +277,27 @@ public class VideoThumbTask extends ThumbTask {
                 finished.set(true);
 
                 // Videos statistics
-                logger.info("Total videos processed: " + totalVideosProcessed); //$NON-NLS-1$
-                logger.info("Total videos failed (MPlayer failed to create thumbs): " + totalVideosFailed); //$NON-NLS-1$
+                log.info("Total videos processed: " + totalVideosProcessed); //$NON-NLS-1$
+                log.info("Total videos failed (MPlayer failed to create thumbs): " + totalVideosFailed); //$NON-NLS-1$
                 long total = totalVideosProcessed.longValue() + totalVideosFailed.longValue();
                 if (total > 0)
-                    logger.info("Average video processing time (milliseconds/video): " //$NON-NLS-1$
+                    log.info("Average video processing time (milliseconds/video): " //$NON-NLS-1$
                             + (totalVideosTime.longValue() / total));
 
                 // Animated images statistics
-                logger.info("Total animated images processed: " + totalAnimatedImagesProcessed); //$NON-NLS-1$
-                logger.info(
+                log.info("Total animated images processed: " + totalAnimatedImagesProcessed); //$NON-NLS-1$
+                log.info(
                         "Total animated images failed (MPlayer failed to create thumbs): " + totalAnimatedImagesFailed); //$NON-NLS-1$
                 total = totalAnimatedImagesProcessed.longValue() + totalAnimatedImagesFailed.longValue();
                 if (total > 0)
-                    logger.info("Average animated image processing time (milliseconds/image): " //$NON-NLS-1$
+                    log.info("Average animated image processing time (milliseconds/image): " //$NON-NLS-1$
                             + (totalAnimatedImagesTime.longValue() / total));
 
                 // Gallery thumb generation statistics
                 total = totalGallery.longValue();
                 if (total > 0) {
-                    logger.info("Total gallery thumbs generated: " + total); //$NON-NLS-1$
-                    logger.info("Average gallery thumb generation time (milliseconds/item): " //$NON-NLS-1$
+                    log.info("Total gallery thumbs generated: " + total); //$NON-NLS-1$
+                    log.info("Average gallery thumb generation time (milliseconds/item): " //$NON-NLS-1$
                             + (totalTimeGallery.longValue() / total));
                 }
             }
@@ -407,7 +406,7 @@ public class VideoThumbTask extends ThumbTask {
                         }
                         (isAnimated ? totalAnimatedImagesProcessed : totalVideosProcessed).incrementAndGet();
                     } catch (SQLException | IOException e) {
-                        logger.warn("Error storing videoThumb preview: " + evidence, e);
+                        log.warn("Error storing videoThumb preview: " + evidence, e);
                         r.setSuccess(false);
                     }
                 }
@@ -417,13 +416,13 @@ public class VideoThumbTask extends ThumbTask {
                     if (r.isTimeout()) {
                         stats.incTimeouts();
                         evidence.setExtraAttribute(ImageThumbTask.THUMB_TIMEOUT, Boolean.toString(true));
-                        logger.warn("Timeout creating video thumbs: {} ({} bytes)", evidence.getPath(), evidence.getLength());
+                        log.warn("Timeout creating video thumbs: {} ({} bytes)", evidence.getPath(), evidence.getLength());
                     }
                 }
                 (isAnimated ? totalAnimatedImagesTime : totalVideosTime).addAndGet(t);
             }
         } catch (Exception e) {
-            logger.warn(evidence.toString(), e);
+            log.warn(evidence.toString(), e);
 
         } finally {
 
@@ -469,7 +468,7 @@ public class VideoThumbTask extends ThumbTask {
                         totalGallery.incrementAndGet();
                     }
                 } catch (Throwable e) {
-                    logger.warn(evidence.toString(), e);
+                    log.warn(evidence.toString(), e);
                 } finally {
                     updateHasThumb(evidence);
                 }

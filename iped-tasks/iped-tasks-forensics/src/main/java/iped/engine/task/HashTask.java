@@ -24,8 +24,7 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.HashTaskConfig;
 import iped.engine.hash.HashAlgorithm;
 import iped.parsers.whatsapp.WhatsAppParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,9 +42,9 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Classe para calcular e manipular hashes.
  */
+@Slf4j
 public class HashTask extends AbstractTask {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(HashTask.class);
 
     private static final int HASH_BUFFER_LEN = 1024 * 1024;
 
@@ -182,7 +181,7 @@ public class HashTask extends AbstractTask {
                 evidence.setExtraAttribute("ioError", "true"); //$NON-NLS-1$ //$NON-NLS-2$
                 stats.incIoErrors();
             }
-            LOGGER.warn("{} Error computing hash {}\t{}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
+            log.warn("{} Error computing hash {}\t{}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
                     e.toString());
             // e.printStackTrace();
 

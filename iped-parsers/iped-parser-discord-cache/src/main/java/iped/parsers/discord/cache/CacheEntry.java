@@ -2,9 +2,8 @@ package iped.parsers.discord.cache;
 
 import iped.data.IItemReader;
 import iped.parsers.discord.cache.CacheAddr.InputStreamNotAvailable;
+import lombok.extern.slf4j.Slf4j;
 import org.brotli.dec.BrotliInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,9 +16,9 @@ import java.util.zip.ZipException;
  * @author PCF Campanini
  *
  */
+@Slf4j
 public class CacheEntry {
 
-    private static Logger logger = LoggerFactory.getLogger(CacheEntry.class);
 
     protected long hash;
     protected CacheAddr nextEntry;
@@ -201,7 +200,7 @@ public class CacheEntry {
             return key;
 
         } catch (Exception exe) {
-            logger.warn("Failed to retrieve URL. Cache file:", getName());
+            log.warn("Failed to retrieve URL. Cache file:", getName());
             return "";
         }
     }
@@ -223,13 +222,13 @@ public class CacheEntry {
                 try {
                     return new BrotliInputStream(bis);
                 } catch (IOException e) {
-                    logger.warn("Brotli decoder failed, trying Gzip", e);
+                    log.warn("Brotli decoder failed, trying Gzip", e);
                 }
             case "gzip":
                 try {
                     return new GZIPInputStream(bis);
                 } catch (IOException e) {
-                    logger.warn("Gzip decoder failed, trying default");
+                    log.warn("Gzip decoder failed, trying default");
                 }
             default:
                 return bis;
@@ -290,7 +289,7 @@ public class CacheEntry {
                 contentType = httpResponse.get("Content-Type");
             }
 
-            logger.warn("Truncated/invalid cache entry. File: {} | URL: {} | Content-Type: {}",
+            log.warn("Truncated/invalid cache entry. File: {} | URL: {} | Content-Type: {}",
                         fileName, url, contentType);
         }
 
