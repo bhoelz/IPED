@@ -21,9 +21,9 @@
     -->
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
-        <spring-boot.version>4.0.0</spring-boot.version>
-        <rocker.version>1.4.0</rocker.version>
-        <frontend-plugin.version>1.15.1</frontend-plugin.version>
+        <spring-boot.version>4.0.6</spring-boot.version>
+        <rocker.version>2.4.0</rocker.version>
+        <frontend-plugin.version>2.0.0</frontend-plugin.version>
         <!-- Angular workspace that produces the island bundles -->
         <webui.dir>${project.parent.basedir}/iped-webui</webui.dir>
         <!-- Set -Dwebui.skipFrontend=true to build the server without the Angular bundle step -->
@@ -46,6 +46,18 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- SLF4J backed by log4j2, uniform with the rest of the project -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
 
         <!-- Rocker: server-side templates compiled to Java, fragment-friendly -->
@@ -59,6 +71,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <!-- the project logs through log4j2 (starter-log4j2); the default
+                     logging starter brings log4j-to-slf4j, which log4j refuses to
+                     load together with log4j-slf4j2-impl -->
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

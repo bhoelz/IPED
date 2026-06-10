@@ -307,7 +307,6 @@
     		<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -319,7 +318,6 @@
     		<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -332,7 +330,6 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.14</version>
                 <executions>
                     <execution>
                         <goals>

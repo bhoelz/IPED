@@ -74,7 +74,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>create-webapi-jar</id>

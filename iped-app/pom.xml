@@ -62,6 +62,17 @@
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${log4j.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
             <version>3.29.0</version>
@@ -92,14 +103,12 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
             </plugin>
 			<plugin>
 				<groupId>com.googlecode.maven-download-plugin</groupId>
 				<artifactId>download-maven-plugin</artifactId>
-				<version>1.6.8</version>
 				<executions>
 					<execution>
 						<id>download-regripper</id>
@@ -123,7 +132,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.10</version>
                 <executions>
                     <execution>
                         <goals>
@@ -619,24 +627,22 @@
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
                             <excludeScope>provided</excludeScope>
+                            <!-- Plugin modules (tasks, parsers, carvers) are loaded only from the
+                                 plugins folder; their API modules (iped-tasks.spi, iped-carvers-api)
+                                 stay in lib. Third-party transitive deps are still copied to lib. -->
+                            <excludeArtifactIds>
+                                iped-tasks-core,iped-tasks-transcript,iped-tasks-image,iped-tasks-storage-index,iped-tasks-carving,iped-tasks-graph,iped-tasks-report,iped-tasks-forensics,
+                                iped-parsers-common,iped-parsers-main,iped-parsers-impl,java-dbf,
+                                iped-parser-apk,iped-parser-vcard,iped-parser-plist-detector,iped-parser-mp4-detector,iped-parser-video,iped-parser-tor,iped-parser-sqlite-detector,iped-parser-browsers,iped-parser-discord-cache,iped-parser-db-base,iped-parser-sqlite-core,iped-parser-database-edb,iped-parser-vlc,iped-parser-ares,iped-parser-emule,iped-parser-shareaza,iped-parser-skype,iped-parser-lnk,iped-parser-usnjrnl,iped-parser-eventtranscript,iped-parser-bittorrent,iped-parser-winx,iped-parser-security,iped-parser-gdrive,iped-parser-external,iped-parser-registry,iped-parser-mail,
+                                iped-carvers-impl,iped-ahocorasick
+                            </excludeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.4</version>
                 <configuration>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
@@ -644,19 +650,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
                     <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.5</version>
                 <executions>
                     <execution>
-                        <id>create-jar</id>
+                        <!-- overrides the default jar so the module's artifact IS the
+                             release jar; jar-plugin 3.x forbids a second unclassified jar -->
+                        <id>default-jar</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
@@ -708,7 +712,10 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <finalName>iped-search-app</finalName>
+                            <!-- jar 3.x names files finalName-classifier.jar; split so the
+                                 resulting file keeps its original name iped-search-app.jar -->
+                            <classifier>app</classifier>
+                            <finalName>iped-search</finalName>
                             <outputDirectory>${lib.dir}</outputDirectory>
                             <forceCreation>true</forceCreation>
                             <archive>
@@ -729,7 +736,9 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <finalName>iped-hashdb</finalName>
+                            <!-- file name becomes iped-hashdb.jar (finalName-classifier) -->
+                            <classifier>hashdb</classifier>
+                            <finalName>iped</finalName>
                             <outputDirectory>${lib.dir}</outputDirectory>
                             <forceCreation>true</forceCreation>
                             <archive>
@@ -750,7 +759,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.7</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -949,11 +957,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
                 <configuration>
                     <testFailureIgnore>true</testFailureIgnore>
-                    <aggregate>true</aggregate>
-                    <linkXRef>true</linkXRef>
                 </configuration>
             </plugin>
         </plugins>

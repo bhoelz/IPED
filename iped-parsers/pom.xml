@@ -46,10 +46,34 @@
 
     <build>
     	<plugins>
+            <!-- Make parser plugin JARs available in the release plugins folder -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-plugin-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${plugin.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes>
+                                        <include>${project.build.finalName}.jar</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
     		<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -70,7 +94,6 @@
                 <configuration>
                     <configLocation>config/sun_checks.xml</configLocation>
                 </configuration>
-                <version>3.3.1</version>
             </plugin>
         </plugins>
     </reporting>
