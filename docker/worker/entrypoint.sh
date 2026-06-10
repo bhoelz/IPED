@@ -2,7 +2,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # IPED Task Agent — container entrypoint
 #
-# Validates required environment variables, writes DistributedConfig.txt into
+# Validates required environment variables, writes DistributedConfig.toml into
 # the IPED config directory, then starts TaskAgentLauncher.
 # ─────────────────────────────────────────────────────────────────────────────
 set -e
@@ -21,14 +21,14 @@ PARALLELISM="${AGENT_PARALLELISM:-4}"
 TIMEOUT="${ITEM_TIMEOUT_SECONDS:-3600}"
 EXACTLY_ONCE="${EXACTLY_ONCE:-false}"
 
-# ── Generate DistributedConfig.txt ────────────────────────────────────────────
+# ── Generate DistributedConfig.toml ───────────────────────────────────────────
 mkdir -p "$CONFIG_DIR"
 
-cat > "$CONFIG_DIR/DistributedConfig.txt" << EOF
+cat > "$CONFIG_DIR/DistributedConfig.toml" << EOF
 enableDistributed = true
-kafkaBootstrapServers = $KAFKA_BOOTSTRAP
-coordinatorServerUrl = $COORDINATOR
-sharedStorageRoot = $SHARED
+kafkaBootstrapServers = "$KAFKA_BOOTSTRAP"
+coordinatorServerUrl = "$COORDINATOR"
+sharedStorageRoot = "$SHARED"
 agentParallelism = $PARALLELISM
 itemTimeoutSeconds = $TIMEOUT
 exactlyOnce = $EXACTLY_ONCE

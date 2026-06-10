@@ -555,7 +555,7 @@ public class DistributedConfig extends AbstractPropertiesConfigurable {
 }
 ```
 
-**`DistributedConfig.txt`** (arquivo de configuração do usuário):
+**`DistributedConfig.toml`** (arquivo de configuração do usuário):
 ```properties
 # Habilitar modo distribuído
 enableDistributed       = true
@@ -616,7 +616,7 @@ public class TaskAgentLauncher {
 | `Manager.java` | Toggle `DatasourceRegistry` conforme `DistributedConfig` | ~15 |
 | `Worker.java` | Adicionar hook `onItemFinalized(IItem, boolean, Exception)` via listener | ~10 |
 | `iped-engine-parent/pom.xml` | Adicionar `iped-distributed` como módulo | 1 |
-| `DistributedConfig.txt` | Novo arquivo de configuração (não é código) | — |
+| `DistributedConfig.toml` | Novo arquivo de configuração (não é código) | — |
 
 **Zero mudanças em tasks, readers, ou qualquer outro arquivo existente.**
 

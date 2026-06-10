@@ -8,7 +8,7 @@
 #
 # Runtime size: ~100–150 MB (JRE + fat JAR with Kafka/Jetty/Jersey/Jackson).
 #
-# Configuration (priority: env var > DistributedConfig.txt > built-in default)
+# Configuration (priority: env var > DistributedConfig.toml > built-in default)
 # ─────────────────────────────────────────────────────────────────────────────
 #   KAFKA_BOOTSTRAP_SERVERS   kafka:9092
 #   COORDINATOR_PORT          8484
@@ -72,7 +72,7 @@ COPY --from=build \
     /build/iped-engine-parent/iped-distributed/target/iped-distributed-*-coordinator.jar \
     /app/iped-coordinator.jar
 
-# Optional config directory (mount a DistributedConfig.txt here)
+# Optional config directory (mount a DistributedConfig.toml here)
 RUN mkdir -p /etc/iped && chown iped:iped /etc/iped
 
 # Coordinator REST port

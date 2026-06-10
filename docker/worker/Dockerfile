@@ -67,7 +67,7 @@ COPY dist/lib/ /opt/iped/lib/
 
 # ── Runtime directories ───────────────────────────────────────────────────────
 # /mnt/iped-shared — shared evidence storage (NFS / GlusterFS mount in prod)
-# /etc/iped        — IPED configuration directory (DistributedConfig.txt, etc.)
+# /etc/iped        — IPED configuration directory (DistributedConfig.toml, etc.)
 # /var/log/iped    — worker logs
 RUN mkdir -p /mnt/iped-shared /etc/iped /var/log/iped \
     && chown -R iped:iped /mnt/iped-shared /etc/iped /var/log/iped /opt/iped

@@ -161,16 +161,24 @@ cp target/iped-plugin-mycarver-1.0.0.jar ~/.iped/plugins/
 
 ### Step 5: Configure (Optional)
 
-If your carver needs configuration, create:
+If your carver needs configuration, ship a TOML default inside your plugin jar
+(it becomes the lowest configuration layer; users override single keys in
+their local `conf/` or profile):
 
-**File:** `src/main/resources/conf/MyCarverConfig.txt`
+**File:** `src/main/resources/iped/config/defaults/conf/MyCarverConfig.toml`
 
-```
+```toml
 # Enable/disable the carver
-enabled=true
+enabled = true
 
 # Custom properties
-threshold=100
+threshold = 100
+```
+
+**File:** `src/main/resources/META-INF/iped/config-defaults.idx`
+
+```
+iped/config/defaults/conf/MyCarverConfig.toml
 ```
 
 **File:** `src/main/java/com/mycompany/MyCarverConfig.java`
@@ -187,7 +195,7 @@ public class MyCarverConfig extends AbstractPropertiesConfigurable {
 
     @Override
     public String getConfigFileName() {
-        return "MyCarverConfig.txt";
+        return "MyCarverConfig.toml";
     }
 
     // Getters and setters
@@ -338,7 +346,7 @@ my-plugin/
 │       ├── META-INF/services/
 │       │   └── iped.carvers.api.CarverProvider
 │       └── conf/
-│           ├── MyCarverConfig.txt (optional)
+│           ├── MyCarverConfig.toml (optional)
 │           ├── MyCarver.schema.json (optional)
 │           └── MyCarver.uischema.json (optional)
 └── target/

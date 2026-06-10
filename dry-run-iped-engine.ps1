@@ -138,7 +138,7 @@ $taskInstallerXml = @'
 </tasks>
 '@
 
-# Disable every optional/heavy feature.  Matches the set of flags in IPEDConfig.txt.
+# Disable every optional/heavy feature.  Matches the set of flags in IPEDConfig.toml.
 $ipedConfigTxt = @'
 ########################################################################
 # Dry-run profile — only core iped-engine tasks are active.
@@ -224,7 +224,7 @@ try {
     Write-Host '[1/3] Creating dryrun profile...'
     New-Item -ItemType Directory -Force -Path $profileConf | Out-Null
 
-    $ipedConfigTxt    | Set-Content -Path (Join-Path $profileDir 'IPEDConfig.txt')   -Encoding UTF8
+    $ipedConfigTxt    | Set-Content -Path (Join-Path $profileDir 'IPEDConfig.toml')  -Encoding UTF8
     $taskInstallerXml | Set-Content -Path (Join-Path $profileConf 'TaskInstaller.xml') -Encoding UTF8
 
     Write-Host "      Profile written to $profileDir"
