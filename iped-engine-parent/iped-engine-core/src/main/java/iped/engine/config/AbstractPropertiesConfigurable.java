@@ -1,6 +1,7 @@
 package iped.engine.config;
 
 import iped.configuration.Configurable;
+import iped.utils.TomlProperties;
 import iped.utils.UTF8Properties;
 
 import java.io.IOException;
@@ -26,7 +27,12 @@ public abstract class AbstractPropertiesConfigurable implements Configurable<UTF
 
     @Override
     public void processConfig(Path resource) throws IOException {
-        properties.load(resource.toFile());
+        // TOML files are flattened to properties; loading layers into the same
+        // instance gives key-level last-wins merge over built-in defaults.
+        // Files.newInputStream based loading also works inside plugin/defaults JARs.
+        TomlProperties toml = new TomlProperties();
+        toml.load(resource);
+        properties.putAll(toml);
         processProperties(properties);
     }
 

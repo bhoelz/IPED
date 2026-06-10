@@ -1,5 +1,6 @@
 package iped.engine.config;
 
+import iped.utils.TomlProperties;
 import iped.utils.UTF8Properties;
 
 import java.io.IOException;
@@ -25,7 +26,11 @@ public abstract class AbstractTaskPropertiesConfig extends AbstractTaskConfig<UT
 
     @Override
     public void processTaskConfig(Path resource) throws IOException {
-        properties.load(resource.toFile());
+        // TOML layers loaded into the same instance merge key-level last-wins,
+        // so local files only need to contain deviations from built-in defaults
+        TomlProperties toml = new TomlProperties();
+        toml.load(resource);
+        properties.putAll(toml);
         processProperties(properties);
     }
 

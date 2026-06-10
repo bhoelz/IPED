@@ -19,7 +19,7 @@
 package iped.engine.config;
 
 import iped.configuration.IConfigurationDirectory;
-import iped.utils.UTF8Properties;
+import iped.utils.TomlProperties;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.impl.NoOpLog;
 import org.slf4j.Logger;
@@ -27,9 +27,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -42,8 +45,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Configuration {
 
-    public static final String CONFIG_FILE = "IPEDConfig.txt"; //$NON-NLS-1$
-    public static final String LOCAL_CONFIG = "LocalConfig.txt"; //$NON-NLS-1$
+    public static final String CONFIG_FILE = "IPEDConfig.toml"; //$NON-NLS-1$
+    public static final String LOCAL_CONFIG = "LocalConfig.toml"; //$NON-NLS-1$
     public static final String CONF_DIR = "conf"; //$NON-NLS-1$
     public static final String PROFILES_DIR = "profiles"; //$NON-NLS-1$
     public static final String CASE_PROFILE_DIR = "profile"; //$NON-NLS-1$
@@ -55,7 +58,7 @@ public class Configuration {
 
     private ConfigurationDirectory configDirectory;
     public Logger logger;
-    public UTF8Properties properties = new UTF8Properties();
+    public TomlProperties properties = new TomlProperties();
     public String configPath, appRoot;
     public String loaddbPathWin;
 
@@ -101,10 +104,27 @@ public class Configuration {
         System.setProperty(IConfigurationDirectory.IPED_APP_ROOT, appRoot);
         System.setProperty(IConfigurationDirectory.IPED_CONF_PATH, configPath);
 
-        properties.load(new File(appRoot, LOCAL_CONFIG));
+        // built-in defaults shipped on the classpath come first, then local files
+        // (which only need to contain deviations) override them key by key
+        loadClasspathDefault(LOCAL_CONFIG);
+        loadClasspathDefault(CONFIG_FILE);
+        File localConfig = new File(appRoot, LOCAL_CONFIG);
+        if (localConfig.exists()) {
+            properties.load(localConfig.toPath());
+        }
         File mainConfig = new File(configPath, CONFIG_FILE);
         if (mainConfig.exists()) {
-            properties.load(mainConfig);
+            properties.load(mainConfig.toPath());
+        }
+    }
+
+    private void loadClasspathDefault(String fileName) throws IOException {
+        Enumeration<URL> resources = Configuration.class.getClassLoader()
+                .getResources(ConfigurationDirectory.DEFAULTS_RESOURCE_DIR + "/" + fileName); //$NON-NLS-1$
+        while (resources.hasMoreElements()) {
+            try (InputStream is = resources.nextElement().openStream()) {
+                properties.load(is);
+            }
         }
     }
 
@@ -198,6 +218,9 @@ public class Configuration {
         }
 
         configDirectory = new ConfigurationDirectory(Paths.get(appRoot, LOCAL_CONFIG));
+
+        // lowest precedence layer: built-in defaults shipped by each module
+        configDirectory.addClasspathDefaults(Configuration.class.getClassLoader());
 
         File defaultProfile = new File(appRoot);
         File currentProfile = new File(configPathStr);
