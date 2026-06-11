@@ -84,6 +84,14 @@
             </exclusions>
         </dependency>
 
+        <!-- Consume the iped.status topic for the Processing Dashboard (distributed mode).
+             Only the thin Kafka client: the topic's JSON schema is the contract with
+             iped-distributed, keeping this module free of engine dependencies. -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+        </dependency>
+
         <!-- Lombok @Slf4j / @RequiredArgsConstructor; version managed by Spring Boot BOM -->
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -17,3 +17,9 @@ runner:
   # Set to true to serve each JS file via Babel CDN (no Vite build step needed).
   # Launch with: mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Drunner.dev=true"
   dev: false
+
+  kafka:
+    # Kafka bootstrap servers (host:port[,host:port...]) of the distributed processing
+    # cluster. When set, the dashboard also shows cases from the global iped.status
+    # topic. Leave empty to disable the distributed monitor.
+    bootstrap-servers: ""

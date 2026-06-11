@@ -23,6 +23,13 @@ public class ExecutionService {
     @Value("${runner.executable:iped}")
     private String executable;
 
+    /** Extra dashboard sources (e.g. distributed cases observed on Kafka). */
+    private final List<JobSnapshotProvider> extraProviders;
+
+    public ExecutionService(List<JobSnapshotProvider> extraProviders) {
+        this.extraProviders = extraProviders;
+    }
+
     private final ConcurrentHashMap<String, RunRecord> sessions  = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RunStats>  jobStats  = new ConcurrentHashMap<>();
     private final List<SseEmitter> dashboardEmitters             = new CopyOnWriteArrayList<>();
@@ -157,7 +164,7 @@ public class ExecutionService {
         ids.addAll(sessions.keySet());
         ids.addAll(jobStats.keySet());
 
-        return ids.stream()
+        var local = ids.stream()
                 .map(id -> {
                     var rec   = sessions.get(id);
                     var stats = jobStats.getOrDefault(id, new RunStats());
@@ -179,6 +186,12 @@ public class ExecutionService {
                 })
                 .sorted(Comparator.comparing(JobSnapshot::startedAt))
                 .toList();
+
+        if (extraProviders.isEmpty()) return local;
+        var all = new ArrayList<>(local);
+        extraProviders.forEach(p -> all.addAll(p.snapshots()));
+        all.sort(Comparator.comparing(JobSnapshot::startedAt));
+        return all;
     }
 
     /**
