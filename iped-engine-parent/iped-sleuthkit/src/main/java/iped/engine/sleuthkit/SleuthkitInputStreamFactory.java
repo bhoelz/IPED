@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.sleuthkit.datamodel.Content;
 import org.sleuthkit.datamodel.SleuthkitCase;
 import org.sleuthkit.datamodel.TskCoreException;
-import org.sqlite.SQLiteException;
+import java.sql.SQLException;
 
 import java.io.File;
 import java.io.IOException;
@@ -154,9 +154,9 @@ public class SleuthkitInputStreamFactory extends SeekableInputStreamFactory {
     }
 
     private void handleTskCoreException(TskCoreException e, long start) throws IOException {
-        if (e.getCause() instanceof SQLiteException) {
+        if (e.getCause() instanceof SQLException) {
             long now = System.currentTimeMillis() / 1000;
-            int errorCode = ((SQLiteException) e.getCause()).getErrorCode();
+            int errorCode = ((SQLException) e.getCause()).getErrorCode();
             log.warn("SQLite error " + errorCode + " after " + (now - start)
                     + "s reading sleuthkit DB, trying again...");
             if (now - start > 3600)

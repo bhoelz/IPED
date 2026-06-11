@@ -42,7 +42,7 @@ import org.sleuthkit.datamodel.TskData.TSK_DB_FILES_TYPE_ENUM;
 import org.sleuthkit.datamodel.TskData.TSK_FS_META_FLAG_ENUM;
 import org.sleuthkit.datamodel.TskData.TSK_FS_NAME_FLAG_ENUM;
 import org.sleuthkit.datamodel.TskData.TSK_FS_TYPE_ENUM;
-import org.sqlite.SQLiteException;
+import java.sql.SQLException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -738,9 +738,9 @@ public class SleuthkitReader extends DataSourceReader {
     }
 
     private void handleTskCoreException(TskCoreException e, long start) throws TskCoreException, InterruptedException {
-        if (e.getCause() instanceof SQLiteException) {
+        if (e.getCause() instanceof SQLException) {
             long now = System.currentTimeMillis() / 1000;
-            int errorCode = ((SQLiteException) e.getCause()).getErrorCode();
+            int errorCode = ((SQLException) e.getCause()).getErrorCode();
             log.warn(
                 "SQLite error " + errorCode + " after " + (now - start) + "s reading sleuth.db, trying again...");
             if (now - start > 3600)
