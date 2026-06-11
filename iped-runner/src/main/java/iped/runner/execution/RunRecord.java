@@ -8,5 +8,6 @@ public record RunRecord(
         String id,
         Process process,
         SseEmitter emitter,
-        Instant startedAt
+        Instant startedAt,
+        RunRequest request
 ) {}
