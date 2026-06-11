@@ -13,6 +13,13 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [react()],
 
+  // In lib/IIFE mode Vite does not replace process.env.NODE_ENV automatically;
+  // React references it to tree-shake dev-only code.  Defining it here prevents
+  // a "process is not defined" ReferenceError in the browser bundle.
+  define: {
+    'process.env.NODE_ENV': '"production"',
+  },
+
   build: {
     lib: {
       entry: resolve(__dirname, 'src/main.jsx'),
