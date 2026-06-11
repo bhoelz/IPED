@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import iped.distributed.config.DistributedConfig;
 import iped.distributed.kafka.TopicProvisioner;
+import iped.distributed.status.ItemStatusConsumer;
+import iped.distributed.status.ItemStatusProducer;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 public class CoordinatorServer {
 
 
+    private final DistributedConfig      cfg;
     private final int                    port;
     private final AgentRegistry          registry;
     private final CaseLifecycleManager   lifecycle;
@@ -48,7 +51,12 @@ public class CoordinatorServer {
     private final ScheduledExecutorService eviction;
     private Server                       server;
 
+    private ItemStatusProducer    statusProducer;
+    private ItemStatusConsumer    statusConsumer;
+    private CaseCompletionMonitor completionMonitor;
+
     public CoordinatorServer(DistributedConfig cfg) {
+        this.cfg       = cfg;
         this.port      = cfg.getCoordinatorPort();
         this.registry  = new AgentRegistry(cfg.getAgentExpirySeconds());
         this.lifecycle = new CaseLifecycleManager(
@@ -81,10 +89,24 @@ public class CoordinatorServer {
                             a.getTotalAgents(), a.getFreeSlots(), a.getTotalSlots()));
             }
         }, 30, 30, TimeUnit.SECONDS);
+
+        // Timeout + automatic case-completion detection driven by iped.status
+        statusProducer    = new ItemStatusProducer(cfg.getKafkaBootstrapServers());
+        completionMonitor = new CaseCompletionMonitor(
+                lifecycle, statusProducer::publish, cfg.getItemTimeoutSeconds());
+        statusConsumer    = new ItemStatusConsumer(
+                cfg.getKafkaBootstrapServers(), "iped-coordinator",
+                false, completionMonitor::onEvent);
+        statusConsumer.start();
+        eviction.scheduleAtFixedRate(
+                () -> completionMonitor.sweepTimeouts(java.time.Instant.now()),
+                30, 30, TimeUnit.SECONDS);
     }
 
     public void stop() throws Exception {
         eviction.shutdown();
+        if (statusConsumer != null) statusConsumer.close();
+        if (statusProducer != null) statusProducer.close();
         if (server != null) server.stop();
     }
 

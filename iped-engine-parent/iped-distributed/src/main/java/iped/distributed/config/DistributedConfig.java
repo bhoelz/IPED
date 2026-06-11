@@ -51,6 +51,12 @@ public class DistributedConfig extends AbstractPropertiesConfigurable {
     /** Kafka topic suffix for dead-letter queues. */
     private String deadLetterTopicSuffix = ".dlq";
 
+    /** Failed attempts per stage before an item is sent to the DLQ (0 = no retries). */
+    private int maxRetries = 3;
+
+    /** Base delay of the exponential retry backoff: base * 2^attempt seconds. */
+    private int retryBackoffBaseSeconds = 30;
+
     /**
      * When true, uses Kafka transactions to provide exactly-once semantics.
      * Slower but prevents duplicate processing on agent restart.
@@ -106,6 +112,12 @@ public class DistributedConfig extends AbstractPropertiesConfigurable {
         v = props.getProperty("deadLetterTopicSuffix");
         if (v != null && !v.isBlank()) deadLetterTopicSuffix = v.trim();
 
+        v = props.getProperty("maxRetries");
+        if (v != null) maxRetries = Integer.parseInt(v.trim());
+
+        v = props.getProperty("retryBackoffBaseSeconds");
+        if (v != null) retryBackoffBaseSeconds = Integer.parseInt(v.trim());
+
         v = props.getProperty("exactlyOnce");
         if (v != null) exactlyOnce = Boolean.parseBoolean(v.trim());
 
@@ -132,6 +144,8 @@ public class DistributedConfig extends AbstractPropertiesConfigurable {
     public int     getAgentParallelism()            { return agentParallelism; }
     public long    getItemTimeoutSeconds()          { return itemTimeoutSeconds; }
     public String  getDeadLetterTopicSuffix()       { return deadLetterTopicSuffix; }
+    public int     getMaxRetries()                  { return maxRetries; }
+    public int     getRetryBackoffBaseSeconds()     { return retryBackoffBaseSeconds; }
     public boolean isExactlyOnce()                  { return exactlyOnce; }
     public int     getCoordinatorPort()             { return coordinatorPort; }
     public int     getHeartbeatIntervalSeconds()    { return heartbeatIntervalSeconds; }

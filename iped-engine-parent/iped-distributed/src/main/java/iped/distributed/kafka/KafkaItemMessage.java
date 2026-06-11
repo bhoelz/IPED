@@ -52,6 +52,17 @@ public class KafkaItemMessage {
     /** Whether this item should be prioritised in agent internal queues. */
     private boolean priority;
 
+    // ---- Retry / DLQ ---------------------------------------------------------
+
+    /** Number of failed processing attempts at the current stage (0 = first try). */
+    private int attempt;
+
+    /**
+     * Epoch millis before which this message must not be processed.
+     * Set on retry re-publication to implement exponential backoff; 0 = no delay.
+     */
+    private long notBeforeMs;
+
     // ---- Item properties ---------------------------------------------------
 
     private String  path;
@@ -142,6 +153,12 @@ public class KafkaItemMessage {
 
     public boolean isPriority()                             { return priority; }
     public void    setPriority(boolean v)                   { priority = v; }
+
+    public int    getAttempt()                              { return attempt; }
+    public void   setAttempt(int v)                         { attempt = v; }
+
+    public long   getNotBeforeMs()                          { return notBeforeMs; }
+    public void   setNotBeforeMs(long v)                    { notBeforeMs = v; }
 
     public String getPath()                                 { return path; }
     public void   setPath(String v)                         { path = v; }

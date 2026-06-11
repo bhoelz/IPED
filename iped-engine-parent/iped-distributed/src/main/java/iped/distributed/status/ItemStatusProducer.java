@@ -69,7 +69,7 @@ public class ItemStatusProducer implements AutoCloseable {
         publish(ItemStatusEvent.caseCompleted(caseId));
     }
 
-    private void publish(ItemStatusEvent event) {
+    public void publish(ItemStatusEvent event) {
         try {
             String json = mapper.writeValueAsString(event);
             // Key = caseId so all events for a case land in the same partition

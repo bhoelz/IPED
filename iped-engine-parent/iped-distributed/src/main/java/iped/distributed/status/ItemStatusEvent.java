@@ -98,6 +98,21 @@ public class ItemStatusEvent {
         return e;
     }
 
+    public static ItemStatusEvent timeout(String caseId, String itemUuid,
+                                          String taskType, int pipelineStage,
+                                          long sinceStartedMs) {
+        ItemStatusEvent e = new ItemStatusEvent();
+        e.type = Type.TIMEOUT;
+        e.caseId = caseId;
+        e.itemUuid = itemUuid;
+        e.taskType = taskType;
+        e.pipelineStage = pipelineStage;
+        e.durationMs = sinceStartedMs;
+        e.errorMessage = "No completion within timeout window (" + sinceStartedMs + "ms since STARTED)";
+        e.timestamp = Instant.now();
+        return e;
+    }
+
     public static ItemStatusEvent caseCompleted(String caseId) {
         ItemStatusEvent e = new ItemStatusEvent();
         e.type = Type.CASE_COMPLETED;

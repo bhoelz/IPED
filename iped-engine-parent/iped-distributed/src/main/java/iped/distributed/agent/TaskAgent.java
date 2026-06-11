@@ -194,6 +194,14 @@ public class TaskAgent implements AutoCloseable {
     private void processRecord(KafkaItemMessage msg) {
         long startMs = System.currentTimeMillis();
         try {
+            // Honour the retry backoff window set by handleFailure()
+            long waitMs = msg.getNotBeforeMs() - System.currentTimeMillis();
+            if (waitMs > 0) {
+                log.debug("Item '{}' attempt {} delayed {}ms (backoff)",
+                        msg.getItemUuid(), msg.getAttempt(), waitMs);
+                Thread.sleep(waitMs);
+                startMs = System.currentTimeMillis();
+            }
             log.debug("Processing item '{}' ({})", msg.getItemUuid(), msg.getPath());
             statusProducer.publishStarted(msg, taskType);
 
@@ -212,8 +220,10 @@ public class TaskAgent implements AutoCloseable {
                 DatasourceRegistry.set(prevRegistry);
             }
 
-            // Forward updated item to next stage
+            // Forward updated item to next stage; retry counters are per-stage
             KafkaItemMessage updated = ItemConverter.mergeState(msg, item);
+            updated.setAttempt(0);
+            updated.setNotBeforeMs(0);
             producer.send(new ProducerRecord<>(outputTopic, updated.getItemUuid(), updated),
                     (meta, ex) -> {
                         if (ex != null) {
@@ -226,12 +236,11 @@ public class TaskAgent implements AutoCloseable {
             statusProducer.publishCompleted(msg, taskType, durationMs);
             log.debug("Completed item '{}' in {}ms", msg.getItemUuid(), durationMs);
 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Interrupted while processing item '{}'", msg.getItemUuid());
         } catch (Exception e) {
-            long durationMs = System.currentTimeMillis() - startMs;
-            log.error("Error processing item '{}' in task '{}': {}",
-                    msg.getItemUuid(), taskType, e.getMessage(), e);
-            statusProducer.publishError(msg, taskType, durationMs, e);
-            sendToDeadLetterQueue(msg, e);
+            handleFailure(msg, e, System.currentTimeMillis() - startMs);
         } finally {
             inFlight.decrementAndGet();
             slots.release();
@@ -273,6 +282,37 @@ public class TaskAgent implements AutoCloseable {
             @Override
             public void setEnvVar(String k, String v) { base.setEnvVar(k, v); }
         };
+    }
+
+    /**
+     * Retry policy: re-publish to the input topic with exponential backoff
+     * ({@code base * 2^attempt} seconds) until {@code maxRetries} is exhausted,
+     * then park the item in the stage's dead-letter queue.
+     */
+    private void handleFailure(KafkaItemMessage msg, Exception e, long durationMs) {
+        statusProducer.publishError(msg, taskType, durationMs, e);
+
+        int attempt = msg.getAttempt();
+        if (attempt < cfg.getMaxRetries()) {
+            long backoffMs = cfg.getRetryBackoffBaseSeconds() * 1000L * (1L << attempt);
+            msg.setAttempt(attempt + 1);
+            msg.setNotBeforeMs(System.currentTimeMillis() + backoffMs);
+            log.warn("Item '{}' failed in '{}' (attempt {}/{}), retrying in {}s: {}",
+                    msg.getItemUuid(), taskType, attempt + 1, cfg.getMaxRetries(),
+                    backoffMs / 1000, e.getMessage());
+            producer.send(new ProducerRecord<>(inputTopic, msg.getItemUuid(), msg),
+                    (meta, ex) -> {
+                        if (ex != null) {
+                            log.error("Could not re-publish item '{}' for retry, sending to DLQ",
+                                    msg.getItemUuid(), ex);
+                            sendToDeadLetterQueue(msg, e);
+                        }
+                    });
+        } else {
+            log.error("Item '{}' exhausted {} retries in task '{}': {}",
+                    msg.getItemUuid(), cfg.getMaxRetries(), taskType, e.getMessage(), e);
+            sendToDeadLetterQueue(msg, e);
+        }
     }
 
     private void sendToDeadLetterQueue(KafkaItemMessage msg, Exception cause) {

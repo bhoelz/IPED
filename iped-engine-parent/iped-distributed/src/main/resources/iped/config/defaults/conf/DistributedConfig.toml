@@ -39,6 +39,13 @@ itemTimeoutSeconds = 3600
 # Items that fail permanently are forwarded here for manual inspection.
 deadLetterTopicSuffix = ".dlq"
 
+# Failed attempts per stage before an item is sent to the DLQ (0 = no retries).
+maxRetries = 3
+
+# Base delay of the exponential retry backoff. The Nth retry waits
+# retryBackoffBaseSeconds * 2^(N-1) seconds (30s, 60s, 120s, ... by default).
+retryBackoffBaseSeconds = 30
+
 # When true, uses Kafka transactions to provide exactly-once processing semantics.
 # Prevents duplicate processing on agent restart at the cost of lower throughput.
 exactlyOnce = false
