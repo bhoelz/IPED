@@ -32,6 +32,7 @@ export default defineConfig({
     proxy: {
       '/run':    'http://localhost:8092',
       '/browse': 'http://localhost:8092',
+      '/runner': 'http://localhost:8092', // static assets (runner.css, fonts, etc.)
     },
   },
 })
