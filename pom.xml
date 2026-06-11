@@ -18,6 +18,7 @@
         <module>iped-geo</module>
         <module>iped-webapi</module>
         <module>iped-webui-server</module>
+        <module>iped-runner</module>
         <module>iped-mcp</module>
         <module>iped-app</module>
     </modules>
