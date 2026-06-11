@@ -11,6 +11,9 @@ target/
 # Local Maven repository cache
 .m2/
 
+# Node dependencies — restored by 'npm ci' inside the build stage
+**/node_modules/
+
 # IDE metadata
 .idea/
 .vscode/

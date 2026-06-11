@@ -20,6 +20,8 @@ SHARED="${SHARED_STORAGE_ROOT:-/mnt/iped-shared}"
 PARALLELISM="${AGENT_PARALLELISM:-4}"
 TIMEOUT="${ITEM_TIMEOUT_SECONDS:-3600}"
 EXACTLY_ONCE="${EXACTLY_ONCE:-false}"
+MAX_RETRIES="${MAX_RETRIES:-3}"
+RETRY_BACKOFF="${RETRY_BACKOFF_BASE_SECONDS:-30}"
 
 # ── Generate DistributedConfig.toml ───────────────────────────────────────────
 mkdir -p "$CONFIG_DIR"
@@ -32,6 +34,8 @@ sharedStorageRoot = "$SHARED"
 agentParallelism = $PARALLELISM
 itemTimeoutSeconds = $TIMEOUT
 exactlyOnce = $EXACTLY_ONCE
+maxRetries = $MAX_RETRIES
+retryBackoffBaseSeconds = $RETRY_BACKOFF
 EOF
 
 echo "──────────────────────────────────────────────"

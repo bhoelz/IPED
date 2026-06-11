@@ -6,6 +6,7 @@
 #  kafka        Apache Kafka 4.3 in KRaft mode (no Zookeeper)
 #  coordinator  IPED Coordinator REST server (port 8484)
 #  worker-*     Example Task Agent workers (one per task type)
+#  runner       IPED Runner — Processing Dashboard at http://localhost:8092/dashboard
 #  kafka-ui     Kafka UI console — optional, activate with: --profile monitoring
 #
 # Prerequisites
@@ -190,6 +191,24 @@ services:
       SHARED_STORAGE_ROOT: /mnt/iped-shared
       AGENT_PARALLELISM: "4"
       JAVA_OPTS: "-Xmx4g -XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -Djava.awt.headless=true"
+
+  # ── IPED Runner — Processing Dashboard ─────────────────────────────────────
+  # Web UI at http://localhost:8092/dashboard showing live per-case progress
+  # aggregated from the global iped.status topic.
+  runner:
+    image: iped-runner:latest
+    build:
+      context: ..
+      dockerfile: docker/runner/Dockerfile
+    hostname: runner
+    ports:
+      - "8092:8092"
+    environment:
+      RUNNER_KAFKA_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
 
   # ── Kafka UI (monitoring — opt-in) ─────────────────────────────────────────
   kafka-ui:
