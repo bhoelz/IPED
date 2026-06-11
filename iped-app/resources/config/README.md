@@ -15,9 +15,10 @@ change. Layers are merged key by key, last one wins:
 
 ## Formats
 
-- `*.toml` — all key/value and list configurations (TOML 1.0).
-- `*.xml` — parser/carver/task wiring (`ParserConfig.xml`, `CarverConfig.xml`,
-  `TaskInstaller.xml`, `CustomSignatures.xml`, ...), unchanged.
+- `*.toml` — all key/value and list configurations (TOML 1.0), including the
+  task pipeline (`TaskInstaller.toml`).
+- `*.xml` — parser/carver wiring (`ParserConfig.xml`, `CarverConfig.xml`,
+  `CustomSignatures.xml`, ...), unchanged.
 - `*.json` — structured configs (`CategoriesConfig.json`, `GraphConfig.json`,
   ...), unchanged.
 

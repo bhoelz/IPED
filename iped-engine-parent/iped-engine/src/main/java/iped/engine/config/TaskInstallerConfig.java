@@ -3,19 +3,12 @@ package iped.engine.config;
 import iped.configuration.Configurable;
 import iped.engine.task.AbstractTask;
 import iped.exception.IPEDException;
+import iped.utils.TomlProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
@@ -29,25 +22,26 @@ import java.util.Map;
 public class TaskInstallerConfig implements Configurable<String> {
 
     private static final long serialVersionUID = 1L;
-    private static final String CONFIG_XML = "TaskInstaller.xml"; //$NON-NLS-1$
+    private static final String CONFIG_FILE = "TaskInstaller.toml"; //$NON-NLS-1$
+    private static final String TASKS_KEY = "tasks"; //$NON-NLS-1$
     public static final String SCRIPT_BASE = "scripts/tasks"; //$NON-NLS-1$
 
-    private final List<String> xmlContents = new ArrayList<>();
+    private final List<String> tomlContents = new ArrayList<>();
 
     public List<AbstractTask> getNewTaskInstances() {
-        Map<String, TaskRegistry.TaskRegistration> xmlTasks = new LinkedHashMap<>();
+        Map<String, TaskRegistry.TaskRegistration> pipelineTasks = new LinkedHashMap<>();
         try {
-            loadXmlTasks(xmlTasks);
+            loadPipelineTasks(pipelineTasks);
         } catch (Exception e) {
-            throw new RuntimeException("Error loading tasks from XML descriptors", e);
+            throw new RuntimeException("Error loading task pipeline from " + CONFIG_FILE, e);
         }
 
         PluginConfig pluginConfig = ConfigurationManager.get().findObject(PluginConfig.class);
         TaskRegistry pluginRegistry = pluginConfig == null ? new TaskRegistry(Map.of(), List.of(), List.of()) : new PluginTaskLoader().load(pluginConfig);
-        TaskRegistry registry = TaskRegistry.merge(xmlTasks.values(), pluginRegistry);
+        TaskRegistry registry = TaskRegistry.merge(pipelineTasks.values(), pluginRegistry);
 
         if (!pluginRegistry.loadedProviders().isEmpty()) {
-            log.info("Resolving task graph with {} XML tasks and {} plugin tasks", xmlTasks.size(),
+            log.info("Resolving task graph with {} pipeline tasks and {} plugin tasks", pipelineTasks.size(),
                     pluginRegistry.registrations().size());
         }
 
@@ -58,55 +52,49 @@ public class TaskInstallerConfig implements Configurable<String> {
 
     @Override
     public Filter<Path> getResourceLookupFilter() {
-        return entry -> entry.endsWith(CONFIG_XML);
+        return entry -> entry.endsWith(CONFIG_FILE);
     }
 
     @Override
     public void processConfig(Path resource) throws IOException {
         byte[] bytes = Files.readAllBytes(resource);
         // Each discovered config file replaces the previous one so that a profile's
-        // TaskInstaller.xml fully controls the task list instead of merging with the
+        // TaskInstaller.toml fully controls the task list instead of merging with the
         // base config (same override semantics used by all other Configurable types).
-        xmlContents.clear();
-        xmlContents.add(new String(bytes, StandardCharsets.UTF_8));
+        tomlContents.clear();
+        tomlContents.add(new String(bytes, StandardCharsets.UTF_8));
     }
 
-    private void loadXmlTasks(Map<String, TaskRegistry.TaskRegistration> tasks)
-            throws InstantiationException, IllegalAccessException, IOException, ClassNotFoundException, ParserConfigurationException,
-            SAXException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        for (String xml : xmlContents) {
-            loadTasks(xml, tasks);
+    /**
+     * The pipeline is an ordered list of entries under the "tasks" key. Order is
+     * preserved: it defines the task installation order, which directly impacts
+     * processing correctness. Entries ending in ".js" or ".py" are scripts from
+     * the scripts/tasks folder; any other entry is a task class name.
+     */
+    private void loadPipelineTasks(Map<String, TaskRegistry.TaskRegistration> tasks) throws IOException {
+        for (String toml : tomlContents) {
+            TomlProperties properties = new TomlProperties();
+            properties.load(new ByteArrayInputStream(toml.getBytes(StandardCharsets.UTF_8)));
+            for (String entry : properties.getListProperty(TASKS_KEY)) {
+                if (isScript(entry)) {
+                    File script = locateScript(entry);
+                    tasks.putIfAbsent(entry, TaskRegistry.TaskRegistration.pipelineTask(entry, () -> getScriptTask(script), CONFIG_FILE));
+                } else {
+                    tasks.putIfAbsent(entry, TaskRegistry.TaskRegistration.pipelineTask(entry, () -> instantiateClassTask(entry), CONFIG_FILE));
+                }
+            }
         }
     }
 
-    private void loadTasks(String xml, Map<String, TaskRegistry.TaskRegistration> tasks)
-            throws InstantiationException, IllegalAccessException, IOException, ClassNotFoundException, ParserConfigurationException,
-            SAXException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-
-        DocumentBuilder dombuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document dom = dombuilder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
-        NodeList list = dom.getElementsByTagName("task"); //$NON-NLS-1$
-        for (int i = 0; i < list.getLength(); i++) {
-            Node node = list.item(i);
-            Node attr = node.getAttributes().getNamedItem("class"); //$NON-NLS-1$
-            if (attr != null) {
-                String className = attr.getNodeValue();
-                tasks.putIfAbsent(className, TaskRegistry.TaskRegistration.xmlTask(className, () -> instantiateClassTask(className), "TaskInstaller.xml"));
-            }
-            attr = node.getAttributes().getNamedItem("script"); //$NON-NLS-1$
-            if (attr != null) {
-                String scriptName = attr.getNodeValue();
-                File script = locateScript(scriptName);
-                tasks.putIfAbsent(scriptName, TaskRegistry.TaskRegistration.xmlTask(scriptName, () -> getScriptTask(script), "TaskInstaller.xml"));
-            }
-        }
+    private static boolean isScript(String entry) {
+        return entry.endsWith(".js") || entry.endsWith(".py"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private AbstractTask instantiateClassTask(String className) {
         try {
             return (AbstractTask) Class.forName(className).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Could not instantiate XML task class " + className, e);
+            throw new RuntimeException("Could not instantiate pipeline task class " + className, e);
         }
     }
 
@@ -134,14 +122,14 @@ public class TaskInstallerConfig implements Configurable<String> {
 
     @Override
     public String getConfiguration() {
-        return String.join(System.lineSeparator(), xmlContents);
+        return String.join(System.lineSeparator(), tomlContents);
     }
 
     @Override
     public void setConfiguration(String config) {
-        xmlContents.clear();
+        tomlContents.clear();
         if (config != null && !config.isBlank()) {
-            xmlContents.add(config);
+            tomlContents.add(config);
         }
     }
 }

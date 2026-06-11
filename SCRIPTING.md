@@ -29,8 +29,8 @@ Main implementation modules:
 
 ### Where scripts are discovered
 
-- Task list is declared in `TaskInstaller.xml` (example: `iped-app/resources/config/conf/TaskInstaller.xml`).
-- Script entries use `<task script="...">`.
+- Task list is declared in `TaskInstaller.toml` (example: `iped-app/resources/config/conf/TaskInstaller.toml`).
+- Script entries are list items ending in `.js` or `.py` (e.g. `"RefineCategoryTask.js"`).
 - Script lookup order is:
   1. `<case config>/scripts/tasks`
   2. `<app root>/scripts/tasks`
@@ -122,9 +122,9 @@ Error handling / behavior:
 ### Configuration examples
 
 - Default profile task pipeline:
-  - `iped-app/resources/config/conf/TaskInstaller.xml`
+  - `iped-app/resources/config/conf/TaskInstaller.toml`
 - Triage profile pipeline:
-  - `iped-app/resources/config/profiles/triage/conf/TaskInstaller.xml`
+  - `iped-app/resources/config/profiles/triage/conf/TaskInstaller.toml`
 
 These files show built-in Python and JavaScript task scripts actively used by IPED.
 

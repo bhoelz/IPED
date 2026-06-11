@@ -13,7 +13,7 @@
       "jsonSchema": "schemas/json/TaskInstallerConfig.schema.json",
       "uiSchema": "schemas/ui/TaskInstallerConfig.uischema.json",
       "configurableClass": "iped.engine.config.TaskInstallerConfig",
-      "resourcePattern": "TaskInstaller.xml",
+      "resourcePattern": "TaskInstaller.toml",
       "category": "core",
       "priority": 1
     },

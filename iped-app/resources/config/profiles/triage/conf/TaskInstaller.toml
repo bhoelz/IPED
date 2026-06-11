@@ -1,0 +1,48 @@
+# Processing task pipeline (triage profile).
+# Tasks are installed and executed in the order listed below. The order is very
+# sensitive, because some tasks depend on results of others.
+# Entries ending in .js or .py are scripts from the scripts/tasks folder; any
+# other entry is a fully qualified task class name.
+# Tasks contributed by plugin jars (SPI TaskProvider) are merged into this
+# pipeline using their declared dependencies and must not be listed here.
+tasks = [
+    # "ExampleScriptTask.js",
+    "IgnoreFilesByPathTask.js",
+    "iped.engine.task.IgnoreHardLinkTask",
+    "iped.engine.task.TempFileTask",
+    "iped.engine.task.HashTask",
+
+    "iped.engine.task.SignatureTask",
+    "iped.engine.task.SetTypeTask",
+    "iped.engine.task.SetCategoryTask",
+    "RefineCategoryTask.js",
+
+    # tasks that ignore items should be after SetCategoryTask, so category of ignored items will be included in CSV properties file
+    "iped.engine.task.HashDBLookupTask",
+    "iped.engine.task.DuplicateTask",
+
+    # AudioTranscriptTask is provided by the iped-tasks-transcript plugin (runs before VideoThumbTask, see issue #100)
+    "iped.engine.task.video.VideoThumbTask", # see issue #100
+
+    "iped.engine.task.QRCodeTask",
+    "iped.engine.task.regex.RegexTask",
+    "iped.engine.task.LanguageDetectTask",
+    "iped.engine.task.NamedEntityTask",
+    # MakePreviewTask is provided by the iped-tasks-report plugin
+
+    "iped.engine.task.DocThumbTask",
+    "iped.engine.task.ImageThumbTask",
+    "iped.engine.task.die.DIETask",
+    "iped.engine.task.PhotoDNATask",
+    "iped.engine.task.PhotoDNALookup",
+    "NSFWNudityDetectTask.py",
+    "FaceRecognitionTask.py",
+
+    # Carving must be installed before IndexTask because it sets hasChildren property in parent items
+    "iped.engine.task.EntropyTask",
+    "iped.engine.task.MinIOTask",
+    "iped.engine.task.index.ElasticSearchIndexTask",
+    # GraphTask is provided by the iped-tasks-graph plugin
+
+    # ExportCSVTask and HTMLReportTask are provided by the iped-tasks-report plugin
+]

@@ -32,7 +32,7 @@ class TaskRegistry {
             this.pluginProvider = pluginProvider;
         }
 
-        static TaskRegistration xmlTask(String id, TaskFactory factory, String source) {
+        static TaskRegistration pipelineTask(String id, TaskFactory factory, String source) {
             return new TaskRegistration(id, TaskDescriptor.of(id), factory, source, null, false);
         }
 
@@ -135,10 +135,10 @@ class TaskRegistry {
         }
     }
 
-    static TaskRegistry merge(Collection<TaskRegistration> xmlRegistrations, TaskRegistry pluginRegistry) {
+    static TaskRegistry merge(Collection<TaskRegistration> pipelineRegistrations, TaskRegistry pluginRegistry) {
         Map<String, TaskRegistration> all = new LinkedHashMap<>();
-        for (TaskRegistration xmlRegistration : xmlRegistrations) {
-            all.put(xmlRegistration.id, xmlRegistration);
+        for (TaskRegistration pipelineRegistration : pipelineRegistrations) {
+            all.put(pipelineRegistration.id, pipelineRegistration);
         }
         for (TaskRegistration pluginRegistration : pluginRegistry.registrations.values()) {
             if (all.containsKey(pluginRegistration.id)) {

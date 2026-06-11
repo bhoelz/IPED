@@ -61,11 +61,11 @@ class TaskRegistryTest {
     }
 
 //    @Test
-//    void shouldFailOnDuplicateIdsBetweenXmlAndPlugin() {
+//    void shouldFailOnDuplicateIdsBetweenPipelineAndPlugin() {
 //        TaskRegistry pluginRegistry = new TaskRegistry(Map.of("a", registration("a", List.of())), List.of("x"), List.of());
-//        List<TaskRegistry.TaskRegistration> xmlRegistrations = List.of(TaskRegistry.TaskRegistration.xmlTask("a", () -> new StubTask("a"), "xml"));
+//        List<TaskRegistry.TaskRegistration> pipelineRegistrations = List.of(TaskRegistry.TaskRegistration.pipelineTask("a", () -> new StubTask("a"), "toml"));
 //
-//        assertThrows(IllegalStateException.class, () -> TaskRegistry.merge(xmlRegistrations, pluginRegistry));
+//        assertThrows(IllegalStateException.class, () -> TaskRegistry.merge(pipelineRegistrations, pluginRegistry));
 //    }
 
     private static TaskRegistry.TaskRegistration registration(String id, List<TaskDependency> dependencies) {
