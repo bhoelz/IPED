@@ -194,6 +194,18 @@ Mitigations:
 - Dual-run plus replay validation for critical workflows.
 - Feature flags and staged rollouts.
 
+## Per-Module Roadmaps
+Each module has its own `ROADMAP.md` at its root with phased, checkbox-tracked plans
+aligned to the workstreams above:
+- Contracts/utilities: `iped-api`, `iped-utils`
+- Engine: `iped-engine-parent` (overview) plus one per submodule — `iped-engine-core`,
+  `iped-engine`, `iped-engine-graph`, `iped-engine-hashdb`, `iped-sleuthkit`,
+  `iped-ufed`, `iped-ad1`, `iped-distributed`, `iped-additional-index`
+- Content pipeline: `iped-parsers`, `iped-carvers`, `iped-tasks`, `iped-viewers`, `iped-geo`
+- Services: `iped-webapi`, `iped-webui-server`, `iped-runner`, `iped-mcp`
+- Frontends: `iped-webui`, `iped-runner-ui`, `iped-ui`
+- Desktop/distribution: `iped-app`
+
 ## Acceptance Criteria for 5.0
 - Browser UI is the primary supported interface for core analyst workflows.
 - Companion app handles validated native-only viewer cases with audited handoff.
