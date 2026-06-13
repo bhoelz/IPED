@@ -11,7 +11,8 @@
 - Sits below the datasource modules and `iped-engine` in the dependency graph.
 
 ## Phase 1 — Boundary enforcement
-- [ ] ArchUnit rule: no dependency on any `iped-engine-parent` sibling.
+- [x] ArchUnit rule: no dependency on any `iped-engine-parent` sibling.
+      (`EngineCoreBoundaryTest` added — checks no Sleuthkit, UFED, or Lucene imports.)
 - [ ] Audit for orchestration logic that leaked down from `iped-engine` (anything touching
       Manager/Worker/Statistics belongs upstairs).
 - [ ] Audit for datasource-specific types (Sleuthkit/UFED/AD1 references must be zero).
@@ -19,10 +20,13 @@
 ## Phase 2 — Configuration system completion
 - [ ] Finish TOML migration cleanup: remove remaining `.txt` fallback/parsing paths once
       all profiles are converted (module-owned classpath defaults, deviation-only locals).
-- [ ] Schema validation at startup with actionable error messages (unknown key, wrong
+- [x] Schema validation at startup with actionable error messages (unknown key, wrong
       type, missing required) — fail fast before processing begins.
-- [ ] Typed config API consumed via `iped-api` contracts so tasks/parsers don't import
-      registry internals.
+      (`ConfigurationManager.loadConfigs()` now calls `validateAllOrFail()` after loading;
+      throws `IllegalStateException` with component names on any schema violation.)
+- [x] Typed config API consumed via `iped-api` contracts so tasks/parsers don't import
+      registry internals. (`ITypedConfigAccess` in iped-api; `ConfigurationManager`
+      implements it. Tasks call `getConfig(MyConfig.class)` via the context.)
 - [ ] Document the config layering model (classpath default → profile → local deviation)
       in this module's README.
 

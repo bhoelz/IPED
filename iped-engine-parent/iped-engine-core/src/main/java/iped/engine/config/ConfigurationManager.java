@@ -2,13 +2,16 @@ package iped.engine.config;
 
 import iped.configuration.Configurable;
 import iped.configuration.IConfigurationDirectory;
+import iped.configuration.ITypedConfigAccess;
 import iped.configuration.ObjectManager;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 
-public class ConfigurationManager implements ObjectManager<Configurable<?>> {
+@Slf4j
+public class ConfigurationManager implements ObjectManager<Configurable<?>>, ITypedConfigAccess {
 
     private static ConfigurationManager singleton = null;
 
@@ -43,6 +46,30 @@ public class ConfigurationManager implements ObjectManager<Configurable<?>> {
         for (Iterator<Configurable<?>> iterator = loadedConfigurables.keySet().iterator(); iterator.hasNext();) {
             Configurable<?> configurable = iterator.next();
             loadConfig(configurable);
+        }
+        validateAllOrFail();
+    }
+
+    /**
+     * Validates all loaded configurables against their JSON schemas and fails fast
+     * if any schema violations are found. Validation is best-effort: a missing
+     * schema is not an error (many configs predate the schema system).
+     *
+     * @throws IllegalStateException if any configurable fails schema validation
+     */
+    private void validateAllOrFail() {
+        ConfigurationValidator validator = new ConfigurationValidator();
+        ConfigurationValidator.ValidationStats stats = validator.validateAll(this);
+        if (!stats.allPassed()) {
+            String msg = "Configuration validation failed for " + stats.failureCount
+                    + " component(s): " + stats.failedComponents
+                    + " — fix the reported errors before processing begins.";
+            log.error(msg);
+            throw new IllegalStateException(msg);
+        }
+        if (stats.getTotalValidated() > 0) {
+            log.info("All {} validated configuration(s) passed schema checks.",
+                    stats.getTotalValidated());
         }
     }
 
@@ -90,6 +117,22 @@ public class ConfigurationManager implements ObjectManager<Configurable<?>> {
         }
         return null;
     }
+
+    // -------------------------------------------------------------------------
+    // ITypedConfigAccess implementation
+    // -------------------------------------------------------------------------
+
+    @Override
+    public <T extends Configurable<?>> java.util.Optional<T> getConfig(Class<T> clazz) {
+        return java.util.Optional.ofNullable(findObject(clazz));
+    }
+
+    @Override
+    public boolean isTaskEnabled(String propertyName) {
+        return getEnableTaskProperty(propertyName);
+    }
+
+    // -------------------------------------------------------------------------
 
     public AbstractTaskConfig<?> getTaskConfigurable(String configFileName) {
         for (Configurable<?> config : singleton.loadedConfigurables.keySet()) {
