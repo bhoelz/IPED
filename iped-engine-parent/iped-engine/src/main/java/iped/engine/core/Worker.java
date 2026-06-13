@@ -233,6 +233,14 @@ public class Worker extends Thread {
     }
 
     public void processNewItem(IItem evidence, ProcessTime time) {
+        if (!evidence.isQueueEnd()) {
+            String trackId = iped.engine.util.Util.getTrackID(evidence);
+            CaseContext ctx = manager != null ? manager.getContext() : null;
+            if (ctx != null && !ctx.getProcessedTrackIds().add(trackId)) {
+                log.debug("Skipping duplicate item (trackId={}): {}", trackId, evidence.getPath());
+                return;
+            }
+        }
         caseData.incDiscoveredEvidences(1);
         // Se a fila está pequena, enfileira
         if (time == ProcessTime.LATER

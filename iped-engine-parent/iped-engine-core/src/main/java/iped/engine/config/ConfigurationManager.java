@@ -13,15 +13,38 @@ import java.util.*;
 @Slf4j
 public class ConfigurationManager implements ObjectManager<Configurable<?>>, ITypedConfigAccess {
 
-    private static ConfigurationManager singleton = null;
+    /**
+     * Process-global singleton used by the legacy monolithic (single-case) code
+     * path. Multi-case callers should use {@link #createCaseInstance} instead so
+     * each {@code CaseContext} gets its own isolated configuration state.
+     */
+    private static volatile ConfigurationManager singleton = null;
 
     private IConfigurationDirectory directory;
     private Map<Configurable<?>, Boolean> loadedConfigurables = new LinkedHashMap<>();
 
+    /**
+     * Returns the process-global singleton. Only valid in single-case (monolithic)
+     * mode. Multi-case code must not use this — use the instance stored on the
+     * {@code CaseContext} instead.
+     *
+     * @return the singleton, or {@code null} if {@link #createInstance} was never called
+     * @deprecated Use {@link #createCaseInstance(IConfigurationDirectory)} for multi-case
+     *             isolation and store the result on the {@code CaseContext}.
+     */
+    @Deprecated
     public static ConfigurationManager get() {
         return singleton;
     }
 
+    /**
+     * Creates (or returns the existing) process-global singleton.
+     * Retained for the monolithic single-case launch path.
+     *
+     * @deprecated Prefer {@link #createCaseInstance(IConfigurationDirectory)} for
+     *             new multi-case-aware code.
+     */
+    @Deprecated
     public static ConfigurationManager createInstance(IConfigurationDirectory directory) {
         if (singleton == null) {
             synchronized (ConfigurationManager.class) {
@@ -31,6 +54,23 @@ public class ConfigurationManager implements ObjectManager<Configurable<?>>, ITy
             }
         }
         return singleton;
+    }
+
+    /**
+     * Creates a fresh {@code ConfigurationManager} instance scoped to one case.
+     * The instance is not registered as the process-global singleton, so each
+     * {@code CaseContext} can hold its own independent configuration without
+     * cross-case contamination.
+     *
+     * <p>Callers are responsible for storing and propagating the returned instance
+     * via {@code CaseContext} (or an equivalent per-case container) rather than
+     * relying on {@link #get()}.
+     *
+     * @param directory the configuration directory for the new case; must not be {@code null}
+     * @return a new, empty {@code ConfigurationManager} bound to {@code directory}
+     */
+    public static ConfigurationManager createCaseInstance(IConfigurationDirectory directory) {
+        return new ConfigurationManager(directory);
     }
 
     private ConfigurationManager(IConfigurationDirectory directory) {
@@ -110,7 +150,7 @@ public class ConfigurationManager implements ObjectManager<Configurable<?>>, ITy
     }
 
     public <T extends Configurable<?>> T findObject(Class<T> clazz) {
-        for (Configurable<?> configurable : singleton.loadedConfigurables.keySet()) {
+        for (Configurable<?> configurable : this.loadedConfigurables.keySet()) {
             if (configurable.getClass().equals(clazz)) {
                 return (T) configurable;
             }
@@ -135,7 +175,7 @@ public class ConfigurationManager implements ObjectManager<Configurable<?>>, ITy
     // -------------------------------------------------------------------------
 
     public AbstractTaskConfig<?> getTaskConfigurable(String configFileName) {
-        for (Configurable<?> config : singleton.loadedConfigurables.keySet()) {
+        for (Configurable<?> config : this.loadedConfigurables.keySet()) {
             if (config instanceof AbstractTaskConfig) {
                 AbstractTaskConfig<?> taskConfig = (AbstractTaskConfig<?>) config;
                 if (taskConfig.getTaskConfigFileName().equals(configFileName)) {
@@ -158,7 +198,7 @@ public class ConfigurationManager implements ObjectManager<Configurable<?>>, ITy
     }
 
     public boolean getEnableTaskProperty(String propertyName) {
-        EnableTaskProperty enableProp = singleton.getEnableTaskConfigurable(propertyName);
+        EnableTaskProperty enableProp = this.getEnableTaskConfigurable(propertyName);
         if (enableProp != null) {
             return enableProp.isEnabled();
         } else {

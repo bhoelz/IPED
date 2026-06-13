@@ -12,8 +12,10 @@
 - No formal versioning/deprecation policy yet; API evolves in lockstep with the engine.
 
 ## Phase 1 — Contract hygiene
-- [ ] Audit all interfaces for engine-implementation leakage (types that force a concrete
+- [x] Audit all interfaces for engine-implementation leakage (types that force a concrete
       engine class into signatures); replace with API-level abstractions.
+      (Audit complete: all method signatures use `Object` return types for Lucene/Tika
+      types and only iped-api interface types in parameters — no engine leakage found.)
 - [x] Add ArchUnit test forbidding dependencies from `iped-api` to any other IPED module.
       (`IpedApiArchitectureTest` — checks no `iped.engine`, `iped.app`, `iped.parsers`, etc.)
 - [x] Javadoc coverage for every public type (this module is the documentation surface for
@@ -23,10 +25,14 @@
       docs can exclude them. (`iped.annotation.Internal` added.)
 
 ## Phase 2 — Versioned API for IPED 5.0
-- [ ] Define a semantic-versioning and deprecation policy (deprecate in 4.x, remove in 5.0).
-- [ ] Introduce the stable surface needed by the JS/Python scripting SDKs (workstream 6 of
+- [x] Define a semantic-versioning and deprecation policy (deprecate in 4.x, remove in 5.0).
+      (`VERSIONING.md` created; covers stability tiers, deprecation process, package table,
+      and breaking-change definition. `Automatic-Module-Name: iped.api` added to pom.xml.)
+- [x] Introduce the stable surface needed by the JS/Python scripting SDKs (workstream 6 of
       the root `ROADMAP.md`): case/query/result navigation, item content/metadata access,
       tagging/bookmarks, export/job orchestration.
+      (`iped.scripting.{ICaseNavigator, IItemAccessor, ITaggingService, IBookmarkService,
+      IExportService, IJobOrchestrator}` added.)
 - [x] Add API-level event/listener contracts for the distributed pipeline (job lifecycle,
       item processed, case completed) so `iped-distributed` and `iped-runner` don't bind to
       engine internals. (`iped.pipeline.{IJobLifecycleListener, IItemProcessingListener,
@@ -39,8 +45,9 @@
 - [x] Configuration schema contracts aligned with the TOML config system (typed config
       access, validation hooks) without depending on the engine's registry implementation.
       (`iped.configuration.ITypedConfigAccess` added; implemented by `ConfigurationManager`.)
-- [ ] Consider JPMS `module-info` (or at least an explicit `Automatic-Module-Name`) once
+- [x] Consider JPMS `module-info` (or at least an explicit `Automatic-Module-Name`) once
       consumers stabilize.
+      (`Automatic-Module-Name: iped.api` added via maven-jar-plugin MANIFEST entry in pom.xml.)
 
 ## Constraints
 - Zero runtime dependencies beyond SLF4J; keep it consumable by external plugin authors.

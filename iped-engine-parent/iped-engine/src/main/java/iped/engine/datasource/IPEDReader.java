@@ -73,8 +73,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /*
  * Enfileira para processamento os arquivos selecionados via interface de pesquisa de uma indexação anterior.

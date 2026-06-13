@@ -4,7 +4,9 @@ import iped.data.ICaseData;
 import iped.engine.config.ConfigurationView;
 import iped.engine.pipeline.EngineHooks;
 
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CaseContext {
 
@@ -20,6 +22,13 @@ public class CaseContext {
     private final EngineHooks hooks;
     private volatile CaseState state;
     private volatile Exception exception;
+
+    /**
+     * Set of trackIDs for items already submitted to this case's processing queue.
+     * Used by {@code Worker.processNewItem} to skip duplicate submissions, making
+     * item processing idempotent under Kafka retry / crash-resume replay.
+     */
+    private final Set<String> processedTrackIds = ConcurrentHashMap.newKeySet();
 
     private CaseContext(Builder builder) {
         this.id = builder.id;
@@ -62,6 +71,18 @@ public class CaseContext {
      */
     public EngineHooks getHooks() {
         return hooks;
+    }
+
+    /**
+     * Returns the per-case set of already-submitted trackIDs.
+     * Workers use this to implement idempotent item processing: if
+     * {@code add(trackId)} returns {@code false} the item was already queued and
+     * must be skipped.
+     *
+     * @return mutable, thread-safe set; never {@code null}
+     */
+    public Set<String> getProcessedTrackIds() {
+        return processedTrackIds;
     }
 
     public CaseState getState() {

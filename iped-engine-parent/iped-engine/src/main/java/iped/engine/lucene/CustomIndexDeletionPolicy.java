@@ -1,12 +1,14 @@
 package iped.engine.lucene;
 
 import iped.engine.CmdLineArgs;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexDeletionPolicy;
 
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 public class CustomIndexDeletionPolicy extends IndexDeletionPolicy {
 
     private CmdLineArgs cmdArgs;
@@ -21,13 +23,13 @@ public class CustomIndexDeletionPolicy extends IndexDeletionPolicy {
         // removes oldest commit
         if (!cmdArgs.isContinue() && !cmdArgs.isRestart() && commits.size() > 1) {
             commits.get(0).delete();
-            System.out.println("Deleting oldest commit");
+            log.info("Deleting oldest commit");
         }
 
         // removes last commit
         if (cmdArgs.isRestart() && commits.size() > 1) {
             commits.get(commits.size() - 1).delete();
-            System.out.println("Deleting last commit");
+            log.info("Deleting last commit");
         }
 
         // removes intermediary commits

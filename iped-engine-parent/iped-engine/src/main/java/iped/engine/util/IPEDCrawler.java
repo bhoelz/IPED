@@ -3,6 +3,7 @@ package iped.engine.util;
 import iped.data.IItem;
 import iped.engine.data.IPEDSource;
 import iped.engine.search.IPEDSearcher;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class IPEDCrawler {
 
     private static final boolean SKIP_KNOWN_FOLDERS = true;
@@ -23,7 +25,7 @@ public class IPEDCrawler {
     public static void main(String[] args) {
 
         if (args.length != 3) {
-            System.err.println("Please provide exactly 3 parameters: input_folder export_folder search_query");
+            log.error("Please provide exactly 3 parameters: input_folder export_folder search_query");
             System.exit(1);
         }
 
@@ -32,14 +34,14 @@ public class IPEDCrawler {
         String query = args[2];
 
         if (!folderToScan.exists() || !folderToScan.isDirectory()) {
-            System.err.println("Input cases folder doesn't exist or is not a directory!");
+            log.error("Input cases folder doesn't exist or is not a directory!");
             System.exit(2);
         }
 
         exportFolder.mkdirs();
 
         if (!exportFolder.exists() || !exportFolder.isDirectory()) {
-            System.err.println("Export folder couldn't be created or is not a directory!");
+            log.error("Export folder couldn't be created or is not a directory!");
             System.exit(3);
         }
 
@@ -58,7 +60,7 @@ public class IPEDCrawler {
             }
             if (first) {
                 // initialize sleuthkit using just one thread
-                System.out.println("Initializing from case " + file.getAbsolutePath());
+                log.info("Initializing from case {}", file.getAbsolutePath());
                 IPEDSource ipedCase = new IPEDSource(file, null, false);
                 ipedCase.close();
                 first = false;
@@ -67,15 +69,15 @@ public class IPEDCrawler {
                 @Override
                 public void run() {
                     int caseNum = counter.incrementAndGet();
-                    System.out.println("Searching for files into case " + caseNum + ": " + file.getAbsolutePath());
+                    log.info("Searching for files into case {}: {}", caseNum, file.getAbsolutePath());
                     try (IPEDSource ipedCase = new IPEDSource(file, null, false)) {
                         IPEDSearcher searcher = new IPEDSearcher(ipedCase, query);
                         int[] itemIds = searcher.search().getIds();
-                        System.out.println("Found " + itemIds.length + " files.");
+                        log.info("Found {} files.", itemIds.length);
                         if (itemIds.length == 0) {
                             return;
                         }
-                        System.out.println("Exporting...");
+                        log.info("Exporting...");
                         for (Integer id : itemIds) {
                             IItem item = ipedCase.getItemByID(id);
                             File parentDir = new File(exportFolder, "case_" + caseNum);
@@ -98,13 +100,13 @@ public class IPEDCrawler {
                                 Files.copy(in, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
                                 exported.getAndIncrement();
                             } catch (Exception e0) {
-                                e0.printStackTrace();
+                                log.error("Failed to copy item content to {}", target, e0);
                             }
                         }
-                        System.out.println("Exported " + exported + " files.");
+                        log.info("Exported {} files.", exported);
 
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("Error processing case {}", file.getAbsolutePath(), e);
                     } finally {
                         finished.incrementAndGet();
                     }
@@ -115,7 +117,7 @@ public class IPEDCrawler {
         while (finished.get() < numCases.get()) {
             continue;
         }
-        System.out.println("Exported " + exported + " files.");
+        log.info("Exported {} files.", exported);
         System.exit(0);
 
     }
@@ -124,7 +126,7 @@ public class IPEDCrawler {
         Thread t = new Thread() {
             public void run() {
                 recurse(folder);
-                System.out.println("Cases found: " + numCases.get());
+                log.info("Cases found: {}", numCases.get());
             }
         };
         t.start();
@@ -141,11 +143,11 @@ public class IPEDCrawler {
             }
         }
         if (new File(folder, IPEDSource.MODULE_DIR + "/" + IPEDSource.INDEX_DIR).exists()) {
-            System.out.println("Case found in " + folder.getAbsolutePath());
+            log.info("Case found in {}", folder.getAbsolutePath());
             cases.add(folder);
             numCases.incrementAndGet();
         } else {
-            System.out.println("Searching for cases in " + folder.getAbsolutePath());
+            log.debug("Searching for cases in {}", folder.getAbsolutePath());
             File[] subFiles = folder.listFiles();
             if (subFiles != null) {
                 for (File file : subFiles) {
@@ -158,4 +160,3 @@ public class IPEDCrawler {
     }
 
 }
-

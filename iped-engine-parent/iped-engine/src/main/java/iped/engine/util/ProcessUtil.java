@@ -1,5 +1,7 @@
 package iped.engine.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.*;
 
 /**
@@ -7,6 +9,7 @@ import java.io.*;
  *
  * @author Wladimir Leite (GPINF/SP)
  */
+@Slf4j
 public class ProcessUtil {
 
     /**
@@ -40,8 +43,7 @@ public class ProcessUtil {
             out.close();
             return ret.toString();
         } catch (IOException e) {
-            System.err.println("Error running program '" + program + "':"); //$NON-NLS-1$ //$NON-NLS-2$
-            e.printStackTrace();
+            log.error("Error running program '{}':", program, e);
         }
         return null;
     }

@@ -5,6 +5,7 @@ import com.beust.jcommander.converters.IParameterSplitter;
 import iped.data.ICaseData;
 import iped.engine.task.SkipCommitedTaskSupport;
 import iped.engine.util.Util;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.*;
@@ -22,6 +23,7 @@ import java.util.*;
  *
  * @author Nassif
  */
+@Slf4j
 public class CmdLineArgsImpl implements CmdLineArgs {
 
     private static class NoSplitter implements IParameterSplitter {
@@ -341,7 +343,7 @@ public class CmdLineArgsImpl implements CmdLineArgs {
         try {
             jc.parse(args);
             if (help) {
-                System.out.println(Version.APP_NAME);
+                log.info(Version.APP_NAME);
                 jc.usage();
                 System.exit(0);
             }
@@ -350,7 +352,7 @@ public class CmdLineArgsImpl implements CmdLineArgs {
                 checkDuplicateDataSources();
             }
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage() + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+            log.error("Error: {}", e.getMessage()); //$NON-NLS-1$
             System.exit(1);
         }
     }
