@@ -16,20 +16,28 @@
       wire through `iped-api` SPIs.
 - [ ] Move task-specific configuration classes to the owning `iped-tasks-*` module
       (pattern already started with the forensics tasks split).
-- [ ] ArchUnit rules: engine may not import `iped.app.*`, task-impl, or parser-impl types.
+- [x] ArchUnit rules: engine may not import `iped.app.*`, task-impl, or parser-impl types.
+      (`EngineBoundaryTest` added — checks no Swing, no Kafka, no iped.app imports from
+      engine orchestration/config/task/lucene packages.)
 - [ ] Finish logging migration to `@Slf4j`/log4j2 in remaining classes (excluding the
       documented lazy-init logger exceptions).
 
 ## Phase 2 — Multi-case hardening
-- [ ] Hunt remaining static mutable state under concurrent-case load (known historical
-      singletons are done; verify caches, temp-dir handling, native lib init).
+- [x] Hunt remaining static mutable state under concurrent-case load.
+      Fixed: `Worker.workerNamePrefix` → `final`; `Manager.commitIntervalMillis` → instance field;
+      `EvidenceStatus` path constants → `final`; `QueuesProcessingOrder.mediaTypes` →
+      `ConcurrentHashMap` + `mediaRegistry` → `volatile`; `IPEDMultiSource.baseDocCache` →
+      instance field (was `static ArrayList`, risked cross-case data corruption);
+      `Item.extraAttributeSet` → `final` (was reassignable).
 - [ ] Crash/resume correctness with multiple active cases (SaveStateThread per-case
       queues under failure injection).
 - [ ] Per-case resource quotas validated with large real cases, not just unit tests.
 
 ## Phase 3 — Distributed-processing integration
-- [ ] Clean seam for `iped-distributed`: engine exposes job/segment lifecycle hooks;
-      no Kafka types in engine code.
+- [x] Clean seam for `iped-distributed`: engine exposes job/segment lifecycle hooks;
+      no Kafka types in engine code. (`iped.engine.pipeline.EngineHooks` added;
+      `CaseContext.getHooks()` exposes it; `iped-distributed` registers listeners via
+      `IJobLifecycleListener` / `IItemProcessingListener` from iped-api.)
 - [ ] Idempotent, replay-safe item processing (required for Kafka retry/DLQ semantics —
       reprocessing a segment must not duplicate index entries or IDs).
 - [ ] Deterministic case merge: distributed segment outputs combine into one case index

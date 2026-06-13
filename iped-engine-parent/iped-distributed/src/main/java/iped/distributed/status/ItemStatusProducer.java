@@ -27,8 +27,18 @@ public class ItemStatusProducer implements AutoCloseable {
 
     private final KafkaProducer<String, String> producer;
     private final ObjectMapper mapper;
+    private final String publisherAgentId;  // null when used from coordinator/non-agent context
 
     public ItemStatusProducer(String bootstrapServers) {
+        this(bootstrapServers, null);
+    }
+
+    /**
+     * @param bootstrapServers Kafka broker list
+     * @param agentId          agent ID to stamp on every event; {@code null} for coordinator usage
+     */
+    public ItemStatusProducer(String bootstrapServers, String agentId) {
+        this.publisherAgentId = agentId;
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
@@ -70,6 +80,9 @@ public class ItemStatusProducer implements AutoCloseable {
     }
 
     public void publish(ItemStatusEvent event) {
+        if (publisherAgentId != null && event.getAgentId() == null) {
+            event.setAgentId(publisherAgentId);
+        }
         try {
             String json = mapper.writeValueAsString(event);
             // Key = caseId so all events for a case land in the same partition

@@ -111,7 +111,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Log4j2
 public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
-    private static long commitIntervalMillis = 30 * 60 * 1000;
+    private long commitIntervalMillis = 30 * 60 * 1000;
 
     private CaseData caseData;
     private ProcessingQueues processingQueues;

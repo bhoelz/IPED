@@ -12,8 +12,8 @@ import java.util.Map.Entry;
 
 public class EvidenceStatus {
 
-    private static String OLD_STATUS_FILE = "iped/data/processing_finished";
-    private static String STATUS_FILE = "iped/data/evidences_processing_status";
+    private static final String OLD_STATUS_FILE = "iped/data/processing_finished";
+    private static final String STATUS_FILE = "iped/data/evidences_processing_status";
 
     private HashMap<String, Boolean> statusMap = new HashMap<>();
     private File caseDir;

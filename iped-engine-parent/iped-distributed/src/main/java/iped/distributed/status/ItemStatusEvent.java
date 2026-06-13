@@ -12,9 +12,42 @@ import java.util.Map;
  * <p>All events for all cases and all task types flow through this single topic,
  * allowing a central monitor / dashboard to build a real-time view of the entire
  * distributed processing cluster.
+ *
+ * <h2>Schema versioning</h2>
+ * <p>Every event carries a {@link #schemaVersion} integer field.  The current
+ * version is {@link #SCHEMA_VERSION}.  Consumers use this field to handle
+ * schema evolution:
+ * <ul>
+ *   <li>{@code schemaVersion == 0} — legacy event produced before versioning was
+ *       introduced; treat identically to v1 (all current fields were already present).</li>
+ *   <li>{@code schemaVersion == SCHEMA_VERSION} — current; process normally.</li>
+ *   <li>{@code schemaVersion >  SCHEMA_VERSION} — produced by a newer agent; unknown
+ *       fields are silently ignored via {@code @JsonIgnoreProperties(ignoreUnknown=true)};
+ *       the consumer should log a warning and continue.</li>
+ * </ul>
+ *
+ * <h2>Evolution rules</h2>
+ * <ol>
+ *   <li><b>Adding a field</b> (non-breaking): add the field, bump only the minor
+ *       documentation version; {@code SCHEMA_VERSION} stays the same.  Existing consumers
+ *       ignore the new field via {@code @JsonIgnoreProperties}.</li>
+ *   <li><b>Removing or renaming a field</b> (breaking): bump {@code SCHEMA_VERSION},
+ *       update this class, publish a migration note.  Old consumers relying on the
+ *       field must be updated before the new producer is deployed.</li>
+ *   <li><b>Changing the semantics of a field</b>: treat as breaking (bump version).</li>
+ * </ol>
+ *
+ * <p>See {@code specs/88-distributed-status-events-schema.md} for the full field
+ * catalogue, JSON examples, and topic configuration guidance.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ItemStatusEvent {
+
+    /**
+     * Current schema version.  Increment on every breaking change to the event
+     * structure (see class-level Javadoc for what constitutes a breaking change).
+     */
+    public static final int SCHEMA_VERSION = 1;
 
     public enum Type {
         /** A new item was discovered by a datasource reader. */
@@ -35,12 +68,22 @@ public class ItemStatusEvent {
         CASE_COMPLETED
     }
 
+    /**
+     * Schema version of this event.  Defaults to {@code 0} on deserialization of
+     * legacy events that pre-date versioning (Jackson leaves the primitive at its
+     * default when the field is absent from the JSON).  All events produced by the
+     * current codebase carry {@link #SCHEMA_VERSION}.
+     */
+    private int     schemaVersion;   // 0 = legacy/pre-versioned
     private Type    type;
     private String  caseId;
     private String  itemUuid;
     private String  itemPath;
     private String  taskType;       // null for DISCOVERED / CASE_COMPLETED
     private int     pipelineStage;
+    private String  mediaType;      // MIME type of the item; null for CASE_COMPLETED / TIMEOUT
+    private Long    lengthBytes;    // raw byte length; null when unknown
+    private String  agentId;        // ID of the agent that published this event; null for coordinator-generated events
     private Instant timestamp;
     private long    durationMs;     // for COMPLETED / ERROR
     private String  errorMessage;   // for ERROR / TIMEOUT
@@ -102,6 +145,7 @@ public class ItemStatusEvent {
                                           String taskType, int pipelineStage,
                                           long sinceStartedMs) {
         ItemStatusEvent e = new ItemStatusEvent();
+        e.schemaVersion = SCHEMA_VERSION;
         e.type = Type.TIMEOUT;
         e.caseId = caseId;
         e.itemUuid = itemUuid;
@@ -115,6 +159,7 @@ public class ItemStatusEvent {
 
     public static ItemStatusEvent caseCompleted(String caseId) {
         ItemStatusEvent e = new ItemStatusEvent();
+        e.schemaVersion = SCHEMA_VERSION;
         e.type = Type.CASE_COMPLETED;
         e.caseId = caseId;
         e.timestamp = Instant.now();
@@ -123,14 +168,20 @@ public class ItemStatusEvent {
 
     private static ItemStatusEvent base(KafkaItemMessage msg) {
         ItemStatusEvent e = new ItemStatusEvent();
-        e.caseId    = msg.getCaseId();
-        e.itemUuid  = msg.getItemUuid();
-        e.itemPath  = msg.getPath();
-        e.timestamp = Instant.now();
+        e.schemaVersion = SCHEMA_VERSION;
+        e.caseId      = msg.getCaseId();
+        e.itemUuid    = msg.getItemUuid();
+        e.itemPath    = msg.getPath();
+        e.mediaType   = msg.getMediaType();
+        e.lengthBytes = msg.getLength();
+        e.timestamp   = Instant.now();
         return e;
     }
 
     // ---- Getters / Setters -------------------------------------------------
+
+    public int     getSchemaVersion()        { return schemaVersion; }
+    public void    setSchemaVersion(int v)   { schemaVersion = v; }
 
     public Type    getType()          { return type; }
     public void    setType(Type v)    { type = v; }
@@ -161,6 +212,15 @@ public class ItemStatusEvent {
 
     public String  getErrorClass()    { return errorClass; }
     public void    setErrorClass(String v) { errorClass = v; }
+
+    public String  getMediaType()               { return mediaType; }
+    public void    setMediaType(String v)       { mediaType = v; }
+
+    public Long    getLengthBytes()             { return lengthBytes; }
+    public void    setLengthBytes(Long v)       { lengthBytes = v; }
+
+    public String  getAgentId()                 { return agentId; }
+    public void    setAgentId(String v)         { agentId = v; }
 
     public Map<String, Object> getDetails()           { return details; }
     public void                setDetails(Map<String,Object> v) { details = v; }

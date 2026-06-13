@@ -46,9 +46,10 @@ import java.util.TreeSet;
 public class QueuesProcessingOrder {
 
     /** Mapa do mimeType para sua prioridade de processamento */
-    private static Map<MediaType, Integer> mediaTypes = installTypesToPostProcess();
+    private static final Map<MediaType, Integer> mediaTypes =
+            new java.util.concurrent.ConcurrentHashMap<>(installTypesToPostProcess());
 
-    private static MediaTypeRegistry mediaRegistry;
+    private static volatile MediaTypeRegistry mediaRegistry;
 
     /** Definie as prioridades de processamento dos mimeTypes */
     private static Map<MediaType, Integer> installTypesToPostProcess() {

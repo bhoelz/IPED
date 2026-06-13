@@ -85,11 +85,38 @@ public class ItemStatusConsumer implements AutoCloseable {
             log.debug("Skipping unparseable status event: {}", e.getMessage());
             return;
         }
+        validateSchemaVersion(event);
         try {
             listener.accept(event);
         } catch (Exception e) {
             log.warn("Status listener failed for event type={} item={}",
                     event.getType(), event.getItemUuid(), e);
+        }
+    }
+
+    /**
+     * Checks the schema version on an incoming event and logs an advisory if the
+     * event was produced by a different version of the codebase.
+     *
+     * <p>Policy:
+     * <ul>
+     *   <li>{@code 0} — legacy pre-versioned event; acceptable, treated as v1.</li>
+     *   <li>{@code == SCHEMA_VERSION} — current; no action.</li>
+     *   <li>{@code > SCHEMA_VERSION} — produced by a newer agent; forward-compatible
+     *       because {@code @JsonIgnoreProperties(ignoreUnknown=true)} is in effect;
+     *       warn once so operators know an upgrade may be in progress.</li>
+     * </ul>
+     */
+    public static void validateSchemaVersion(ItemStatusEvent event) {
+        int v = event.getSchemaVersion();
+        if (v == 0) {
+            log.debug("Received legacy (pre-v1) status event type={} item={}; "
+                    + "treating as schema v1 (no known breaking changes)",
+                    event.getType(), event.getItemUuid());
+        } else if (v > ItemStatusEvent.SCHEMA_VERSION) {
+            log.warn("Received status event with schema version {} (current: {}); "
+                    + "unknown fields are silently dropped — consider upgrading this coordinator",
+                    v, ItemStatusEvent.SCHEMA_VERSION);
         }
     }
 

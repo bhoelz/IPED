@@ -7,6 +7,7 @@ import iped.io.ISeekableInputStreamFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.metadata.Metadata;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -33,6 +34,34 @@ public final class ItemConverter {
     public static final String ATTR_ITEM_UUID     = "__distributed.itemUuid";
 
     private ItemConverter() {}
+
+    // -----------------------------------------------------------------------
+    // Idempotency helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * Returns a deterministic UUID for a sub-item derived from its parent's UUID and its
+     * ordinal position in the sub-item sequence emitted by the task.
+     *
+     * <p>This is the foundation of sub-item idempotency in the distributed pipeline.
+     * When a parent item is re-delivered after an agent restart, the task re-executes
+     * and emits sub-items in the same order.  Using this method ensures every sub-item
+     * receives the same UUID across deliveries, so downstream stages treat the second
+     * write as an upsert (overwrite) rather than a new item, preventing duplicates in
+     * the case index.
+     *
+     * <p>The UUID is version 3 (MD5 name-based) computed from
+     * {@code parentItemUuid + ":" + ordinal} encoded as UTF-8.  It is stable across
+     * JVM restarts and Java versions.
+     *
+     * @param parentItemUuid UUID of the parent item as assigned at pipeline entry
+     * @param ordinal        zero-based position of this sub-item in the parent's emission sequence
+     * @return deterministic string UUID
+     */
+    public static String deterministicSubitemUuid(String parentItemUuid, int ordinal) {
+        String name = parentItemUuid + ":" + ordinal;
+        return UUID.nameUUIDFromBytes(name.getBytes(StandardCharsets.UTF_8)).toString();
+    }
 
     // -----------------------------------------------------------------------
     // IItem → KafkaItemMessage

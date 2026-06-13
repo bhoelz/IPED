@@ -52,6 +52,21 @@ public class KafkaItemMessage {
     /** Whether this item should be prioritised in agent internal queues. */
     private boolean priority;
 
+    // ---- Work-unit grouping ------------------------------------------------
+
+    /**
+     * Opaque identifier of the {@code WorkUnit} batch this item belongs to, assigned
+     * by {@code AdaptiveWorkUnitPlanner} at ingestion time.  {@code null} when the
+     * item was produced outside a planned batch (e.g. sub-items discovered mid-pipeline).
+     */
+    private String workUnitId;
+
+    /**
+     * Zero-based index of this item within its {@link #workUnitId} batch.
+     * Stable across retries (same item always carries the same index for a given work unit).
+     */
+    private int workUnitIndex;
+
     // ---- Retry / DLQ ---------------------------------------------------------
 
     /** Number of failed processing attempts at the current stage (0 = first try). */
@@ -127,6 +142,13 @@ public class KafkaItemMessage {
     /** Root of the shared storage mount (NFS / S3) on this node. */
     private String sharedStorageRoot;
 
+    /**
+     * HMAC-SHA256 payload signature (hex), computed by the producing agent over the
+     * immutable structural fields of this message via {@link iped.distributed.security.PayloadSigner}.
+     * {@code null} when payload signing is disabled.
+     */
+    private String signature;
+
     // ---- Constructors / factory --------------------------------------------
 
     public KafkaItemMessage() {}
@@ -153,6 +175,12 @@ public class KafkaItemMessage {
 
     public boolean isPriority()                             { return priority; }
     public void    setPriority(boolean v)                   { priority = v; }
+
+    public String getWorkUnitId()                            { return workUnitId; }
+    public void   setWorkUnitId(String v)                   { workUnitId = v; }
+
+    public int    getWorkUnitIndex()                        { return workUnitIndex; }
+    public void   setWorkUnitIndex(int v)                   { workUnitIndex = v; }
 
     public int    getAttempt()                              { return attempt; }
     public void   setAttempt(int v)                         { attempt = v; }
@@ -243,6 +271,9 @@ public class KafkaItemMessage {
 
     public String getSharedStorageRoot()                    { return sharedStorageRoot; }
     public void   setSharedStorageRoot(String v)            { sharedStorageRoot = v; }
+
+    public String getSignature()                            { return signature; }
+    public void   setSignature(String v)                    { signature = v; }
 
     @Override
     public String toString() {

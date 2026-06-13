@@ -49,15 +49,69 @@ public class CoordinatorClient {
         }
     }
 
-    public void heartbeat(String agentId, int freeSlots, int currentLoad) {
+    /**
+     * Registers with the coordinator, retrying on failure with exponential backoff.
+     *
+     * @param reg          agent registration descriptor
+     * @param maxAttempts  maximum number of attempts (must be ≥ 1)
+     * @param baseDelayMs  base delay between retries; actual delay = {@code baseDelayMs * 2^attempt}
+     * @throws RuntimeException when all attempts are exhausted
+     */
+    public void registerWithRetry(AgentRegistration reg, int maxAttempts, long baseDelayMs) {
+        Exception lastEx = null;
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                String body = mapper.writeValueAsString(reg);
+                post("/api/v1/agents/register", body);
+                log.info("Registered with coordinator as agent '{}' (type={}) after {} attempt(s)",
+                        reg.getAgentId(), reg.getTaskType(), attempt + 1);
+                return;
+            } catch (Exception e) {
+                lastEx = e;
+                long delay = baseDelayMs * (1L << Math.min(attempt, 10));
+                log.warn("Registration attempt {}/{} failed: {} — retrying in {}ms",
+                        attempt + 1, maxAttempts, e.getMessage(), delay);
+                if (attempt + 1 < maxAttempts) {
+                    try { Thread.sleep(delay); } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Registration interrupted", ie);
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("Could not register with coordinator after "
+                + maxAttempts + " attempt(s)", lastEx);
+    }
+
+    public HeartbeatResponse heartbeat(String agentId, int freeSlots, int currentLoad) {
+        return heartbeat(agentId, freeSlots, currentLoad,
+                iped.distributed.resource.PressureLevel.NONE, 0.0);
+    }
+
+    /**
+     * Heartbeat carrying the agent's reported resource backpressure.
+     *
+     * @return the coordinator's response containing the topic list for this agent, or an
+     *         empty response when the coordinator is unreachable
+     */
+    public HeartbeatResponse heartbeat(String agentId, int freeSlots, int currentLoad,
+                                        iped.distributed.resource.PressureLevel pressureLevel,
+                                        double pressureRatio) {
         try {
-            String body = String.format(
-                    "{\"agentId\":\"%s\",\"freeSlots\":%d,\"currentLoad\":%d}",
-                    agentId, freeSlots, currentLoad);
-            post("/api/v1/agents/" + agentId + "/heartbeat", body);
+            String body = String.format(java.util.Locale.ROOT,
+                    "{\"agentId\":\"%s\",\"freeSlots\":%d,\"currentLoad\":%d,"
+                            + "\"pressureLevel\":\"%s\",\"pressureRatio\":%.4f}",
+                    agentId, freeSlots, currentLoad,
+                    pressureLevel != null ? pressureLevel : iped.distributed.resource.PressureLevel.NONE,
+                    pressureRatio);
+            String responseJson = postWithResponse("/api/v1/agents/" + agentId + "/heartbeat", body);
+            if (responseJson != null && !responseJson.isBlank()) {
+                return mapper.readValue(responseJson, HeartbeatResponse.class);
+            }
         } catch (Exception e) {
             log.debug("Heartbeat failed: {}", e.getMessage());
         }
+        return new HeartbeatResponse();
     }
 
     public void unregister(String agentId) {
@@ -109,7 +163,12 @@ public class CoordinatorClient {
         return new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     private void post(String path, String json) throws IOException {
+        postWithResponse(path, json);
+    }
+
+    private String postWithResponse(String path, String json) throws IOException {
         URL url = new URL(baseUrl + path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
@@ -122,6 +181,7 @@ public class CoordinatorClient {
         }
         int code = conn.getResponseCode();
         if (code >= 400) throw new IOException("HTTP " + code + " for POST " + path);
+        return new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 
     private void delete(String path) throws IOException {

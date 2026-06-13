@@ -2,6 +2,7 @@ package iped.engine.core;
 
 import iped.data.ICaseData;
 import iped.engine.config.ConfigurationView;
+import iped.engine.pipeline.EngineHooks;
 
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ public class CaseContext {
     private final Statistics statistics;
     private final ICaseData caseData;
     private final ConfigurationView configurationView;
+    private final EngineHooks hooks;
     private volatile CaseState state;
     private volatile Exception exception;
 
@@ -25,6 +27,7 @@ public class CaseContext {
         this.statistics = builder.statistics;
         this.caseData = builder.caseData;
         this.configurationView = builder.configurationView;
+        this.hooks = new EngineHooks();
         this.state = CaseState.QUEUED;
         this.exception = null;
     }
@@ -47,6 +50,18 @@ public class CaseContext {
 
     public ConfigurationView getConfigurationView() {
         return configurationView;
+    }
+
+    /**
+     * Returns the event hooks for this case. External components (e.g.
+     * iped-distributed) register their listeners here during case startup
+     * to receive job-lifecycle and item-processing events without importing
+     * engine or Kafka types.
+     *
+     * @return the per-case {@link EngineHooks} instance; never {@code null}
+     */
+    public EngineHooks getHooks() {
+        return hooks;
     }
 
     public CaseState getState() {

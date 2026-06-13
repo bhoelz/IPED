@@ -23,7 +23,7 @@ import java.util.stream.IntStream;
 public class IPEDMultiSource extends IPEDSource {
 
 
-    private static ArrayList<Integer> baseDocCache = new ArrayList<Integer>();
+    private final ArrayList<Integer> baseDocCache = new ArrayList<>();
 
     List<IPEDSource> cases = new ArrayList<>();
 

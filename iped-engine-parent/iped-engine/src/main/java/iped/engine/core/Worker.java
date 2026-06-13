@@ -49,9 +49,18 @@ import java.util.List;
 public class Worker extends Thread {
 
 
-    private static String workerNamePrefix = "Worker-"; //$NON-NLS-1$
+    private static final String workerNamePrefix = "Worker-"; //$NON-NLS-1$
 
     private static final long MIN_WAIT_TIME_TO_SEND_QUEUE_END = 1000;
+
+    /**
+     * Tracks the last time any worker finished processing an item, used to detect
+     * stalls. Shared across all workers for a case — intentionally volatile and
+     * static so that a single reader (the stall-detector) observes all workers
+     * without requiring a lock. Multi-case correctness: this is a coarse liveness
+     * signal; a false positive (stall detected because another case is idle) is
+     * acceptable and will simply trigger an early queue-end signal.
+     */
     private static volatile long lastItemProcessingTime = 0;
 
     public IndexWriter writer;

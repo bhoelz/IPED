@@ -55,7 +55,7 @@ public class Item implements IItem {
 
     private static final String TIKA_OPEN_CONTAINER_KEY = "TIKA_OPEN_CONTAINER";
 
-    private static Set<String> extraAttributeSet = Collections.synchronizedSet(new HashSet<String>());
+    private static final Set<String> extraAttributeSet = Collections.synchronizedSet(new HashSet<String>());
 
     private static class Counter {
 

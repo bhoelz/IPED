@@ -50,8 +50,50 @@ public class CaseCompletionMonitor {
     // -----------------------------------------------------------------------
 
     public void onEvent(ItemStatusEvent e) {
+        applyEvent(e, false);
+    }
+
+    /**
+     * Rebuilds in-memory progress by replaying historical status events — typically
+     * the full {@code iped.status} topic read from the beginning when a coordinator
+     * restarts after a crash.
+     *
+     * <p>Side effects are <b>suppressed</b> during replay: reconstructing the log must
+     * not re-publish {@code CASE_COMPLETED} events or re-fire timeouts.  A case that
+     * already emitted {@code CASE_COMPLETED} in the history is recognised as complete
+     * (its {@code completedPublished} flag is set) so it is not re-announced.  After
+     * recovery, resume live processing by feeding new events to {@link #onEvent}.
+     *
+     * <p>Replay is safe to run exactly once against an empty monitor: the counters and
+     * in-flight map are reconstructed to the same state the pre-crash coordinator held,
+     * minus any events that were still in flight on the wire at crash time (those are
+     * re-delivered to agents and re-emitted as fresh events after recovery).
+     *
+     * @param history status events in topic order (oldest first)
+     */
+    public void recover(Iterable<ItemStatusEvent> history) {
+        int count = 0;
+        for (ItemStatusEvent e : history) {
+            applyEvent(e, true);
+            count++;
+        }
+        log.info("Recovered completion progress from {} replayed status event(s) across {} case(s)",
+                count, progress.size());
+    }
+
+    /**
+     * Applies a single historical event in replay (side-effect-suppressed) mode.
+     * Streaming counterpart of {@link #recover} for feeding a
+     * {@link iped.distributed.status.StatusTopicReplayer} record-by-record.
+     */
+    public void recoverSingle(ItemStatusEvent e) {
+        applyEvent(e, true);
+    }
+
+    private void applyEvent(ItemStatusEvent e, boolean replay) {
         if (e.getType() == null || e.getCaseId() == null) return;
         CaseProgress cp = progress.computeIfAbsent(e.getCaseId(), id -> new CaseProgress());
+        cp.lastEventAtMs.set(System.currentTimeMillis());
 
         switch (e.getType()) {
             case DISCOVERED, SUBITEM_DISCOVERED -> cp.discovered.incrementAndGet();
@@ -64,11 +106,16 @@ public class CaseCompletionMonitor {
                 cp.inFlight.remove(flightKey(e));
                 if (isFinalStage(e)) {
                     cp.completedFinal.incrementAndGet();
-                    checkCompletion(e.getCaseId(), cp);
+                    checkCompletion(e.getCaseId(), cp, replay);
                 }
             }
 
-            case SKIPPED, ERROR -> cp.inFlight.remove(flightKey(e));
+            case SKIPPED -> cp.inFlight.remove(flightKey(e));
+
+            case ERROR -> {
+                cp.inFlight.remove(flightKey(e));
+                cp.failedCount.incrementAndGet();
+            }
 
             case CASE_COMPLETED -> cp.completedPublished = true;
 
@@ -95,15 +142,77 @@ public class CaseCompletionMonitor {
                 }));
     }
 
+    // ---- Progress accessors (dashboard / failover verification) -------------
+
+    /** Number of items (incl. sub-items) discovered for a case; 0 if unknown. */
+    public long discoveredCount(String caseId) {
+        CaseProgress cp = progress.get(caseId);
+        return cp != null ? cp.discovered.get() : 0;
+    }
+
+    /** Number of items that have passed the final pipeline stage; 0 if unknown. */
+    public long completedFinalCount(String caseId) {
+        CaseProgress cp = progress.get(caseId);
+        return cp != null ? cp.completedFinal.get() : 0;
+    }
+
+    /** Number of items currently in flight (STARTED, no terminal event yet). */
+    public int inFlightCount(String caseId) {
+        CaseProgress cp = progress.get(caseId);
+        return cp != null ? cp.inFlight.size() : 0;
+    }
+
+    /** True once the case has been (or was previously) announced as complete. */
+    public boolean isCompleted(String caseId) {
+        CaseProgress cp = progress.get(caseId);
+        return cp != null && cp.completedPublished;
+    }
+
+    /** Number of ERROR-terminal events seen for items in this case; 0 if unknown. */
+    public long failedCount(String caseId) {
+        CaseProgress cp = progress.get(caseId);
+        return cp != null ? cp.failedCount.get() : 0;
+    }
+
+    /**
+     * Returns {@code true} when a case appears stalled: items were discovered but not all
+     * completed, there are no items currently in flight, and no event has arrived for at
+     * least {@code stallWindowMs} milliseconds.  Returns {@code false} for unknown cases,
+     * already-completed cases, or cases with zero discovered items.
+     */
+    public boolean isStalled(String caseId, long stallWindowMs) {
+        CaseProgress cp = progress.get(caseId);
+        if (cp == null) return false;
+        long discovered = cp.discovered.get();
+        long completed  = cp.completedFinal.get();
+        if (discovered == 0 || completed >= discovered || cp.completedPublished) return false;
+        if (!cp.inFlight.isEmpty()) return false;
+        long silenceMs = System.currentTimeMillis() - cp.lastEventAtMs.get();
+        return silenceMs >= stallWindowMs;
+    }
+
+    /** Epoch-millis of the last status event seen for a case; 0 if unknown. */
+    public long lastEventAtMs(String caseId) {
+        CaseProgress cp = progress.get(caseId);
+        return cp != null ? cp.lastEventAtMs.get() : 0L;
+    }
+
     // -----------------------------------------------------------------------
 
-    private void checkCompletion(String caseId, CaseProgress cp) {
+    private void checkCompletion(String caseId, CaseProgress cp, boolean replay) {
         long found = cp.discovered.get();
         if (cp.completedPublished || found == 0 || cp.completedFinal.get() < found) return;
 
         synchronized (cp) {
             if (cp.completedPublished) return;
             cp.completedPublished = true;
+        }
+        if (replay) {
+            // During recovery we reconstruct the "completed" flag silently; the original
+            // CASE_COMPLETED was already published by the pre-crash coordinator (and will
+            // also appear later in the replayed history). Do not re-announce.
+            log.debug("Case '{}' recognised as already complete during recovery ({} items)", caseId, found);
+            return;
         }
         log.info("Case '{}' completed: all {} items passed the final stage", caseId, found);
         lifecycle.completeCase(caseId);
@@ -128,6 +237,8 @@ public class CaseCompletionMonitor {
     private static class CaseProgress {
         final AtomicLong discovered     = new AtomicLong();
         final AtomicLong completedFinal = new AtomicLong();
+        final AtomicLong failedCount    = new AtomicLong();
+        final AtomicLong lastEventAtMs  = new AtomicLong(System.currentTimeMillis());
         final Map<String, Flight> inFlight = new ConcurrentHashMap<>();
         volatile boolean completedPublished;
     }

@@ -1,6 +1,7 @@
 package iped.distributed.coordinator;
 
 
+import iped.distributed.resource.PressureLevel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
@@ -42,11 +43,24 @@ public class AgentRegistry {
     }
 
     public void heartbeat(String agentId, int freeSlots, int currentLoad) {
+        heartbeat(agentId, freeSlots, currentLoad, PressureLevel.NONE, 0.0);
+    }
+
+    /** Heartbeat carrying the agent's reported resource backpressure. */
+    public void heartbeat(String agentId, int freeSlots, int currentLoad,
+                          PressureLevel pressureLevel, double pressureRatio) {
         AgentRegistration reg = agents.get(agentId);
         if (reg != null) {
             reg.setLastHeartbeat(Instant.now());
             reg.setFreeSlots(freeSlots);
             reg.setCurrentLoad(currentLoad);
+            PressureLevel prev = reg.getPressureLevel();
+            reg.setPressureLevel(pressureLevel != null ? pressureLevel : PressureLevel.NONE);
+            reg.setPressureRatio(pressureRatio);
+            if (prev != reg.getPressureLevel() && reg.getPressureLevel() == PressureLevel.HARD) {
+                log.warn("Agent '{}' (type={}) entered HARD backpressure — withholding new work",
+                        agentId, reg.getTaskType());
+            }
         } else {
             log.warn("Heartbeat from unknown agent '{}'", agentId);
         }
@@ -86,12 +100,43 @@ public class AgentRegistry {
         return result;
     }
 
+    /** Returns the registration for a specific agent ID, or {@code null} if not found. */
+    public AgentRegistration getAgent(String agentId) {
+        evictExpired();
+        return agents.get(agentId);
+    }
+
     /** Returns live agents for a specific task type. */
     public List<AgentRegistration> agentsForTaskType(String taskType) {
         evictExpired();
         return agents.values().stream()
                      .filter(r -> taskType.equals(r.getTaskType()))
                      .collect(Collectors.toList());
+    }
+
+    /**
+     * Free slots available for scheduling new work of the given task type, <b>excluding
+     * agents under HARD backpressure</b> (those report "send me no new work").  This is
+     * the value the coordinator feeds to the {@code CaseScheduler} as available capacity,
+     * so resource-pressured agents naturally stop attracting work without losing their
+     * in-flight items.
+     */
+    public int schedulableFreeSlots(String taskType) {
+        evictExpired();
+        return agents.values().stream()
+                     .filter(r -> taskType.equals(r.getTaskType()))
+                     .filter(AgentRegistration::isSchedulable)
+                     .mapToInt(AgentRegistration::getFreeSlots)
+                     .sum();
+    }
+
+    /** Number of live agents of a task type currently under HARD backpressure. */
+    public long pressuredAgentCount(String taskType) {
+        evictExpired();
+        return agents.values().stream()
+                     .filter(r -> taskType.equals(r.getTaskType()))
+                     .filter(r -> !r.isSchedulable())
+                     .count();
     }
 
     // -----------------------------------------------------------------------
