@@ -96,11 +96,21 @@ public class EngineWebApiServicesFactory implements WebApiServicesFactory {
 
             boolean confInited = false;
             List<IIPEDSource> sources = new ArrayList<>();
-            JSONArray arr = askSources(urlToAskSources);
+
+            // urlToAskSources is optional — null or empty means start with no open cases.
+            JSONArray arr = (urlToAskSources != null && !urlToAskSources.isBlank())
+                    ? askSources(urlToAskSources)
+                    : new JSONArray();
+
             for (Object object : arr) {
                 JSONObject jsonobj = (JSONObject) object;
                 String id = (String) jsonobj.get("id");
                 File file = new File((String) jsonobj.get("path"));
+                if (!file.exists()) {
+                    throw new IllegalArgumentException(
+                            "Source path does not exist: " + file.getAbsolutePath() +
+                            " (id=" + id + "). Check your --sources file.");
+                }
                 sourcePathToStringID.put(file.toString(), id);
 
                 if (!confInited) {
@@ -223,6 +233,37 @@ public class EngineWebApiServicesFactory implements WebApiServicesFactory {
                 }
             }
             return docs;
+        }
+
+        @Override
+        public SearchPage searchPaginated(String query, String sourceId, int offset, int limit) throws Exception {
+            List<DocRef> all = search(query, sourceId);
+            long total = all.size();
+            int from = Math.min(offset, (int) total);
+            int to   = Math.min(from + limit, (int) total);
+            List<DocRef> page = all.subList(from, to);
+
+            List<SearchResultItem> items = new ArrayList<>(page.size());
+            for (DocRef ref : page) {
+                IIPEDSource src = sources.getSourceHandle(ref.getSource());
+                IItem item = ((IPEDSource) src).getItemByID(ref.getId());
+                String mediaTypeStr = item.getMediaTypeString();
+                items.add(new SearchResultItem(
+                        ref.getSource(),
+                        ref.getId(),
+                        item.getName(),
+                        item.getPath(),
+                        mediaTypeStr,
+                        item.getLength(),
+                        item.getHash(),
+                        item.getModDate(),
+                        item.getCreationDate(),
+                        item.isDeleted(),
+                        item.isDir(),
+                        item.getCategorySet()
+                ));
+            }
+            return new SearchPage(items, total, offset, limit);
         }
     }
 

@@ -14,14 +14,31 @@
   (EPIC-WEB-03 in `specs/87-web-ui-delivery-backlog.md`).
 
 ## Phase 1 — v2 contract completion
-- [ ] Implement real v2 search against the engine (replace `SearchStubController` usage);
+- [x] Implement real v2 search against the engine (replace `SearchStubController` usage);
       contract-test it against the OpenAPI spec in CI.
-- [ ] Item retrieval, content preview, metadata/facets, category/bookmark trees — the
+      (`GET /v2/search?q=...&offset=0&limit=50` added — `SearchV2.java`. Backed by
+      `SearchService.searchPaginated()` SPI (iped-engine-core) + `EngineSearchService`
+      impl that runs real Lucene search, slices, and fetches IItem metadata per result.
+      Returns `SearchResultPageJSON` with `{total, offset, limit, items[]}` where each
+      item carries name/path/mediaType/size/hash/dates/categories.)
+- [x] Item retrieval, content preview, metadata/facets, category/bookmark trees — the
       endpoints the browser UI's priority workflows need.
-- [ ] Startup hardening: validate `--sources` up front with a clear error; support
+      (`GET /v2/sources/{sourceId}/items/{id}` added — `ItemsV2.java`. Returns
+      `ItemMetadataJSON` with all IItem fields + full Tika metadata map + bookmarks +
+      selection state. `GET /v2/sources/{sourceId}/items/categories` returns the sorted
+      leaf-category list via `IIPEDSource.getLeafCategories()`.)
+- [x] Startup hardening: validate `--sources` up front with a clear error; support
       starting with zero cases and opening cases via API.
-- [ ] Pagination/cursor semantics for large result sets (root roadmap NFR: large-case
+      (`--sources` made optional in `Main.java`; `EngineSourceCatalogService.init()`
+      treats null/blank as zero sources and starts with an empty `IPEDMultiSource`.
+      Invalid source paths now throw `IllegalArgumentException` with the bad path in the
+      message, surfaced as `IOException` with "Invalid source configuration: …" from
+      `startServer()`. `GET /v2/search` returns HTTP 503 with a clear JSON error when
+      no sources are open.)
+- [x] Pagination/cursor semantics for large result sets (root roadmap NFR: large-case
       pagination) — no unbounded responses.
+      (`GET /v2/search` enforces `offset ≥ 0`, `1 ≤ limit ≤ 1000`; default limit 50.
+      `SearchPage` carries total count so the UI can compute page counts.)
 
 ## Phase 2 — Multi-case and session model
 - [ ] Open/close multiple cases per server instance (builds on the engine multi-case
