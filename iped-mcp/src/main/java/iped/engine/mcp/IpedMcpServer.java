@@ -48,10 +48,17 @@ public class IpedMcpServer {
         McpAuditLog audit = new McpAuditLog();
         ToolRegistry registry = new ToolRegistry(client, audit, session);
 
-        buildAndRunServer(registry, cli);
+        int toolCount = registry.tools().size();
+        log.info("iped-mcp ready (transport={}, tools={})", cli.transport(), toolCount);
+
+        if ("http".equalsIgnoreCase(cli.transport())) {
+            HttpTransport.run(registry, cli);
+        } else {
+            runStdio(registry, cli);
+        }
     }
 
-    private static void buildAndRunServer(ToolRegistry registry, CliArgs cli) throws Exception {
+    private static void runStdio(ToolRegistry registry, CliArgs cli) throws Exception {
         var mapper = new JacksonMcpJsonMapperSupplier().get();
         var transport = new StdioServerTransportProvider(mapper);
 
@@ -59,9 +66,6 @@ public class IpedMcpServer {
                 .serverInfo("iped-mcp", "1.0.0")
                 .tools(registry.tools())
                 .build();
-
-        log.info("iped-mcp ready (transport={}), {} tools registered",
-                cli.transport(), registry.tools().size());
 
         CountDownLatch shutdownLatch = new CountDownLatch(1);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

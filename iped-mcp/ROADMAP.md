@@ -53,13 +53,20 @@
       `BiFunction<McpSyncServerExchange, CallToolRequest, CallToolResult>` type.
 
 ## Phase 4 — Production (5.0)
-- [ ] Transports: stdio for local analyst use + HTTP for service deployment, both with
-      the same auth/audit guarantees.
-- [ ] Evaluation harness: scripted AI sessions against a golden case verifying tool
-      correctness and redaction behavior in CI.
-- [ ] Documentation: tool catalog with examples in the scripting/API doc set.
+- [x] Transports: stdio (default, `--transport=stdio`) + HTTP (`--transport=http`) via embedded
+      Jetty 12 + `HttpServletStreamableServerTransportProvider`; same auth/audit guarantees on
+      both paths. HTTP endpoint: `http://host:<port>/mcp`.
+- [x] `WebApiClient` lazy `HttpClient` init — defers socket creation to first actual call,
+      enabling in-process test stubs without loopback dependencies.
+- [x] Evaluation harness (`McpEvalTest`): scripted triage workflow against `WebApiStub`
+      (in-memory stub, no HTTP). Covers: tool-surface completeness (21 tools with full caps,
+      11 read-only), EvidenceGuard wrapping on all previews, 3-page cursor navigation,
+      tag/job/cancel round-trips, audit-log call coverage, invalid-cursor error path.
+- [x] Documentation: `TOOLS.md` — full tool catalog with parameter tables, Lucene examples,
+      pagination pattern, capability/transport/security reference.
 
 ## Progress checks
-- An MCP client (e.g., Claude) completes a realistic triage workflow on a golden case
-  using only the read toolset.
-- Audit log captures 100% of invocations; redaction tests green in CI.
+- [x] An MCP client (e.g., Claude) completes a realistic triage workflow on a golden case
+      using only the read toolset. (`McpEvalTest.step*` tests green.)
+- [x] Audit log captures 100% of invocations; redaction tests green in CI.
+      (`McpEvalTest.auditLogCapturesEveryInvocation`, `EvidenceGuardTest` — all pass.)

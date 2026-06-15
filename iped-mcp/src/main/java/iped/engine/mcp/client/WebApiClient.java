@@ -31,7 +31,7 @@ import java.util.Map;
 public class WebApiClient {
 
     private final String baseUrl;
-    private final HttpClient http;
+    private volatile HttpClient http;   // lazy — created on first actual HTTP call
     private final ObjectMapper mapper;
     private final String sessionId;
     private final String apiKey;
@@ -50,11 +50,22 @@ public class WebApiClient {
                 ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.sessionId = sessionId;
         this.apiKey    = apiKey;
-        this.http = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    /** Returns the shared HTTP client, creating it on first use. */
+    private HttpClient http() {
+        if (http == null) {
+            synchronized (this) {
+                if (http == null) {
+                    http = HttpClient.newBuilder()
+                            .connectTimeout(Duration.ofSeconds(10))
+                            .build();
+                }
+            }
+        }
+        return http;
     }
 
     // ── Cases ─────────────────────────────────────────────────────────────────
@@ -264,7 +275,7 @@ public class WebApiClient {
                 .header("Accept", "application/json")
                 .build();
         try {
-            HttpResponse<byte[]> resp = http.send(req, BodyHandlers.ofByteArray());
+            HttpResponse<byte[]> resp = http().send(req, BodyHandlers.ofByteArray());
             requireSuccess(resp.statusCode(), path);
             return mapper.readValue(resp.body(), type);
         } catch (IOException | InterruptedException e) {
@@ -278,7 +289,7 @@ public class WebApiClient {
                 .header("Accept", "application/json")
                 .build();
         try {
-            HttpResponse<byte[]> resp = http.send(req, BodyHandlers.ofByteArray());
+            HttpResponse<byte[]> resp = http().send(req, BodyHandlers.ofByteArray());
             requireSuccess(resp.statusCode(), path);
             return mapper.readValue(resp.body(), typeRef);
         } catch (IOException | InterruptedException e) {
@@ -292,7 +303,7 @@ public class WebApiClient {
                 .header("Accept", "text/plain")
                 .build();
         try {
-            HttpResponse<String> resp = http.send(req, BodyHandlers.ofString());
+            HttpResponse<String> resp = http().send(req, BodyHandlers.ofString());
             requireSuccess(resp.statusCode(), path);
             return resp.body();
         } catch (IOException | InterruptedException e) {
@@ -308,7 +319,7 @@ public class WebApiClient {
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .build();
-            HttpResponse<byte[]> resp = http.send(req, BodyHandlers.ofByteArray());
+            HttpResponse<byte[]> resp = http().send(req, BodyHandlers.ofByteArray());
             requireSuccess(resp.statusCode(), path);
             if (resp.body() == null || resp.body().length == 0) return null;
             return mapper.readValue(resp.body(), typeRef);
@@ -324,7 +335,7 @@ public class WebApiClient {
                     .PUT(BodyPublishers.ofString(json))
                     .header("Content-Type", "application/json")
                     .build();
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
+            HttpResponse<Void> resp = http().send(req, BodyHandlers.discarding());
             requireSuccess(resp.statusCode(), path);
         } catch (IOException | InterruptedException e) {
             throw new WebApiException("PUT " + path + " failed: " + e.getMessage(), e);
@@ -338,7 +349,7 @@ public class WebApiClient {
                     .method("PATCH", BodyPublishers.ofString(json))
                     .header("Content-Type", "application/json")
                     .build();
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
+            HttpResponse<Void> resp = http().send(req, BodyHandlers.discarding());
             requireSuccess(resp.statusCode(), path);
         } catch (IOException | InterruptedException e) {
             throw new WebApiException("PATCH " + path + " failed: " + e.getMessage(), e);
@@ -350,7 +361,7 @@ public class WebApiClient {
                 .DELETE()
                 .build();
         try {
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
+            HttpResponse<Void> resp = http().send(req, BodyHandlers.discarding());
             requireSuccess(resp.statusCode(), path);
         } catch (IOException | InterruptedException e) {
             throw new WebApiException("DELETE " + path + " failed: " + e.getMessage(), e);
@@ -364,7 +375,7 @@ public class WebApiClient {
                     .method("DELETE", BodyPublishers.ofString(json))
                     .header("Content-Type", "application/json")
                     .build();
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
+            HttpResponse<Void> resp = http().send(req, BodyHandlers.discarding());
             requireSuccess(resp.statusCode(), path);
         } catch (IOException | InterruptedException e) {
             throw new WebApiException("DELETE " + path + " failed: " + e.getMessage(), e);
