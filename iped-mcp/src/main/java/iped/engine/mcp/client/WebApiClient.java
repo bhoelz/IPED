@@ -1,5 +1,6 @@
 package iped.engine.mcp.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import iped.engine.mcp.client.dto.*;
@@ -15,162 +16,202 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * Thin HTTP client over the iped-webapi v2 REST contract.
+ *
+ * <p>All paths begin with {@code /v2/}. The client performs no business logic;
+ * it only serialises requests and deserialises responses.
+ */
 @Slf4j
 public class WebApiClient {
 
     private final String baseUrl;
     private final HttpClient http;
     private final ObjectMapper mapper;
+    private final String sessionId;
+    private final String apiKey;
 
     public WebApiClient(String baseUrl) {
-        this.baseUrl = baseUrl.endsWith("/")
-            ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        this(baseUrl, null, null);
+    }
+
+    /**
+     * @param baseUrl   iped-webapi base URL
+     * @param sessionId MCP session UUID forwarded as {@code X-MCP-Session-Id}
+     * @param apiKey    optional Bearer token forwarded as {@code Authorization}
+     */
+    public WebApiClient(String baseUrl, String sessionId, String apiKey) {
+        this.baseUrl   = baseUrl.endsWith("/")
+                ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        this.sessionId = sessionId;
+        this.apiKey    = apiKey;
         this.http = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
         this.mapper = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    // --- Cases ---
+    // ── Cases ─────────────────────────────────────────────────────────────────
 
-    public DataListDto<String> listCases() throws WebApiException {
-        return get("/cases", new com.fasterxml.jackson.core.type.TypeReference<DataListDto<String>>() {});
+    /** {@code GET /v2/cases} → {@code {cases:[…]}} */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> listCases() throws WebApiException {
+        Map<?, ?> body = get("/v2/cases", Map.class);
+        Object cases = body.get("cases");
+        return cases instanceof List<?> l ? (List<Map<String, Object>>) l : List.of();
     }
 
-    public CaseStatusDto getCaseStatus(String caseId) throws WebApiException {
-        return get("/cases/" + encodePath(caseId), CaseStatusDto.class);
+    /** {@code POST /v2/cases} — open a case by file-system path. */
+    public Map<String, Object> openCase(String id, String path) throws WebApiException {
+        Map<String, String> req = id != null && !id.isBlank()
+                ? Map.of("id", id, "path", path)
+                : Map.of("path", path);
+        return postJson("/v2/cases", req, new TypeReference<>() {});
     }
 
-    public void pauseCase(String caseId) throws WebApiException {
-        post("/cases/" + encodePath(caseId) + "/pause");
+    /** {@code GET /v2/cases/{id}} */
+    public Map<String, Object> getCase(String caseId) throws WebApiException {
+        return get("/v2/cases/" + encodePath(caseId), new TypeReference<>() {});
     }
 
-    public void resumeCase(String caseId) throws WebApiException {
-        post("/cases/" + encodePath(caseId) + "/resume");
+    /** {@code DELETE /v2/cases/{id}} */
+    public void closeCase(String caseId) throws WebApiException {
+        delete("/v2/cases/" + encodePath(caseId));
     }
 
-    // --- Stats ---
+    // ── Search ────────────────────────────────────────────────────────────────
 
-    public GlobalStatsDto getGlobalStats() throws WebApiException {
-        return get("/stats/global", GlobalStatsDto.class);
+    /**
+     * {@code GET /v2/search?q=…&offset=…&limit=…}
+     *
+     * @param query  Lucene query string
+     * @param offset zero-based first result index
+     * @param limit  max results (1–1000, default 20)
+     */
+    public SearchPageDto search(String query, int offset, int limit) throws WebApiException {
+        String path = "/v2/search?q=" + encode(query)
+                + "&offset=" + offset
+                + "&limit="  + limit;
+        return get(path, SearchPageDto.class);
     }
 
-    public CaseStatsDto getCaseStats(String caseId) throws WebApiException {
-        return get("/stats/case/" + encodePath(caseId), CaseStatsDto.class);
+    // ── Items ─────────────────────────────────────────────────────────────────
+
+    /** {@code GET /v2/sources/{src}/items/{id}} */
+    public ItemMetadataDto getItemMetadata(String sourceId, int docId) throws WebApiException {
+        return get("/v2/sources/" + encodePath(sourceId) + "/items/" + docId, ItemMetadataDto.class);
     }
 
-    // --- Sources ---
-
-    public DataListDto<SourceDto> listSources() throws WebApiException {
-        return get("/sources", new com.fasterxml.jackson.core.type.TypeReference<DataListDto<SourceDto>>() {});
-    }
-
-    public SourceDto getSource(String sourceId) throws WebApiException {
-        return get("/sources/" + encodePath(sourceId), SourceDto.class);
-    }
-
-    public void addSource(String id, String path) throws WebApiException {
-        SourceDto dto = new SourceDto(id, path);
-        postJson("/sources", dto);
-    }
-
-    // --- Search ---
-
-    public SearchResultDto search(String query, String sourceId) throws WebApiException {
-        String path = "/search?q=" + encode(query);
-        if (sourceId != null && !sourceId.isEmpty()) {
-            path += "&sourceID=" + encode(sourceId);
+    /**
+     * {@code GET /v2/sources/{src}/items/{id}/text}
+     *
+     * @param highlight optional highlight terms (space-separated), or blank
+     */
+    public String getItemText(String sourceId, int docId, String highlight) throws WebApiException {
+        String path = "/v2/sources/" + encodePath(sourceId) + "/items/" + docId + "/text";
+        if (highlight != null && !highlight.isBlank()) {
+            path += "?highlight=" + encode(highlight);
         }
-        return get(path, SearchResultDto.class);
+        return getText(path);
     }
 
-    // --- Documents ---
-
-    public DocPropsDto getDocumentMetadata(String sourceId, int docId) throws WebApiException {
-        String path = "/sources/" + encodePath(sourceId) + "/docs/" + docId;
-        return get(path, DocPropsDto.class);
+    /** {@code GET /v2/sources/{src}/items/categories} */
+    @SuppressWarnings("unchecked")
+    public List<String> listCategories(String sourceId) throws WebApiException {
+        return (List<String>) get("/v2/sources/" + encodePath(sourceId) + "/items/categories", List.class);
     }
 
-    public String getDocumentText(String sourceId, int docId) throws WebApiException {
-        String path = "/sources/" + encodePath(sourceId) + "/docs/" + docId + "/text";
-        String text = getText(path);
-        if (text.length() > 50000) {
-            return text.substring(0, 50000) + "\n[TRUNCATED — full text is " + text.length() + " chars]";
-        }
-        return text;
+    // ── Relational (v1 endpoints — no v2 equivalent yet) ─────────────────────
+
+    /**
+     * Gets related items for one item through a named relation.
+     *
+     * @param relation one of {@code subitems}, {@code parent}, {@code duplicates},
+     *                 {@code references}, {@code referencedby}
+     */
+    public Map<String, Object> getRelatedItems(String sourceId, int docId,
+                                               String relation,
+                                               int offset, int limit) throws WebApiException {
+        String path = "/sources/" + encodePath(sourceId) + "/docs/" + docId
+                + "/" + relation + "?offset=" + offset + "&limit=" + limit;
+        return get(path, new TypeReference<>() {});
     }
 
-    // --- Bookmarks ---
+    // ── Bookmarks ─────────────────────────────────────────────────────────────
 
-    public DataListDto<String> listBookmarks() throws WebApiException {
-        return get("/bookmarks", new com.fasterxml.jackson.core.type.TypeReference<DataListDto<String>>() {});
+    /** {@code GET /v2/bookmarks} → {@code {bookmarks:[…]}} */
+    @SuppressWarnings("unchecked")
+    public List<String> listBookmarks() throws WebApiException {
+        Map<?, ?> body = get("/v2/bookmarks", Map.class);
+        Object bms = body.get("bookmarks");
+        return bms instanceof List<?> l ? (List<String>) l : List.of();
     }
 
-    public SearchResultDto getBookmarkDocs(String name) throws WebApiException {
-        return get("/bookmarks/" + encodePath(name), SearchResultDto.class);
+    /** {@code POST /v2/bookmarks} — create a bookmark. Returns 409 on duplicate. */
+    public Map<String, Object> createBookmark(String name) throws WebApiException {
+        return postJson("/v2/bookmarks", Map.of("name", name), new TypeReference<>() {});
     }
 
-    public void createBookmark(String name) throws WebApiException {
-        post("/bookmarks/" + encodePath(name));
-    }
-
+    /** {@code DELETE /v2/bookmarks/{name}} */
     public void deleteBookmark(String name) throws WebApiException {
-        delete("/bookmarks/" + encodePath(name));
+        delete("/v2/bookmarks/" + encodePath(name));
     }
 
-    public void addDocsToBookmark(String name, DocRefDto[] docs) throws WebApiException {
-        putJson("/bookmarks/" + encodePath(name) + "/add", new DocRefRequest(docs));
-    }
-
-    public void removeDocsFromBookmark(String name, DocRefDto[] docs) throws WebApiException {
-        putJson("/bookmarks/" + encodePath(name) + "/remove", new DocRefRequest(docs));
-    }
-
+    /** {@code PATCH /v2/bookmarks/{name}} — rename. */
     public void renameBookmark(String oldName, String newName) throws WebApiException {
-        put("/bookmarks/" + encodePath(oldName) + "/rename/" + encodePath(newName), null);
+        patchJson("/v2/bookmarks/" + encodePath(oldName), Map.of("name", newName));
     }
 
-    // --- Selection ---
-
-    public SearchResultDto getSelection() throws WebApiException {
-        return get("/selection", SearchResultDto.class);
+    /** {@code GET /v2/bookmarks/{name}/items} */
+    public Map<String, Object> getBookmarkItems(String name) throws WebApiException {
+        return get("/v2/bookmarks/" + encodePath(name) + "/items", new TypeReference<>() {});
     }
 
-    public void addToSelection(DocRefDto[] docs) throws WebApiException {
-        putJson("/selection/add", new DocRefRequest(docs));
+    /** {@code PUT /v2/bookmarks/{name}/items} — add items. */
+    public void addBookmarkItems(String name, List<Map<String, Object>> items) throws WebApiException {
+        putJson("/v2/bookmarks/" + encodePath(name) + "/items", items);
     }
 
-    public void removeFromSelection(DocRefDto[] docs) throws WebApiException {
-        putJson("/selection/remove", new DocRefRequest(docs));
+    /** {@code DELETE /v2/bookmarks/{name}/items} — remove items. */
+    public void removeBookmarkItems(String name, List<Map<String, Object>> items) throws WebApiException {
+        deleteWithBody("/v2/bookmarks/" + encodePath(name) + "/items", items);
     }
 
-    // --- Categories ---
+    // ── HTTP primitives ───────────────────────────────────────────────────────
 
-    public DataListDto<String> listCategories() throws WebApiException {
-        return get("/categories", new com.fasterxml.jackson.core.type.TypeReference<DataListDto<String>>() {});
+    /** Applies session-id and api-key headers to every outbound request builder. */
+    private HttpRequest.Builder base(String path, Duration timeout) {
+        HttpRequest.Builder b = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + path))
+                .timeout(timeout);
+        if (sessionId != null) b.header("X-MCP-Session-Id", sessionId);
+        if (apiKey    != null) b.header("Authorization", "Bearer " + apiKey);
+        return b;
     }
-
-    // --- Private helpers ---
 
     private <T> T get(String path, Class<T> type) throws WebApiException {
-        HttpRequest req = HttpRequest.newBuilder()
-            .GET()
-            .uri(URI.create(baseUrl + path))
-            .header("Accept", "application/json")
-            .timeout(Duration.ofSeconds(30))
-            .build();
-        return send(req, type);
+        HttpRequest req = base(path, Duration.ofSeconds(30))
+                .GET()
+                .header("Accept", "application/json")
+                .build();
+        try {
+            HttpResponse<byte[]> resp = http.send(req, BodyHandlers.ofByteArray());
+            requireSuccess(resp.statusCode(), path);
+            return mapper.readValue(resp.body(), type);
+        } catch (IOException | InterruptedException e) {
+            throw new WebApiException("GET " + path + " failed: " + e.getMessage(), e);
+        }
     }
 
-    private <T> T get(String path, com.fasterxml.jackson.core.type.TypeReference<T> typeRef) throws WebApiException {
-        HttpRequest req = HttpRequest.newBuilder()
-            .GET()
-            .uri(URI.create(baseUrl + path))
-            .header("Accept", "application/json")
-            .timeout(Duration.ofSeconds(30))
-            .build();
+    private <T> T get(String path, TypeReference<T> typeRef) throws WebApiException {
+        HttpRequest req = base(path, Duration.ofSeconds(30))
+                .GET()
+                .header("Accept", "application/json")
+                .build();
         try {
             HttpResponse<byte[]> resp = http.send(req, BodyHandlers.ofByteArray());
             requireSuccess(resp.statusCode(), path);
@@ -180,87 +221,11 @@ public class WebApiClient {
         }
     }
 
-    private void post(String path) throws WebApiException {
-        HttpRequest req = HttpRequest.newBuilder()
-            .POST(BodyPublishers.noBody())
-            .uri(URI.create(baseUrl + path))
-            .timeout(Duration.ofSeconds(30))
-            .build();
-        try {
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
-            requireSuccess(resp.statusCode(), path);
-        } catch (IOException | InterruptedException e) {
-            throw new WebApiException("POST " + path + " failed: " + e.getMessage(), e);
-        }
-    }
-
-    private <B> void postJson(String path, B body) throws WebApiException {
-        try {
-            String json = mapper.writeValueAsString(body);
-            HttpRequest req = HttpRequest.newBuilder()
-                .POST(BodyPublishers.ofString(json))
-                .uri(URI.create(baseUrl + path))
-                .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(30))
-                .build();
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
-            requireSuccess(resp.statusCode(), path);
-        } catch (IOException | InterruptedException e) {
-            throw new WebApiException("POST " + path + " failed: " + e.getMessage(), e);
-        }
-    }
-
-    private <B> void putJson(String path, B body) throws WebApiException {
-        try {
-            String json = mapper.writeValueAsString(body);
-            HttpRequest req = HttpRequest.newBuilder()
-                .PUT(BodyPublishers.ofString(json))
-                .uri(URI.create(baseUrl + path))
-                .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(30))
-                .build();
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
-            requireSuccess(resp.statusCode(), path);
-        } catch (IOException | InterruptedException e) {
-            throw new WebApiException("PUT " + path + " failed: " + e.getMessage(), e);
-        }
-    }
-
-    private void put(String path, Object body) throws WebApiException {
-        try {
-            HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .PUT(BodyPublishers.noBody())
-                .uri(URI.create(baseUrl + path))
-                .timeout(Duration.ofSeconds(30));
-            HttpRequest req = builder.build();
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
-            requireSuccess(resp.statusCode(), path);
-        } catch (IOException | InterruptedException e) {
-            throw new WebApiException("PUT " + path + " failed: " + e.getMessage(), e);
-        }
-    }
-
-    private void delete(String path) throws WebApiException {
-        HttpRequest req = HttpRequest.newBuilder()
-            .DELETE()
-            .uri(URI.create(baseUrl + path))
-            .timeout(Duration.ofSeconds(30))
-            .build();
-        try {
-            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
-            requireSuccess(resp.statusCode(), path);
-        } catch (IOException | InterruptedException e) {
-            throw new WebApiException("DELETE " + path + " failed: " + e.getMessage(), e);
-        }
-    }
-
     private String getText(String path) throws WebApiException {
-        HttpRequest req = HttpRequest.newBuilder()
-            .GET()
-            .uri(URI.create(baseUrl + path))
-            .header("Accept", "text/plain")
-            .timeout(Duration.ofSeconds(60))
-            .build();
+        HttpRequest req = base(path, Duration.ofSeconds(60))
+                .GET()
+                .header("Accept", "text/plain")
+                .build();
         try {
             HttpResponse<String> resp = http.send(req, BodyHandlers.ofString());
             requireSuccess(resp.statusCode(), path);
@@ -270,47 +235,91 @@ public class WebApiClient {
         }
     }
 
-    private <T> T send(HttpRequest req, Class<T> type) throws WebApiException {
+    private <B, T> T postJson(String path, B body, TypeReference<T> typeRef) throws WebApiException {
         try {
+            String json = mapper.writeValueAsString(body);
+            HttpRequest req = base(path, Duration.ofSeconds(30))
+                    .POST(BodyPublishers.ofString(json))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .build();
             HttpResponse<byte[]> resp = http.send(req, BodyHandlers.ofByteArray());
-            requireSuccess(resp.statusCode(), req.uri().getPath());
-            return mapper.readValue(resp.body(), type);
+            requireSuccess(resp.statusCode(), path);
+            if (resp.body() == null || resp.body().length == 0) return null;
+            return mapper.readValue(resp.body(), typeRef);
         } catch (IOException | InterruptedException e) {
-            throw new WebApiException("HTTP call failed: " + e.getMessage(), e);
+            throw new WebApiException("POST " + path + " failed: " + e.getMessage(), e);
+        }
+    }
+
+    private <B> void putJson(String path, B body) throws WebApiException {
+        try {
+            String json = mapper.writeValueAsString(body);
+            HttpRequest req = base(path, Duration.ofSeconds(30))
+                    .PUT(BodyPublishers.ofString(json))
+                    .header("Content-Type", "application/json")
+                    .build();
+            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
+            requireSuccess(resp.statusCode(), path);
+        } catch (IOException | InterruptedException e) {
+            throw new WebApiException("PUT " + path + " failed: " + e.getMessage(), e);
+        }
+    }
+
+    private <B> void patchJson(String path, B body) throws WebApiException {
+        try {
+            String json = mapper.writeValueAsString(body);
+            HttpRequest req = base(path, Duration.ofSeconds(30))
+                    .method("PATCH", BodyPublishers.ofString(json))
+                    .header("Content-Type", "application/json")
+                    .build();
+            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
+            requireSuccess(resp.statusCode(), path);
+        } catch (IOException | InterruptedException e) {
+            throw new WebApiException("PATCH " + path + " failed: " + e.getMessage(), e);
+        }
+    }
+
+    private void delete(String path) throws WebApiException {
+        HttpRequest req = base(path, Duration.ofSeconds(30))
+                .DELETE()
+                .build();
+        try {
+            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
+            requireSuccess(resp.statusCode(), path);
+        } catch (IOException | InterruptedException e) {
+            throw new WebApiException("DELETE " + path + " failed: " + e.getMessage(), e);
+        }
+    }
+
+    private <B> void deleteWithBody(String path, B body) throws WebApiException {
+        try {
+            String json = mapper.writeValueAsString(body);
+            HttpRequest req = base(path, Duration.ofSeconds(30))
+                    .method("DELETE", BodyPublishers.ofString(json))
+                    .header("Content-Type", "application/json")
+                    .build();
+            HttpResponse<Void> resp = http.send(req, BodyHandlers.discarding());
+            requireSuccess(resp.statusCode(), path);
+        } catch (IOException | InterruptedException e) {
+            throw new WebApiException("DELETE " + path + " failed: " + e.getMessage(), e);
         }
     }
 
     private void requireSuccess(int status, String path) throws WebApiException {
         if (status == 404) throw new WebApiException("Not found: " + path);
+        if (status == 409) throw new WebApiException("Conflict (duplicate): " + path);
         if (status == 400) throw new WebApiException("Bad request: " + path);
+        if (status == 503) throw new WebApiException("Service unavailable (no cases open?): " + path);
         if (status < 200 || status >= 300)
             throw new WebApiException("HTTP " + status + " from " + path);
     }
 
-    /** Form encoding for query parameter values (space as '+'). */
     private String encode(String value) {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
-    /** Percent encoding for URL path segments (space as %20, never '+'). */
     private String encodePath(String value) {
         return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
-    }
-
-    // Helper class for request bodies
-    private static class DocRefRequest {
-        public DocRefDto[] docs;
-
-        DocRefRequest(DocRefDto[] docs) {
-            this.docs = docs;
-        }
-
-        public DocRefDto[] getDocs() {
-            return docs;
-        }
-
-        public void setDocs(DocRefDto[] docs) {
-            this.docs = docs;
-        }
     }
 }

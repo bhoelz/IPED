@@ -3,242 +3,252 @@ package iped.engine.mcp.tools;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
+import iped.engine.mcp.McpAuditLog;
+import iped.engine.mcp.McpSessionContext;
 import iped.engine.mcp.client.WebApiClient;
-import iped.engine.mcp.client.dto.DocRefDto;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * MCP tools for bookmark CRUD via the v2 bookmark endpoints.
+ *
+ * <ul>
+ *   <li>{@code iped_bookmark_list}         — list all bookmark names</li>
+ *   <li>{@code iped_bookmark_items}        — items in a bookmark</li>
+ *   <li>{@code iped_bookmark_create}       — create a bookmark</li>
+ *   <li>{@code iped_bookmark_delete}       — delete a bookmark</li>
+ *   <li>{@code iped_bookmark_rename}       — rename a bookmark</li>
+ *   <li>{@code iped_bookmark_add_items}    — add items to a bookmark</li>
+ *   <li>{@code iped_bookmark_remove_items} — remove items from a bookmark</li>
+ * </ul>
+ */
 public class BookmarkTools {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final WebApiClient client;
+    private final McpAuditLog audit;
 
-    public BookmarkTools(WebApiClient client) {
+    public BookmarkTools(WebApiClient client, McpAuditLog audit, McpSessionContext session) {
         this.client = client;
+        this.audit  = audit;
     }
 
     public List<McpServerFeatures.SyncToolSpecification> specifications() {
         return List.of(
-            listBookmarks(),
-            getBookmarkDocs(),
-            createBookmark(),
-            deleteBookmark(),
-            addDocsToBookmark(),
-            removeDocsFromBookmark(),
-            renameBookmark()
+                bookmarkList(),
+                bookmarkItems(),
+                bookmarkCreate(),
+                bookmarkDelete(),
+                bookmarkRename(),
+                bookmarkAddItems(),
+                bookmarkRemoveItems()
         );
     }
 
-    private McpServerFeatures.SyncToolSpecification listBookmarks() {
-        var schema = new McpSchema.JsonSchema("object", null, null, null, null, null);
-
-        return McpServerFeatures.SyncToolSpecification.builder()
-            .tool(McpSchema.Tool.builder()
-                .name("iped_list_bookmarks")
-                .description("List all bookmarks.")
-                .inputSchema(schema)
-                .build())
-            .callHandler((exchange, request) -> {
-                try {
-                    var result = client.listBookmarks();
-                    String json = MAPPER.writeValueAsString(result.getData());
-                    return McpSchema.CallToolResult.builder()
-                        .content(List.of(new McpSchema.TextContent(json)))
-                        .build();
-                } catch (Exception e) {
-                    return CaseTools.errorResult("iped_list_bookmarks", e);
-                }
-            })
-            .build();
+    private McpServerFeatures.SyncToolSpecification bookmarkList() {
+        return spec("iped_bookmark_list",
+                "List all bookmark names in the case. Bookmarks group items for review or export.",
+                new McpSchema.JsonSchema("object", null, null, null, null, null),
+                (exchange, request) -> {
+                    try {
+                        var names = client.listBookmarks();
+                        String json = MAPPER.writeValueAsString(names);
+                        audit.success("iped_bookmark_list", Map.of());
+                        return CaseTools.ok(json);
+                    } catch (Exception e) {
+                        audit.error("iped_bookmark_list", Map.of(), e.getMessage());
+                        return CaseTools.err("iped_bookmark_list", e);
+                    }
+                });
     }
 
-    private McpServerFeatures.SyncToolSpecification getBookmarkDocs() {
-        var props = Map.<String, Object>of("name", Map.of("type", "string", "description", "Bookmark name"));
-        var schema = new McpSchema.JsonSchema("object", props, List.of("name"), null, null, null);
-
-        return McpServerFeatures.SyncToolSpecification.builder()
-            .tool(McpSchema.Tool.builder()
-                .name("iped_get_bookmark_docs")
-                .description("Get documents in a bookmark.")
-                .inputSchema(schema)
-                .build())
-            .callHandler((exchange, request) -> {
-                try {
-                    String name = (String) request.arguments().get("name");
-                    var result = client.getBookmarkDocs(name);
-                    String json = MAPPER.writeValueAsString(result);
-                    return McpSchema.CallToolResult.builder()
-                        .content(List.of(new McpSchema.TextContent(json)))
-                        .build();
-                } catch (Exception e) {
-                    return CaseTools.errorResult("iped_get_bookmark_docs", e);
-                }
-            })
-            .build();
-    }
-
-    private McpServerFeatures.SyncToolSpecification createBookmark() {
-        var props = Map.<String, Object>of("name", Map.of("type", "string", "description", "Bookmark name"));
-        var schema = new McpSchema.JsonSchema("object", props, List.of("name"), null, null, null);
-
-        return McpServerFeatures.SyncToolSpecification.builder()
-            .tool(McpSchema.Tool.builder()
-                .name("iped_create_bookmark")
-                .description("Create a new bookmark.")
-                .inputSchema(schema)
-                .build())
-            .callHandler((exchange, request) -> {
-                try {
-                    String name = (String) request.arguments().get("name");
-                    client.createBookmark(name);
-                    return McpSchema.CallToolResult.builder()
-                        .content(List.of(new McpSchema.TextContent("ok")))
-                        .build();
-                } catch (Exception e) {
-                    return CaseTools.errorResult("iped_create_bookmark", e);
-                }
-            })
-            .build();
-    }
-
-    private McpServerFeatures.SyncToolSpecification deleteBookmark() {
-        var props = Map.<String, Object>of("name", Map.of("type", "string", "description", "Bookmark name"));
-        var schema = new McpSchema.JsonSchema("object", props, List.of("name"), null, null, null);
-
-        return McpServerFeatures.SyncToolSpecification.builder()
-            .tool(McpSchema.Tool.builder()
-                .name("iped_delete_bookmark")
-                .description("Delete a bookmark.")
-                .inputSchema(schema)
-                .build())
-            .callHandler((exchange, request) -> {
-                try {
-                    String name = (String) request.arguments().get("name");
-                    client.deleteBookmark(name);
-                    return McpSchema.CallToolResult.builder()
-                        .content(List.of(new McpSchema.TextContent("ok")))
-                        .build();
-                } catch (Exception e) {
-                    return CaseTools.errorResult("iped_delete_bookmark", e);
-                }
-            })
-            .build();
-    }
-
-    private McpServerFeatures.SyncToolSpecification addDocsToBookmark() {
+    private McpServerFeatures.SyncToolSpecification bookmarkItems() {
         var props = Map.<String, Object>of(
-            "name", Map.of("type", "string", "description", "Bookmark name"),
-            "docs", docsArrayProperty("Documents to add to the bookmark")
+                "name", Map.of("type", "string", "description", "Bookmark name")
         );
-        var schema = new McpSchema.JsonSchema("object", props, List.of("name", "docs"), null, null, null);
-
-        return McpServerFeatures.SyncToolSpecification.builder()
-            .tool(McpSchema.Tool.builder()
-                .name("iped_add_docs_to_bookmark")
-                .description("Add documents to an existing bookmark.")
-                .inputSchema(schema)
-                .build())
-            .callHandler((exchange, request) -> {
-                try {
-                    String name = (String) request.arguments().get("name");
-                    DocRefDto[] docs = parseDocs(request.arguments().get("docs"));
-                    client.addDocsToBookmark(name, docs);
-                    return McpSchema.CallToolResult.builder()
-                        .content(List.of(new McpSchema.TextContent("ok")))
-                        .build();
-                } catch (Exception e) {
-                    return CaseTools.errorResult("iped_add_docs_to_bookmark", e);
-                }
-            })
-            .build();
+        return spec("iped_bookmark_items",
+                "Get the list of items ({sourceId, docId} pairs) in a named bookmark.",
+                new McpSchema.JsonSchema("object", props, List.of("name"), null, null, null),
+                (exchange, request) -> {
+                    var args = request.arguments();
+                    String name = (String) args.get("name");
+                    try {
+                        var result = client.getBookmarkItems(name);
+                        String json = MAPPER.writeValueAsString(result);
+                        audit.success("iped_bookmark_items", args);
+                        return CaseTools.ok(json);
+                    } catch (Exception e) {
+                        audit.error("iped_bookmark_items", args, e.getMessage());
+                        return CaseTools.err("iped_bookmark_items", e);
+                    }
+                });
     }
 
-    private McpServerFeatures.SyncToolSpecification removeDocsFromBookmark() {
+    private McpServerFeatures.SyncToolSpecification bookmarkCreate() {
         var props = Map.<String, Object>of(
-            "name", Map.of("type", "string", "description", "Bookmark name"),
-            "docs", docsArrayProperty("Documents to remove from the bookmark")
+                "name", Map.of("type", "string",
+                        "description", "Unique bookmark name (case-sensitive, no leading/trailing spaces)")
         );
-        var schema = new McpSchema.JsonSchema("object", props, List.of("name", "docs"), null, null, null);
-
-        return McpServerFeatures.SyncToolSpecification.builder()
-            .tool(McpSchema.Tool.builder()
-                .name("iped_remove_docs_from_bookmark")
-                .description("Remove documents from an existing bookmark.")
-                .inputSchema(schema)
-                .build())
-            .callHandler((exchange, request) -> {
-                try {
-                    String name = (String) request.arguments().get("name");
-                    DocRefDto[] docs = parseDocs(request.arguments().get("docs"));
-                    client.removeDocsFromBookmark(name, docs);
-                    return McpSchema.CallToolResult.builder()
-                        .content(List.of(new McpSchema.TextContent("ok")))
-                        .build();
-                } catch (Exception e) {
-                    return CaseTools.errorResult("iped_remove_docs_from_bookmark", e);
-                }
-            })
-            .build();
+        return spec("iped_bookmark_create",
+                "Create a new empty bookmark. Returns 409-conflict error when a bookmark " +
+                "with the same name already exists.",
+                new McpSchema.JsonSchema("object", props, List.of("name"), null, null, null),
+                (exchange, request) -> {
+                    var args = request.arguments();
+                    String name = (String) args.get("name");
+                    try {
+                        var result = client.createBookmark(name);
+                        String json = MAPPER.writeValueAsString(result);
+                        audit.success("iped_bookmark_create", args);
+                        return CaseTools.ok(json);
+                    } catch (Exception e) {
+                        audit.error("iped_bookmark_create", args, e.getMessage());
+                        return CaseTools.err("iped_bookmark_create", e);
+                    }
+                });
     }
 
-    private McpServerFeatures.SyncToolSpecification renameBookmark() {
+    private McpServerFeatures.SyncToolSpecification bookmarkDelete() {
         var props = Map.<String, Object>of(
-            "oldName", Map.of("type", "string", "description", "Current bookmark name"),
-            "newName", Map.of("type", "string", "description", "New bookmark name")
+                "name", Map.of("type", "string", "description", "Bookmark name to delete")
         );
-        var schema = new McpSchema.JsonSchema("object", props, List.of("oldName", "newName"), null, null, null);
-
-        return McpServerFeatures.SyncToolSpecification.builder()
-            .tool(McpSchema.Tool.builder()
-                .name("iped_rename_bookmark")
-                .description("Rename an existing bookmark.")
-                .inputSchema(schema)
-                .build())
-            .callHandler((exchange, request) -> {
-                try {
-                    String oldName = (String) request.arguments().get("oldName");
-                    String newName = (String) request.arguments().get("newName");
-                    client.renameBookmark(oldName, newName);
-                    return McpSchema.CallToolResult.builder()
-                        .content(List.of(new McpSchema.TextContent("ok")))
-                        .build();
-                } catch (Exception e) {
-                    return CaseTools.errorResult("iped_rename_bookmark", e);
-                }
-            })
-            .build();
+        return spec("iped_bookmark_delete",
+                "Delete a bookmark and all its item associations. The items themselves are not deleted.",
+                new McpSchema.JsonSchema("object", props, List.of("name"), null, null, null),
+                (exchange, request) -> {
+                    var args = request.arguments();
+                    String name = (String) args.get("name");
+                    try {
+                        client.deleteBookmark(name);
+                        audit.success("iped_bookmark_delete", args);
+                        return CaseTools.ok("{\"deleted\":true,\"name\":\"" + name + "\"}");
+                    } catch (Exception e) {
+                        audit.error("iped_bookmark_delete", args, e.getMessage());
+                        return CaseTools.err("iped_bookmark_delete", e);
+                    }
+                });
     }
 
-    /** JSON-schema fragment describing an array of {source, id} document references. */
-    static Map<String, Object> docsArrayProperty(String description) {
+    private McpServerFeatures.SyncToolSpecification bookmarkRename() {
+        var props = Map.<String, Object>of(
+                "name",    Map.of("type", "string", "description", "Current bookmark name"),
+                "newName", Map.of("type", "string", "description", "New bookmark name")
+        );
+        return spec("iped_bookmark_rename",
+                "Rename a bookmark. All item associations are preserved under the new name.",
+                new McpSchema.JsonSchema("object", props, List.of("name", "newName"), null, null, null),
+                (exchange, request) -> {
+                    var args = request.arguments();
+                    String name    = (String) args.get("name");
+                    String newName = (String) args.get("newName");
+                    try {
+                        client.renameBookmark(name, newName);
+                        audit.success("iped_bookmark_rename", args);
+                        return CaseTools.ok("{\"renamed\":true,\"from\":\"" + name +
+                                "\",\"to\":\"" + newName + "\"}");
+                    } catch (Exception e) {
+                        audit.error("iped_bookmark_rename", args, e.getMessage());
+                        return CaseTools.err("iped_bookmark_rename", e);
+                    }
+                });
+    }
+
+    private McpServerFeatures.SyncToolSpecification bookmarkAddItems() {
+        var props = Map.<String, Object>of(
+                "name",  Map.of("type", "string", "description", "Bookmark name"),
+                "items", itemsArrayProperty("Items to add (each is a {sourceId, docId} pair)")
+        );
+        return spec("iped_bookmark_add_items",
+                "Add one or more items to a bookmark. Items are specified as {sourceId, docId} pairs. " +
+                "The sourceId and docId can be parsed from an itemId (\"sourceId:docId\").",
+                new McpSchema.JsonSchema("object", props, List.of("name", "items"), null, null, null),
+                (exchange, request) -> {
+                    var args = request.arguments();
+                    String name = (String) args.get("name");
+                    List<Map<String, Object>> items = parseItems(args.get("items"));
+                    try {
+                        client.addBookmarkItems(name, items);
+                        audit.success("iped_bookmark_add_items",
+                                Map.of("name", name, "count", items.size()));
+                        return CaseTools.ok("{\"added\":" + items.size() + "}");
+                    } catch (Exception e) {
+                        audit.error("iped_bookmark_add_items", args, e.getMessage());
+                        return CaseTools.err("iped_bookmark_add_items", e);
+                    }
+                });
+    }
+
+    private McpServerFeatures.SyncToolSpecification bookmarkRemoveItems() {
+        var props = Map.<String, Object>of(
+                "name",  Map.of("type", "string", "description", "Bookmark name"),
+                "items", itemsArrayProperty("Items to remove")
+        );
+        return spec("iped_bookmark_remove_items",
+                "Remove one or more items from a bookmark. The items themselves are not deleted from the case.",
+                new McpSchema.JsonSchema("object", props, List.of("name", "items"), null, null, null),
+                (exchange, request) -> {
+                    var args = request.arguments();
+                    String name = (String) args.get("name");
+                    List<Map<String, Object>> items = parseItems(args.get("items"));
+                    try {
+                        client.removeBookmarkItems(name, items);
+                        audit.success("iped_bookmark_remove_items",
+                                Map.of("name", name, "count", items.size()));
+                        return CaseTools.ok("{\"removed\":" + items.size() + "}");
+                    } catch (Exception e) {
+                        audit.error("iped_bookmark_remove_items", args, e.getMessage());
+                        return CaseTools.err("iped_bookmark_remove_items", e);
+                    }
+                });
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static Map<String, Object> itemsArrayProperty(String description) {
         return Map.of(
-            "type", "array",
-            "description", description,
-            "items", Map.of(
-                "type", "object",
-                "properties", Map.of(
-                    "source", Map.of("type", "string", "description", "Source ID"),
-                    "id", Map.of("type", "integer", "description", "Document ID")
-                ),
-                "required", List.of("source", "id")
-            )
+                "type", "array",
+                "description", description,
+                "items", Map.of(
+                        "type", "object",
+                        "properties", Map.of(
+                                "sourceId", Map.of("type", "string"),
+                                "docId",    Map.of("type", "integer")
+                        ),
+                        "required", List.of("sourceId", "docId")
+                )
         );
     }
 
-    /** Convert the MCP "docs" argument (a List of {source, id} maps) into DocRefDto[]. */
-    static DocRefDto[] parseDocs(Object docsArg) {
-        if (!(docsArg instanceof List<?> list)) {
-            throw new IllegalArgumentException("'docs' must be an array of {source, id} objects");
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> parseItems(Object raw) {
+        if (!(raw instanceof List<?> list)) {
+            throw new IllegalArgumentException("'items' must be an array of {sourceId, docId}");
         }
-        DocRefDto[] result = new DocRefDto[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            if (!(list.get(i) instanceof Map<?, ?> m)) {
-                throw new IllegalArgumentException("each doc must be an object with 'source' and 'id'");
+        List<Map<String, Object>> result = new ArrayList<>(list.size());
+        for (Object entry : list) {
+            if (!(entry instanceof Map<?, ?> m)) {
+                throw new IllegalArgumentException("each item must be {sourceId, docId}");
             }
-            String source = (String) m.get("source");
-            int id = ((Number) m.get("id")).intValue();
-            result[i] = new DocRefDto(source, id);
+            result.add(Map.of(
+                    "sourceId", m.get("sourceId").toString(),
+                    "docId",    ((Number) m.get("docId")).intValue()
+            ));
         }
         return result;
+    }
+
+    private static McpServerFeatures.SyncToolSpecification spec(
+            String name, String description,
+            McpSchema.JsonSchema schema,
+            McpServerFeatures.SyncToolSpecification.SyncToolHandler handler) {
+        return McpServerFeatures.SyncToolSpecification.builder()
+                .tool(McpSchema.Tool.builder()
+                        .name(name)
+                        .description(description)
+                        .inputSchema(schema)
+                        .build())
+                .callHandler(handler)
+                .build();
     }
 }

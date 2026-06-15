@@ -1,8 +1,8 @@
 package iped.engine.mcp.client;
 
 import com.sun.net.httpserver.HttpServer;
-import iped.engine.mcp.client.dto.DataListDto;
-import iped.engine.mcp.client.dto.SearchResultDto;
+import iped.engine.mcp.client.dto.ItemMetadataDto;
+import iped.engine.mcp.client.dto.SearchPageDto;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,33 +15,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Exercises WebApiClient against a stub HTTP server with exact-path routing.
+ * Exercises WebApiClient v2 paths against a stub HTTP server.
  */
 public class WebApiClientTest {
 
-    private record StubResponse(int status, String body) {
-    }
+    private record StubResponse(int status, String body) {}
 
     private static HttpServer server;
     private static WebApiClient client;
     private static final Map<String, StubResponse> routes = new ConcurrentHashMap<>();
-    /** method + space + rawQuery of the last request, keyed by raw path */
     private static final Map<String, String> lastRequests = new ConcurrentHashMap<>();
 
     @BeforeAll
     static void startServer() throws IOException {
-        routes.put("/cases", new StubResponse(200, "{\"data\":[\"case1\",\"case2\"]}"));
-        routes.put("/cases/my%20case", new StubResponse(200, "{}"));
-        routes.put("/search", new StubResponse(200, "{\"data\":[]}"));
-        routes.put("/categories", new StubResponse(500, ""));
-        routes.put("/bookmarks/evidence", new StubResponse(200, ""));
-        routes.put("/sources/src1/docs/7/text", new StubResponse(200, "x".repeat(60000)));
-        routes.put("/sources/src1/docs/8/text", new StubResponse(200, "short text"));
+        routes.put("/v2/cases",
+                new StubResponse(200, "{\"cases\":[{\"id\":\"c1\"},{\"id\":\"c2\"}]}"));
+        routes.put("/v2/cases/my%20case",
+                new StubResponse(200, "{\"id\":\"my case\"}"));
+        routes.put("/v2/search",
+                new StubResponse(200, "{\"total\":2,\"offset\":0,\"limit\":20,\"items\":[]}"));
+        routes.put("/v2/bookmarks",
+                new StubResponse(200, "{\"bookmarks\":[\"tag1\",\"tag2\"]}"));
+        routes.put("/v2/sources/src1/items/7/text",
+                new StubResponse(200, "hello world"));
+        routes.put("/v2/sources/src1/items/8",
+                new StubResponse(200,
+                        "{\"itemId\":\"src1:8\",\"name\":\"doc.txt\",\"mediaType\":\"text/plain\",\"size\":100}"));
+        routes.put("/v2/sources/src1/items/categories",
+                new StubResponse(200, "[\"Images\",\"Documents\"]"));
+        // 4xx/5xx
+        routes.put("/v2/cases/missing",
+                new StubResponse(404, ""));
 
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
@@ -60,7 +67,6 @@ public class WebApiClientTest {
         });
         server.start();
 
-        // trailing slash in the base URL must be tolerated
         client = new WebApiClient("http://127.0.0.1:" + server.getAddress().getPort() + "/");
     }
 
@@ -70,59 +76,58 @@ public class WebApiClientTest {
     }
 
     @Test
-    public void listCasesParsesJson() throws Exception {
-        DataListDto<String> cases = client.listCases();
-        assertEquals(List.of("case1", "case2"), cases.getData());
+    void listCasesReturnsBothCases() throws Exception {
+        List<Map<String, Object>> cases = client.listCases();
+        assertEquals(2, cases.size());
+        assertEquals("c1", cases.get(0).get("id"));
     }
 
     @Test
-    public void pathParametersAreUrlEncoded() throws Exception {
-        client.getCaseStatus("my case");
-        // path segments must be percent-encoded (space as %20, not '+')
-        assertEquals("GET null", lastRequests.get("/cases/my%20case"));
+    void getCaseEncodesPathSegment() throws Exception {
+        client.getCase("my case");
+        assertEquals("GET null", lastRequests.get("/v2/cases/my%20case"));
     }
 
     @Test
-    public void searchEncodesQueryParameters() throws Exception {
-        SearchResultDto result = client.search("foo bar", "src 1");
-        assertTrue(result.getData().isEmpty());
-        assertEquals("GET q=foo+bar&sourceID=src+1", lastRequests.get("/search"));
+    void notFoundThrowsWebApiException() {
+        WebApiException ex = assertThrows(WebApiException.class, () -> client.getCase("missing"));
+        assertTrue(ex.getMessage().contains("Not found"), "got: " + ex.getMessage());
     }
 
     @Test
-    public void searchWithoutSourceOmitsSourceParameter() throws Exception {
-        client.search("foo", null);
-        assertEquals("GET q=foo", lastRequests.get("/search"));
+    void searchEncodesQueryAndPaginationParams() throws Exception {
+        SearchPageDto page = client.search("foo bar", 0, 20);
+        assertEquals(0, page.getOffset());
+        assertEquals(20, page.getLimit());
+        String query = lastRequests.get("/v2/search");
+        assertTrue(query.contains("q=foo"), "expected q= in: " + query);
+        assertTrue(query.contains("offset=0"),  "expected offset= in: " + query);
+        assertTrue(query.contains("limit=20"),  "expected limit= in: " + query);
     }
 
     @Test
-    public void notFoundThrowsWebApiException() {
-        WebApiException e = assertThrows(WebApiException.class, () -> client.getCaseStatus("missing"));
-        assertTrue(e.getMessage().contains("Not found"), "got: " + e.getMessage());
+    void listBookmarksParsesV2Shape() throws Exception {
+        List<String> names = client.listBookmarks();
+        assertEquals(List.of("tag1", "tag2"), names);
     }
 
     @Test
-    public void serverErrorThrowsWebApiException() {
-        WebApiException e = assertThrows(WebApiException.class, () -> client.listCategories());
-        assertTrue(e.getMessage().contains("HTTP 500"), "got: " + e.getMessage());
+    void getItemTextReturnsBody() throws Exception {
+        String text = client.getItemText("src1", 7, "");
+        assertEquals("hello world", text);
     }
 
     @Test
-    public void longDocumentTextIsTruncated() throws Exception {
-        String text = client.getDocumentText("src1", 7);
-        assertTrue(text.length() < 60000);
-        assertTrue(text.contains("[TRUNCATED"), "missing truncation marker");
-        assertTrue(text.contains("60000"), "should mention original length");
+    void getItemMetadataDeserializesDto() throws Exception {
+        ItemMetadataDto dto = client.getItemMetadata("src1", 8);
+        assertEquals("doc.txt", dto.getName());
+        assertEquals("text/plain", dto.getMediaType());
+        assertEquals(100L, dto.getSize());
     }
 
     @Test
-    public void shortDocumentTextIsReturnedAsIs() throws Exception {
-        assertEquals("short text", client.getDocumentText("src1", 8));
-    }
-
-    @Test
-    public void createBookmarkUsesPost() throws Exception {
-        client.createBookmark("evidence");
-        assertEquals("POST null", lastRequests.get("/bookmarks/evidence"));
+    void listCategoriesReturnsList() throws Exception {
+        List<String> cats = client.listCategories("src1");
+        assertEquals(List.of("Images", "Documents"), cats);
     }
 }

@@ -12,9 +12,7 @@ import java.util.concurrent.CountDownLatch;
 @Slf4j
 public class IpedMcpServer {
 
-
     public static void main(String[] args) throws Exception {
-        // Parse CLI arguments
         CliArgs cli = CliArgs.parse(args);
         if (cli == null) {
             printUsage();
@@ -26,23 +24,26 @@ public class IpedMcpServer {
 
         log.info("Starting iped-mcp, connecting to {}", cli.webapiUrl());
 
-        // Create HTTP client
-        WebApiClient client = new WebApiClient(cli.webapiUrl());
+        McpSessionContext session = new McpSessionContext(cli.allowedCases(), cli.rateLimit());
+        WebApiClient client = new WebApiClient(cli.webapiUrl(), session.sessionId, cli.apiKey());
 
         // Probe connectivity — fail fast with clear message
         try {
-            client.getGlobalStats();
-            log.info("Connected to iped-webapi successfully.");
+            client.listCases();
+            log.info("Connected to iped-webapi successfully. session={}", session.sessionId);
         } catch (Exception e) {
             System.err.println("ERROR: Cannot reach iped-webapi at " + cli.webapiUrl()
-                + " — " + e.getMessage());
+                    + " — " + e.getMessage());
             System.exit(2);
         }
 
-        // Create tool registry
-        ToolRegistry registry = new ToolRegistry(client);
+        if (!session.allowedCases.isEmpty()) {
+            log.info("Case allowlist active: {}", session.allowedCases);
+        }
 
-        // Build and start MCP server
+        McpAuditLog audit = new McpAuditLog();
+        ToolRegistry registry = new ToolRegistry(client, audit, session);
+
         buildAndRunServer(registry, cli);
     }
 
@@ -51,15 +52,13 @@ public class IpedMcpServer {
         var transport = new StdioServerTransportProvider(mapper);
 
         var server = McpServer.sync(transport)
-            .serverInfo("iped-mcp", "1.0.0")
-            .tools(registry.tools())
-            .build();
+                .serverInfo("iped-mcp", "1.0.0")
+                .tools(registry.tools())
+                .build();
 
         log.info("iped-mcp ready (transport={}), {} tools registered",
-            cli.transport(), registry.tools().size());
+                cli.transport(), registry.tools().size());
 
-        // Keep the JVM alive until terminated; stdio transport runs on background
-        // threads. A shutdown hook closes the server gracefully on SIGINT/SIGTERM.
         CountDownLatch shutdownLatch = new CountDownLatch(1);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Shutting down iped-mcp...");

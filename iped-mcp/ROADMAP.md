@@ -9,22 +9,32 @@
   webapi capabilities.
 
 ## Phase 1 — Read-focused MVP (root roadmap Phase B)
-- [ ] Baseline tool surface complete: `case_list`, `case_open`, `search_query`,
-      `search_facets`, `item_get`, `item_content_preview`, `item_relationships`.
-- [ ] Route all data access through `iped-webapi` v2 contracts (not engine internals) so
-      MCP, web UI, and scripting see identical semantics.
-- [ ] Prompt-safe data shaping: size caps, binary-content exclusion, and redaction hooks
-      on every tool response (hostile evidence text must not be able to smuggle
-      instructions unmarked — wrap evidence content in clearly delimited data blocks).
-- [ ] Tool descriptions and JSON schemas reviewed for LLM ergonomics (small, composable
-      tools; consistent ID model).
+- [x] Baseline tool surface complete: `iped_case_list`, `iped_case_open`, `iped_case_get`,
+      `iped_case_close`, `iped_search`, `iped_item_get`, `iped_item_preview`,
+      `iped_item_related`, `iped_category_list`, full bookmark CRUD (7 tools).
+- [x] Route all data access through `iped-webapi` v2 contracts (`WebApiClient` rewritten,
+      v2 DTOs `ItemMetadataDto`, `SearchPageDto`).
+- [x] Prompt-safe data shaping: `EvidenceGuard` wraps all evidence text in
+      `<iped-evidence>` delimiters with 50 000-char cap; binary placeholder for non-text.
+- [x] Tool descriptions and JSON schemas reviewed for LLM ergonomics; composable
+      `{sourceId}:{docId}` item ID model; pagination on all list/search tools.
+- [x] `McpAuditLog` — per-invocation audit trail with arg redaction (strings >200 chars
+      truncated); JSONL file persistence when path configured.
+- [x] Tests: `WebApiClientTest` (v2 paths), `EvidenceGuardTest`, `McpAuditLogTest`.
 
 ## Phase 2 — Governance and audit
-- [ ] Immutable audit trail of every tool invocation (who/what/when/case) — chain-of-
-      custody requirement.
-- [ ] Tenant/case isolation: an MCP session is bound to authorized cases only.
-- [ ] Rate limiting and request tracing per session.
-- [ ] Access-control model shared with `iped-webapi` auth (one permission system).
+- [x] Immutable audit trail (`McpAuditLog`) — JSONL persistence, arg redaction, 100%
+      invocation coverage via `ToolRegistry` rate-limit wrapper.
+- [x] Tenant/case isolation: `McpSessionContext` + `--allowed-cases=id1,id2` CLI flag;
+      `iped_case_list` filters results; `iped_case_get/close/open` reject unlisted cases;
+      `CaseAccessDeniedException` returned as tool error.
+- [x] Rate limiting: `ToolRateLimiter` fixed-window counter applied cross-cuttingly in
+      `ToolRegistry`; configurable via `--rate-limit=N` (default 120 calls/min).
+- [x] Request tracing: `McpSessionContext.sessionId` UUID forwarded as
+      `X-MCP-Session-Id` on every `WebApiClient` request; `--api-key` forwarded as
+      `Authorization: Bearer` for iped-webapi auth.
+- [ ] Access-control model shared with `iped-webapi` auth (one permission system) —
+      deferred to Phase 4 (requires iped-webapi auth backend).
 
 ## Phase 3 — Write and job tools
 - [ ] Mutating tools behind explicit capability grants: bookmarks/tags first
