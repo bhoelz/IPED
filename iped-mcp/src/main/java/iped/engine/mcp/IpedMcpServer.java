@@ -24,7 +24,8 @@ public class IpedMcpServer {
 
         log.info("Starting iped-mcp, connecting to {}", cli.webapiUrl());
 
-        McpSessionContext session = new McpSessionContext(cli.allowedCases(), cli.rateLimit());
+        McpSessionContext session = new McpSessionContext(
+                cli.allowedCases(), cli.rateLimit(), cli.capabilities());
         WebApiClient client = new WebApiClient(cli.webapiUrl(), session.sessionId, cli.apiKey());
 
         // Probe connectivity — fail fast with clear message
@@ -39,6 +40,9 @@ public class IpedMcpServer {
 
         if (!session.allowedCases.isEmpty()) {
             log.info("Case allowlist active: {}", session.allowedCases);
+        }
+        if (!session.capabilities.isEmpty()) {
+            log.info("Capabilities granted: {}", session.capabilities);
         }
 
         McpAuditLog audit = new McpAuditLog();
@@ -73,6 +77,10 @@ public class IpedMcpServer {
         System.err.println("Usage: java -jar iped-mcp.jar \\");
         System.err.println("         --webapi-url=http://localhost:8080 \\");
         System.err.println("         [--transport=stdio] \\");
-        System.err.println("         [--port=3000]");
+        System.err.println("         [--port=3000] \\");
+        System.err.println("         [--api-key=TOKEN] \\");
+        System.err.println("         [--allowed-cases=id1,id2] \\");
+        System.err.println("         [--rate-limit=120] \\");
+        System.err.println("         [--capabilities=bookmarks,jobs]");
     }
 }

@@ -2,7 +2,9 @@ package iped.engine.mcp.tools;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.server.McpServerFeatures;
+import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema;
+import iped.engine.mcp.GrantedCapabilities;
 import iped.engine.mcp.McpAuditLog;
 import iped.engine.mcp.McpSessionContext;
 import iped.engine.mcp.client.WebApiClient;
@@ -10,6 +12,7 @@ import iped.engine.mcp.client.WebApiClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
  * MCP tools for bookmark CRUD via the v2 bookmark endpoints.
@@ -28,22 +31,30 @@ public class BookmarkTools {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final WebApiClient client;
     private final McpAuditLog audit;
+    private final boolean writeEnabled;
 
     public BookmarkTools(WebApiClient client, McpAuditLog audit, McpSessionContext session) {
-        this.client = client;
-        this.audit  = audit;
+        this.client       = client;
+        this.audit        = audit;
+        this.writeEnabled = session.can(GrantedCapabilities.BOOKMARKS);
     }
 
+    /**
+     * Returns read-only or read-write specifications depending on the session's
+     * {@code BOOKMARKS} capability grant.
+     */
     public List<McpServerFeatures.SyncToolSpecification> specifications() {
-        return List.of(
-                bookmarkList(),
-                bookmarkItems(),
-                bookmarkCreate(),
-                bookmarkDelete(),
-                bookmarkRename(),
-                bookmarkAddItems(),
-                bookmarkRemoveItems()
-        );
+        List<McpServerFeatures.SyncToolSpecification> specs = new ArrayList<>();
+        specs.add(bookmarkList());
+        specs.add(bookmarkItems());
+        if (writeEnabled) {
+            specs.add(bookmarkCreate());
+            specs.add(bookmarkDelete());
+            specs.add(bookmarkRename());
+            specs.add(bookmarkAddItems());
+            specs.add(bookmarkRemoveItems());
+        }
+        return specs;
     }
 
     private McpServerFeatures.SyncToolSpecification bookmarkList() {
@@ -241,7 +252,7 @@ public class BookmarkTools {
     private static McpServerFeatures.SyncToolSpecification spec(
             String name, String description,
             McpSchema.JsonSchema schema,
-            McpServerFeatures.SyncToolSpecification.SyncToolHandler handler) {
+            BiFunction<McpSyncServerExchange, McpSchema.CallToolRequest, McpSchema.CallToolResult> handler) {
         return McpServerFeatures.SyncToolSpecification.builder()
                 .tool(McpSchema.Tool.builder()
                         .name(name)

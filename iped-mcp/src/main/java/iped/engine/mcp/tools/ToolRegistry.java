@@ -1,6 +1,7 @@
 package iped.engine.mcp.tools;
 
 import io.modelcontextprotocol.server.McpServerFeatures;
+import iped.engine.mcp.GrantedCapabilities;
 import iped.engine.mcp.McpAuditLog;
 import iped.engine.mcp.McpSessionContext;
 import iped.engine.mcp.ToolRateLimiter;
@@ -22,10 +23,19 @@ public class ToolRegistry {
 
     public List<McpServerFeatures.SyncToolSpecification> tools() {
         List<McpServerFeatures.SyncToolSpecification> all = new ArrayList<>();
+        // Read-only tools — always registered
         all.addAll(new CaseTools(client, audit, session).specifications());
         all.addAll(new SearchTools(client, audit, session).specifications());
         all.addAll(new DocumentTools(client, audit, session).specifications());
+        // BookmarkTools registers read specs always; write specs only when BOOKMARKS is granted
         all.addAll(new BookmarkTools(client, audit, session).specifications());
+        // Write tools — gated by capability
+        if (session.can(GrantedCapabilities.BOOKMARKS)) {
+            all.addAll(new TagTools(client, audit, session).specifications());
+        }
+        if (session.can(GrantedCapabilities.JOBS)) {
+            all.addAll(new JobTools(client, audit, session).specifications());
+        }
         return rateLimit(all);
     }
 

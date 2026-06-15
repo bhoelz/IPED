@@ -17,6 +17,7 @@ public class CliArgsTest {
         assertNull(args.apiKey());
         assertTrue(args.allowedCases().isEmpty());
         assertEquals(120, args.rateLimit());
+        assertTrue(args.capabilities().isEmpty());
     }
 
     @Test
@@ -27,7 +28,8 @@ public class CliArgsTest {
                 "--port=9000",
                 "--api-key=secret",
                 "--allowed-cases=case1,case2",
-                "--rate-limit=60"
+                "--rate-limit=60",
+                "--capabilities=bookmarks,jobs"
         });
         assertEquals("http://host:1234", args.webapiUrl());
         assertEquals("http", args.transport());
@@ -35,6 +37,20 @@ public class CliArgsTest {
         assertEquals("secret", args.apiKey());
         assertEquals(Set.of("case1", "case2"), args.allowedCases());
         assertEquals(60, args.rateLimit());
+        assertEquals(Set.of(GrantedCapabilities.BOOKMARKS, GrantedCapabilities.JOBS),
+                args.capabilities());
+    }
+
+    @Test
+    void parsesCapabilitiesSubset() {
+        CliArgs args = CliArgs.parse(new String[]{
+                "--webapi-url=http://x", "--capabilities=jobs"});
+        assertEquals(Set.of(GrantedCapabilities.JOBS), args.capabilities());
+    }
+
+    @Test
+    void invalidCapabilityReturnsNull() {
+        assertNull(CliArgs.parse(new String[]{"--webapi-url=http://x", "--capabilities=unknown"}));
     }
 
     @Test

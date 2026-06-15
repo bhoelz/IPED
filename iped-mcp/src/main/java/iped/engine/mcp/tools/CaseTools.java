@@ -2,6 +2,7 @@ package iped.engine.mcp.tools;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.server.McpServerFeatures;
+import io.modelcontextprotocol.server.McpSyncServerExchange;
 import io.modelcontextprotocol.spec.McpSchema;
 import iped.engine.mcp.McpAuditLog;
 import iped.engine.mcp.McpSessionContext;
@@ -9,6 +10,7 @@ import iped.engine.mcp.client.WebApiClient;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -180,7 +182,7 @@ public class CaseTools {
     private static McpServerFeatures.SyncToolSpecification spec(
             String name, String description,
             McpSchema.JsonSchema schema,
-            McpServerFeatures.SyncToolSpecification.SyncToolHandler handler) {
+            BiFunction<McpSyncServerExchange, McpSchema.CallToolRequest, McpSchema.CallToolResult> handler) {
         return McpServerFeatures.SyncToolSpecification.builder()
                 .tool(McpSchema.Tool.builder()
                         .name(name)

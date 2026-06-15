@@ -37,11 +37,20 @@
       deferred to Phase 4 (requires iped-webapi auth backend).
 
 ## Phase 3 — Write and job tools
-- [ ] Mutating tools behind explicit capability grants: bookmarks/tags first
-      (`item_tag`, `bookmark_create`).
-- [ ] `job_create_export` / `job_status` backed by the shared job API
-      (`iped-webapi`/`iped-runner` job model).
-- [ ] Streaming/pagination for large result tools (cursor tokens, never full dumps).
+- [x] Capability grant system: `--capabilities=bookmarks,jobs` CLI flag; `GrantedCapabilities` enum;
+      `McpSessionContext.can()` check; `ToolRegistry` registers write tools only when granted.
+- [x] `iped_item_tag` / `iped_item_untag` — bookmark-backed item tagging with auto-create semantics
+      (`TagTools`; requires `BOOKMARKS` capability).
+- [x] Bookmark write tools (`create`, `delete`, `rename`, `add_items`, `remove_items`) gated behind
+      `BOOKMARKS` capability; read tools (`list`, `items`) always available.
+- [x] `iped_job_export` / `iped_job_status` / `iped_job_cancel` — async job management backed by
+      `POST/GET/DELETE /v2/jobs` (`JobTools`; requires `JOBS` capability). `JobDto` DTO added.
+- [x] Cursor-based pagination on `iped_search`: opaque base64-encoded `nextCursor` returned when
+      more results exist; pass as `cursor` param to fetch next page without tracking offsets.
+- [x] WebApiClient: `tagItem`, `untagItem`, `submitJob`, `getJob`, `cancelJob` methods added.
+- [x] Fixed pre-existing compilation error: `SyncToolSpecification.SyncToolHandler` does not exist;
+      all `spec()` helpers now use the correct
+      `BiFunction<McpSyncServerExchange, CallToolRequest, CallToolResult>` type.
 
 ## Phase 4 — Production (5.0)
 - [ ] Transports: stdio for local analyst use + HTTP for service deployment, both with

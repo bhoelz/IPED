@@ -3,7 +3,9 @@ package iped.engine.mcp.client;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import iped.engine.mcp.client.dto.*;
+import iped.engine.mcp.client.dto.ItemMetadataDto;
+import iped.engine.mcp.client.dto.JobDto;
+import iped.engine.mcp.client.dto.SearchPageDto;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -139,6 +141,69 @@ public class WebApiClient {
         String path = "/sources/" + encodePath(sourceId) + "/docs/" + docId
                 + "/" + relation + "?offset=" + offset + "&limit=" + limit;
         return get(path, new TypeReference<>() {});
+    }
+
+    // ── Tags (bookmark-backed) ────────────────────────────────────────────────
+
+    /**
+     * Adds a single item to a named tag (bookmark), creating the bookmark first
+     * if it does not already exist.
+     *
+     * @param sourceId source the item belongs to
+     * @param docId    Lucene document ID
+     * @param tag      tag name
+     */
+    public void tagItem(String sourceId, int docId, String tag) throws WebApiException {
+        ensureBookmarkExists(tag);
+        addBookmarkItems(tag, List.of(Map.of("sourceId", sourceId, "docId", docId)));
+    }
+
+    /**
+     * Removes a single item from a named tag (bookmark).
+     * Silently succeeds when the bookmark does not exist.
+     */
+    public void untagItem(String sourceId, int docId, String tag) throws WebApiException {
+        try {
+            removeBookmarkItems(tag, List.of(Map.of("sourceId", sourceId, "docId", docId)));
+        } catch (WebApiException e) {
+            if (e.getMessage() != null && e.getMessage().startsWith("Not found:")) return;
+            throw e;
+        }
+    }
+
+    private void ensureBookmarkExists(String name) throws WebApiException {
+        try {
+            createBookmark(name);
+        } catch (WebApiException e) {
+            // 409 conflict = bookmark already exists — that is fine
+            if (e.getMessage() != null && e.getMessage().startsWith("Conflict")) return;
+            throw e;
+        }
+    }
+
+    // ── Jobs ──────────────────────────────────────────────────────────────────
+
+    /**
+     * {@code POST /v2/jobs} — submit an async job.
+     *
+     * @param type   job type, e.g. {@code "export"} or {@code "report"}
+     * @param params type-specific parameters map
+     * @return server response with {@code jobId} and initial {@code status}
+     */
+    public Map<String, Object> submitJob(String type, Map<String, Object> params)
+            throws WebApiException {
+        return postJson("/v2/jobs", Map.of("type", type, "params", params),
+                new TypeReference<>() {});
+    }
+
+    /** {@code GET /v2/jobs/{id}} */
+    public JobDto getJob(String jobId) throws WebApiException {
+        return get("/v2/jobs/" + encodePath(jobId), JobDto.class);
+    }
+
+    /** {@code DELETE /v2/jobs/{id}} — request cancellation of a pending or running job. */
+    public void cancelJob(String jobId) throws WebApiException {
+        delete("/v2/jobs/" + encodePath(jobId));
     }
 
     // ── Bookmarks ─────────────────────────────────────────────────────────────

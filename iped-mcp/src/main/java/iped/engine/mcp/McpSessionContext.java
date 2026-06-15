@@ -7,9 +7,9 @@ import java.util.UUID;
  * Immutable context for one MCP server process (= one analyst session).
  *
  * <p>Holds the session UUID used for request tracing, the case-ID allowlist
- * (empty = all cases accessible), and the shared rate limiter. All tools
- * receive this context and call {@link #check(String)} before acting on a
- * case-scoped request.
+ * (empty = all cases accessible), the write-side capability grants, and the
+ * shared rate limiter. All tools receive this context and call
+ * {@link #check(String)} before acting on a case-scoped request.
  */
 public final class McpSessionContext {
 
@@ -22,13 +22,30 @@ public final class McpSessionContext {
      */
     public final Set<String> allowedCases;
 
+    /**
+     * Write-side capability grants for this session.
+     * Populated from {@code --capabilities=bookmarks,jobs} CLI arg.
+     * Empty means read-only (no mutating tools registered).
+     */
+    public final Set<GrantedCapabilities> capabilities;
+
     /** Shared rate limiter enforced before every tool invocation. */
     public final ToolRateLimiter rateLimiter;
 
     public McpSessionContext(Set<String> allowedCases, int maxCallsPerMinute) {
+        this(allowedCases, maxCallsPerMinute, java.util.Collections.emptySet());
+    }
+
+    public McpSessionContext(Set<String> allowedCases, int maxCallsPerMinute,
+                             Set<GrantedCapabilities> capabilities) {
         this.sessionId    = UUID.randomUUID().toString();
         this.allowedCases = Set.copyOf(allowedCases);
+        this.capabilities = Set.copyOf(capabilities);
         this.rateLimiter  = new ToolRateLimiter(maxCallsPerMinute);
+    }
+
+    public boolean can(GrantedCapabilities cap) {
+        return capabilities.contains(cap);
     }
 
     /**
