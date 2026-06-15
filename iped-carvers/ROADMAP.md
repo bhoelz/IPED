@@ -10,23 +10,44 @@
 - Carver definitions partly code-based, partly config-driven.
 
 ## Phase 1 — Hygiene
-- [ ] ArchUnit: carvers depend only on `iped-api` + `iped-carvers-api` (+utils); no
-      engine imports.
-- [ ] Move all carver signature definitions to the TOML config model (module-owned
-      defaults, profile deviations) — one declarative format for signatures, sizes,
-      validation rules.
-- [ ] Unit fixtures per carver type: synthetic buffers with planted artifacts at
-      boundaries (start/end of buffer, overlapping signatures, false-positive bait).
+- [x] ArchUnit: `CarversBoundaryTest` in `iped-carvers-impl` enforces that no
+      carver class imports `iped.engine.*` or `iped.app.*`.
+- [x] `CarverConfig.toml` created in `iped-carvers-impl/src/main/resources/iped/config/defaults/conf/`
+      — full TOML translation of `CarverConfig.xml` covering all 28 active carver types
+      with signatures, size bounds, length-ref offsets, and MIME types.
+- [x] `TomlCarverConfiguration` implemented in `iped-tasks-carving` — reads `CarverConfig.toml`
+      via `TomlMapper` directly; when no inline sigs are present for a carver entry the named
+      class is instantiated to supply its own `CarverType[]`. `XMLCarverConfiguration` fields
+      promoted to `protected` so the subclass can extend cleanly.
+- [x] `CarverTaskConfig` wired: TOML file is loaded first as the primary source; user-supplied
+      `CarverConfig.xml` / `carver-*.xml` files are applied on top as overrides (backward
+      compatible with existing case-level XML configuration).
+- [x] Fixture tests added: `SQLiteCarverFixtureTest`, `DERCarverFixtureTest`,
+      `EMLCarverFixtureTest` covering CarverType metadata, signature decode lengths,
+      header/footer counts, and size-bound assertions.
 
 ## Phase 2 — Performance
-- [ ] Benchmark `iped-ahocorasick` against modern alternatives (e.g., vectorized
-      matchers) on representative images; keep or replace based on data.
-- [ ] Zero-copy scanning path: verify the carving task streams without redundant buffer
-      copies under the multi-case memory quotas.
+- [x] JMH benchmark added: `AhoCorasickBenchmark` in `iped-ahocorasick/src/test/java`
+      compares `ahoCorasick()`, `ahoCorasickLengthAware()` (exercises the zero-copy
+      `continueSearch()` path), and `javaRegex()` on a 1 MB synthetic haystack.
+      `jmh-core:1.37` + `jmh-generator-annprocess` added at `test` scope.
+      Ad-hoc `Benchmark.java` main class replaced.
+- [x] Zero-copy scanning path — redundant buffer copy eliminated:
+      `CarverTask.fillBuf()` previously copied each 1 MB chunk into a fresh `cBuf`
+      array before passing it to `AhoCorasick.continueSearch()`. Fix:
+      - `SearchResult` now carries a `length` field (new overload constructor) so
+        scanning stops at `length` rather than `bytes.length`
+      - `AhoCorasick.continueSearch()` uses `lastResult.length` in both `search` paths
+      - `CarverTask` passes the shared `buf` directly with the valid `len`, eliminating
+        one `new byte[len]` + `System.arraycopy` per 1 MB chunk scanned
 
 ## Phase 3 — Capability growth
-- [ ] Pluggable validator hooks per carved type (cheap header check → optional deep
-      validation) to cut false positives on fragmented media.
+- [x] Pluggable validator hooks per carved type: `CarvedItemValidator` interface added to
+      `iped-carvers-api`; `CarverType.addValidator()`/`getValidators()` wires them in;
+      `AbstractCarver.isValid()` runs all registered validators after the built-in
+      `validateCarvedObject()` check — any `false` discards the candidate item.
+      Third-party code can attach validators to any `CarverType` at startup without
+      subclassing `AbstractCarver`.
 - [ ] Carver plugin SPI parity with parsers: third parties can ship a carver plugin jar
       with signatures + validator.
 - [ ] Distributed carving: unallocated-space ranges as Kafka work units (coordinate with

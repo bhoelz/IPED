@@ -1,0 +1,396 @@
+###############################################################################
+# Carver configuration — default signatures and processing rules
+#
+# Signature syntax (same as the legacy XML format):
+#   ASCII chars written literally, e.g. "PK"
+#   Hex-escaped bytes: \HH  e.g. \03\04
+#   Single-byte wildcards: ?  (matches any byte)
+#
+# carverClass is optional; when absent the generic DefaultCarver is used.
+# headers / footers / escapeFooters / lengthRefs are arrays of signatures.
+# lengthOffset / lengthSizeBytes / lengthBigEndian drive size-from-header reads.
+# stopOnNextHeader = true for formats whose end is the start of the next match.
+###############################################################################
+
+# When true, carved items that cannot be validated by their carver are silently
+# discarded rather than raising an error.
+ignoreCorrupted = true
+
+# MIME types that are never submitted to carving, even if carving is enabled.
+# Semi-colon-separated values were split into individual array entries here.
+typesToNotProcess = [
+    "application/x-raw-image",
+    "application/x-ewf-image",
+    "application/x-ewf2-image",
+    "application/x-vmdk",
+    "application/x-vmdk-data",
+    "application/x-vhd",
+    "application/x-vhdx",
+    "application/x-tika-msoffice",
+    "audio",
+    "video",
+    "text/html",
+    "application/pdf",
+    "image",
+    "application/x-iso9660-image",
+    "application/x-udf-image",
+    "application/vnd.ms-outlook-pst",
+    "application/outlook-dbx",
+    "application/mbox",
+    "application/x-incredimail",
+    "message/rfc822",
+    "message/x-emlx",
+    "application/vnd.ms-outlook",
+    "message/outlook-pst",
+    "application/vnd.ms-tnef",
+    "application/zip",
+    "application/x-rar-compressed",
+    "application/x-tar",
+    "application/gzip",
+    "application/x-bzip",
+    "application/x-bzip2",
+    "application/x-7z-compressed",
+    "application/x-arj",
+    "application/x-gtar",
+    "application/rtf",
+    "application/vnd.apple.pages",
+    "application/msword",
+    "application/msword2",
+    "application/msword5",
+    "application/vnd.ms-word.document.macroenabled.12",
+    "application/vnd.ms-word.template.macroenabled.12",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+    "application/vnd.oasis.opendocument.text",
+    "application/vnd.oasis.opendocument.text-master",
+    "application/vnd.oasis.opendocument.text-template",
+    "application/vnd.oasis.opendocument.text-web",
+    "application/vnd.sun.xml.writer",
+    "application/vnd.sun.xml.writer.global",
+    "application/vnd.sun.xml.writer.template",
+    "application/vnd.stardivision.writer",
+    "application/vnd.apple.numbers",
+    "application/vnd.ms-excel",
+    "application/vnd.ms-excel.addin.macroenabled.12",
+    "application/vnd.ms-excel.sheet.macroenabled.12",
+    "application/vnd.ms-excel.sheet.binary.macroenabled.12",
+    "application/vnd.ms-excel.template.macroenabled.12",
+    "application/x-tika-msworks-spreadsheet",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+    "application/vnd.oasis.opendocument.spreadsheet",
+    "application/vnd.oasis.opendocument.spreadsheet-template",
+    "application/vnd.sun.xml.calc",
+    "application/vnd.sun.xml.calc.template",
+    "application/vnd.stardivision.calc",
+    "application/vnd.apple.keynote",
+    "application/x-corelpresentations",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.ms-powerpoint.addin.macroenabled.12",
+    "application/vnd.ms-powerpoint.presentation.macroenabled.12",
+    "application/vnd.ms-powerpoint.slide.macroenabled.12",
+    "application/vnd.ms-powerpoint.slideshow.macroenabled.12",
+    "application/vnd.ms-powerpoint.template.macroenabled.12",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.openxmlformats-officedocument.presentationml.slide",
+    "application/vnd.openxmlformats-officedocument.presentationml.template",
+    "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
+    "application/vnd.oasis.opendocument.presentation",
+    "application/vnd.oasis.opendocument.presentation-template",
+    "application/vnd.sun.xml.impress",
+    "application/vnd.sun.xml.impress.template",
+    "application/vnd.stardivision.impress",
+    "text/x-vcard",
+    "text/vcard",
+    "application/x-vcard"
+]
+
+###############################################################################
+# Carver type definitions
+# The carverClass field names the Java class that handles hit processing.
+# If absent, iped.carvers.standard.DefaultCarver is used.
+###############################################################################
+
+[[carverType]]
+name           = "SQLITE"
+mediaType      = "application/x-sqlite3"
+carverClass    = "iped.carvers.custom.SQLiteCarver"
+minLength      = 10_000
+maxLength      = 100_000_000
+
+[[carverType]]
+name           = "TOR_CIRCUIT_STATUS"
+carverClass    = "iped.carvers.custom.TorTCCarver"
+mediaType      = "application/x-tor-tc-fragment"
+minLength      = 10
+maxLength      = 1_000
+headers        = ["BUILT", "EXTENDED"]
+footers        = ["\\0d\\0a"]
+
+[[carverType]]
+name           = "OLE"
+carverClass    = "iped.carvers.custom.OLECarver"
+minLength      = 1_000
+maxLength      = 50_000_000
+
+[[carverType]]
+name           = "ZIP"
+carverClass    = "iped.carvers.custom.ZIPCarver"
+minLength      = 1_000
+maxLength      = 100_000_000
+headers        = ["PK\\03\\04"]
+footers        = ["PK\\05\\06??????????????????"]
+
+[[carverType]]
+name           = "MOV"
+carverClass    = "iped.carvers.custom.MOVCarver"
+minLength      = 100_000
+maxLength      = 500_000_000
+
+[[carverType]]
+name           = "MATROSKA"
+carverClass    = "iped.carvers.custom.MatroskaCarver"
+mediaType      = "video/x-matroska"
+minLength      = 40_000
+maxLength      = 1_000_000_000
+headers        = ["\\1a\\45\\df\\a3"]
+
+[[carverType]]
+name           = "OPUS"
+carverClass    = "iped.carvers.custom.OpusCarver"
+mediaType      = "audio/ogg"
+minLength      = 1_000
+maxLength      = 10_000_000
+headers        = ["OggS\\00\\02"]
+
+[[carverType]]
+name           = "7ZIP"
+carverClass    = "iped.carvers.custom.SevenZipCarver"
+mediaType      = "application/x-7z-compressed"
+minLength      = 1_000
+maxLength      = 100_000_000
+headers        = ["7z\\bc\\af\\27\\1c"]
+
+[[carverType]]
+name           = "CER"
+mediaType      = "application/x-pem-file"
+maxLength      = 30_000
+headers        = ["-----BEGIN CERTIFICATE-----"]
+footers        = ["-----END CERTIFICATE-----"]
+
+[[carverType]]
+name           = "EML"
+carverClass    = "iped.carvers.custom.EMLCarver"
+mediaType      = "message/rfc822"
+minLength      = 1_000
+maxLength      = 10_000_000
+headers        = ["Received: by", "Received: from", "Message-ID:\\20<", "Return-Path:\\20"]
+footers        = ["--\\0d\\0a"]
+
+[[carverType]]
+name           = "VCARD"
+mediaType      = "text/x-vcard"
+minLength      = 100
+maxLength      = 100_000
+headers        = ["begin:vcard", "BEGIN:VCARD"]
+footers        = ["end:vcard", "END:VCARD"]
+
+[[carverType]]
+name              = "BMP"
+mediaType         = "image/bmp"
+minLength         = 1_000
+maxLength         = 50_000_000
+lengthOffset      = 2
+lengthSizeBytes   = 4
+lengthBigEndian   = false
+headers           = [
+    "BM????????????????????????\\01\\00\\01\\00",
+    "BM????????????????????????\\01\\00\\04\\00",
+    "BM????????????????????????\\01\\00\\08\\00",
+    "BM????????????????????????\\01\\00\\10\\00",
+    "BM????????????????????????\\01\\00\\18\\00",
+    "BM????????????????????????\\01\\00\\20\\00"
+]
+
+[[carverType]]
+name           = "JPG"
+mediaType      = "image/jpeg"
+minLength      = 1_000
+maxLength      = 20_000_000
+headers        = ["\\ff\\d8\\ff\\DB", "\\ff\\d8\\ff\\E0", "\\ff\\d8\\ff\\EE", "\\ff\\d8\\ff\\E1", "\\ff\\d8\\ff\\FE"]
+footers        = ["\\ff\\d9"]
+escapeFooters  = ["\\ff\\ff\\d9"]
+
+[[carverType]]
+name              = "EMF"
+mediaType         = "image/emf"
+minLength         = 1_000
+maxLength         = 50_000_000
+lengthOffset      = 48
+lengthSizeBytes   = 4
+lengthBigEndian   = false
+headers           = ["\\01\\00\\00\\00???????????????????????????????????? EMF"]
+
+[[carverType]]
+name           = "PNG"
+mediaType      = "image/png"
+minLength      = 1_000
+maxLength      = 20_000_000
+headers        = ["\\89PNG\\0d\\0a\\1a\\0a"]
+footers        = ["\\49END\\AE\\42\\60\\82"]
+
+[[carverType]]
+name           = "GIF"
+mediaType      = "image/gif"
+minLength      = 1_000
+maxLength      = 10_000_000
+headers        = ["GIF87a", "GIF89a"]
+footers        = ["\\00\\3b"]
+
+[[carverType]]
+name           = "RAR"
+mediaType      = "application/x-rar-compressed"
+minLength      = 1_000
+maxLength      = 100_000_000
+headers        = ["\\52\\61\\72\\21\\1a\\07"]
+footers        = ["\\c4\\3d\\7b\\00\\40\\07\\00"]
+
+[[carverType]]
+name           = "PDF"
+carverClass    = "iped.carvers.custom.PDFCarver"
+mediaType      = "application/pdf"
+minLength      = 1_000
+maxLength      = 50_000_000
+headers        = ["%PDF-1", "%PDF-2"]
+footers        = ["\\0a%%EOF\\0d\\0a", "\\0d%%EOF\\0d", "\\0a%%EOF\\0a", "\\0a%%EOF"]
+
+[[carverType]]
+name           = "HTM"
+mediaType      = "text/html"
+minLength      = 1_000
+maxLength      = 10_000_000
+headers        = ["<html", "<HTML"]
+footers        = ["</html>", "</HTML>"]
+
+[[carverType]]
+name              = "INDEX.DAT"
+mediaType         = "application/x-msie-cache"
+minLength         = 1_000
+maxLength         = 10_000_000
+lengthOffset      = 28
+lengthSizeBytes   = 4
+lengthBigEndian   = false
+headers           = ["Client UrlCache MMF Ver 4", "Client UrlCache MMF Ver 5"]
+
+[[carverType]]
+name           = "ARES"
+mediaType      = "application/x-ares-galaxy"
+minLength      = 1_000
+maxLength      = 1_000_000
+headers        = ["__ARESDB1.02H_", "__ARESDB1.04L_"]
+
+[[carverType]]
+name              = "SD"
+mediaType         = "application/x-shareaza-download"
+minLength         = 128
+maxLength         = 65_536
+stopOnNextHeader  = true
+headers           = ["SDL?\\00\\00\\00\\FF"]
+
+[[carverType]]
+name           = "TORRENT"
+carverClass    = "iped.carvers.custom.TorrentCarver"
+mediaType      = "application/x-bittorrent"
+minLength      = 128
+maxLength      = 262_144
+headers        = ["d8:announce", "d4:info", "d10:created by", "d8:encoding"]
+
+[[carverType]]
+name           = "RESUME.DAT"
+carverClass    = "iped.carvers.custom.ResumeDatCarver"
+mediaType      = "application/x-bittorrent-resume-dat"
+minLength      = 1_024
+maxLength      = 104_857_600
+headers        = ["d10:.fileguard"]
+
+[[carverType]]
+name              = "RESUME.DAT ENTRY"
+carverClass       = "iped.carvers.custom.ResumeDatEntryCarver"
+mediaType         = "application/x-bittorrent-resume-dat-entry"
+minLength         = 256
+maxLength         = 32_768
+stopOnNextHeader  = true
+headers           = ["d8:added_oni"]
+footers           = ["8:uploadedi"]
+
+[[carverType]]
+name              = "RIFF-AVI"
+mediaType         = "video/x-msvideo"
+minLength         = 10_000
+maxLength         = 500_000_000
+lengthOffset      = 4
+lengthSizeBytes   = 4
+lengthBigEndian   = false
+headers           = ["RIFF????AVI LIST"]
+
+[[carverType]]
+name              = "RIFF-WEBP"
+mediaType         = "image/webp"
+minLength         = 10_000
+maxLength         = 30_000_000
+lengthOffset      = 4
+lengthSizeBytes   = 4
+lengthBigEndian   = false
+headers           = ["RIFF????WEBP"]
+
+[[carverType]]
+name              = "RIFF-CDR"
+mediaType         = "application/coreldraw"
+minLength         = 10_000
+maxLength         = 300_000_000
+lengthOffset      = 4
+lengthSizeBytes   = 4
+lengthBigEndian   = false
+headers           = ["RIFF????CDR vrsn", "RIFF????CDR4vrsn", "RIFF????CDRDvrsn"]
+
+[[carverType]]
+name              = "ASF"
+minLength         = 100_000
+maxLength         = 500_000_000
+lengthOffset      = 40
+lengthSizeBytes   = 8
+lengthBigEndian   = false
+headers           = ["\\30\\26\\B2\\75\\8E\\66\\CF\\11\\A6\\D9\\00\\AA\\00\\62\\CE\\6C????????????\\01\\02"]
+lengthRefs        = ["\\A1\\DC\\AB\\8C\\47\\A9\\CF\\11\\8E\\E4\\00\\C0\\0C\\20\\53\\65"]
+
+[[carverType]]
+name           = "FLV"
+mediaType      = "video/x-flv"
+minLength      = 100_000
+maxLength      = 50_000_000
+headers        = ["FLV\\01\\01\\00\\00\\00", "FLV\\01\\04\\00\\00\\00", "FLV\\01\\05\\00\\00\\00"]
+
+[[carverType]]
+name           = "MPG"
+carverClass    = "iped.carvers.standard.FromFarthestHeaderCarver"
+mediaType      = "video/mpeg"
+minLength      = 100_000
+maxLength      = 500_000_000
+headers        = ["\\00\\00\\01\\ba\\21\\00", "\\00\\00\\01\\ba\\44\\00", "\\00\\00\\01\\ba\\2f\\ff"]
+footers        = ["\\00\\00\\01\\b9"]
+
+[[carverType]]
+name           = "MPG2"
+carverClass    = "iped.carvers.standard.FromFarthestHeaderCarver"
+mediaType      = "video/mpeg"
+minLength      = 100_000
+maxLength      = 500_000_000
+headers        = [
+    "\\00\\00\\01\\b3\\0a\\00",
+    "\\00\\00\\01\\b3\\0b\\00",
+    "\\00\\00\\01\\b3\\0f\\00",
+    "\\00\\00\\01\\b3\\14\\00",
+    "\\00\\00\\01\\b3\\16\\00",
+    "\\00\\00\\01\\b3\\16\\01"
+]
+footers        = ["\\00\\00\\01\\b7"]

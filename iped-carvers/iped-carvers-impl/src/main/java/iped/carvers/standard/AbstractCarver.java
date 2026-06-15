@@ -175,6 +175,13 @@ public abstract class AbstractCarver implements Carver {
             return false;
         }
 
+        // run pluggable validators registered on the CarverType
+        for (iped.carvers.api.CarvedItemValidator v : headerOffset.getSignature().getCarverType().getValidators()) {
+            if (!v.isValid(parentEvidence, headerOffset, length)) {
+                return false;
+            }
+        }
+
         // se não der erro de parse retora true, inclusive se não for feito parse algum
         return true;
     }

@@ -7,6 +7,8 @@ import org.apache.tika.mime.MediaType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class CarverType implements Serializable {
     /**
@@ -26,6 +28,7 @@ public class CarverType implements Serializable {
     boolean stopOnNextHeader = false;
     boolean hasFooter = false;
     boolean hasLengthRef = false;
+    private List<CarvedItemValidator> validators = null;
 
     @Override
     public boolean equals(Object o) {
@@ -212,6 +215,17 @@ public class CarverType implements Serializable {
 
     public boolean hasLengthRef() {
         return hasLengthRef;
+    }
+
+    public void addValidator(CarvedItemValidator validator) {
+        if (validators == null) {
+            validators = new ArrayList<>();
+        }
+        validators.add(validator);
+    }
+
+    public List<CarvedItemValidator> getValidators() {
+        return validators != null ? validators : Collections.emptyList();
     }
 
 }

@@ -167,7 +167,7 @@ public class AhoCorasick {
     public SearchResult continueSearch1(SearchResult lastResult) {
         byte[] bytes = lastResult.bytes;
         State state = lastResult.lastMatchedState;
-        for (int i = lastResult.lastIndex; i < bytes.length; i++) {
+        for (int i = lastResult.lastIndex; i < lastResult.length; i++) {
             State resultState;
             while ((resultState = state.get(bytes[i])) == null)
                 state = state.getFail();
@@ -183,7 +183,7 @@ public class AhoCorasick {
         byte[] bytes = lastResult.bytes;
         State state = lastResult.lastMatchedState;
         State resultState;
-        for (int i = lastResult.lastIndex; i < bytes.length; i++) {
+        for (int i = lastResult.lastIndex; i < lastResult.length; i++) {
             byte b = bytes[i];
             while ((resultState = state.edgeList.array[(int) b & 0xFF]) == null)
                 state = state.fail;

@@ -46,11 +46,21 @@ public class SearchResult {
     public State lastMatchedState;
     byte[] bytes;
     int lastIndex;
+    int length;
 
     public SearchResult(State s, byte[] bs, int i) {
         this.lastMatchedState = s;
         this.bytes = bs;
         this.lastIndex = i;
+        this.length = bs != null ? bs.length : 0;
+    }
+
+    /** Creates a result that only scans {@code [i, length)} within {@code bs}. */
+    public SearchResult(State s, byte[] bs, int i, int length) {
+        this.lastMatchedState = s;
+        this.bytes = bs;
+        this.lastIndex = i;
+        this.length = length;
     }
 
     /**
