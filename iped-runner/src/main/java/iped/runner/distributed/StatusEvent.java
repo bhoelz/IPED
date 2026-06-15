@@ -26,6 +26,7 @@ public class StatusEvent {
     private String  itemPath;
     private String  taskType;
     private int     pipelineStage;
+    private String  agentId;
     private Instant timestamp;
     private long    durationMs;
     private String  errorMessage;
@@ -48,6 +49,9 @@ public class StatusEvent {
 
     public int     getPipelineStage() { return pipelineStage; }
     public void    setPipelineStage(int v) { pipelineStage = v; }
+
+    public String  getAgentId()       { return agentId; }
+    public void    setAgentId(String v){ agentId = v; }
 
     public Instant getTimestamp()     { return timestamp; }
     public void    setTimestamp(Instant v) { timestamp = v; }

@@ -3,13 +3,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  EventEmitter,
   inject,
   Input,
   OnChanges,
-  Output,
   signal,
 } from '@angular/core';
+import {IslandBase} from '../shared/island-base';
+import {timeRangeSelectedEvent} from '../shared/events';
 
 /**
  * Timeline island (`<iped-timeline>`).
@@ -61,15 +61,12 @@ const BAR_GAP = 1;
   templateUrl: './timeline.component.html',
   styleUrl: './timeline.component.scss',
 })
-export class TimelineComponent implements OnChanges {
+export class TimelineComponent extends IslandBase implements OnChanges {
   private readonly http = inject(HttpClient);
 
-  @Input('api-base') apiBase  = '/api';
+  @Input('api-base') override apiBase  = '/api';
   @Input('case-id')  caseId   = '';
   @Input('search-id') searchId = '';
-
-  @Output('time-range-selected')
-  timeRangeSelected = new EventEmitter<{start: string; end: string}>();
 
   protected readonly buckets = signal<Bucket[]>([]);
   protected readonly loading = signal(false);
@@ -179,7 +176,7 @@ export class TimelineComponent implements OnChanges {
       const b   = this.buckets();
       const lo  = Math.max(0, Math.floor(Math.min(a, c) * b.length));
       const hi  = Math.min(b.length - 1, Math.ceil(Math.max(a, c) * b.length) - 1);
-      this.timeRangeSelected.emit({start: b[lo]?.date ?? '', end: b[hi]?.date ?? ''});
+      this.dispatch(timeRangeSelectedEvent({start: b[lo]?.date ?? '', end: b[hi]?.date ?? ''}));
     }
     this.dragAnchor.set(null);
     this.dragCurrent.set(null);

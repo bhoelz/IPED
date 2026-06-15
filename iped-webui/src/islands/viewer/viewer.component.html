@@ -1,0 +1,59 @@
+@if (!itemId) {
+  <div class="viewer-empty">
+    <div class="viewer-empty-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+      </svg>
+    </div>
+    <div class="viewer-empty-text">Select an item to view its content</div>
+  </div>
+} @else if (loading()) {
+  <div class="viewer-loading">
+    <div class="viewer-spinner"></div>
+    <span>Loading…</span>
+  </div>
+} @else if (error()) {
+  <div class="viewer-error">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--bad)" stroke-width="1.5">
+      <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+    </svg>
+    <span>{{ error() }}</span>
+  </div>
+} @else if (viewerType() === 'image') {
+  <div class="viewer-image">
+    <img [src]="contentUrl()"
+         [alt]="'Content of item ' + itemId"
+         (error)="error.set('Image failed to load')"
+         (load)="dispatchReady('image')">
+  </div>
+} @else if (viewerType() === 'pdf') {
+  <embed class="viewer-pdf"
+         [src]="contentUrl()"
+         type="application/pdf"
+         [title]="'PDF viewer for ' + itemId"
+         (load)="dispatchReady('pdf')">
+} @else if (viewerType() === 'html') {
+  <div class="viewer-html"
+       [innerHTML]="htmlContent()">
+  </div>
+} @else if (viewerType() === 'text') {
+  <pre class="viewer-text">{{ textContent() }}</pre>
+} @else if (viewerType() === 'hex') {
+  <iped-hex-viewer-impl
+    [itemId]="hexItemId"
+    [apiBase]="apiBase">
+  </iped-hex-viewer-impl>
+} @else {
+  <div class="viewer-unsupported">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+      <polyline points="13 2 13 9 20 9"/>
+    </svg>
+    <div>
+      <div class="viewer-unsupported-title">No viewer for this file type</div>
+      <div class="viewer-unsupported-sub">{{ mediaType || 'Unknown type' }}</div>
+    </div>
+    <a [href]="contentUrl()" download class="viewer-download-btn">Download</a>
+  </div>
+}

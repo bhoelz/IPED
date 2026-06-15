@@ -26,9 +26,15 @@
       </thead>
       <tbody>
         @for (item of items(); track item.itemId; let i = $index) {
-          <tr [class.selected]="selectedId() === item.itemId"
+          <tr role="row"
+              tabindex="0"
+              [class.selected]="selectedId() === item.itemId"
               [class.checked]="isChecked(item)"
-              (click)="select(item)">
+              [attr.aria-selected]="selectedId() === item.itemId"
+              [attr.aria-label]="'Item ' + fileName(item)"
+              (click)="select(item)"
+              (keydown.enter)="select(item)"
+              (keydown.space)="select(item); $event.preventDefault()">
             <td class="mono dim" style="text-align:right">{{ offset() + i + 1 }}</td>
             <td>
               <span class="score-bar"><span [style.width.%]="scorePct(item)"></span></span>

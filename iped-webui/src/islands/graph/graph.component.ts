@@ -4,15 +4,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  EventEmitter,
   inject,
   Input,
   OnChanges,
   OnDestroy,
-  Output,
   signal,
   ViewChild,
 } from '@angular/core';
+import {IslandBase} from '../shared/island-base';
+import {itemSelectedEvent} from '../shared/events';
 
 /**
  * Graph/links island (`<iped-graph>`).
@@ -67,15 +67,12 @@ const NODE_R = 18;
   templateUrl: './graph.component.html',
   styleUrl: './graph.component.scss',
 })
-export class GraphComponent implements OnChanges, AfterViewInit, OnDestroy {
+export class GraphComponent extends IslandBase implements OnChanges, AfterViewInit, OnDestroy {
   private readonly http = inject(HttpClient);
 
-  @Input('api-base') apiBase = '/api';
+  @Input('api-base') override apiBase = '/api';
   @Input('case-id')  caseId  = '';
   @Input('item-id')  itemId  = '';
-
-  @Output('item-selected')
-  itemSelected = new EventEmitter<{itemId: string}>();
 
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -330,7 +327,7 @@ export class GraphComponent implements OnChanges, AfterViewInit, OnDestroy {
     } else if (!this.panning) {
       const {nx, ny} = this.toGraph(ev);
       const hit = this.nodes.find(n => dist(n.x, n.y, nx, ny) < NODE_R + 4);
-      if (hit) this.itemSelected.emit({itemId: hit.id});
+      if (hit) this.dispatch(itemSelectedEvent({itemId: hit.id}));
     }
     this.panning = false;
   }

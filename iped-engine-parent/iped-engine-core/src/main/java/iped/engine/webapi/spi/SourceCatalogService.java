@@ -15,6 +15,15 @@ public interface SourceCatalogService {
 
     IIPEDSource getSourceHandle(String sourceId);
 
+    /**
+     * Closes and removes a case from the catalog.
+     * The source is no longer accessible after this call.
+     * In-flight queries against this source may fail with a runtime exception.
+     *
+     * @throws IllegalArgumentException if {@code sourceId} is unknown
+     */
+    void removeSource(String sourceId) throws Exception;
+
     String getSourceStringId(int sourceId);
 
     int getSourceIntId(String sourceId);

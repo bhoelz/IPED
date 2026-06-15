@@ -15,9 +15,15 @@
     <div class="gallery-grid" [style.--cols]="cols()">
       @for (item of items(); track item.itemId) {
         <div class="gallery-cell"
+             role="gridcell"
+             tabindex="0"
              [class.selected]="selectedId() === item.itemId"
              [class.checked]="isChecked(item)"
+             [attr.aria-selected]="selectedId() === item.itemId"
+             [attr.aria-label]="'Thumbnail: ' + fileName(item)"
              (click)="select(item)"
+             (keydown.enter)="select(item)"
+             (keydown.space)="select(item); $event.preventDefault()"
              [title]="fileName(item)">
           <div class="thumb-wrap">
             @if (thumbUrl(item)) {
@@ -25,7 +31,7 @@
                    [src]="thumbUrl(item)!"
                    (error)="onThumbError($event)"
                    loading="lazy"
-                   alt="">
+                   [alt]="'Thumbnail of ' + fileName(item)">
             }
             <div class="thumb-placeholder" [style.background]="extColor(item)">
               <span class="thumb-ext">{{ extOf(item).toUpperCase() || '?' }}</span>
@@ -37,7 +43,7 @@
             </label>
             @if (item.mediaType?.startsWith('image/')) {
             <button class="thumb-similar" title="Find similar images"
-                    (click)="$event.stopPropagation(); similarImageSearch.emit({itemId: item.itemId})">
+                    (click)="$event.stopPropagation(); dispatch(similarImageSearchEvent({itemId: item.itemId}))">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
             </button>
             }

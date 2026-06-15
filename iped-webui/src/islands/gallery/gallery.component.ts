@@ -2,14 +2,19 @@ import {HttpClient} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   HostListener,
   inject,
   Input,
   OnChanges,
-  Output,
   signal,
 } from '@angular/core';
+import {IslandBase} from '../shared/island-base';
+import {
+  itemSelectedEvent,
+  resultsLoadedEvent,
+  selectionChangedEvent,
+  similarImageSearchEvent,
+} from '../shared/events';
 
 /**
  * Gallery island.
@@ -55,34 +60,16 @@ interface ResultsPage {
   styleUrl: './gallery.component.scss',
   templateUrl: './gallery.component.html',
 })
-export class GalleryComponent implements OnChanges {
+export class GalleryComponent extends IslandBase implements OnChanges {
   private readonly http = inject(HttpClient);
 
-  @Input('api-base') apiBase = '/api';
+  @Input('api-base') override apiBase = '/api';
   @Input('case-id') caseId = '';
   @Input('search-id') searchId = '';
   @Input('query') query = '';
   @Input('columns') columns = '5';
   @Input('blur-filter') blurFilter: boolean | string = false;
   @Input('gray-filter') grayFilter: boolean | string = false;
-
-  @Output('item-selected')
-  itemSelected = new EventEmitter<{itemId: string}>();
-
-  @Output('selection-changed')
-  selectionChanged = new EventEmitter<{count: number; itemIds: string[]}>();
-
-  @Output('results-loaded')
-  resultsLoaded = new EventEmitter<{
-    total: number;
-    shown: number;
-    rangeLabel: string;
-    hasPrev: boolean;
-    hasNext: boolean;
-  }>();
-
-  @Output('similar-image-search')
-  similarImageSearch = new EventEmitter<{itemId: string}>();
 
   @HostListener('previous-page') onPreviousPage(): void { this.previousPage(); }
   @HostListener('next-page')     onNextPage(): void     { this.nextPage(); }
@@ -149,13 +136,13 @@ export class GalleryComponent implements OnChanges {
           this.offset.set(page.page?.offset ?? offset);
           this.limit.set(page.page?.limit ?? this.limit());
           this.loading.set(false);
-          this.resultsLoaded.emit({
+          this.dispatch(resultsLoadedEvent({
             total: this.total(),
             shown: this.items().length,
             rangeLabel: this.rangeLabel(),
             hasPrev: this.offset() > 0,
             hasNext: this.offset() + this.limit() < this.total(),
-          });
+          }));
         },
         error: (e) => this.fail(e),
       });
@@ -186,7 +173,7 @@ export class GalleryComponent implements OnChanges {
 
   protected select(item: ResultItem): void {
     this.selectedId.set(item.itemId);
-    this.itemSelected.emit({itemId: item.itemId});
+    this.dispatch(itemSelectedEvent({itemId: item.itemId, sourceId: item.sourceId, name: item.name as string | undefined}));
   }
 
   protected toggleChecked(item: ResultItem, ev: Event): void {
@@ -195,13 +182,13 @@ export class GalleryComponent implements OnChanges {
     if (next.has(item.itemId)) next.delete(item.itemId);
     else next.add(item.itemId);
     this.checked.set(next);
-    this.selectionChanged.emit({count: next.size, itemIds: [...next]});
+    this.dispatch(selectionChangedEvent({count: next.size, itemIds: [...next]}));
   }
 
   protected checkAll(): void {
     const all = new Set(this.items().map(i => i.itemId));
     this.checked.set(all);
-    this.selectionChanged.emit({count: all.size, itemIds: [...all]});
+    this.dispatch(selectionChangedEvent({count: all.size, itemIds: [...all]}));
   }
 
   protected isChecked(item: ResultItem): boolean {

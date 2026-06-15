@@ -51,6 +51,12 @@ public class WorkspaceFragmentController {
     /** A single text-hit snippet around a query term. */
     public record HitSnippet(String before, String match, String after) {}
 
+    /** Wraps a data fetch result with a flag indicating whether it came from the live backend. */
+    record FetchResult<T>(T data, boolean fromBackend) {
+        static <T> FetchResult<T> live(T data)  { return new FetchResult<>(data, true); }
+        static <T> FetchResult<T> demo(T data)  { return new FetchResult<>(data, false); }
+    }
+
     /** Typed display row passed to {@code itemList.rocker.html}. */
     public record ItemRow(String iid, String title, String name,
                           String ext, String sizeStr, String typeDisp) {}
@@ -136,12 +142,21 @@ public class WorkspaceFragmentController {
     public String sidebar(@RequestParam(defaultValue = "cat") String tab,
                           @RequestParam(defaultValue = "demo-case") String caseId) {
         String active = SIDEBAR_TABS.contains(tab) ? tab : "cat";
-        List<CategoryEntry>  cats  = active.equals("cat")  ? fetchCategories(caseId) : List.of();
-        List<BookmarkEntry>  bms   = active.equals("coll") ? fetchBookmarks(caseId)  : List.of();
-        List<AiClassifier>   clf   = active.equals("ai")   ? fetchAiFilters(caseId)  : List.of();
-        List<EvidenceNode>   evid  = active.equals("evid") ? fetchEvidenceRoots(caseId) : List.of();
-        return sidebar.template(active, caseId, cats, bms, clf, evid, filterState.list())
+        var catsResult = active.equals("cat")  ? fetchCategories(caseId) : FetchResult.demo(List.<CategoryEntry>of());
+        var bmsResult  = active.equals("coll") ? fetchBookmarks(caseId)  : FetchResult.demo(List.<BookmarkEntry>of());
+        List<AiClassifier> clf  = active.equals("ai")   ? DEMO_AI_CLASSIFIERS : List.of();
+        List<EvidenceNode> evid = active.equals("evid") ? DEMO_EVIDENCE_ROOTS : List.of();
+
+        String content = sidebar.template(active, caseId,
+                catsResult.data(), bmsResult.data(), clf, evid, filterState.list())
                 .render().toString();
+
+        // Surface a warning banner when data came from demo fallback (backend unreachable)
+        if (!catsResult.fromBackend() && active.equals("cat")
+                || !bmsResult.fromBackend() && active.equals("coll")) {
+            content = backendUnavailableBanner() + content;
+        }
+        return content;
     }
 
     /** HTMX fragment: lazy-loads child nodes of one evidence tree node. */
@@ -253,8 +268,20 @@ public class WorkspaceFragmentController {
                          @RequestParam(required = false) String itemId) {
         String active = VIEWER_MODES.contains(mode) ? mode : "preview";
         String safeId = itemId == null ? "" : itemId;
-        Map<String, String> metadata = active.equals("meta") ? fetchMetadata(safeId) : Map.of();
-        return viewer.template(active, safeId, metadata).render().toString();
+        boolean needsMeta = active.equals("meta") || active.equals("preview");
+        var meta = needsMeta ? fetchMetadataResult(safeId) : FetchResult.live(Map.<String,String>of());
+        String mediaType = active.equals("preview") ? extractMediaType(meta.data()) : "";
+        String content = viewer.template(active, safeId, meta.data(), mediaType).render().toString();
+        if (active.equals("meta") && !safeId.isBlank() && !meta.fromBackend()) {
+            content = itemErrorFragment("Could not load metadata from iped-webapi.") + content;
+        }
+        return content;
+    }
+
+    private static String extractMediaType(Map<String, String> metadata) {
+        String mt = metadata.get("Media type");
+        if (mt == null) mt = metadata.get("mediaType");
+        return mt != null ? mt : "";
     }
 
     // ── Export dialog ──────────────────────────────────────────────────────
@@ -318,29 +345,34 @@ public class WorkspaceFragmentController {
     }
 
     @SuppressWarnings("unchecked")
-    private List<CategoryEntry> fetchCategories(String caseId) {
+    private FetchResult<List<CategoryEntry>> fetchCategories(String caseId) {
+        // v2: GET /v2/sources/{sourceId}/items/categories → String[]
         try {
-            Map<?, ?> body = apiClient.get().uri("/categories").retrieve().body(Map.class);
-            if (body != null && body.get("list") instanceof List<?> list) {
-                return list.stream().map(s -> new CategoryEntry(s.toString(), -1L)).toList();
+            List<?> list = apiClient.get()
+                    .uri("/v2/sources/{sid}/items/categories", caseId)
+                    .retrieve()
+                    .body(List.class);
+            if (list != null && !list.isEmpty()) {
+                return FetchResult.live(list.stream().map(s -> new CategoryEntry(s.toString(), -1L)).toList());
             }
         } catch (RestClientException e) {
-            log.debug("Categories unavailable: {}", e.getMessage());
+            log.debug("Categories unavailable for {}: {}", caseId, e.getMessage());
         }
-        return DEMO_CATEGORIES;
+        return FetchResult.demo(DEMO_CATEGORIES);
     }
 
     @SuppressWarnings("unchecked")
-    private List<BookmarkEntry> fetchBookmarks(String caseId) {
+    private FetchResult<List<BookmarkEntry>> fetchBookmarks(String caseId) {
         try {
-            Map<?, ?> body = apiClient.get().uri("/bookmarks").retrieve().body(Map.class);
-            if (body != null && body.get("list") instanceof List<?> list) {
-                return list.stream().map(s -> new BookmarkEntry(s.toString(), -1L, "#888")).toList();
+            Map<?, ?> body = apiClient.get().uri("/v2/bookmarks").retrieve().body(Map.class);
+            if (body != null && body.get("bookmarks") instanceof List<?> list) {
+                return FetchResult.live(list.stream()
+                        .map(s -> new BookmarkEntry(s.toString(), -1L, "#888")).toList());
             }
         } catch (RestClientException e) {
             log.debug("Bookmarks unavailable: {}", e.getMessage());
         }
-        return DEMO_BOOKMARKS;
+        return FetchResult.demo(DEMO_BOOKMARKS);
     }
 
     private List<AiClassifier> fetchAiFilters(String caseId) {
@@ -467,27 +499,84 @@ public class WorkspaceFragmentController {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, String> fetchMetadata(String itemId) {
+        return fetchMetadataResult(itemId).data();
+    }
+
+    @SuppressWarnings("unchecked")
+    private FetchResult<Map<String, String>> fetchMetadataResult(String itemId) {
         DocRef ref = parseItemId(itemId);
-        if (ref == null) return Map.of();
+        if (ref == null) return FetchResult.live(Map.of());
         try {
+            // v2: GET /v2/sources/{sourceId}/items/{id} → ItemMetadataJSON
             Map<?, ?> body = apiClient.get()
-                    .uri("/sources/{src}/docs/{id}", ref.sourceId(), ref.docId())
+                    .uri("/v2/sources/{src}/items/{id}", ref.sourceId(), ref.docId())
                     .retrieve().body(Map.class);
-            if (body == null) return Map.of();
-            Object props = body.get("properties");
-            if (!(props instanceof Map<?, ?> propsMap)) return Map.of();
+            if (body == null) return FetchResult.demo(Map.of());
+
+            // Collect the structured typed fields into a flat display map
             Map<String, String> result = new LinkedHashMap<>();
-            propsMap.forEach((k, v) -> {
-                String val = (v instanceof List<?> l && !l.isEmpty()) ? l.get(0).toString()
-                           : (v != null) ? v.toString() : "";
-                result.put(k.toString(), val);
-            });
-            return result;
+            addField(result, "Name",       body, "name");
+            addField(result, "Path",       body, "path");
+            addField(result, "Media type", body, "mediaType");
+            addField(result, "Size",       body, "size");
+            addField(result, "Hash",       body, "hash");
+            addField(result, "Modified",   body, "modDate");
+            addField(result, "Created",    body, "creationDate");
+            addField(result, "Accessed",   body, "accessDate");
+            addField(result, "Changed",    body, "changeDate");
+            addField(result, "Deleted",    body, "deleted");
+            addField(result, "Carved",     body, "carved");
+
+            // Merge the raw Tika metadata map for full forensic attribute access
+            Object meta = body.get("metadata");
+            if (meta instanceof Map<?, ?> metaMap) {
+                metaMap.forEach((k, v) -> {
+                    if (k == null) return;
+                    String val = (v instanceof List<?> l && !l.isEmpty()) ? l.get(0).toString()
+                               : (v != null) ? v.toString() : "";
+                    result.putIfAbsent(k.toString(), val);
+                });
+            }
+            return FetchResult.live(result);
         } catch (RestClientException e) {
-            log.debug("Could not fetch metadata for {}: {}", itemId, e.getMessage());
-            return Map.of();
+            log.debug("Could not fetch item metadata for {}: {}", itemId, e.getMessage());
+            return FetchResult.demo(Map.of());
         }
+    }
+
+    private static void addField(Map<String, String> out, String label, Map<?, ?> src, String key) {
+        Object v = src.get(key);
+        if (v != null) out.put(label, v.toString());
+    }
+
+    // ── Error state helpers ────────────────────────────────────────────────
+
+    /** Inline HTML banner shown when HTMX fragment data fell back to demo because the backend is down. */
+    private static String backendUnavailableBanner() {
+        return """
+                <div style="background:var(--warn-bg,#fffbe6);border:1px solid var(--warn-border,#ffe58f);\
+                border-radius:4px;padding:6px 10px;margin:6px 4px;font-size:11.5px;\
+                display:flex;align-items:center;gap:6px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" \
+                stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 \
+                1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/>\
+                <line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <span>iped-webapi unreachable — showing demo data</span>
+                </div>
+                """;
+    }
+
+    /** Inline HTML error state for a fragment when the backend returned an error for a specific item. */
+    static String itemErrorFragment(String message) {
+        return """
+                <div style="padding:12px 16px;color:var(--text-dim,#888);font-size:12px;\
+                display:flex;align-items:center;gap:8px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" \
+                stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>\
+                <line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span>%s</span>
+                </div>
+                """.formatted(message);
     }
 }

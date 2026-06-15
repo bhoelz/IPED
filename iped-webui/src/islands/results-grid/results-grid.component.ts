@@ -2,14 +2,18 @@ import {HttpClient} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
   HostListener,
   inject,
   Input,
   OnChanges,
-  Output,
-  signal,
 } from '@angular/core';
+import {signal} from '@angular/core';
+import {IslandBase} from '../shared/island-base';
+import {
+  itemSelectedEvent,
+  resultsLoadedEvent,
+  selectionChangedEvent,
+} from '../shared/events';
 
 /**
  * Results-grid island.
@@ -22,7 +26,8 @@ import {
  * <p>Boundary contract:
  * <ul>
  *   <li>Inputs arrive as kebab-cased attributes: `case-id`, `search-id`, `api-base`.</li>
- *   <li>Outputs leave as DOM CustomEvents: `item-selected`, `selection-changed`.</li>
+ *   <li>Outputs leave as DOM CustomEvents: `item-selected`, `selection-changed`,
+ *       `results-loaded`.</li>
  * </ul>
  * No shared client state with HTMX — communication is attributes in, events out.
  */
@@ -50,26 +55,14 @@ interface ResultsPage {
   styleUrl: './results-grid.component.scss',
   templateUrl: './results-grid.component.html',
 })
-export class ResultsGridComponent implements OnChanges {
+export class ResultsGridComponent extends IslandBase implements OnChanges {
   private readonly http = inject(HttpClient);
 
-  @Input('api-base') apiBase = '/api';
+  /** Override the inherited apiBase from the host attribute. */
+  @Input('api-base') override apiBase = '/api';
   @Input('case-id') caseId = '';
   @Input('search-id') searchId = '';
   @Input('query') query = '';
-
-  /** Emitted as the `item-selected` DOM CustomEvent when a row is selected. */
-  @Output('item-selected') itemSelected = new EventEmitter<{itemId: string}>();
-  /** Emitted as the `selection-changed` DOM CustomEvent when checked set changes. */
-  @Output('selection-changed') selectionChanged = new EventEmitter<{count: number; itemIds: string[]}>();
-  /** Emitted as the `results-loaded` DOM CustomEvent after a page of results loads. */
-  @Output('results-loaded') resultsLoaded = new EventEmitter<{
-    total: number;
-    shown: number;
-    rangeLabel: string;
-    hasPrev: boolean;
-    hasNext: boolean;
-  }>();
 
   // Paging is chrome owned by the SSR panel header; it commands the island via
   // DOM CustomEvents dispatched on this host (data ownership stays in the island).
@@ -122,13 +115,15 @@ export class ResultsGridComponent implements OnChanges {
             this.offset.set(page.page?.offset ?? offset);
             this.limit.set(page.page?.limit ?? this.limit());
             this.loading.set(false);
-            this.resultsLoaded.emit({
-              total: this.total(),
-              shown: this.items().length,
-              rangeLabel: this.rangeLabel(),
-              hasPrev: this.offset() > 0,
-              hasNext: this.offset() + this.limit() < this.total(),
-            });
+            this.dispatch(
+              resultsLoadedEvent({
+                total: this.total(),
+                shown: this.items().length,
+                rangeLabel: this.rangeLabel(),
+                hasPrev: this.offset() > 0,
+                hasNext: this.offset() + this.limit() < this.total(),
+              }),
+            );
           },
           error: (e) => this.fail(e),
         });
@@ -159,7 +154,14 @@ export class ResultsGridComponent implements OnChanges {
 
   protected select(item: ResultItem): void {
     this.selectedId.set(item.itemId);
-    this.itemSelected.emit({itemId: item.itemId});
+    this.dispatch(
+      itemSelectedEvent({
+        sourceId: this.caseId,
+        itemId: item.itemId,
+        name: item.name,
+        mediaType: item.mediaType,
+      }),
+    );
   }
 
   protected toggleChecked(item: ResultItem, ev: Event): void {
@@ -171,7 +173,13 @@ export class ResultsGridComponent implements OnChanges {
       next.add(item.itemId);
     }
     this.checked.set(next);
-    this.selectionChanged.emit({count: next.size, itemIds: [...next]});
+    this.dispatch(
+      selectionChangedEvent({
+        sourceId: this.caseId,
+        count: next.size,
+        itemIds: [...next],
+      }),
+    );
   }
 
   protected isChecked(item: ResultItem): boolean {

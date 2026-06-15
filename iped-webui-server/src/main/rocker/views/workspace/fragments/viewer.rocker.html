@@ -1,5 +1,5 @@
 @import java.util.Map
-@args (String activeMode, String itemId, Map<String, String> metadata)
+@args (String activeMode, String itemId, Map<String, String> metadata, String mediaType)
 @* Server-owned viewer panel. Renderer chrome and tab switching are SSR.
    The preview tab uses a sandboxed iframe → HTML rendition from the API;
    hex and advanced text are Angular islands (C-17, C-15) — stubs until then.
@@ -63,15 +63,15 @@
     }
   </div>
 
-@* ── Preview (iframe → HTML rendition) ─────────────────────────────────── *@
+@* ── Preview (iped-viewer island — auto-routes by MIME type) ────────────── *@
 } else if (activeMode.equals("preview")) {
   @if (itemId.contains(":")) {
-    @* Real item: stream the HTML rendition from the API into a sandboxed iframe *@
-    <iframe class="preview-iframe"
-            src="/api/sources/@(itemId.substring(0,itemId.lastIndexOf(':')))/docs/@(itemId.substring(itemId.lastIndexOf(':')+1))/renditions/html"
-            sandbox="allow-same-origin allow-scripts"
-            style="flex:1;border:0;background:#fff;min-height:0">
-    </iframe>
+    @* Real item: delegate to the Angular viewer island which picks the right renderer *@
+    <iped-viewer item-id="@itemId"
+                 media-type="@mediaType"
+                 api-base="/api"
+                 style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden">
+    </iped-viewer>
   } else {
     @* Stub item: show placeholder *@
     <div class="preview-stage">

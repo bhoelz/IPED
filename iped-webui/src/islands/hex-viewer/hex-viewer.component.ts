@@ -1,5 +1,7 @@
 import {HttpClient, HttpResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, HostListener, inject, Input, OnChanges, signal,} from '@angular/core';
+import {IslandBase} from '../shared/island-base';
+import {islandErrorEvent} from '../shared/events';
 
 /**
  * Hex viewer island (`<iped-hex-viewer>`).
@@ -31,11 +33,11 @@ interface HexRow {
   templateUrl: './hex-viewer.component.html',
   styleUrl:    './hex-viewer.component.scss',
 })
-export class HexViewerComponent implements OnChanges {
+export class HexViewerComponent extends IslandBase implements OnChanges {
   private readonly http = inject(HttpClient);
 
   @Input('item-id')  itemId  = '';
-  @Input('api-base') apiBase = '/api';
+  @Input('api-base') override apiBase = '/api';
 
   protected readonly rows      = signal<HexRow[]>([]);
   protected readonly pageOff   = signal(0);
@@ -103,7 +105,9 @@ export class HexViewerComponent implements OnChanges {
       },
       error: (e) => {
         this.loading.set(false);
-        this.error.set(e?.error?.message ?? e?.message ?? 'Failed to fetch content');
+        const msg = e?.error?.message ?? e?.message ?? 'Failed to fetch content';
+        this.error.set(msg);
+        this.dispatch(islandErrorEvent({island: 'hex-viewer', message: msg, cause: e}));
       },
     });
   }

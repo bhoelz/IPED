@@ -1,0 +1,133 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg, #1a1a2e);
+  color: var(--fg, #cdd6f4);
+  font-family: var(--font-mono, monospace);
+  overflow: hidden;
+}
+
+.viewer-empty,
+.viewer-loading,
+.viewer-error,
+.viewer-unsupported {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  color: var(--muted, #6c7086);
+  font-size: 13px;
+  text-align: center;
+  padding: 32px;
+}
+
+.viewer-empty-icon svg,
+.viewer-unsupported svg {
+  opacity: 0.4;
+}
+
+.viewer-error {
+  flex-direction: row;
+  color: var(--bad, #f38ba8);
+  gap: 8px;
+}
+
+.viewer-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--muted, #6c7086);
+  border-top-color: var(--accent, #89b4fa);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.viewer-image {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 16px;
+}
+
+.viewer-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.viewer-pdf {
+  flex: 1;
+  width: 100%;
+  border: none;
+  min-height: 0;
+}
+
+.viewer-html {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 20px;
+  font-family: var(--font-sans, sans-serif);
+  line-height: 1.6;
+  font-size: 13px;
+
+  mark {
+    background: color-mix(in srgb, var(--accent, #89b4fa) 30%, transparent);
+    color: inherit;
+    border-radius: 2px;
+  }
+}
+
+.viewer-text {
+  flex: 1;
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.viewer-unsupported {
+  flex-direction: row;
+  gap: 16px;
+  text-align: left;
+
+  .viewer-unsupported-title {
+    font-weight: 600;
+    color: var(--fg, #cdd6f4);
+  }
+
+  .viewer-unsupported-sub {
+    font-size: 11px;
+    color: var(--muted, #6c7086);
+    margin-top: 2px;
+  }
+}
+
+.viewer-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--border, #313244);
+  border-radius: 6px;
+  color: var(--accent, #89b4fa);
+  text-decoration: none;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover { background: var(--surface, #2a2a3e); }
+}
+
+iped-hex-viewer-impl {
+  flex: 1;
+  min-height: 0;
+}

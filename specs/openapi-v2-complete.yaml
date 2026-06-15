@@ -1,0 +1,895 @@
+openapi: "3.1.0"
+info:
+  title: IPED Web API — complete v2
+  description: |
+    Full REST contract for iped-webapi (Jersey/JAX-RS on embedded Jetty)
+    covering Phases 1–5 of the distributed-processing roadmap.
+
+    Phase 1 endpoints (`/cases/{caseId}/…`) are retained for reference.
+    All new functionality is under `/v2/…` paths.
+
+    Authentication: `X-Api-Key` header or `Authorization: Bearer <key>`.
+    When no API key is configured the server runs in open mode.
+  version: "0.5.0"
+  contact:
+    name: IPED Project
+  license:
+    name: Apache-2.0
+
+servers:
+  - url: http://localhost:39000
+    description: Local engine (default port)
+
+security:
+  - ApiKeyHeader: []
+  - BearerToken: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Tags
+# ─────────────────────────────────────────────────────────────────────────────
+tags:
+  - name: cases
+    description: Multi-case management (open / close / list)
+  - name: search
+    description: Full-text search with pagination
+  - name: items
+    description: Item metadata and content retrieval
+  - name: bookmarks
+    description: Bookmark CRUD
+  - name: jobs
+    description: Async export / report jobs
+  - name: agents
+    description: Distributed agent inventory (iped-runner proxy)
+  - name: audit
+    description: Processing chain-of-custody audit log
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Paths
+# ─────────────────────────────────────────────────────────────────────────────
+paths:
+
+  # ── Cases ──────────────────────────────────────────────────────────────────
+
+  /v2/cases:
+    get:
+      tags: [cases]
+      operationId: listCases
+      summary: List open cases
+      responses:
+        "200":
+          description: Array of open case summaries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cases:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CaseSummary"
+    post:
+      tags: [cases]
+      operationId: openCase
+      summary: Open (mount) a case by file-system path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenCaseRequest"
+      responses:
+        "201":
+          description: Case opened
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseSummary"
+        "409":
+          description: A case with this ID is already open
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v2/cases/{caseId}:
+    parameters:
+      - $ref: "#/components/parameters/CaseId"
+    get:
+      tags: [cases]
+      operationId: getCase
+      summary: Get a single open case
+      responses:
+        "200":
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseSummary"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [cases]
+      operationId: closeCase
+      summary: Close (unmount) a case
+      responses:
+        "204":
+          description: Case closed
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Search ──────────────────────────────────────────────────────────────────
+
+  /v2/search:
+    get:
+      tags: [search]
+      operationId: search
+      summary: Full-text search with pagination
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 1000
+      responses:
+        "200":
+          description: Paginated search result page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResultPage"
+        "503":
+          description: No cases open
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  # ── Items ───────────────────────────────────────────────────────────────────
+
+  /v2/sources/{sourceId}/items/{docId}:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+      - $ref: "#/components/parameters/DocId"
+    get:
+      tags: [items]
+      operationId: getItemMetadata
+      summary: Full metadata for one item
+      responses:
+        "200":
+          description: Item metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemMetadata"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v2/sources/{sourceId}/items/categories:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+    get:
+      tags: [items]
+      operationId: listCategories
+      summary: Sorted leaf-category list for a source
+      responses:
+        "200":
+          description: Category names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /v2/sources/{sourceId}/items/{docId}/content:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+      - $ref: "#/components/parameters/DocId"
+    get:
+      tags: [items]
+      operationId: getItemContent
+      summary: Raw content bytes, supports HTTP Range requests
+      parameters:
+        - name: Range
+          in: header
+          description: "RFC 7233 byte range (e.g. bytes=0-4095)"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Full content
+          headers:
+            Accept-Ranges:
+              schema:
+                type: string
+                enum: [bytes]
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "206":
+          description: Partial content (Range request fulfilled)
+          headers:
+            Content-Range:
+              schema:
+                type: string
+            Accept-Ranges:
+              schema:
+                type: string
+                enum: [bytes]
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "416":
+          description: Range not satisfiable
+
+  /v2/sources/{sourceId}/items/{docId}/text:
+    parameters:
+      - $ref: "#/components/parameters/SourceId"
+      - $ref: "#/components/parameters/DocId"
+    get:
+      tags: [items]
+      operationId: getItemText
+      summary: Plain or HTML text rendition
+      parameters:
+        - name: highlight
+          in: query
+          description: Space-separated terms to wrap in <mark> (requires Accept:text/html)
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum characters to return (preview snippets)
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Text content
+          content:
+            text/plain:
+              schema:
+                type: string
+            text/html:
+              schema:
+                type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Bookmarks ───────────────────────────────────────────────────────────────
+
+  /v2/bookmarks:
+    get:
+      tags: [bookmarks]
+      operationId: listBookmarks
+      summary: List all bookmark names
+      responses:
+        "200":
+          description: Sorted bookmark names
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bookmarks:
+                    type: array
+                    items:
+                      type: string
+    post:
+      tags: [bookmarks]
+      operationId: createBookmark
+      summary: Create a new (empty) bookmark
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        "201":
+          description: Bookmark created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookmarkInfo"
+        "409":
+          description: A bookmark with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v2/bookmarks/{name}:
+    parameters:
+      - $ref: "#/components/parameters/BookmarkName"
+    get:
+      tags: [bookmarks]
+      operationId: getBookmark
+      summary: Get bookmark info (name + item count)
+      responses:
+        "200":
+          description: Bookmark info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookmarkInfo"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [bookmarks]
+      operationId: renameBookmark
+      summary: Rename a bookmark
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Bookmark renamed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookmarkInfo"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [bookmarks]
+      operationId: deleteBookmark
+      summary: Delete a bookmark (removes all item associations)
+      responses:
+        "204":
+          description: Bookmark deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v2/bookmarks/{name}/items:
+    parameters:
+      - $ref: "#/components/parameters/BookmarkName"
+    get:
+      tags: [bookmarks]
+      operationId: listBookmarkItems
+      summary: Items in this bookmark
+      responses:
+        "200":
+          description: Item references
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DocRef"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [bookmarks]
+      operationId: addBookmarkItems
+      summary: Add items to a bookmark
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/DocRef"
+      responses:
+        "200":
+          description: Items added
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [bookmarks]
+      operationId: removeBookmarkItems
+      summary: Remove items from a bookmark
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/DocRef"
+      responses:
+        "200":
+          description: Items removed
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Jobs ────────────────────────────────────────────────────────────────────
+
+  /v2/jobs:
+    get:
+      tags: [jobs]
+      operationId: listJobs
+      summary: List all active and recent jobs
+      responses:
+        "200":
+          description: Job list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/JobStatus"
+    post:
+      tags: [jobs]
+      operationId: createJob
+      summary: Submit an async job (export or report)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJobRequest"
+      responses:
+        "202":
+          description: Job accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobStatus"
+
+  /v2/jobs/{jobId}:
+    parameters:
+      - $ref: "#/components/parameters/JobId"
+    get:
+      tags: [jobs]
+      operationId: getJob
+      summary: Get job status
+      responses:
+        "200":
+          description: Current job status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobStatus"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [jobs]
+      operationId: cancelJob
+      summary: Cancel a running job
+      responses:
+        "204":
+          description: Job cancelled (or already terminal)
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /v2/jobs/{jobId}/events:
+    parameters:
+      - $ref: "#/components/parameters/JobId"
+    get:
+      tags: [jobs]
+      operationId: streamJobEvents
+      summary: SSE stream of job progress events
+      responses:
+        "200":
+          description: Server-Sent Events stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Agents (served via iped-runner, proxied from iped-webui-server) ─────────
+
+  /v2/agents:
+    get:
+      tags: [agents]
+      operationId: listAgents
+      summary: Agent inventory with health status
+      description: |
+        Returns all known distributed processing agents. When Kafka is not
+        configured this endpoint returns `{"enabled":false,"agents":[]}`.
+        Health thresholds: active < 30 s, stale 30–120 s, offline > 120 s.
+      responses:
+        "200":
+          description: Agent list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentInventory"
+
+  # ── Audit ────────────────────────────────────────────────────────────────────
+
+  /api/v1/audit/{caseId}:
+    parameters:
+      - $ref: "#/components/parameters/CaseId"
+    get:
+      tags: [audit]
+      operationId: getCaseAudit
+      summary: All terminal processing records for a case (newest first)
+      responses:
+        "200":
+          description: Audit records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditPage"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/audit/{caseId}/csv:
+    parameters:
+      - $ref: "#/components/parameters/CaseId"
+    get:
+      tags: [audit]
+      operationId: getCaseAuditCsv
+      summary: All records as RFC 4180 CSV download
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/audit/{caseId}/{itemUuid}:
+    parameters:
+      - $ref: "#/components/parameters/CaseId"
+      - name: itemUuid
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [audit]
+      operationId: getItemAudit
+      summary: Most recent terminal record for one item
+      responses:
+        "200":
+          description: Processing record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessingRecord"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Components
+# ─────────────────────────────────────────────────────────────────────────────
+components:
+
+  securitySchemes:
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+    BearerToken:
+      type: http
+      scheme: bearer
+
+  parameters:
+    CaseId:
+      name: caseId
+      in: path
+      required: true
+      schema:
+        type: string
+    SourceId:
+      name: sourceId
+      in: path
+      required: true
+      schema:
+        type: string
+    DocId:
+      name: docId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+    BookmarkName:
+      name: name
+      in: path
+      required: true
+      schema:
+        type: string
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+
+  schemas:
+
+    ApiError:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+
+    CaseSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        path:
+          type: string
+        totalItems:
+          type: integer
+          format: int64
+        openedAt:
+          type: string
+          format: date-time
+
+    OpenCaseRequest:
+      type: object
+      required: [path]
+      properties:
+        id:
+          type: string
+          description: Caller-chosen case ID; UUID derived from path when omitted
+        path:
+          type: string
+          description: File-system path to the processed IPED case directory
+
+    SearchResultPage:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+        offset:
+          type: integer
+        limit:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResultItem"
+
+    SearchResultItem:
+      type: object
+      properties:
+        itemId:
+          type: string
+          description: "{sourceId}:{docId}"
+        name:
+          type: string
+        path:
+          type: string
+        mediaType:
+          type: string
+        size:
+          type: integer
+          format: int64
+        hash:
+          type: string
+        modDate:
+          type: string
+          format: date-time
+        categories:
+          type: array
+          items:
+            type: string
+
+    ItemMetadata:
+      type: object
+      properties:
+        itemId:
+          type: string
+        name:
+          type: string
+        path:
+          type: string
+        mediaType:
+          type: string
+        size:
+          type: integer
+          format: int64
+        hash:
+          type: string
+        modDate:
+          type: string
+          format: date-time
+        creationDate:
+          type: string
+          format: date-time
+        accessDate:
+          type: string
+          format: date-time
+        changeDate:
+          type: string
+          format: date-time
+        deleted:
+          type: boolean
+        carved:
+          type: boolean
+        bookmarks:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties: {}
+
+    BookmarkInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+          format: int64
+
+    DocRef:
+      type: object
+      required: [sourceId, docId]
+      properties:
+        sourceId:
+          type: string
+        docId:
+          type: integer
+          format: int32
+
+    CreateJobRequest:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [export, report]
+        scope:
+          type: string
+          enum: [checked, all]
+          default: checked
+        format:
+          type: string
+          enum: [zip, pdf, html]
+          default: zip
+        caseId:
+          type: string
+
+    JobStatus:
+      type: object
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, completed, failed, cancelled]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+
+    AgentInventory:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        total:
+          type: integer
+        active:
+          type: integer
+        stale:
+          type: integer
+        offline:
+          type: integer
+        agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentRecord"
+
+    AgentRecord:
+      type: object
+      properties:
+        agentId:
+          type: string
+        hostname:
+          type: string
+        startedAt:
+          type: string
+          format: date-time
+        lastSeen:
+          type: string
+          format: date-time
+        version:
+          type: string
+        activeTasks:
+          type: integer
+        maxTasks:
+          type: integer
+        health:
+          type: string
+          enum: [active, stale, offline]
+
+    AuditPage:
+      type: object
+      properties:
+        caseId:
+          type: string
+        total:
+          type: integer
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProcessingRecord"
+
+    ProcessingRecord:
+      type: object
+      properties:
+        itemUuid:
+          type: string
+        caseId:
+          type: string
+        taskType:
+          type: string
+        pipelineStage:
+          type: integer
+        agentId:
+          type: string
+        processedAt:
+          type: string
+          format: date-time
+        durationMs:
+          type: integer
+          format: int64
+        outcome:
+          type: string
+          enum: [COMPLETED, ERROR, TIMEOUT]
+        errorMessage:
+          type: string

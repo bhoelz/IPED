@@ -5,12 +5,15 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:islands": "ng run iped-webui:islands",
+    "build:islands": "ng run iped-webui:islands && node scripts/generate-islands-manifest.mjs",
+    "build:islands:dev": "ng run iped-webui:islands:development && node scripts/generate-islands-manifest.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "generate:api": "node ./scripts/generate-api-client.mjs"
+    "generate:api": "node ./scripts/generate-api-client.mjs",
+    "generate:python": "openapi-generator-cli generate -i ../specs/84-phase-1-openapi-initial.yaml -g python -o dist/python-client --additional-properties=packageName=iped_client",
+    "test:contract": "tsc --noEmit --project tsconfig.app.json"
   },
   "private": true,
   "packageManager": "npm@11.2.0",

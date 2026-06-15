@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Consumes the global {@code iped.status} Kafka topic and aggregates per-case progress
@@ -38,6 +39,9 @@ public class DistributedStatusService implements JobSnapshotProvider, AutoClosea
 
     @Value("${runner.kafka.bootstrap-servers:}")
     private String bootstrapServers;
+
+    @Autowired
+    private ProcessingAuditLog auditLog;
 
     // Jackson 3: java.time is supported out of the box, no JavaTimeModule needed
     private final ObjectMapper mapper = JsonMapper.builder().build();
@@ -98,6 +102,8 @@ public class DistributedStatusService implements JobSnapshotProvider, AutoClosea
         cases.computeIfAbsent(event.getCaseId(),
                         id -> new CaseStats(id, event.getTimestamp()))
                 .apply(event);
+
+        auditLog.record(ProcessingRecord.from(event, event.getAgentId()));
     }
 
     @Override

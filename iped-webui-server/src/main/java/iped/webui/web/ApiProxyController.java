@@ -1,6 +1,7 @@
 package iped.webui.web;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -51,9 +52,13 @@ public class ApiProxyController {
         URI uri = URI.create(downstreamPath + (query != null ? "?" + query : ""));
         HttpMethod method = HttpMethod.valueOf(request.getMethod());
 
+        String traceId = MDC.get(ProxyTracingFilter.MDC_KEY);
         RestClient.RequestBodySpec spec = client.method(method)
                 .uri(uri)
-                .headers(h -> copyRequestHeaders(headers, h));
+                .headers(h -> {
+                    copyRequestHeaders(headers, h);
+                    if (traceId != null) h.set(ProxyTracingFilter.TRACE_HEADER, traceId);
+                });
         if (body != null && body.length > 0) {
             spec.body(body);
         }

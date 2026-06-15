@@ -73,6 +73,27 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.11.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-python-client</id>
+                        <goals><goal>generate</goal></goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/../specs/84-phase-1-openapi-initial.yaml</inputSpec>
+                            <generatorName>python</generatorName>
+                            <output>${project.build.directory}/generated-clients/python</output>
+                            <configOptions>
+                                <packageName>iped_client</packageName>
+                                <projectName>iped-client</projectName>
+                            </configOptions>
+                            <skipValidateSpec>false</skipValidateSpec>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
                     <execution>

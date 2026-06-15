@@ -3,12 +3,6 @@ import {provideHttpClient} from '@angular/common/http';
 import {createApplication} from '@angular/platform-browser';
 import {createCustomElement} from '@angular/elements';
 
-import {ResultsGridComponent} from './results-grid/results-grid.component';
-import {GalleryComponent} from './gallery/gallery.component';
-import {HexViewerComponent} from './hex-viewer/hex-viewer.component';
-import {TimelineComponent} from './timeline/timeline.component';
-import {GraphComponent} from './graph/graph.component';
-
 /**
  * Island entry point.
  *
@@ -17,37 +11,47 @@ import {GraphComponent} from './graph/graph.component';
  * the SSR page places its host tag; Spring owns routing and layout, Angular
  * owns only the island internals.
  *
- * <p>Register additional islands here as C-10 (timeline), C-11 (graph),
- * C-16 (preview), C-17 (hex viewer) land — one {@code customElements.define}
- * per element, same attribute-in / CustomEvent-out contract.
+ * <p>Each island component is loaded via a dynamic import so the bundler
+ * (Vite/esbuild under @angular/build) emits an independent hashed chunk per
+ * island. Adding or modifying one island does NOT invalidate the others'
+ * cached bundles.
+ *
+ * <p>All islands share a single Angular injector created here, so services,
+ * HTTP, and DI tokens are shared when multiple islands coexist on the same page.
  */
 (async () => {
   const app = await createApplication({
     providers: [provideZonelessChangeDetection(), provideHttpClient()],
   });
 
-  if (!customElements.get('iped-results-grid')) {
-    const ResultsGrid = createCustomElement(ResultsGridComponent, {injector: app.injector});
-    customElements.define('iped-results-grid', ResultsGrid);
-  }
+  const [
+    {ResultsGridComponent},
+    {GalleryComponent},
+    {HexViewerComponent},
+    {TimelineComponent},
+    {GraphComponent},
+    {ViewerComponent},
+  ] = await Promise.all([
+    import('./results-grid/results-grid.component'),
+    import('./gallery/gallery.component'),
+    import('./hex-viewer/hex-viewer.component'),
+    import('./timeline/timeline.component'),
+    import('./graph/graph.component'),
+    import('./viewer/viewer.component'),
+  ]);
 
-  if (!customElements.get('iped-gallery')) {
-    const Gallery = createCustomElement(GalleryComponent, {injector: app.injector});
-    customElements.define('iped-gallery', Gallery);
-  }
+  const definitions: [string, CustomElementConstructor][] = [
+    ['iped-results-grid', createCustomElement(ResultsGridComponent, {injector: app.injector})],
+    ['iped-gallery',      createCustomElement(GalleryComponent,     {injector: app.injector})],
+    ['iped-hex-viewer',   createCustomElement(HexViewerComponent,   {injector: app.injector})],
+    ['iped-timeline',     createCustomElement(TimelineComponent,     {injector: app.injector})],
+    ['iped-graph',        createCustomElement(GraphComponent,        {injector: app.injector})],
+    ['iped-viewer',       createCustomElement(ViewerComponent,       {injector: app.injector})],
+  ];
 
-  if (!customElements.get('iped-hex-viewer')) {
-    const HexViewer = createCustomElement(HexViewerComponent, {injector: app.injector});
-    customElements.define('iped-hex-viewer', HexViewer);
-  }
-
-  if (!customElements.get('iped-timeline')) {
-    const Timeline = createCustomElement(TimelineComponent, {injector: app.injector});
-    customElements.define('iped-timeline', Timeline);
-  }
-
-  if (!customElements.get('iped-graph')) {
-    const Graph = createCustomElement(GraphComponent, {injector: app.injector});
-    customElements.define('iped-graph', Graph);
+  for (const [name, ctor] of definitions) {
+    if (!customElements.get(name)) {
+      customElements.define(name, ctor);
+    }
   }
 })();

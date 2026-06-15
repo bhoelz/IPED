@@ -175,6 +175,23 @@ public class EngineWebApiServicesFactory implements WebApiServicesFactory {
         }
 
         @Override
+        public synchronized void removeSource(String sourceId) throws Exception {
+            Integer intId = sourceStringToInt.get(sourceId);
+            if (intId == null) {
+                throw new IllegalArgumentException("Unknown source: " + sourceId);
+            }
+            IIPEDSource handle = multiSource.getAtomicSourceBySourceId(intId);
+            // Remove from all tracking maps so future lookups return null/404
+            sourceStringToInt.remove(sourceId);
+            sourceIntToString.remove(intId);
+            if (handle != null) {
+                String path = handle.getCaseDir().toString();
+                sourcePathToStringID.remove(path);
+                try { handle.close(); } catch (Exception ignored) {}
+            }
+        }
+
+        @Override
         public synchronized IIPEDSource getSourceHandle(String sourceId) {
             int id = sourceStringToInt.get(sourceId);
             return multiSource.getAtomicSourceBySourceId(id);

@@ -191,7 +191,7 @@
                 </executions>
             </plugin>
 
-            <!-- Copy the hashed island bundles into the served static dir -->
+            <!-- Copy the hashed island bundles and manifest into the served static dir -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -207,6 +207,25 @@
                             <resources>
                                 <resource>
                                     <directory>${webui.dir}/dist/islands/browser</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-island-manifest</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/static/islands</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${webui.dir}/dist/islands</directory>
+                                    <includes>
+                                        <include>manifest.json</include>
+                                    </includes>
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>

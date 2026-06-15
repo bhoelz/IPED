@@ -23,11 +23,29 @@ public class ExecutionService {
     @Value("${runner.executable:iped}")
     private String executable;
 
+    @Value("${runner.graceful-shutdown-seconds:5}")
+    private int gracefulShutdownSeconds;
+
     /** Extra dashboard sources (e.g. distributed cases observed on Kafka). */
     private final List<JobSnapshotProvider> extraProviders;
+    private final RunHistoryService runHistory;
+    private final WebhookNotifier webhookNotifier;
 
-    public ExecutionService(List<JobSnapshotProvider> extraProviders) {
+    // Optional to break the ExecutionService ↔ RunQueueService circular dependency.
+    // RunQueueService is the higher-level orchestrator; ExecutionService is the lower-level launcher.
+    private java.util.Optional<RunQueueService> queueService = java.util.Optional.empty();
+
+    public ExecutionService(List<JobSnapshotProvider> extraProviders,
+                            RunHistoryService runHistory,
+                            WebhookNotifier webhookNotifier) {
         this.extraProviders = extraProviders;
+        this.runHistory = runHistory;
+        this.webhookNotifier = webhookNotifier;
+    }
+
+    /** Called by {@link RunQueueService} once it is fully constructed. */
+    public void setQueueService(RunQueueService qs) {
+        this.queueService = java.util.Optional.of(qs);
     }
 
     private final ConcurrentHashMap<String, RunRecord> sessions  = new ConcurrentHashMap<>();
@@ -82,7 +100,9 @@ public class ExecutionService {
         jobStats.put(id, stats);
 
         emitter.onCompletion(() -> sessions.remove(id));
-        emitter.onTimeout(() -> sessions.remove(id));
+        emitter.onTimeout(() -> {
+            recordTerminal(sessions.remove(id), RunStatus.TIMED_OUT, -1);
+        });
 
         ioPool.submit(() -> pumpOutput(record, stats));
         broadcastNow();
@@ -115,8 +135,12 @@ public class ExecutionService {
             code = -1;
         }
 
-        stats.status = code == 0 ? "done" : "error";
+        RunStatus terminalStatus = code == 0 ? RunStatus.COMPLETED : RunStatus.FAILED;
+        stats.status = terminalStatus.name().toLowerCase();
         log.info("Run {} exited with code {} (status: {})", rec.id(), code, stats.status);
+
+        // Record to history before completing the emitter (which removes from sessions)
+        recordTerminal(rec, terminalStatus, code);
 
         try {
             rec.emitter().send(SseEmitter.event()
@@ -134,14 +158,31 @@ public class ExecutionService {
         return Optional.ofNullable(sessions.get(id));
     }
 
-    /** Forcibly terminates the process and sends an 'aborted' SSE event. */
+    /**
+     * Gracefully terminates the process: sends SIGTERM, waits up to
+     * {@code runner.graceful-shutdown-seconds}, then force-kills if still alive.
+     */
     public boolean abort(String id) {
         var rec = sessions.remove(id);
         if (rec == null) return false;
 
-        rec.process().destroyForcibly();
         var stats = jobStats.get(id);
-        if (stats != null) stats.status = "aborted";
+
+        // SIGTERM (on Windows, destroy() == destroyForcibly(); acceptable)
+        rec.process().destroy();
+        try {
+            boolean exited = rec.process().waitFor(gracefulShutdownSeconds, TimeUnit.SECONDS);
+            if (!exited) {
+                log.warn("Run {} did not exit after {}s — force-killing", id, gracefulShutdownSeconds);
+                rec.process().destroyForcibly();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            rec.process().destroyForcibly();
+        }
+
+        if (stats != null) stats.status = RunStatus.ABORTED.name().toLowerCase();
+        recordTerminal(rec, RunStatus.ABORTED, -1);
 
         try {
             rec.emitter().send(SseEmitter.event().name("aborted").data(Map.of()));
@@ -157,12 +198,9 @@ public class ExecutionService {
     // Dashboard API
     // -------------------------------------------------------------------------
 
-    /** Returns a point-in-time snapshot of all known jobs (running and recently finished). */
+    /** Returns a point-in-time snapshot of all active jobs. */
     public List<JobSnapshot> snapshots() {
-        // Include running sessions + stats-only entries for recently finished jobs
-        var ids = new LinkedHashSet<String>();
-        ids.addAll(sessions.keySet());
-        ids.addAll(jobStats.keySet());
+        var ids = new LinkedHashSet<>(sessions.keySet());
 
         var local = ids.stream()
                 .map(id -> {
@@ -235,6 +273,27 @@ public class ExecutionService {
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private void recordTerminal(RunRecord rec, RunStatus status, int exitCode) {
+        if (rec == null) return;
+        var stats = jobStats.get(rec.id());
+        var summary = new RunSummary(
+                rec.id(),
+                jobName(rec.request()),
+                jobSource(rec.request()),
+                status,
+                rec.startedAt(),
+                Instant.now(),
+                exitCode,
+                stats != null ? stats.itemsProcessed.get() : 0,
+                stats != null ? stats.itemsFound.get() : 0
+        );
+        runHistory.record(summary);
+        // Fire webhook asynchronously (no-op if not configured).
+        webhookNotifier.notifyTerminal(summary);
+        // Notify queue that a slot has opened so the next pending run can start.
+        queueService.ifPresent(RunQueueService::onRunTerminated);
+    }
 
     private static String jobName(RunRequest req) {
         if (req == null) return "IPED Job";
