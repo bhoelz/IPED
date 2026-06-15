@@ -1,0 +1,4 @@
+iped.parsers.compress.LZFSEParser
+iped.parsers.compress.PackageParser
+iped.parsers.compress.RARParser
+iped.parsers.compress.SevenZipParser

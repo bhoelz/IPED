@@ -12,10 +12,56 @@
 - Tika 3.3 baseline.
 
 ## Phase 1 — Finish the per-parser split
-- [ ] Inventory what remains inside `iped-parsers-impl` and split the largest/highest-
-      churn parsers into their own modules (same pattern as `iped-parser-browsers` etc.).
+- [~] Inventory done: 240 classes remain in `iped-parsers-impl`. Split candidates by
+      priority (highest churn / most self-contained):
+      1. `iped-parser-whatsapp` — 60+ classes, bencode + sqlite deps
+      2. `iped-parser-telegram` — 10+ classes, telegram-decoder-api dep
+      3. `iped-parser-threema` — 10+ classes
+      4. `iped-parser-ufed` — 30+ classes for UFED XML extraction
+      5. `iped-parser-compression` — SevenZipParser, RARParser, LZFSEParser, PackageParser
+- [x] Prerequisites moved to `iped-parsers-common`:
+      - `IParty` + `IReferencedContact` interfaces (`iped.parsers.chat`) — `Party`
+        implements `IParty`, `ReferencedAccountable` implements `IReferencedContact`
+      - `PartyStringBuilder` migrated to use `IParty` so it no longer touches impl
+      - `ParserConstants.INDEXER_CONTENT_TYPE` constant extracted from `StandardParser`
+      - `PhoneParsingConfig` moved from impl to common (only depends on `iped-api`)
+- [x] `iped-parser-whatsapp` module created and compiles clean:
+      28 parser classes + `WhatsAppPartyStringBuilder` + `com.whatsapp.MediaData` +
+      CSS/JS/image resources moved; `META-INF/services` wired; `iped-parsers-impl`
+      depends on it; `libfqlite`, `metadata-extractor`, BouncyCastle, Xerces deps
+      declared; report-path helpers inlined into `iped.parsers.whatsapp.Util`.
+- [x] `iped-parser-threema` module created and compiles clean:
+      9 parser classes + CSS/JS/img resources moved; `META-INF/services` wired;
+      report-path helpers (`getExportPath`, `getReportHref`, `getSourceFileIfExists`,
+      `getItems`) added to local `Util`; `iped-parser-db-base` (ItemInfo),
+      `iped-parser-plist-detector`, dd-plist, guava, jackson deps declared.
+- [x] `iped-parser-telegram` module created and compiles clean:
+      13 parser classes + resource (css/tooltip.css) + test fixtures moved;
+      `META-INF/services` wired; `iped-parser-db-base` (ItemInfo), `iped-parser-vcard`
+      (HTML_STYLE), `telegram-decoder-api` deps declared; `javax.xml.bind.DatatypeConverter`
+      replaced with `Base64.getDecoder()`; `iped.parsers.whatsapp.Util.*` references
+      inlined into `iped.parsers.telegram.Util`; report-path helpers replicated locally.
+- [x] `iped-parser-ufed` module created and compiles clean:
+      43 parser/handler/model/reference/util classes moved; `META-INF/services` wired for
+      4 parsers; `HtmlParser` → `JSoupParser` (Tika 3.x); `StandardParser.INDEXER_CONTENT_TYPE`
+      → `ParserConstants.INDEXER_CONTENT_TYPE`; `iped.parsers.util.Util.*` calls in
+      `ReportGenerator` resolved via `iped.parsers.whatsapp.Util` (intentional dep —
+      UFED chat report reuses WhatsApp visual template + resources).
+      Moved to `iped-parsers-common`: `EmailPartyStringBuilder`, `GenericPartyStringBuilder`,
+      `TelegramPartyStringBuilder`, `InstagramPartyStringBuilder`, `WhatsAppPartyStringBuilder`,
+      `PartyStringBuilderFactory`, `OmitEmptyArraysTypeAdapterFactory`, `ConversationConstants`,
+      `HashUtils`; added `IItemReader getItem()` to `IReferencedContact`; gson + commons-codec
+      added to common pom. Also fixed pre-existing impl errors: `XMLParser` (`HtmlParser` →
+      `JSoupParser`), `OFCParser` (`javax.xml.bind` via `jaxb-api:2.3.1`).
+- [x] `iped-parser-compression` module created and compiles clean:
+      `SevenZipParser`, `RARParser`, `LZFSEParser`, `PackageParser` + `RawISOConverter`
+      moved; `META-INF/services` wired for 4 parsers; `iped.parsers.util.Util.getParentPath`
+      replaced by local `CompressionUtil.getParentPath` (no impl circular dep);
+      sevenzipjbinding, junrar, commons-compress, RagingMoose deps declared.
 - [ ] Per-module dependency hygiene: each parser declares only what it uses; JDBC drivers
-      at `runtime` scope (established convention); remove zero-usage deps.
+      at `runtime` scope; remove zero-usage deps (see commons-lang 2.6 in registry/skype).
+- [x] ArchUnit guard added: `ParsersBoundaryTest` in `iped-parsers-impl` enforces that
+      no parser class imports `iped.engine.*` or `iped.app.*`.
 - [ ] Define the parser plugin contract formally (manifest, supported MIME types,
       ordering/priority) so third-party parser plugins are feasible without forking.
 
@@ -25,7 +71,7 @@
 - [ ] Tika upgrade policy: track releases, run the full fixture corpus as the gate.
 - [ ] Standardize metadata property naming across parsers (audit drift against
       `iped.properties` definitions in `iped-api`).
-- [ ] Logging migration to `@Slf4j` complete across all parser modules.
+- [x] Logging migration to `@Slf4j` already complete across existing split-out modules.
 
 ## Phase 3 — Architecture
 - [ ] Parsers consume only `iped-api` + Tika + `iped-parsers-common` — no engine imports

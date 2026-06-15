@@ -26,7 +26,7 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.html.HtmlMapper;
-import org.apache.tika.parser.html.HtmlParser;
+import org.apache.tika.parser.html.JSoupParser;
 import org.apache.tika.parser.html.IdentityHtmlMapper;
 import org.apache.tika.parser.xml.DcXMLParser;
 import org.xml.sax.ContentHandler;
@@ -47,7 +47,7 @@ import java.nio.file.Path;
 public class XMLParser extends DcXMLParser {
 
     private static final long serialVersionUID = 1L;
-    private HtmlParser htmlParser = new HtmlParser();
+    private JSoupParser htmlParser = new JSoupParser();
     private RawStringParser rawParser = new RawStringParser();
 
     @Override

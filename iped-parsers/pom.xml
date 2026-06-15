@@ -29,6 +29,11 @@
         <module>iped-parser-ares</module>
         <module>iped-parser-emule</module>
         <module>iped-parser-shareaza</module>
+        <module>iped-parser-whatsapp</module>
+        <module>iped-parser-telegram</module>
+        <module>iped-parser-threema</module>
+        <module>iped-parser-ufed</module>
+        <module>iped-parser-compression</module>
         <module>iped-parser-skype</module>
         <module>iped-parser-lnk</module>
         <module>iped-parser-usnjrnl</module>
