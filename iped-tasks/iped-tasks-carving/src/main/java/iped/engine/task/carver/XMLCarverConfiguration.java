@@ -31,11 +31,11 @@ public class XMLCarverConfiguration implements CarverConfiguration, Serializable
     private static String CARVE_DIR_INDIVIDUAIS = "carvers";
 
     private ArrayList<String> originalXmls = new ArrayList<>();
-    private boolean ignoreCorrupted = true;
+    protected boolean ignoreCorrupted = true;
     protected HashSet<MediaType> TYPES_TO_PROCESS;
     protected HashSet<String> TYPES_TO_NOT_PROCESS = new HashSet<String>();
     protected HashSet<MediaType> TYPES_TO_CARVE = new HashSet<MediaType>();
-    private ArrayList<CarverType> carverTypesArray = new ArrayList<CarverType>();
+    protected ArrayList<CarverType> carverTypesArray = new ArrayList<CarverType>();
 
     public void loadXMLConfigFile(File confFile) throws IOException {
         originalXmls.add(Files.readString(confFile.toPath()));

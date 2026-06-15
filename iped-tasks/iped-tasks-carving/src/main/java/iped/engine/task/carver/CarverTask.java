@@ -43,7 +43,6 @@ public class CarverTask extends BaseCarveTask {
     long prevLen = 0;
     int len = 0, k = 0;
     byte[] buf = new byte[1024 * 1024];
-    byte[] cBuf;
 
     public static void setEnabled(boolean enabled) {
         enableCarving = enabled;
@@ -127,10 +126,6 @@ public class CarverTask extends BaseCarveTask {
         while (k != -1 && (len += k) < buf.length) {
             k = in.read(buf, len, buf.length - len);
         }
-
-        cBuf = new byte[len];
-        System.arraycopy(buf, 0, cBuf, 0, len);
-
     }
 
     private Hit findSig(InputStream in) throws Exception {
@@ -143,7 +138,7 @@ public class CarverTask extends BaseCarveTask {
         SearchResult lastResult = new SearchResult(tree.root, null, 0);
         do {
             fillBuf(in);
-            lastResult = new SearchResult(lastResult.lastMatchedState, cBuf, 0);
+            lastResult = new SearchResult(lastResult.lastMatchedState, buf, 0, len);
             Iterator<SearchResult> searcher = new Searcher(tree, tree.continueSearch(lastResult));
 
             while (searcher.hasNext()) {

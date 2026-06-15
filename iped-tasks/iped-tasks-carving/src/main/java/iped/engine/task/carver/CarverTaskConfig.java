@@ -16,6 +16,7 @@ public class CarverTaskConfig extends AbstractTaskConfig<XMLCarverConfiguration>
 
     public static final String ENABLE_PARAM = "enableCarving"; //$NON-NLS-1$
     public static final String GLOBAL_CARVER_CONFIG = "CarverConfig.xml"; //$NON-NLS-1$
+    public static final String GLOBAL_CARVER_CONFIG_TOML = "CarverConfig.toml"; //$NON-NLS-1$
     public static final String CARVER_CONFIG_PREFIX = "carver-"; //$NON-NLS-1$
     public static final String CARVER_CONFIG_SUFFIX = ".xml"; //$NON-NLS-1$
 
@@ -26,9 +27,12 @@ public class CarverTaskConfig extends AbstractTaskConfig<XMLCarverConfiguration>
         return new Filter<Path>() {
             @Override
             public boolean accept(Path entry) throws IOException {
-                return entry.endsWith(Configuration.CONFIG_FILE) || entry.endsWith(getTaskConfigFileName())
-                        || (entry.getFileName() != null && entry.getFileName().startsWith(CARVER_CONFIG_PREFIX)
-                                && entry.getFileName().startsWith(CARVER_CONFIG_SUFFIX));
+                return entry.endsWith(Configuration.CONFIG_FILE)
+                        || entry.endsWith(getTaskConfigFileName())
+                        || entry.endsWith(GLOBAL_CARVER_CONFIG_TOML)
+                        || (entry.getFileName() != null
+                                && entry.getFileName().toString().startsWith(CARVER_CONFIG_PREFIX)
+                                && entry.getFileName().toString().endsWith(CARVER_CONFIG_SUFFIX));
             }
         };
     }
@@ -56,14 +60,21 @@ public class CarverTaskConfig extends AbstractTaskConfig<XMLCarverConfiguration>
     @Override
     public void processTaskConfig(Path resource) throws IOException {
 
+        if (resource.endsWith(GLOBAL_CARVER_CONFIG_TOML)) {
+            TomlCarverConfiguration toml = new TomlCarverConfiguration();
+            toml.loadTomlConfigFile(resource.toFile());
+            carverConfiguration = toml;
+            return;
+        }
+
+        // XML files: applied on top of whatever configuration is already loaded,
+        // allowing user-supplied XML overrides to augment or replace TOML defaults.
         if (resource.endsWith(GLOBAL_CARVER_CONFIG)) {
             carverConfiguration.loadXMLConfigFile(resource.toFile());
         }
-        if (resource.getFileName().startsWith(CARVER_CONFIG_PREFIX)
-                && resource.getFileName().startsWith(CARVER_CONFIG_SUFFIX)) {
+        String fileName = resource.getFileName() != null ? resource.getFileName().toString() : "";
+        if (fileName.startsWith(CARVER_CONFIG_PREFIX) && fileName.endsWith(CARVER_CONFIG_SUFFIX)) {
             carverConfiguration.loadXMLConfigFile(resource.toFile());
         }
-
     }
-
 }

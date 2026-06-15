@@ -82,28 +82,6 @@ public class HTMLReportTask extends AbstractTask {
 
 
     /**
-     * Collator utilizado para ordenação correta alfabética, incluindo acentuação.
-     */
-    private static final Collator collator = getCollator();
-
-    /**
-     * Registros organizados por marcador.
-     */
-    private static final SortedMap<String, List<ReportEntry>> entriesByLabel = new TreeMap<String, List<ReportEntry>>(
-            collator);
-
-    /**
-     * Registros organizados por categoria.
-     */
-    private static final SortedMap<String, List<ReportEntry>> entriesByCategory = new TreeMap<String, List<ReportEntry>>(
-            collator);
-
-    /**
-     * Registros sem marcador.
-     */
-    private static final List<ReportEntry> entriesNoLabel = new ArrayList<ReportEntry>();
-
-    /**
      * Tag para registros sem marcador
      */
     private static final String NO_LABEL_NAME = Messages.getString("HTMLReportTask.NoBookmarks"); //$NON-NLS-1$
@@ -114,39 +92,9 @@ public class HTMLReportTask extends AbstractTask {
     private Map<String, String> labelcomments = new HashMap<>();
 
     /**
-     * Indicador de inicialização, para controle de sincronização entre instâncias
-     * da classe.
-     */
-    private static final AtomicBoolean init = new AtomicBoolean(false);
-
-    /**
      * Nome da subpasta destino dos os arquivos do relatório.
      */
     public static String reportSubFolderName = Messages.getString("HTMLReportTask.ReportSubFolder"); //$NON-NLS-1$
-
-    /**
-     * Subpasta com a maior parte dos arquivos HTML e arquivos auxiliares. Static
-     * porque pode ser utilizada por todas as instâncias (uma utilizada em cada
-     * thread de processamento).
-     */
-    private static File reportSubFolder;
-
-    /**
-     * Map com miniaturas de imagem organizadas por marcador, utilizado para geração
-     * de galeria de imagens.
-     */
-    private static final SortedMap<String, List<String>> imageThumbsByLabel = new TreeMap<String, List<String>>(
-            collator);
-
-    /**
-     * Set com arquivos em processamento, estático e sincronizado para evitar que
-     * duas threads processem arquivos duplicados simultaneamente, no caso de
-     * geração de miniaturas.
-     */
-    private static final Set<String> currentFiles = new HashSet<String>();
-
-    // do not instantiate here, makes external command adjustment fail, see #740
-    private static ExternalImageConverter externalImageConverter;
 
     /**
      * Armazena modelo de formatação no nome/mat/classe do(s) perito(s).
@@ -181,8 +129,15 @@ public class HTMLReportTask extends AbstractTask {
         return Arrays.asList(new HtmlReportTaskConfig());
     }
 
-    public static File getReportSubFolder() {
-        return reportSubFolder;
+    public File getReportSubFolder() {
+        ReportAccumulator a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
+        return a != null ? a.reportSubFolder : null;
+    }
+
+    /** Static accessor used by callers before a task instance is available (legacy support). */
+    public static File getReportSubFolder(iped.engine.data.CaseData cd) {
+        ReportAccumulator a = (ReportAccumulator) cd.getCaseObject(ReportAccumulator.KEY);
+        return a != null ? a.reportSubFolder : null;
     }
 
     protected Set<String> loadReportSelectedProps() throws ClassNotFoundException, IOException {
@@ -206,18 +161,20 @@ public class HTMLReportTask extends AbstractTask {
         htmlReportConfig = configurationManager.findObject(HtmlReportTaskConfig.class);
         selectedProperties = loadReportSelectedProps();
 
-        if (!init.get()) {
+        ReportAccumulator a = accum();
+        if (!a.initialized.get()) {
             if (htmlReportConfig.isEnabled()) {
                 log.info("Task enabled."); //$NON-NLS-1$
             } else {
                 log.info("Task disabled."); //$NON-NLS-1$
-                init.set(true);
+                a.initialized.set(true);
                 return;
             }
 
-            reportSubFolder = new File(this.output.getParentFile(), reportSubFolderName);
+            a.reportSubFolder = new File(this.output.getParentFile(), reportSubFolderName);
 
             info = htmlReportConfig.getReportInfo();
+            a.info = info;
 
             // Obtém parâmetro ASAP, com arquivo contendo informações do caso, se tiver sido
             // especificado
@@ -238,18 +195,22 @@ public class HTMLReportTask extends AbstractTask {
                             ReportInfo ri = ReportInfo.readReportInfoFile(infoFile);
                             ri.reportHeader = info.reportHeader;
                             info = ri;
+                            a.info = info;
                         }
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        init.set(true);
+                        a.initialized.set(true);
                         throw new RuntimeException("Error loading case info file: " + infoFile.getAbsolutePath()); //$NON-NLS-1$
                     }
                 }
             }
-            externalImageConverter = new ExternalImageConverter();
+            a.externalImageConverter = new ExternalImageConverter();
 
-            init.set(true);
+            a.initialized.set(true);
+        } else {
+            // Other worker threads: pick up the info reference set by the first thread
+            info = a.info;
         }
 
         ImageThumbTaskConfig imgThumbConfig = configurationManager.findObject(ImageThumbTaskConfig.class);
@@ -266,8 +227,9 @@ public class HTMLReportTask extends AbstractTask {
 
         if (isEnabled() && caseData.containsReport() && info != null) {
 
+            ReportAccumulator a = accum();
             String reportRoot = Messages.getString("HTMLReportTask.ReportFileName"); //$NON-NLS-1$
-            if (new File(reportSubFolder.getParentFile(), reportRoot).exists()) {
+            if (new File(a.reportSubFolder.getParentFile(), reportRoot).exists()) {
                 log.error("Html report already exists, report update not implemented yet!"); //$NON-NLS-1$
                 return;
             }
@@ -285,7 +247,7 @@ public class HTMLReportTask extends AbstractTask {
             }
 
             log.info("Selected report properties: " + selectedProperties.toString());
-            log.info("Report folder: " + reportSubFolder.getAbsolutePath()); //$NON-NLS-1$
+            log.info("Report folder: " + a.reportSubFolder.getAbsolutePath()); //$NON-NLS-1$
             log.info("Template folder: " + templatesFolder.getAbsolutePath()); //$NON-NLS-1$
             if (!templatesFolder.exists()) {
                 throw new FileNotFoundException("Template folder not found!"); //$NON-NLS-1$
@@ -303,35 +265,35 @@ public class HTMLReportTask extends AbstractTask {
                 labelcomments.put(labelName, comments);
             }
 
-            reportSubFolder.mkdirs();
+            a.reportSubFolder.mkdirs();
 
-            if (!entriesByLabel.isEmpty() && !entriesNoLabel.isEmpty())
-                entriesByLabel.put(NO_LABEL_NAME, entriesNoLabel);
+            if (!a.entriesByLabel.isEmpty() && !a.entriesNoLabel.isEmpty())
+                a.entriesByLabel.put(NO_LABEL_NAME, a.entriesNoLabel);
 
             modeloPerito = EncodedFile.readFile(new File(templateSubFolder, "perito.html"), StandardCharsets.UTF_8).content; //$NON-NLS-1$//$NON-NLS-2$
             processBookmarks(templateSubFolder);
-            if (htmlReportConfig.isThumbsPageEnabled() && !imageThumbsByLabel.isEmpty()) {
+            if (htmlReportConfig.isThumbsPageEnabled() && !a.imageThumbsByLabel.isEmpty()) {
                 createThumbsPage();
             }
             processCaseInfo(new File(templatesFolder, "caseinformation.htm"), //$NON-NLS-1$
-                    new File(reportSubFolder, "caseinformation.htm")); //$NON-NLS-1$
-            processContents(new File(templatesFolder, "contents.htm"), new File(reportSubFolder, "contents.htm")); //$NON-NLS-1$ //$NON-NLS-2$
+                    new File(a.reportSubFolder, "caseinformation.htm")); //$NON-NLS-1$
+            processContents(new File(templatesFolder, "contents.htm"), new File(a.reportSubFolder, "contents.htm")); //$NON-NLS-1$ //$NON-NLS-2$
 
             File reportRootModelFile = new File(templatesFolder, reportRootModel);
             if (!reportRootModelFile.exists())
                 reportRootModelFile = new File(templatesFolder, "report.htm"); //$NON-NLS-1$
-            Files.copy(reportRootModelFile.toPath(), new File(reportSubFolder.getParentFile(), reportRoot).toPath());
+            Files.copy(reportRootModelFile.toPath(), new File(a.reportSubFolder.getParentFile(), reportRoot).toPath());
 
             File help = new File(templatesFolder, "ajuda.htm"); //$NON-NLS-1$
             if (help.exists())
-                copyFile(help, reportSubFolder);
+                copyFile(help, a.reportSubFolder);
 
-            copyFiles(new File(templatesFolder, "res"), new File(reportSubFolder, "res")); //$NON-NLS-1$ //$NON-NLS-2$
+            copyFiles(new File(templatesFolder, "res"), new File(a.reportSubFolder, "res")); //$NON-NLS-1$ //$NON-NLS-2$
 
             t = (System.currentTimeMillis() - t + 500) / 1000;
             log.info("Report creation time (seconds): " + t); //$NON-NLS-1$
 
-            externalImageConverter.close();
+            a.externalImageConverter.close();
         }
     }
 
@@ -380,19 +342,20 @@ public class HTMLReportTask extends AbstractTask {
         String[] labels = new String[] { "" }; //$NON-NLS-1$
         if (!evidence.getLabels().isEmpty())
             labels = evidence.getLabels().toArray(new String[0]);
-        synchronized (init) {
+        ReportAccumulator a = accum();
+        synchronized (a) {
             for (String label : labels) {
                 label = label.trim();
-                List<ReportEntry> regs = label.length() == 0 ? entriesNoLabel : entriesByLabel.get(label);
+                List<ReportEntry> regs = label.length() == 0 ? a.entriesNoLabel : a.entriesByLabel.get(label);
                 if (regs == null) {
-                    entriesByLabel.put(label, regs = new ArrayList<ReportEntry>());
+                    a.entriesByLabel.put(label, regs = new ArrayList<ReportEntry>());
                 }
                 regs.add(reg);
             }
             for (String category : categories) {
-                List<ReportEntry> regs = entriesByCategory.get(category);
+                List<ReportEntry> regs = a.entriesByCategory.get(category);
                 if (regs == null) {
-                    entriesByCategory.put(category, regs = new ArrayList<ReportEntry>());
+                    a.entriesByCategory.put(category, regs = new ArrayList<ReportEntry>());
                 }
                 regs.add(reg);
             }
@@ -401,11 +364,11 @@ public class HTMLReportTask extends AbstractTask {
         if (((htmlReportConfig.isImageThumbsEnabled() && reg.isImage)
                 || (htmlReportConfig.isVideoThumbsEnabled() && reg.isVideo)) && reg.hash != null) {
             // Verifica se há outro arquivo igual em processamento, senão inclui
-            synchronized (currentFiles) {
-                if (currentFiles.contains(evidence.getHash())) {
+            synchronized (accum().currentFiles) {
+                if (accum().currentFiles.contains(evidence.getHash())) {
                     return;
                 }
-                currentFiles.add(evidence.getHash());
+                accum().currentFiles.add(evidence.getHash());
             }
             File thumbFile;
             if (reg.isImage) {
@@ -421,8 +384,8 @@ public class HTMLReportTask extends AbstractTask {
             }
 
             // Retira do Set de arquivos em processamento
-            synchronized (currentFiles) {
-                currentFiles.remove(evidence.getHash());
+            synchronized (accum().currentFiles) {
+                accum().currentFiles.remove(evidence.getHash());
             }
         }
     }
@@ -499,10 +462,10 @@ public class HTMLReportTask extends AbstractTask {
         StringBuilder sb = new StringBuilder();
 
         int idx = 1;
-        if (!entriesByLabel.isEmpty()) {
+        if (!accum().entriesByLabel.isEmpty()) {
             sb.append("<p>\n"); //$NON-NLS-1$
             sb.append("\t<span class=\"SmallText1\">" + Messages.getString("HTMLReportTask.Bookmarks") + "</span>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            for (String marcador : entriesByLabel.keySet()) {
+            for (String marcador : accum().entriesByLabel.keySet()) {
                 sb.append("\t\t<br />&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"arq"); //$NON-NLS-1$
                 sb.append(String.format("%06d", idx)); //$NON-NLS-1$
                 sb.append("(1).html\" target=\"ReportPage\" class=\"MenuText\">"); //$NON-NLS-1$
@@ -513,10 +476,10 @@ public class HTMLReportTask extends AbstractTask {
             sb.append("</p>\n"); //$NON-NLS-1$
         }
 
-        if (htmlReportConfig.isCategoriesListEnabled() && !entriesByCategory.isEmpty()) {
+        if (htmlReportConfig.isCategoriesListEnabled() && !accum().entriesByCategory.isEmpty()) {
             sb.append("<p>\n"); //$NON-NLS-1$
             sb.append("\t<span class=\"SmallText1\">" + Messages.getString("HTMLReportTask.Categories") + "</span>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            for (String categoria : entriesByCategory.keySet()) {
+            for (String categoria : accum().entriesByCategory.keySet()) {
                 sb.append("\t\t<br />&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"arq"); //$NON-NLS-1$
                 sb.append(String.format("%06d", idx)); //$NON-NLS-1$
                 sb.append("(1).html\" target=\"ReportPage\" class=\"MenuText\">"); //$NON-NLS-1$
@@ -527,7 +490,7 @@ public class HTMLReportTask extends AbstractTask {
             sb.append("</p>"); //$NON-NLS-1$
         }
 
-        if (htmlReportConfig.isThumbsPageEnabled() && !imageThumbsByLabel.isEmpty()) {
+        if (htmlReportConfig.isThumbsPageEnabled() && !accum().imageThumbsByLabel.isEmpty()) {
             sb.append("<p>\n"); //$NON-NLS-1$
             sb.append("<b><a href=\"thumbs_001.htm\" class=\"SmallText2\" target=\"ReportPage\">"); //$NON-NLS-1$
             sb.append(Messages.getString("HTMLReportTask.GalleryLink") + "</a></b></p>\n"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -546,9 +509,9 @@ public class HTMLReportTask extends AbstractTask {
         replace(modelo, "%THUMBSIZE%", String.valueOf(htmlReportConfig.getThumbSize())); //$NON-NLS-1$
         StringBuilder item = EncodedFile.readFile(new File(templatesFolder, "item.html"), StandardCharsets.UTF_8).content; //$NON-NLS-1$//$NON-NLS-2$
         int idx = 1;
-        for (String marcador : entriesByLabel.keySet()) {
+        for (String marcador : accum().entriesByLabel.keySet()) {
             String id = String.format("arq%06d", idx); //$NON-NLS-1$
-            List<ReportEntry> regs = entriesByLabel.get(marcador);
+            List<ReportEntry> regs = accum().entriesByLabel.get(marcador);
             processaBookmark(marcador, id, modelo, item, true, regs);
             idx++;
             List<String> l = new ArrayList<String>();
@@ -557,31 +520,31 @@ public class HTMLReportTask extends AbstractTask {
                     l.add(e.img);
             }
             if (!l.isEmpty())
-                imageThumbsByLabel.put(marcador, l);
+                accum().imageThumbsByLabel.put(marcador, l);
         }
         if (htmlReportConfig.isCategoriesListEnabled()) {
-            for (String categoria : entriesByCategory.keySet()) {
+            for (String categoria : accum().entriesByCategory.keySet()) {
                 String id = String.format("arq%06d", idx); //$NON-NLS-1$
-                List<ReportEntry> regs = entriesByCategory.get(categoria);
+                List<ReportEntry> regs = accum().entriesByCategory.get(categoria);
                 processaBookmark(categoria, id, modelo, item, false, regs);
                 idx++;
-                if (entriesByLabel.isEmpty()) {
+                if (accum().entriesByLabel.isEmpty()) {
                     List<String> l = new ArrayList<String>();
                     for (ReportEntry e : regs) {
                         if (e.img != null)
                             l.add(e.img);
                     }
                     if (!l.isEmpty())
-                        imageThumbsByLabel.put(categoria, l);
+                        accum().imageThumbsByLabel.put(categoria, l);
                 }
             }
         }
     }
 
     private void sortRegs() {
-        final List<List<ReportEntry>> l = new ArrayList<List<ReportEntry>>(entriesByLabel.values());
+        final List<List<ReportEntry>> l = new ArrayList<List<ReportEntry>>(accum().entriesByLabel.values());
         if (htmlReportConfig.isCategoriesListEnabled()) {
-            l.addAll(entriesByCategory.values());
+            l.addAll(accum().entriesByCategory.values());
         }
         Collections.sort(l, new Comparator<List<ReportEntry>>() {
             public int compare(List<ReportEntry> a, List<ReportEntry> b) {
@@ -664,7 +627,7 @@ public class HTMLReportTask extends AbstractTask {
             StringBuilder model, StringBuilder item, int pag, int totPags, int totRegs, List<ReportEntry> regs,
             boolean isLabel) throws Exception {
 
-        File arq = new File(reportSubFolder, getPageId(id, pag));
+        File arq = new File(accum().reportSubFolder, getPageId(id, pag));
 
         StringBuilder sb = new StringBuilder();
         sb.append(model);
@@ -722,14 +685,14 @@ public class HTMLReportTask extends AbstractTask {
                         img.append("\">"); //$NON-NLS-1$
                     }
                     img.append("<img src=\""); //$NON-NLS-1$
-                    img.append(getRelativePath(thumbFile, reportSubFolder));
+                    img.append(getRelativePath(thumbFile, accum().reportSubFolder));
                     img.append("\" class=\"thumb\" />"); //$NON-NLS-1$
                     if (reg.export != null) {
                         img.append("</a>"); //$NON-NLS-1$
                     }
                     it.append(img);
                     it.append("</td></tr></table>\n"); //$NON-NLS-1$
-                    if (isLabel || entriesByLabel.isEmpty()) {
+                    if (isLabel || accum().entriesByLabel.isEmpty()) {
                         reg.img = img.toString();
                     }
                 }
@@ -742,9 +705,9 @@ public class HTMLReportTask extends AbstractTask {
                             "<div class=\"row\"><span class=\"bkmkColLeft bkmkValue labelBorderless clrBkgrnd\" width=\"100%\" border=\"1\">" //$NON-NLS-1$
                                     + Messages.getString("HTMLReportTask.VideoThumbs") //$NON-NLS-1$
                                     + "</span><span class=\"bkmkColRight bkmkValue\"><a href=\""); //$NON-NLS-1$
-                    it.append(getRelativePath(videoThumbsFile, reportSubFolder));
+                    it.append(getRelativePath(videoThumbsFile, accum().reportSubFolder));
                     it.append("\"><img src=\""); //$NON-NLS-1$
-                    it.append(getRelativePath(stripeFile, reportSubFolder)).append("\""); //$NON-NLS-1$
+                    it.append(getRelativePath(stripeFile, accum().reportSubFolder)).append("\""); //$NON-NLS-1$
                     if (dim != null) {
                         it.append(" width=\"").append(dim.width).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
                         it.append(" height=\"").append(dim.height).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
@@ -759,7 +722,7 @@ public class HTMLReportTask extends AbstractTask {
                             "<div class=\"row\"><span class=\"bkmkColLeft bkmkValue labelBorderless clrBkgrnd\" width=\"100%\" border=\"1\">" //$NON-NLS-1$
                                     + Messages.getString("HTMLReportTask.PreviewReport") //$NON-NLS-1$
                                     + "</span><span class=\"bkmkColRight bkmkValue\"><a href=\""); //$NON-NLS-1$
-                    it.append(getRelativePath(view, reportSubFolder));
+                    it.append(getRelativePath(view, accum().reportSubFolder));
                     it.append("\">"); //$NON-NLS-1$
                     it.append(view.getName());
                     it.append("</a></span></div>\n"); //$NON-NLS-1$
@@ -823,7 +786,7 @@ public class HTMLReportTask extends AbstractTask {
     }
 
     private File getVideoStripeFile(String hash) {
-        File file = Util.getFileFromHash(new File(reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME), hash, ThumbConstants.THUMB_EXT);
+        File file = Util.getFileFromHash(new File(accum().reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME), hash, ThumbConstants.THUMB_EXT);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
@@ -831,7 +794,7 @@ public class HTMLReportTask extends AbstractTask {
     }
 
     private File getImageThumbFile(String hash) {
-        File file = Util.getFileFromHash(new File(reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME), hash, ThumbConstants.THUMB_EXT);
+        File file = Util.getFileFromHash(new File(accum().reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME), hash, ThumbConstants.THUMB_EXT);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
@@ -877,7 +840,7 @@ public class HTMLReportTask extends AbstractTask {
                 if (img == null) {
                     BufferedInputStream stream = evidence.getBufferedInputStream();
                     try {
-                        img = externalImageConverter.getImage(stream, thumbSize, false, evidence.getLength());
+                        img = accum().externalImageConverter.getImage(stream, thumbSize, false, evidence.getLength());
                     } finally {
                         IOUtil.closeQuietly(stream);
                     }
@@ -1011,16 +974,16 @@ public class HTMLReportTask extends AbstractTask {
         StringBuilder sb = new StringBuilder();
 
         int tot = 0;
-        for (String label : imageThumbsByLabel.keySet()) {
-            List<String> l = imageThumbsByLabel.get(label);
+        for (String label : accum().imageThumbsByLabel.keySet()) {
+            List<String> l = accum().imageThumbsByLabel.get(label);
             tot += l.size();
         }
         int thumbsPerPage = htmlReportConfig.getThumbsPerPage();
         int np = (tot + thumbsPerPage - 1) / thumbsPerPage;
 
-        for (String bookmark : imageThumbsByLabel.keySet()) {
-            List<String> l = imageThumbsByLabel.get(bookmark);
-            addBookmarkTitle(sb, bookmark, l.size(), !entriesByLabel.isEmpty());
+        for (String bookmark : accum().imageThumbsByLabel.keySet()) {
+            List<String> l = accum().imageThumbsByLabel.get(bookmark);
+            addBookmarkTitle(sb, bookmark, l.size(), !accum().entriesByLabel.isEmpty());
             int cnt = 0;
             for (String s : l) {
                 n++;
@@ -1028,19 +991,19 @@ public class HTMLReportTask extends AbstractTask {
                 sb.append("\n"); //$NON-NLS-1$
                 if (n >= thumbsPerPage) {
                     addPageControl(page, np, sb);
-                    writeThumbsPage(sb, new File(reportSubFolder, pageName(page)));
+                    writeThumbsPage(sb, new File(accum().reportSubFolder, pageName(page)));
                     page++;
                     n = 0;
                     sb.delete(0, sb.length());
                     if (++cnt < l.size()) {
-                        addBookmarkTitle(sb, bookmark, l.size(), !entriesByLabel.isEmpty());
+                        addBookmarkTitle(sb, bookmark, l.size(), !accum().entriesByLabel.isEmpty());
                     }
                 }
             }
         }
         if (n > 0) {
             addPageControl(page, np, sb);
-            writeThumbsPage(sb, new File(reportSubFolder, pageName(page)));
+            writeThumbsPage(sb, new File(accum().reportSubFolder, pageName(page)));
         }
     }
 
@@ -1098,6 +1061,41 @@ public class HTMLReportTask extends AbstractTask {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Holds all mutable state that is scoped to a single case run.
+     * Stored in {@code caseData} so each case gets its own instance;
+     * eliminates the per-JVM static collections that leaked across cases.
+     */
+    static final class ReportAccumulator {
+        static final String KEY = ReportAccumulator.class.getName();
+
+        final AtomicBoolean initialized = new AtomicBoolean(false);
+        volatile File reportSubFolder;
+        volatile ExternalImageConverter externalImageConverter;
+        volatile ReportInfo info;
+
+        final SortedMap<String, List<ReportEntry>> entriesByLabel = new TreeMap<>(HTMLReportTask.getCollator());
+        final SortedMap<String, List<ReportEntry>> entriesByCategory = new TreeMap<>(HTMLReportTask.getCollator());
+        final List<ReportEntry> entriesNoLabel = new ArrayList<>();
+        final SortedMap<String, List<String>> imageThumbsByLabel = new TreeMap<>(HTMLReportTask.getCollator());
+        final Set<String> currentFiles = new HashSet<>();
+    }
+
+    /** Returns the case-scoped accumulator, creating it if this is the first call for this case. */
+    private ReportAccumulator accum() {
+        ReportAccumulator a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
+        if (a == null) {
+            synchronized (HTMLReportTask.class) {
+                a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
+                if (a == null) {
+                    a = new ReportAccumulator();
+                    caseData.putCaseObject(ReportAccumulator.KEY, a);
+                }
+            }
+        }
+        return a;
     }
 
 }

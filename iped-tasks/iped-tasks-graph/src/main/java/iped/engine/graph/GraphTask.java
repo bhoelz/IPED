@@ -88,9 +88,30 @@ public class GraphTask extends AbstractTask {
 
     private boolean enabled = false;
 
-    private static GraphFileWriter graphFileWriter;
+    // Forwarding reference for commit() which must remain a static no-arg method
+    // (called via reflection from Manager). Updated in accum() and cleared in finish().
+    private static volatile GraphAccumulator activeAccumulator;
 
-    private static Map<String, NodeValues> datasourceOwnerMap = new HashMap<>();
+    static final class GraphAccumulator {
+        static final String KEY = GraphAccumulator.class.getName();
+        GraphFileWriter graphFileWriter;
+        final Map<String, NodeValues> datasourceOwnerMap = new HashMap<>();
+    }
+
+    private GraphAccumulator accum() {
+        GraphAccumulator a = (GraphAccumulator) caseData.getCaseObject(GraphAccumulator.KEY);
+        if (a == null) {
+            synchronized (GraphTask.class) {
+                a = (GraphAccumulator) caseData.getCaseObject(GraphAccumulator.KEY);
+                if (a == null) {
+                    a = new GraphAccumulator();
+                    caseData.putCaseObject(GraphAccumulator.KEY, a);
+                    activeAccumulator = a;
+                }
+            }
+        }
+        return a;
+    }
 
     @Override
     public List<Configurable<?>> getConfigurables() {
@@ -104,8 +125,9 @@ public class GraphTask extends AbstractTask {
         if (enabled) {
             configuration = config.getConfiguration();
 
-            if (graphFileWriter == null) {
-                graphFileWriter = new GraphFileWriter(new File(output, CSVS_PATH),
+            GraphAccumulator a = accum();
+            if (a.graphFileWriter == null) {
+                a.graphFileWriter = new GraphFileWriter(new File(output, CSVS_PATH),
                         configuration.getDefaultEntity());
 
                 if (configuration.getProcessProximityRelationships() && caseData.isIpedReport()) {
@@ -131,9 +153,10 @@ public class GraphTask extends AbstractTask {
     }
 
     public static void commit() throws IOException {
-        if (graphFileWriter != null) {
+        GraphAccumulator a = activeAccumulator;
+        if (a != null && a.graphFileWriter != null) {
             log.info("Commiting graph CSVs...");
-            graphFileWriter.flush();
+            a.graphFileWriter.flush();
             log.info("Commiting graph CSVs finished.");
         }
     }
@@ -150,13 +173,14 @@ public class GraphTask extends AbstractTask {
 
     @Override
     public void finish() throws Exception {
-        if (graphFileWriter != null) {
+        GraphAccumulator a = accum();
+        if (a.graphFileWriter != null) {
             UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", "Finishing graph CSVs...");
             log.info("Finishing graph CSVs...");
             List<File> srcCases = (List<File>) caseData.getCaseObject(IPEDReader.REPORTING_CASES);
             // TODO merge multicase nodes, copying nodes from single case reports for now
             if (caseData.isIpedReport() && srcCases != null && srcCases.size() == 1) {
-                graphFileWriter.close(true);
+                a.graphFileWriter.close(true);
                 File prevCSVRoot = new File(srcCases.get(0), IPEDSource.MODULE_DIR + "/" + CSVS_PATH);
                 if (prevCSVRoot.exists() && prevCSVRoot.isDirectory()) {
                     for (File file : prevCSVRoot.listFiles()) {
@@ -167,18 +191,19 @@ public class GraphTask extends AbstractTask {
                         }
                     }
                 }
-                graphFileWriter = new GraphFileWriter(new File(output, CSVS_PATH), configuration.getDefaultEntity());
-                graphFileWriter.close();
+                a.graphFileWriter = new GraphFileWriter(new File(output, CSVS_PATH), configuration.getDefaultEntity());
+                a.graphFileWriter.close();
             } else {
-                graphFileWriter.close();
+                a.graphFileWriter.close();
             }
             log.info("Finishing graph CSVs finished.");
             finishGraphGeneration();
             UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", "Compressing graph CSVs...");
             log.info("Compressing graph CSVs...");
-            graphFileWriter.compressGeneratedCSVFiles();
+            a.graphFileWriter.compressGeneratedCSVFiles();
             log.info("Compressing graph CSVs finished.");
-            graphFileWriter = null;
+            a.graphFileWriter = null;
+            activeAccumulator = null;
         }
     }
 
@@ -444,7 +469,7 @@ public class GraphTask extends AbstractTask {
         String relationType = getRelationType(evidence.getMediaTypeString());
         NodeValues nv1 = getNodeValues(sender, (Metadata) evidence.getMetadata(), detectPhones);
 
-        graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue, nv1.props);
+        accum().graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue, nv1.props);
 
         RelationshipType relationshipType = DynRelationshipType.withName(relationType);
         Map<String, Object> relProps = new HashMap<>();
@@ -463,8 +488,8 @@ public class GraphTask extends AbstractTask {
             } else {
                 nv2 = getNodeValues(recipient, metadata, detectPhones);
             }
-            graphFileWriter.writeNode(nv2.label, nv2.propertyName, nv2.propertyValue, nv2.props);
-            graphFileWriter.writeRelationship(nv1.label, nv1.propertyName, nv1.propertyValue, nv2.label,
+            accum().graphFileWriter.writeNode(nv2.label, nv2.propertyName, nv2.propertyValue, nv2.props);
+            accum().graphFileWriter.writeRelationship(nv1.label, nv1.propertyName, nv1.propertyValue, nv2.label,
                     nv2.propertyName, nv2.propertyValue, relationshipType, relProps);
         }
     }
@@ -590,23 +615,23 @@ public class GraphTask extends AbstractTask {
             nv1.addProp(ExtraProperties.USER_ACCOUNT, serviceAccount);
         }
 
-        String uniqueId = graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue, nv1.props);
+        String uniqueId = accum().graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue, nv1.props);
 
         for (String email : emails) {
-            graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.PERSON_LABEL),
+            accum().graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.PERSON_LABEL),
                     ExtraProperties.USER_EMAIL, email, uniqueId);
-            graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.EMAIL_LABEL), ExtraProperties.USER_EMAIL,
+            accum().graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.EMAIL_LABEL), ExtraProperties.USER_EMAIL,
                     email, uniqueId);
         }
         for (String phone : formattedPhones) {
-            graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.PERSON_LABEL),
+            accum().graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.PERSON_LABEL),
                     ExtraProperties.USER_PHONE, phone, uniqueId);
-            graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.PHONE_LABEL), ExtraProperties.USER_PHONE,
+            accum().graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.PHONE_LABEL), ExtraProperties.USER_PHONE,
                     phone, uniqueId);
         }
         for (String account : accounts) {
             for (String service : accountType) {
-                graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.PERSON_LABEL),
+                accum().graphFileWriter.writeNodeReplace(DynLabel.label(GraphConfiguration.PERSON_LABEL),
                         ExtraProperties.USER_ACCOUNT, getServiceAccount(account, service), uniqueId);
             }
         }
@@ -656,21 +681,22 @@ public class GraphTask extends AbstractTask {
 
     private NodeValues getGenericOwnerNode(IItem item) throws IOException {
         String evidenceUUID = item.getDataSource().getUUID();
-        synchronized (this.getClass()) {
-            NodeValues nv1 = datasourceOwnerMap.get(evidenceUUID);
+        GraphAccumulator a = accum();
+        synchronized (a) {
+            NodeValues nv1 = a.datasourceOwnerMap.get(evidenceUUID);
             if (nv1 == null) {
                 nv1 = new NodeValues(DynLabel.label(GraphConfiguration.DATASOURCE_LABEL), BasicProps.EVIDENCE_UUID,
                         evidenceUUID);
                 nv1.addProp(BasicProps.NAME, Util.getRootName(item.getPath()));
-                graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue, nv1.props);
-                datasourceOwnerMap.put(evidenceUUID, nv1);
+                a.graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue, nv1.props);
+                a.datasourceOwnerMap.put(evidenceUUID, nv1);
 
                 List<String> msisdns = (List<String>) caseData.getCaseObject(UfedXmlReader.MSISDN_PROP + evidenceUUID);
                 if (msisdns != null && !msisdns.isEmpty()) {
                     NodeValues nv2 = this.getPhoneNodeValues(msisdns.get(0));
                     if (nv2 != null) {
-                        String id = graphFileWriter.writeNode(nv2.label, nv2.propertyName, nv2.propertyValue);
-                        graphFileWriter.writeNodeReplace(nv1.label, nv1.propertyName, nv1.propertyValue, id);
+                        String id = a.graphFileWriter.writeNode(nv2.label, nv2.propertyName, nv2.propertyValue);
+                        a.graphFileWriter.writeNodeReplace(nv1.label, nv1.propertyName, nv1.propertyValue, id);
                     }
                 }
             }
@@ -691,7 +717,7 @@ public class GraphTask extends AbstractTask {
             String service = item.getMetadataValue(ExtraProperties.USER_ACCOUNT_TYPE);
             nv1 = new NodeValues(DynLabel.label(GraphConfiguration.PERSON_LABEL), ExtraProperties.USER_ACCOUNT,
                     getServiceAccount(contactOfAccount, service));
-            graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue);
+            accum().graphFileWriter.writeNode(nv1.label, nv1.propertyName, nv1.propertyValue);
         }
 
         if (nv1 == null)
@@ -704,7 +730,7 @@ public class GraphTask extends AbstractTask {
         relProps.put(RELATIONSHIP_ID, item.getId());
         relProps.put(RELATIONSHIP_SOURCE, item.getDataSource().getUUID());
 
-        graphFileWriter.writeRelationship(nv1.label, nv1.propertyName, nv1.propertyValue, nv2.label, nv2.propertyName,
+        accum().graphFileWriter.writeRelationship(nv1.label, nv1.propertyName, nv1.propertyValue, nv2.label, nv2.propertyName,
                 nv2.propertyValue, relationshipType, relProps);
     }
 
@@ -739,9 +765,9 @@ public class GraphTask extends AbstractTask {
         relProps.put(RELATIONSHIP_ID, item.getId());
         relProps.put(RELATIONSHIP_SOURCE, item.getDataSource().getUUID());
 
-        graphFileWriter.writeNode(nv2.label, nv2.propertyName, nv2.propertyValue, nodeProps);
+        accum().graphFileWriter.writeNode(nv2.label, nv2.propertyName, nv2.propertyValue, nodeProps);
 
-        graphFileWriter.writeRelationship(nv1.label, nv1.propertyName, nv1.propertyValue, nv2.label, nv2.propertyName,
+        accum().graphFileWriter.writeRelationship(nv1.label, nv1.propertyName, nv1.propertyValue, nv2.label, nv2.propertyName,
                 nv2.propertyValue, relationshipType, relProps);
     }
 
@@ -828,15 +854,15 @@ public class GraphTask extends AbstractTask {
                     }
 
                     if (controlSet.add(id1)) {
-                        graphFileWriter.writeNode(label, propertyName, propertyValue);
+                        accum().graphFileWriter.writeNode(label, propertyName, propertyValue);
                     }
                     if (controlSet.add(id2)) {
-                        graphFileWriter.writeNode(label2, propertyName2, propertyValue2);
+                        accum().graphFileWriter.writeNode(label2, propertyName2, propertyValue2);
                     }
 
                     String ids = id1.compareTo(id2) <= 0 ? id1 + "-" + id2 : id2 + "-" + id1;
                     if (relationsAdded.add(ids)) {
-                        graphFileWriter.writeRelationship(label, propertyName, propertyValue, label2, propertyName2,
+                        accum().graphFileWriter.writeRelationship(label, propertyName, propertyValue, label2, propertyName2,
                                 propertyValue2, relationshipType, relProps);
                     }
                 }
@@ -845,6 +871,7 @@ public class GraphTask extends AbstractTask {
     }
 
 }
+
 
 
 
