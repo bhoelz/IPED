@@ -30,7 +30,6 @@ import iped.parsers.util.PhoneParsingConfig;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -327,7 +326,7 @@ public class TelegramParser extends SQLite3DBParser {
             }
 
             meta.set(BasicProps.LENGTH, "");
-            extractor.parseEmbedded(new EmptyInputStream(), handler, meta, false);
+            extractor.parseEmbedded(InputStream.nullInputStream(), handler, meta, false);
         }
     }
 

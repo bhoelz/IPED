@@ -53,7 +53,7 @@ public class Util {
     private static byte[] readResourceAsBytes(String resource) {
         byte[] result = null;
         try {
-            result = IOUtil.loadInputStream(Util.class.getResourceAsStream(resource));
+            result = Util.class.getResourceAsStream(resource).readAllBytes();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Throwable e) {

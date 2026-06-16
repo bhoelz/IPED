@@ -7,7 +7,6 @@ import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -105,7 +104,7 @@ public class GDriveCloudGraphParser extends SQLite3DBParser {
                  */
                 if (extractEntries) {
                     Metadata metadataCloudGraphItem = getEntryMetadata(entry, i++, hashSets);
-                    extractor.parseEmbedded(new EmptyInputStream(), handler, metadataCloudGraphItem, true);
+                    extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataCloudGraphItem, true);
                 }
 
             }

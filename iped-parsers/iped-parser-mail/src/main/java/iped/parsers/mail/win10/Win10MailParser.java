@@ -15,7 +15,6 @@ import iped.parsers.util.*;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.utils.SimpleHTMLEncoder;
@@ -369,7 +368,7 @@ public class Win10MailParser extends AbstractParser {
         folderMetadata.add("StoreId", "" + folder.getStoreId());
         if (parentId != -1)
             folderMetadata.set(ExtraProperties.PARENT_VIRTUAL_ID, FOLDER_VIRTUAL_ID_PREFIX + parentId);
-        params.extractor.parseEmbedded(new EmptyInputStream(), params.xhtml, folderMetadata, true);
+        params.extractor.parseEmbedded(InputStream.nullInputStream(), params.xhtml, folderMetadata, true);
     }
 
 
@@ -752,7 +751,7 @@ public class Win10MailParser extends AbstractParser {
 
             if (params.extractor.shouldParseEmbedded(attachMetadata)) {
                 params.xhtml.characters("\t");
-                params.extractor.parseEmbedded(new EmptyInputStream(), params.xhtml, attachMetadata, true);
+                params.extractor.parseEmbedded(InputStream.nullInputStream(), params.xhtml, attachMetadata, true);
             }
 
         } catch (Exception e) {

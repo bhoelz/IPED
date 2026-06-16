@@ -10,7 +10,6 @@ import iped.parsers.util.ToXMLContentHandler;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.DateUtil;
-import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -172,7 +171,7 @@ public class EventTranscriptParser extends SQLite3DBParser {
                     while (historyEntriesIterator.hasNext()) {
                         BrowserHistoryEntry historyEntry = historyEntriesIterator.next();
                         Metadata historySubitem = getHistoryEntryMetadata(historyEntry, ++i);
-                        extractor.parseEmbedded(new EmptyInputStream(), new IgnoreContentHandler(), historySubitem, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), new IgnoreContentHandler(), historySubitem, true);
                     }
                 }
             }
@@ -210,7 +209,7 @@ public class EventTranscriptParser extends SQLite3DBParser {
                     while (inventoryAppsIterator.hasNext()) {
                         InventoryAppsEntry appInvEntry = inventoryAppsIterator.next();
                         Metadata inventorySubitem = getInventoryEntryMetadata(appInvEntry, ++i);
-                        extractor.parseEmbedded(new EmptyInputStream(), new IgnoreContentHandler(), inventorySubitem, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), new IgnoreContentHandler(), inventorySubitem, true);
                     }
                 }
             }
@@ -248,7 +247,7 @@ public class EventTranscriptParser extends SQLite3DBParser {
                     while (appInteractivityIterator.hasNext()) {
                         AppInteractivityEntry appIntEntry = appInteractivityIterator.next();
                         Metadata appInteractSubitem = getAppInteractEntryMetadata(appIntEntry, ++i);
-                        extractor.parseEmbedded(new EmptyInputStream(), new IgnoreContentHandler(), appInteractSubitem, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), new IgnoreContentHandler(), appInteractSubitem, true);
                     }
                 }
             }
@@ -286,7 +285,7 @@ public class EventTranscriptParser extends SQLite3DBParser {
                     while (devicesIterator.hasNext()) {
                         DevicesEntry deviceEntry = devicesIterator.next();
                         Metadata deviceSubitem = getDevicesMetadata(deviceEntry, ++i);
-                        extractor.parseEmbedded(new EmptyInputStream(), new IgnoreContentHandler(), deviceSubitem, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), new IgnoreContentHandler(), deviceSubitem, true);
                     }
                 }
             }
@@ -323,7 +322,7 @@ public class EventTranscriptParser extends SQLite3DBParser {
                     while (censusIterator.hasNext()) {
                         CensusEntry censusEntry = censusIterator.next();
                         Metadata censusSubitem = getCensusEntryMetadata(censusEntry, ++i);
-                        extractor.parseEmbedded(new EmptyInputStream(), new IgnoreContentHandler(), censusSubitem, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), new IgnoreContentHandler(), censusSubitem, true);
                     }
                 }
             }
@@ -361,7 +360,7 @@ public class EventTranscriptParser extends SQLite3DBParser {
                     while (networkingIterator.hasNext()) {
                         NetworkingEntry netEntry = networkingIterator.next();
                         Metadata networkingSubitem = getNetworkingMetadata(netEntry, ++i);
-                        extractor.parseEmbedded(new EmptyInputStream(), new IgnoreContentHandler(), networkingSubitem, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), new IgnoreContentHandler(), networkingSubitem, true);
                     }
                 }
             }

@@ -8,7 +8,6 @@ import iped.engine.data.Item;
 import iped.exception.IPEDException;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.IgnoreContentHandler;
-import iped.utils.EmptyInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -90,7 +89,7 @@ public class NamedEntityTask extends AbstractTask {
             // first call to initialize
             Metadata metadata = new Metadata();
             metadata.set(Metadata.CONTENT_TYPE, MediaType.TEXT_PLAIN.toString());
-            nerParser.parse(new EmptyInputStream(), new IgnoreContentHandler(), metadata, new ParseContext());
+            nerParser.parse(InputStream.nullInputStream(), new IgnoreContentHandler(), metadata, new ParseContext());
             nerParserPerLang.put(lang, nerParser);
         }
 

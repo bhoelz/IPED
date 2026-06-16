@@ -7,7 +7,6 @@ import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -99,7 +98,7 @@ public class GDriveSnapshotParser extends SQLite3DBParser {
                  */
                 if (extractEntries) {
                     Metadata metadataSnapshotItem = getEntryMetadata(entry, i++, hashSets);
-                    extractor.parseEmbedded(new EmptyInputStream(), handler, metadataSnapshotItem, true);
+                    extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataSnapshotItem, true);
                 }
 
             }

@@ -5,7 +5,6 @@ import iped.parsers.compress.CompressionUtil;
 import iped.parsers.util.RawISOConverter;
 
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import iped.utils.LocalizedFormat;
 import lombok.extern.slf4j.Slf4j;
@@ -147,7 +146,7 @@ public class SevenZipParser extends AbstractParser {
 
             // extract folders in alphabetical order
             for (SubFile subFile : fileMap.values().toArray(new SubFile[0])) {
-                try (InputStream is = new BufferedInputStream(subFile.file != null ? new FileInputStream(subFile.file) : new EmptyInputStream())) {
+                try (InputStream is = new BufferedInputStream(subFile.file != null ? new FileInputStream(subFile.file) : InputStream.nullInputStream())) {
                     parseSubitem(is, subFile.item, xhtml, extractor, fileMap);
                 }
             }
@@ -335,7 +334,7 @@ public class SevenZipParser extends AbstractParser {
 
         String parentPath = CompressionUtil.getParentPath(item.getPath());
         if (parentPath != null && !fileMap.containsKey(parentPath)) {
-            parseMissingSubFolder(new EmptyInputStream(), parentPath, handler, extractor, fileMap);
+            parseMissingSubFolder(InputStream.nullInputStream(), parentPath, handler, extractor, fileMap);
         }
 
         String subitemPath = ""; //$NON-NLS-1$
@@ -363,7 +362,7 @@ public class SevenZipParser extends AbstractParser {
     private static void parseMissingSubFolder(InputStream is, String path, ContentHandler handler, EmbeddedDocumentExtractor extractor, TreeMap<String, SubFile> fileMap) throws SAXException, IOException {
         String parentPath = CompressionUtil.getParentPath(path);
         if (parentPath != null && !fileMap.containsKey(parentPath)) {
-            parseMissingSubFolder(new EmptyInputStream(), parentPath, handler, extractor, fileMap);
+            parseMissingSubFolder(InputStream.nullInputStream(), parentPath, handler, extractor, fileMap);
         }
         Metadata entrydata = new Metadata();
         String subitemPath = path.replace("\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$

@@ -60,7 +60,7 @@ public class Util {
 
     public static String readResourceAsString(String resource) {
         try {
-            byte[] bytes = IOUtil.loadInputStream(Util.class.getResourceAsStream(resource));
+            byte[] bytes = Util.class.getResourceAsStream(resource).readAllBytes();
             return new String(bytes, StandardCharsets.UTF_8);
 
         } catch (IOException e) {
@@ -71,7 +71,7 @@ public class Util {
 
     public static String readResourceAsBytes64(String resource) {
         try {
-            byte[] bytes = IOUtil.loadInputStream(Util.class.getResourceAsStream(resource));
+            byte[] bytes = Util.class.getResourceAsStream(resource).readAllBytes();
             if (bytes != null) return encodeBase64(bytes);
         } catch (IOException e) {
             e.printStackTrace();

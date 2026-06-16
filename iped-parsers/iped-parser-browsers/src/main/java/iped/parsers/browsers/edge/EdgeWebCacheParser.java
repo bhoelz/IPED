@@ -10,7 +10,6 @@ import iped.parsers.database.EDBParser;
 import iped.parsers.util.ItemInfo;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import iped.utils.TimeConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
@@ -174,7 +173,7 @@ public class EdgeWebCacheParser extends AbstractParser {
                         metadataHistory.add((BasicProps.LENGTH), "");
                         metadataHistory.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
 
-                        extractor.parseEmbedded(new EmptyInputStream(), handler, metadataHistory, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataHistory, true);
                     }
 
                     closeTablePointer(ec.getTablePointer(), itemInfo);

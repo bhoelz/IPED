@@ -33,7 +33,6 @@ import iped.parsers.whatsapp.Message.MessageType;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import iped.utils.SimpleHTMLEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -1114,7 +1113,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                 }
             } else {
                 meta.set(BasicProps.LENGTH, ""); //$NON-NLS-1$
-                extractor.parseEmbedded(new EmptyInputStream(), handler, meta, false);
+                extractor.parseEmbedded(InputStream.nullInputStream(), handler, meta, false);
             }
         }
     }

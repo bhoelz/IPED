@@ -15,7 +15,6 @@ import iped.parsers.ufed.model.InstantMessage;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -218,7 +217,7 @@ public class UfedChatParser extends AbstractParser {
             messageMeta.set(ExtraProperties.PARENT_VIRTUAL_ID, chatVirtualId);
             messageMeta.set(BasicProps.LENGTH, "");
 
-            TikaInputStream messageInput = TikaInputStream.get(new EmptyInputStream());
+            TikaInputStream messageInput = TikaInputStream.get(InputStream.nullInputStream());
             messageInput.setOpenContainer(message);
             extractor.parseEmbedded(messageInput, handler, messageMeta, false);
 
@@ -239,7 +238,7 @@ public class UfedChatParser extends AbstractParser {
             activityMeta.set(ExtraProperties.PARENT_VIRTUAL_ID, chatVirtualId);
             activityMeta.set(BasicProps.LENGTH, "");
 
-            extractor.parseEmbedded(new EmptyInputStream(), handler, activityMeta, false);
+            extractor.parseEmbedded(InputStream.nullInputStream(), handler, activityMeta, false);
         }
     }
 

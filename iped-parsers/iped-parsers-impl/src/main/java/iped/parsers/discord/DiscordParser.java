@@ -15,7 +15,6 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
 import iped.utils.DateUtil;
-import iped.utils.EmptyInputStream;
 import iped.utils.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
@@ -375,7 +374,7 @@ public class DiscordParser extends AbstractParser {
             }
 
             meta.set(BasicProps.LENGTH, ""); //$NON-NLS-1$
-            extractor.parseEmbedded(new EmptyInputStream(), handler, meta, false);
+            extractor.parseEmbedded(InputStream.nullInputStream(), handler, meta, false);
 
         }
     }

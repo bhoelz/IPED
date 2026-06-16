@@ -30,7 +30,6 @@ import iped.parsers.util.ItemInfo;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import iped.utils.SimpleHTMLEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -401,7 +400,7 @@ public class ThreemaParser extends SQLite3DBParser {
                 meta.set(ExtraProperties.MESSAGE_BODY, MESSAGE_TYPE_PREFIX + m.getMessageType().toString());
             }
             meta.set(BasicProps.LENGTH, ""); //$NON-NLS-1$
-            extractor.parseEmbedded(new EmptyInputStream(), handler, meta, false);
+            extractor.parseEmbedded(InputStream.nullInputStream(), handler, meta, false);
         }
     }
 

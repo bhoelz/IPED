@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -265,7 +267,7 @@ public class LedCarveTask extends BaseCarveTask {
             os.writeInt(ledHashDB.getMD5_64K().length);
             os.write(ledHashDB.getMD5_64K());
             os.writeInt(ledHashDB.getHashIds().length);
-            IOUtil.writeIntArray(os, ledHashDB.getHashIds());
+            int[] _arr = ledHashDB.getHashIds(); ByteBuffer _buf = ByteBuffer.allocate(_arr.length * 4).order(ByteOrder.BIG_ENDIAN); _buf.asIntBuffer().put(_arr); os.write(_buf.array());
             ret = true;
         } catch (Exception e) {
             log.warn("Error writing cache file " + cacheFile.getPath(), e);
@@ -299,7 +301,7 @@ public class LedCarveTask extends BaseCarveTask {
                         byte[] md5_64k = IOUtil.readByteArray(is, len);
                         if (md5_64k != null) {
                             len = is.readInt();
-                            int[] hashIds = IOUtil.readIntArray(is, len);
+                            byte[] _hb = is.readNBytes(len * 4); int[] hashIds = (_hb.length == len * 4) ? ByteBuffer.wrap(_hb).order(ByteOrder.BIG_ENDIAN).asIntBuffer().get(new int[len]) : null;
                             if (hashIds != null) {
                                 ledHashDB = new LedHashDB(md5_512, md5_64k, hashIds);
                                 ret = true;

@@ -7,7 +7,6 @@ import iped.parsers.util.MetadataUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.config.Field;
@@ -196,7 +195,7 @@ public class UsnJrnlParser extends AbstractParser {
                 }
                 metadataItem.set(props[9], Long.toString(entry.getSourceInformation()));
                 metadataItem.set(props[10], Long.toString(entry.getSecurityId()));
-                extractor.parseEmbedded(new EmptyInputStream(), handler, metadataItem, false);
+                extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataItem, false);
 
             }
         }

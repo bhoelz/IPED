@@ -6,7 +6,6 @@ import iped.parsers.sqlite.detector.SQLiteContainerDetector;
 import iped.parsers.standard.StandardParser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -124,7 +123,7 @@ public class WinXTimelineParser extends SQLite3DBParser {
                      */
                     if (extractEntries) {
                         Metadata metadataTimelineItem = getEntryMetadata(entry, i++);
-                        extractor.parseEmbedded(new EmptyInputStream(), handler, metadataTimelineItem, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataTimelineItem, true);
                     }
 
                 }

@@ -256,7 +256,7 @@ public class RegRipperParser extends AbstractParser {
         }
         Process p = pb.start();
         IOUtil.ignoreErrorStream(p);
-        byte[] bytes = IOUtil.loadInputStream(p.getInputStream());
+        byte[] bytes = p.getInputStream().readAllBytes();
         return new String(bytes, StandardCharsets.ISO_8859_1).strip();
     }
 

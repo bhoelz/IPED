@@ -57,7 +57,6 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
@@ -541,7 +540,7 @@ public class ParsingTask extends ThumbTask implements EmbeddedDocumentExtractor 
                 if (caseData.containsReport() && MediaTypes.isMetadataEntryType(type)) {
                     subItem.setInputStreamFactory(new MetadataInputStreamFactory(subItem.getMetadata(), true));
                     metadata.remove(BasicProps.LENGTH);
-                    if (inputStream == null || inputStream instanceof EmptyInputStream) {
+                    if (inputStream == null || inputStream == InputStream.nullInputStream()) {
                         updateInputStream = true;
                     }
                 }

@@ -5,7 +5,6 @@ import iped.parsers.browsers.Download;
 import iped.parsers.util.ItemInfo;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -129,7 +128,7 @@ public class SafariPlistParser extends AbstractParser {
                         metadataHistory.add((BasicProps.LENGTH), "");
                         metadataHistory.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
 
-                        extractor.parseEmbedded(new EmptyInputStream(), handler, metadataHistory, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataHistory, true);
                     }
                 }
 
@@ -181,7 +180,7 @@ public class SafariPlistParser extends AbstractParser {
                         metadataDownload.add((BasicProps.LENGTH), "");
                         metadataDownload.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
 
-                        extractor.parseEmbedded(new EmptyInputStream(), handler, metadataDownload, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataDownload, true);
                     }
                 }
 
@@ -226,7 +225,7 @@ public class SafariPlistParser extends AbstractParser {
                         metadataBookmark.add((BasicProps.LENGTH), "");
                         metadataBookmark.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
 
-                        extractor.parseEmbedded(new EmptyInputStream(), handler, metadataBookmark, true);
+                        extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataBookmark, true);
                     }
                 }
             }

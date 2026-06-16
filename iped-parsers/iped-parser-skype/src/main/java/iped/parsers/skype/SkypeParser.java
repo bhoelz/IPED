@@ -8,7 +8,6 @@ import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -222,7 +221,7 @@ public class SkypeParser extends AbstractParser {
                                 }
                             }
 
-                            extractor.parseEmbedded(new EmptyInputStream(), handler, meta, false);
+                            extractor.parseEmbedded(InputStream.nullInputStream(), handler, meta, false);
                         }
                 }
 

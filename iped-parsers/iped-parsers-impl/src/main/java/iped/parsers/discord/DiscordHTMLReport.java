@@ -5,7 +5,6 @@ import iped.parsers.discord.json.*;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
-import iped.utils.IOUtil;
 import iped.utils.SimpleHTMLEncoder;
 import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.SAXException;
@@ -37,7 +36,7 @@ public class DiscordHTMLReport {
     private static byte[] readResourceAsBytes(String resource) {
         byte[] result = null;
         try {
-            result = IOUtil.loadInputStream(DiscordHTMLReport.class.getResourceAsStream(resource));
+            result = DiscordHTMLReport.class.getResourceAsStream(resource).readAllBytes();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Throwable e) {

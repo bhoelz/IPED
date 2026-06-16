@@ -22,7 +22,6 @@ import iped.parsers.util.OmitEmptyArraysTypeAdapterFactory;
 import iped.properties.BasicProps;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.config.Field;
@@ -213,7 +212,7 @@ public class UfedMessageParser extends AbstractParser {
             activityMeta.set(ParserConstants.INDEXER_CONTENT_TYPE, activity.getMediaType().toString());
             activityMeta.set(BasicProps.LENGTH, "");
 
-            extractor.parseEmbedded(new EmptyInputStream(), handler, activityMeta, false);
+            extractor.parseEmbedded(InputStream.nullInputStream(), handler, activityMeta, false);
         }
     }
 
@@ -235,7 +234,7 @@ public class UfedMessageParser extends AbstractParser {
                 attachMeta.set(ParserConstants.INDEXER_CONTENT_TYPE, attach.getContentType());
                 attachMeta.set(BasicProps.LENGTH, Integer.toString(attach.getUnreferencedContent().length));
             } else {
-                inputStream = new EmptyInputStream();
+                inputStream = InputStream.nullInputStream();
                 attachMeta.set(TikaCoreProperties.TITLE, attachHandler.getTitle());
                 attachMeta.set(ParserConstants.INDEXER_CONTENT_TYPE, attach.getMediaType().toString());
                 attachMeta.set(BasicProps.LENGTH, "");
@@ -262,7 +261,7 @@ public class UfedMessageParser extends AbstractParser {
             shareContactMeta.set(ParserConstants.INDEXER_CONTENT_TYPE, sharedContact.getMediaType().toString());
             shareContactMeta.set(BasicProps.LENGTH, "");
 
-            TikaInputStream sharedContactInput = TikaInputStream.get(new EmptyInputStream());
+            TikaInputStream sharedContactInput = TikaInputStream.get(InputStream.nullInputStream());
             sharedContactInput.setOpenContainer(sharedContact);
             extractor.parseEmbedded(sharedContactInput, handler, shareContactMeta, false);
         }

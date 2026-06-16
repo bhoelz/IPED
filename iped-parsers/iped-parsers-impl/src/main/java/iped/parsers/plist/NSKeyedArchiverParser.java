@@ -6,7 +6,6 @@ import iped.parsers.plist.detector.PListDetector;
 import iped.parsers.standard.StandardParser;
 import iped.properties.BasicProps;
 import iped.utils.DateUtil;
-import iped.utils.EmptyInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +19,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
@@ -353,7 +353,7 @@ public class NSKeyedArchiverParser extends AbstractPListParser<NSKeyedArchiverPa
                     }
                 }
 
-                state.embeddedDocumentExtractor.parseEmbedded(new EmptyInputStream(), state.xhtml, metadata, true);
+                state.embeddedDocumentExtractor.parseEmbedded(InputStream.nullInputStream(), state.xhtml, metadata, true);
             } catch (IOException e) {
                 getLogger().warn("Error adding plist data as sub-item " + state.metadata + ">>" + path, e);
             }

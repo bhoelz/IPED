@@ -5,7 +5,6 @@ import iped.parsers.standard.StandardParser;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.MetadataUtil;
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -127,7 +126,7 @@ public class EvtxParser extends AbstractParser {
                     providerMetadata.set(TikaCoreProperties.TITLE, currentProvider.substring(currentProvider.lastIndexOf(":") + 1));// eventtype
                     providerMetadata.set(ExtraProperties.ITEM_VIRTUAL_ID, providerVid);
                     providerMetadata.set(EVTX_METADATA_PREFIX + "ProviderGUID", providerGUID);
-                    extractor.parseEmbedded(new EmptyInputStream(), handler, providerMetadata, false);
+                    extractor.parseEmbedded(InputStream.nullInputStream(), handler, providerMetadata, false);
                 }
 
                 String groupTitle = subKey.substring(currentProvider.length() + 1);

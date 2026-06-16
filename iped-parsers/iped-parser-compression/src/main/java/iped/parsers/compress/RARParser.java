@@ -26,7 +26,6 @@ import com.github.junrar.exception.RarException;
 import com.github.junrar.rarfile.FileHeader;
 
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -141,7 +140,7 @@ public class RARParser extends AbstractParser {
             if (header.getFullUnpackSize() > 0) {
                 subFile = rar.getInputStream(header);
             } else {
-                subFile = new EmptyInputStream();
+                subFile = InputStream.nullInputStream();
             }
 
             Metadata entrydata = new Metadata();

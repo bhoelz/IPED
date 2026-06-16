@@ -5,7 +5,6 @@ import iped.parsers.standard.StandardParser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.DateUtil;
-import iped.utils.EmptyInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
@@ -27,6 +26,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -245,7 +245,7 @@ public class BeanMetadataExtraction {
 
                 entryMetadata.set(ExtraProperties.PARENT_VIRTUAL_ID, Integer.toString(parentSeq));
                 entryMetadata.set(ExtraProperties.ITEM_VIRTUAL_ID, Integer.toString(seq));
-                extractor.parseEmbedded(new EmptyInputStream(), handler, entryMetadata, true);
+                extractor.parseEmbedded(InputStream.nullInputStream(), handler, entryMetadata, true);
 
                 int childSeq = seq;
                 int count = 0;

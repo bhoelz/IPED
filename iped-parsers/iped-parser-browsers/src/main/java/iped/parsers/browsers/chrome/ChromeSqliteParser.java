@@ -4,7 +4,6 @@ import iped.parsers.browsers.*;
 import iped.parsers.sqlite.SQLite3Parser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.utils.EmptyInputStream;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -142,7 +141,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
                     metadataDownload.set(BasicProps.LENGTH, "");
                     metadataDownload.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
 
-                    extractor.parseEmbedded(new EmptyInputStream(), handler, metadataDownload, true);
+                    extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataDownload, true);
                 }
 
                 try (FileOutputStream tmpHistoryFile = new FileOutputStream(historyFile)) {
@@ -182,7 +181,7 @@ public class ChromeSqliteParser extends AbstractSqliteBrowserParser {
                     metadataHistory.set(BasicProps.LENGTH, "");
                     metadataHistory.set(ExtraProperties.DECODED_DATA, Boolean.TRUE.toString());
 
-                    extractor.parseEmbedded(new EmptyInputStream(), handler, metadataHistory, true);
+                    extractor.parseEmbedded(InputStream.nullInputStream(), handler, metadataHistory, true);
                 }
 
                 try (FileOutputStream tmpSearchesFile = new FileOutputStream(searchFile)) {

@@ -16,7 +16,6 @@ import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.properties.MediaTypes;
 import iped.search.IItemSearcher;
-import iped.utils.EmptyInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -156,7 +155,7 @@ public class UfedEmailParser extends AbstractParser {
                 attachMeta.set(ParserConstants.INDEXER_CONTENT_TYPE, attach.getContentType());
                 attachMeta.set(BasicProps.LENGTH, Integer.toString(attach.getUnreferencedContent().length));
             } else {
-                inputStream = new EmptyInputStream();
+                inputStream = InputStream.nullInputStream();
                 attachMeta.set(TikaCoreProperties.TITLE, attachHandler.getTitle());
                 attachMeta.set(ParserConstants.INDEXER_CONTENT_TYPE, attach.getMediaType().toString());
                 attachMeta.set(BasicProps.LENGTH, "");
