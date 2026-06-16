@@ -84,6 +84,13 @@
       `TextV2.java` — `GET /v2/sources/{src}/items/{id}/text`. Adds `?highlight=term1+term2`
       (wraps matches in `<mark>` tags when `Accept: text/html`) and `?limit=N` for
       preview snippets. Returns 404 when source/item not found.)
+- [x] On-the-fly format conversion in `ContentV2`:
+      `?format=png` — JDK `ImageIO` TIFF→PNG conversion (built-in reader, JDK 9+); 422
+      for non-decodable content.
+      `?transcode=webm` — ffmpeg server-side audio/video transcode: audio → libopus/WebM,
+      video → VP9+Opus/WebM. ffmpeg is started as a subprocess with stdin/stdout pipes;
+      feeder daemon thread feeds item bytes; response streams ffmpeg stdout. Returns 501
+      when ffmpeg is not on PATH.
 
 ## Phase 4 — Platform (5.0)
 - [x] Versioning policy: v1 freeze/deprecation schedule once v2 reaches parity.
@@ -96,9 +103,11 @@
       `specs/84-phase-1-openapi-initial.yaml`, generating a `python` client to
       `target/generated-clients/python` with package name `iped_client`. Bound to
       the `generate-sources` phase so it runs as part of a normal `mvn package`.)
-- [ ] Decide Jersey-vs-Spring consolidation: today `iped-webui-server` proxies to Jersey;
+- [x] Decide Jersey-vs-Spring consolidation: today `iped-webui-server` proxies to Jersey;
       either keep Jersey as the engine-API and proxy, or fold endpoints into one stack —
       decision gate before broad v2 expansion.
+      (Decision recorded in Phase 5: keep Jersey on embedded Jetty for the engine JVM;
+      iped-webui-server (Spring Boot) proxies via `RestTemplate`. Decision gate closed.)
 
 ## Phase 5 — Bookmark CRUD and stack consolidation
 - [x] Bookmark CRUD v2 (EPIC-WEB-08 / WEB-071).
@@ -123,6 +132,46 @@
       reverse-proxy. The two stacks are cleanly separated: Jersey owns forensic data
       access; Spring owns SSR page composition, auth, and island serving. No migration
       needed before broad v2 expansion.)
+
+## Phase 6 — Per-source ACL and item write endpoints
+- [x] Per-source access control: `iped.webapi.allowed-sources` (or `IPED_WEBAPI_ALLOWED_SOURCES`
+      env var) — comma-separated allow-list of source IDs.
+      (`AllowedSources.java` — resolves at class-load time, cached; `parse()` method is
+      package-private for unit testing; `overrideForTest`/`resetToConfigured` allow test isolation.
+      `SourceAccessFilter.java` — Jersey `ContainerRequestFilter` at `AUTHORIZATION + 1` priority
+      (runs after API-key check and audit log); intercepts `/v2/sources/{sourceId}/…`,
+      `/sources/{sourceID}/…` (v1), and `/v2/cases/{id}/…`; returns 403 for unlisted IDs.
+      `CasesV2.listCases()` updated to filter the case list by `AllowedSources`.)
+- [x] Item tag endpoints (bookmark-backed, REST-ergonomic).
+      (`ItemTagsV2.java` at `v2/sources/{sourceId}/items/{id}/tags`:
+      `GET` returns the bookmark names for the item (via `IIPEDSource.getBookmarks().getBookmarkList(id)`).
+      `PUT /…/tags/{tag}` — auto-creates bookmark on first use, then adds item; audited.
+      `DELETE /…/tags/{tag}` — removes item from bookmark; 204 when bookmark absent (idempotent).
+      Matches `iped_item_tag` / `iped_item_untag` MCP tool semantics exactly.)
+- [x] Item selection write v2 (per-item REST, complementing the v1 batch `/selection` endpoints).
+      (`ItemSelectionV2.java` at `v2/sources/{sourceId}/items/{id}/selected`:
+      `GET` returns `{selected: bool}` via `IIPEDSource.getBookmarks().isChecked(id)`.
+      `PUT` — marks item as checked via `SelectionService.add()`.
+      `DELETE` — unchecks item via `SelectionService.remove()`.
+      All mutations audited.)
+- [x] Closes deferred iped-mcp Phase 2 item: "Access-control model shared with iped-webapi auth".
+      (The same `iped.webapi.allowed-sources` config that the SourceAccessFilter enforces is the
+      engine-side complement to iped-mcp's `--allowed-cases`. An operator deploys both with
+      consistent IDs to create a unified per-source permission boundary.)
+
+## Phase 7 — Geo and format conversion
+- [x] GeoJSON endpoint for geo-tagged items.
+      (`GeoV2.java` — `GET /v2/sources/{src}/geo` returns a GeoJSON FeatureCollection
+      for all items that have `ExtraProperties.LOCATIONS` (`"common:geo:locations"`)
+      metadata. Each `"lat;lon"` value becomes a GeoJSON Point Feature; items with
+      multiple location values (GPX tracks, KML multi-waypoints) contribute multiple
+      features. `total` and `truncated` fields handle large datasets; default limit
+      50 000; max 500 000. `GET /v2/sources/{src}/items/{id}/geo` returns features for
+      a single item. GeoJSON coordinate order: [longitude, latitude, altitude?].
+      `GeoV2Test` — 8 unit tests via reflection covering output format, coordinate
+      order, altitude injection, JSON escaping, and truncation metadata.)
+- [x] On-the-fly content format conversion (recorded in Phase 3 above — `ContentV2`
+      `?format=png` and `?transcode=webm`).
 
 ## Progress checks
 - OpenAPI spec is the source of truth: CI fails on spec/implementation drift.

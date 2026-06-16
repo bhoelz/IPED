@@ -45,7 +45,9 @@ public class CasesV2 {
     public Response listCases() throws Exception {
         List<Map<String, Object>> result = new ArrayList<>();
         for (SourceDescriptor sd : Sources.services().sources().listSources()) {
-            result.add(buildCaseMap(sd));
+            if (AllowedSources.isAllowed(sd.getId())) {
+                result.add(buildCaseMap(sd));
+            }
         }
         return Response.ok(result).build();
     }
