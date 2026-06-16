@@ -39,10 +39,19 @@
       more features for items with multiple LOCATIONS values, e.g. GPX tracks).
       GeoJSON coordinate order: [longitude, latitude, altitude?] per RFC 7946.
       JSON built with a StringBuilder to avoid pulling in a JSON serialiser dependency.)
-- [ ] `<iped-map>` island in iped-webui: Leaflet/MapLibre rendering against the GeoV2
+- [x] `<iped-map>` island in iped-webui: Leaflet/MapLibre rendering against the GeoV2
       endpoint; marker click dispatches `itemSelectedEvent`.
-- [ ] Tile-source configuration (offline tile packages for air-gapped labs vs OSM
-      online) in TOML config.
+      (`MapComponent` in `iped-webui/src/islands/map/` — see iped-webui ROADMAP Phase 2.)
+- [x] Tile-source configuration (offline tile packages for air-gapped labs vs OSM online).
+      (`WebMapProperties` `@ConfigurationProperties(prefix="iped.webui.map")` added to
+      `iped-webui-server`: `tile-url` (default OSM), `tile-attribution`, `height`.
+      `application.yml` defaults; all three override-able via `IPED_MAP_TILE_URL`,
+      `IPED_MAP_TILE_ATTRIBUTION`, `IPED_MAP_HEIGHT` env vars for air-gapped deployments.
+      `WorkspaceController` injects `WebMapProperties` and passes values to the
+      `page.rocker.html` template. `<iped-map>` added to workspace page with a "Map"
+      mode button in the segmented toolbar. Bridge script wires `item-selected` from the
+      map island to load info/viewer panels. `WorkspacePilotTest` extended with
+      `workspacePageEmbedsMapIslandWithTileConfig()` assertion.)
 - [ ] Track/heatmap rendering parity with the Swing map for large coordinate sets
       (server-side clustering for >100k points).
 
