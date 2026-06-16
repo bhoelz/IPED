@@ -31,17 +31,31 @@
       pom.xml.)
 
 ## Phase 2 — Maintenance mode for Swing analysis UI
-- [ ] Feature freeze policy: bug fixes and viewer parity support only; new analyst
+- [x] Feature freeze policy: bug fixes and viewer parity support only; new analyst
       features target the browser UI first (document exceptions here when made).
-- [ ] Inventory Swing-only features against the web backlog
-      (`specs/82-phase-0-swing-inventory.md`) and keep the parity gap list current in
-      this file.
+      (Policy: Swing analysis UI is in maintenance mode. New features go to browser UI
+      first. Exceptions are logged in `specs/96-swing-parity-gap.md` §F. See progress
+      checks below for how the gap list is maintained.)
+- [x] Inventory Swing-only features against the web backlog and keep the parity gap
+      list current.
+      (`specs/96-swing-parity-gap.md` created: tables for Search/Filtering, Result Table,
+      Viewers, Bookmarks/Export, Keyboard Shortcuts, Feature Freeze Exceptions, and
+      Migration-Blocking Items. Migration-blocking gaps (LibreOffice/CAD/ReferencedFile
+      viewers, check via keyboard, similar-document search, hit navigation, report dialog)
+      listed as prerequisites before Swing can be deprecated.)
 - [ ] Keep multi-case/processing UI working as the engine evolves (UIPropertyListener
-      decoupling from engine internals).
+      decoupling from engine internals — deferred; track in engine roadmap).
 
 ## Phase 3 — Companion app pivot (5.0 workstream 2)
-- [ ] Define the companion-app handoff protocol (open item from browser UI → native
+- [x] Define the companion-app handoff protocol (open item from browser UI → native
       viewer) — secure local channel, version compatibility checks.
+      (`specs/97-companion-handoff-protocol.md` — loopback HTTP on port 18743, HMAC
+      session token, `POST /open` with `CompanionHandoffRequest` JSON, `GET /version`
+      for protocol check. Security constraints: loopback-only, token validation, URL
+      allowlist, audit log.
+      `CompanionHandoff` interface + `CompanionHandoffRequest` record + `HttpCompanionHandoff`
+      implementation added to `iped.app.companion` package. HTTP probe + 1s cache in
+      `isAvailable()`; `openItem()` returns false on 415/503.)
 - [ ] Slim companion build: native-dependent viewers (LibreOffice embedding first)
       without the full analysis UI.
 - [ ] Installer/signing/update channel for the companion app.
