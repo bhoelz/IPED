@@ -88,10 +88,9 @@ public class IOUtil {
     }
 
     public static final boolean confirmOpenDialog(String fileName, String trueExt) {
-        String fileType = !trueExt.isEmpty() ? "(." + trueExt + ")"
-                : "(" + Messages.getString("IOUtil.ConfirmOpening.Unknown") + ")";
+        String fileType = !trueExt.isEmpty() ? "(." + trueExt + ")" : "(unknown)";
         int option = JOptionPane.showConfirmDialog(null,
-                Messages.getString("IOUtil.ConfirmOpening") + " \"" + fileName + "\" " + fileType + " ?", "",
+                "Are you sure to open or run \"" + fileName + "\" " + fileType + " ?", "",
                 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (option == JOptionPane.YES_OPTION)
             return true;
