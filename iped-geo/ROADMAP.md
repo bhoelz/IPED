@@ -9,16 +9,38 @@
 - KML/geo parsing (`iped.geo.parsers`) mixed in the same module as the rendering UI.
 
 ## Phase 1 — Split data from presentation
-- [ ] Separate geo *data* concerns (KML parse/export, coordinate extraction, track
+- [x] Separate geo *data* concerns (KML parse/export, coordinate extraction, track
       building) from *rendering* (WebKit map view) — either subpackages with an ArchUnit
       fence or a `iped-geo-core`/`iped-geo-swing` module split.
-- [ ] Geo data services consumable headless by `iped-webapi` (no JavaFX on the classpath
+      (`iped.geo.data` subpackage created with three types:
+      `GeoFeature` — immutable record (sourceId, docId, name, lat, lon, altitude?,
+      timestamp?); coordinates in WGS-84 decimal degrees.
+      `IGeoDataService` — headless interface: `extractFeatures(IIPEDSource, Iterable<IItemId>)`.
+      `GeoDataService` — implementation reading `ExtraProperties.LOCATIONS` ("lat;lon"
+      multi-valued) and `"common:altitude"` via `IItem.getMetadataMap()` (reflective, no
+      Tika compile dependency). No `java.awt`, `javax.swing`, `javafx` imports.
+      `IpedGeoArchitectureTest` — three ArchUnit rules enforcing the headless fence on
+      `iped.geo.data..`: no AWT/Swing, no JavaFX, no rendering-layer deps.)
+- [x] Geo data services consumable headless by `iped-webapi` (no JavaFX on the classpath
       for the server path).
+      (`GeoDataService` and `GeoFeature` are pure Java with only iped-api + SLF4J deps.
+      `GeoV2` in iped-webapi uses `IItem.getMetadataMap()` directly — no iped-geo compile
+      dependency needed from the webapi side.)
 
 ## Phase 2 — Web map experience (5.0 workstream 1)
-- [ ] Map view in the browser UI: serve geo features as GeoJSON from `iped-webapi`;
+- [x] Map view in the browser UI: serve geo features as GeoJSON from `iped-webapi`;
       render with a standard web map library (Leaflet/MapLibre) instead of embedded
       WebKit.
+      (`GeoV2.java` added to iped-webapi:
+      `GET /v2/sources/{sourceId}/geo` — GeoJSON FeatureCollection for all geolocated
+      items (uses SearchService with `ExtraProperties.LOCATIONS:*` query; default limit
+      50 000; `truncated: true` when result set is larger; `total` reflects full count).
+      `GET /v2/sources/{sourceId}/items/{id}/geo` — single-item FeatureCollection (0 or
+      more features for items with multiple LOCATIONS values, e.g. GPX tracks).
+      GeoJSON coordinate order: [longitude, latitude, altitude?] per RFC 7946.
+      JSON built with a StringBuilder to avoid pulling in a JSON serialiser dependency.)
+- [ ] `<iped-map>` island in iped-webui: Leaflet/MapLibre rendering against the GeoV2
+      endpoint; marker click dispatches `itemSelectedEvent`.
 - [ ] Tile-source configuration (offline tile packages for air-gapped labs vs OSM
       online) in TOML config.
 - [ ] Track/heatmap rendering parity with the Swing map for large coordinate sets
@@ -29,5 +51,8 @@
       rest of the Swing UI; KML export remains as a data feature.
 
 ## Progress checks
-- `GET` geo endpoints return GeoJSON for a real case; browser map renders tracks.
-- No JavaFX classes loaded in headless server mode.
+- `GET /v2/sources/{src}/geo` returns GeoJSON for a real case; `<iped-map>` island
+  renders markers and fires `item-selected` on click.
+- `iped.geo.data` ArchUnit fence passes (no AWT/Swing/JavaFX in data layer).
+- No JavaFX classes loaded in headless server mode (verified by checking JVM class loading
+  logs when starting `iped-webapi` without a display).
