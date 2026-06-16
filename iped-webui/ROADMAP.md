@@ -52,17 +52,31 @@
       similarly uses `string[]`. Results-grid call sites updated to match.
 - [x] Viewer-host island (hex/text/image/pdf rendering against viewer endpoints).
       (Completed in Phase 5 — see below.)
-- [ ] Map island or SSR-rendered map — decide with `iped-geo` Phase 2.
+- [x] Map island — `<iped-map>` Leaflet island consuming `GeoV2` GeoJSON endpoint.
+      (`MapComponent` — extends `IslandBase`; inputs: `source-id`, `api-base`,
+      `tile-url` (defaults to OSM online; air-gapped deployments set a local tile
+      server), `tile-attribution`, `height`. Fetches `GET /v2/sources/{src}/geo` on
+      `source-id` change; renders Leaflet `featureGroup` markers; auto-fits bounds.
+      On marker click dispatches both `map-marker-selected` (carries lat/lon) and
+      `item-selected` (standard cross-island event). Truncation notice shown when
+      `truncated: true` in response. Error state + `island-error` dispatch on HTTP
+      failure. `ViewEncapsulation.None` + SCSS `@import "leaflet/dist/leaflet.css"` for
+      global tile/marker styles. `leaflet` added to `dependencies`; `@types/leaflet`
+      to `devDependencies`. Registered as `<iped-map>` in `main.ts`. `mapMarkerSelectedEvent`
+      added to `events.ts`. 8 component tests with Leaflet stubbed via jest.mock.)
 
 ## Phase 3 — SPA retirement
 - [x] Remove the SPA `build` and `serve` architect targets from `angular.json`.
       (`npm run build` no longer builds the SPA shell; only `build:islands` /
       `build:islands:dev` are active. `src/app/app.routes.ts` replaced with an empty
       routes array — the broken lazy-load of `WorkspacePage` is gone.)
-- [ ] Delete `src/app/domains/` tree — dead code with no remaining importers.
-      Run: `git rm -r iped-webui/src/app/domains`
-- [ ] Remove dead SPA dependencies from `package.json` once the domains tree is deleted:
-      `@angular/router`, `@angular/forms` (not imported by any island).
+- [x] Delete `src/app/domains/` tree — dead code with no remaining importers.
+      (`git rm -r iped-webui/src/app/domains` — 12 files removed: item/jobs/search/
+      selection/session/viewer facades plus workspace-page component.)
+- [x] Remove dead SPA dependencies from `package.json` once the domains tree is deleted:
+      `@angular/router`, `@angular/forms` removed from dependencies.
+      (`app.ts` no longer imports `RouterOutlet`; `app.config.ts` no longer calls
+      `provideRouter`; `app.routes.ts` deleted. Both packages are unused by any island.)
 
 ## Phase 4 — Quality bar
 - [x] Component tests per island (attribute changes, event emission, error states).

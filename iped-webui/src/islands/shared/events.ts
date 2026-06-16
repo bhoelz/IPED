@@ -81,7 +81,7 @@ export function similarImageSearchEvent(detail: SimilarImageSearchDetail): Custo
 // Phase 5 event types
 // ---------------------------------------------------------------------------
 
-export type ViewerType = 'text' | 'html' | 'image' | 'pdf' | 'hex' | 'unsupported';
+export type ViewerType = 'text' | 'html' | 'image' | 'pdf' | 'audio' | 'video' | 'email' | 'hex' | 'unsupported';
 
 export interface ViewerReadyDetail {
   itemId: string;
@@ -91,4 +91,19 @@ export interface ViewerReadyDetail {
 
 export function viewerReadyEvent(detail: ViewerReadyDetail): CustomEvent<ViewerReadyDetail> {
   return new CustomEvent('viewer-ready', {detail, bubbles: true, composed: true});
+}
+
+// ---------------------------------------------------------------------------
+// Map island event types
+// ---------------------------------------------------------------------------
+
+export interface MapMarkerSelectedDetail extends ItemSelectedDetail {
+  /** WGS-84 latitude of the clicked marker. */
+  latitude: number;
+  /** WGS-84 longitude of the clicked marker. */
+  longitude: number;
+}
+
+export function mapMarkerSelectedEvent(detail: MapMarkerSelectedDetail): CustomEvent<MapMarkerSelectedDetail> {
+  return new CustomEvent('map-marker-selected', {detail, bubbles: true, composed: true});
 }

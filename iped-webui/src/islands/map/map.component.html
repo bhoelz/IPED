@@ -1,0 +1,38 @@
+<div class="iped-map-root" [style.height]="height">
+  <div #mapEl class="iped-map-canvas"></div>
+
+  @if (loading()) {
+    <div class="iped-map-overlay iped-map-loading">
+      <div class="iped-map-spinner"></div>
+      <span>Loading locations…</span>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="iped-map-overlay iped-map-error">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4m0 4h.01"/>
+      </svg>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (!loading() && !error() && featureCount() === 0) {
+    <div class="iped-map-overlay iped-map-empty">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      <span>No geolocated items in this source</span>
+    </div>
+  }
+
+  @if (truncated()) {
+    <div class="iped-map-notice">
+      Showing first {{ featureCount() }} locations — download KML for full dataset
+    </div>
+  }
+</div>

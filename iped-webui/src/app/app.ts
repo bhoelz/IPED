@@ -1,9 +1,8 @@
 import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
 
 @Component({
   selector: 'iped-root',
-  imports: [RouterOutlet],
+  imports: [],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

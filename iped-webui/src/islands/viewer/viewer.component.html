@@ -22,7 +22,7 @@
   </div>
 } @else if (viewerType() === 'image') {
   <div class="viewer-image">
-    <img [src]="contentUrl()"
+    <img [src]="imageUrl()"
          [alt]="'Content of item ' + itemId"
          (error)="error.set('Image failed to load')"
          (load)="dispatchReady('image')">
@@ -39,6 +39,94 @@
   </div>
 } @else if (viewerType() === 'text') {
   <pre class="viewer-text">{{ textContent() }}</pre>
+} @else if (viewerType() === 'audio') {
+  <div class="viewer-audio">
+    <div class="viewer-audio-player">
+      <audio controls [src]="mediaUrl()" (error)="error.set('Audio playback failed or codec not supported by browser')"
+             (canplay)="error.set(null)">
+        Your browser does not support the audio element.
+      </audio>
+      @if (audioMeta(); as meta) {
+        @if (meta.durationStr || mediaType) {
+          <div class="viewer-audio-meta">
+            @if (meta.durationStr) { <span>{{ meta.durationStr }}</span> }
+            @if (mediaType) { <span class="viewer-audio-type">{{ mediaType }}</span> }
+          </div>
+        }
+      }
+    </div>
+    <div class="viewer-audio-transcript">
+      <div class="viewer-audio-transcript-label">
+        Transcription
+        @if (audioMeta()?.confidencePct) {
+          <span class="viewer-audio-confidence">[{{ audioMeta()!.confidencePct }}]</span>
+        }
+      </div>
+      @if (audioMetaLoading()) {
+        <div class="viewer-audio-transcript-loading">Loading…</div>
+      } @else if (audioMeta()?.transcription) {
+        <div class="viewer-audio-transcript-text">{{ audioMeta()!.transcription }}</div>
+      } @else {
+        <div class="viewer-audio-transcript-empty">No transcription available</div>
+      }
+    </div>
+  </div>
+} @else if (viewerType() === 'video') {
+  <div class="viewer-video">
+    <video controls [src]="mediaUrl()" (error)="error.set('Video playback failed or codec not supported by browser')"
+           (canplay)="error.set(null)">
+      Your browser does not support the video element.
+    </video>
+  </div>
+} @else if (viewerType() === 'email') {
+  <div class="viewer-email">
+    @if (emailLoading()) {
+      <div class="viewer-loading">
+        <div class="viewer-spinner"></div>
+        <span>Loading…</span>
+      </div>
+    } @else if (emailData(); as data) {
+      <div class="viewer-email-headers">
+        @if (data.subject) {
+          <div class="viewer-email-row viewer-email-subject">
+            <span class="viewer-email-label">Subject</span>
+            <span class="viewer-email-value">{{ data.subject }}</span>
+          </div>
+        }
+        @if (data.from) {
+          <div class="viewer-email-row">
+            <span class="viewer-email-label">From</span>
+            <span class="viewer-email-value">{{ data.from }}</span>
+          </div>
+        }
+        @if (data.to) {
+          <div class="viewer-email-row">
+            <span class="viewer-email-label">To</span>
+            <span class="viewer-email-value">{{ data.to }}</span>
+          </div>
+        }
+        @if (data.cc) {
+          <div class="viewer-email-row">
+            <span class="viewer-email-label">CC</span>
+            <span class="viewer-email-value">{{ data.cc }}</span>
+          </div>
+        }
+        @if (data.bcc) {
+          <div class="viewer-email-row">
+            <span class="viewer-email-label">BCC</span>
+            <span class="viewer-email-value">{{ data.bcc }}</span>
+          </div>
+        }
+        @if (data.date) {
+          <div class="viewer-email-row">
+            <span class="viewer-email-label">Date</span>
+            <span class="viewer-email-value">{{ data.date }}</span>
+          </div>
+        }
+      </div>
+      <div class="viewer-email-body" [innerHTML]="data.body"></div>
+    }
+  </div>
 } @else if (viewerType() === 'hex') {
   <iped-hex-viewer-impl
     [itemId]="hexItemId"

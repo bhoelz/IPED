@@ -1,0 +1,102 @@
+// Leaflet base CSS — imported globally because ViewEncapsulation.None is set
+// on this component. Vite/esbuild resolves node_modules automatically.
+@import "leaflet/dist/leaflet.css";
+
+// ── Root container ─────────────────────────────────────────────────────────
+
+.iped-map-root {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface, #f4f4f4);
+  border-radius: var(--radius, 4px);
+}
+
+// ── Map canvas ─────────────────────────────────────────────────────────────
+
+.iped-map-canvas {
+  width: 100%;
+  height: 100%;
+  // Leaflet sets z-index on its tiles/controls; keep them inside this stacking context.
+  isolation: isolate;
+}
+
+// ── Overlays (loading / error / empty) ────────────────────────────────────
+
+.iped-map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000; // above Leaflet tile layers (z-index ~400)
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.iped-map-loading {
+  background: color-mix(in srgb, var(--surface, #f4f4f4) 80%, transparent);
+  color: var(--text-secondary, #555);
+}
+
+.iped-map-error {
+  background: color-mix(in srgb, var(--surface, #f4f4f4) 85%, transparent);
+  color: var(--bad, #c0392b);
+}
+
+.iped-map-empty {
+  background: transparent;
+  color: var(--text-secondary, #888);
+}
+
+// ── Loading spinner ────────────────────────────────────────────────────────
+
+.iped-map-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border, #ddd);
+  border-top-color: var(--accent, #2980b9);
+  border-radius: 50%;
+  animation: iped-map-spin 0.7s linear infinite;
+}
+
+@keyframes iped-map-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Truncation notice ─────────────────────────────────────────────────────
+
+.iped-map-notice {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--warn, #e67e22) 15%, white);
+  color: var(--warn, #c0392b);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+// ── Popup content ─────────────────────────────────────────────────────────
+
+.iped-map-popup {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  max-width: 240px;
+  word-break: break-word;
+
+  strong {
+    display: block;
+    font-weight: 600;
+  }
+
+  small {
+    color: var(--text-secondary, #666);
+  }
+}

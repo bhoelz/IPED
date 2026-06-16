@@ -31,6 +31,7 @@ import {createCustomElement} from '@angular/elements';
     {TimelineComponent},
     {GraphComponent},
     {ViewerComponent},
+    {MapComponent},
   ] = await Promise.all([
     import('./results-grid/results-grid.component'),
     import('./gallery/gallery.component'),
@@ -38,6 +39,7 @@ import {createCustomElement} from '@angular/elements';
     import('./timeline/timeline.component'),
     import('./graph/graph.component'),
     import('./viewer/viewer.component'),
+    import('./map/map.component'),
   ]);
 
   const definitions: [string, CustomElementConstructor][] = [
@@ -47,6 +49,7 @@ import {createCustomElement} from '@angular/elements';
     ['iped-timeline',     createCustomElement(TimelineComponent,     {injector: app.injector})],
     ['iped-graph',        createCustomElement(GraphComponent,        {injector: app.injector})],
     ['iped-viewer',       createCustomElement(ViewerComponent,       {injector: app.injector})],
+    ['iped-map',          createCustomElement(MapComponent,          {injector: app.injector})],
   ];
 
   for (const [name, ctor] of definitions) {

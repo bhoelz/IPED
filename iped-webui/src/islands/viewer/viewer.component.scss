@@ -131,3 +131,157 @@ iped-hex-viewer-impl {
   flex: 1;
   min-height: 0;
 }
+
+.viewer-video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  background: #000;
+  overflow: hidden;
+
+  video {
+    max-width: 100%;
+    max-height: 100%;
+    outline: none;
+  }
+}
+
+// ── Email viewer ────────────────────────────────────────────────────────────
+
+.viewer-email {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 13px;
+}
+
+.viewer-email-headers {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border, #313244);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.viewer-email-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 8px;
+  line-height: 1.5;
+}
+
+.viewer-email-subject {
+  font-weight: 600;
+  color: var(--fg, #cdd6f4);
+  margin-bottom: 4px;
+}
+
+.viewer-email-label {
+  color: var(--muted, #6c7086);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-top: 1px;
+}
+
+.viewer-email-value {
+  color: var(--fg, #cdd6f4);
+  word-break: break-all;
+}
+
+.viewer-email-body {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 20px;
+  line-height: 1.6;
+  color: var(--fg, #cdd6f4);
+
+  mark {
+    background: color-mix(in srgb, var(--accent, #89b4fa) 30%, transparent);
+    color: inherit;
+    border-radius: 2px;
+  }
+}
+
+// ── Audio viewer ─────────────────────────────────────────────────────────────
+
+.viewer-audio {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  gap: 16px;
+  overflow: auto;
+  flex: 1;
+}
+
+.viewer-audio-player {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  audio {
+    width: 100%;
+    border-radius: 6px;
+  }
+}
+
+.viewer-audio-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted, #6c7086);
+  align-items: center;
+}
+
+.viewer-audio-type {
+  font-family: var(--font-mono, monospace);
+  background: var(--surface, #2a2a3e);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.viewer-audio-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border, #313244);
+  padding-top: 12px;
+}
+
+.viewer-audio-transcript-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted, #6c7086);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.viewer-audio-confidence {
+  color: var(--good, #a6e3a1);
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.viewer-audio-transcript-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--fg, #cdd6f4);
+  white-space: pre-wrap;
+  font-family: var(--font-sans, sans-serif);
+}
+
+.viewer-audio-transcript-empty,
+.viewer-audio-transcript-loading {
+  font-size: 12px;
+  color: var(--muted, #6c7086);
+  font-style: italic;
+}
