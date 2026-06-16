@@ -1,6 +1,7 @@
 package iped.webui.web;
 
 import iped.webui.web.WorkspaceFragmentController.EvidenceNode;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,12 +16,13 @@ import java.util.Map;
  *
  * <p>Spring MVC route specificity ensures these more-specific paths take
  * precedence over the {@link ApiProxyController} catch-all, exactly as
- * {@link SearchStubController} does for the search contract.
+ * {@link SearchBffController} does for the search contract.
  *
  * <p>Delete or feature-flag these when the real {@code iped-webapi} v2
  * endpoints ship and the proxy can forward to the engine.
  */
 @RestController
+@Profile("demo")
 public class DemoDataController {
 
     // ── Categories (C-02) ──────────────────────────────────────────────────

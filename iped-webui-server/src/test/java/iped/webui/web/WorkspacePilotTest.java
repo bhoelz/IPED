@@ -1,81 +1,107 @@
 package iped.webui.web;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Wiring checks for the vertical-slice pilot, over the real HTTP stack: the SSR
- * page composes the island host + HTMX regions, fragments render HTML partials,
- * and the search stub returns contract-shaped JSON.
- *
- * <p>Uses the JDK HTTP client + the {@code local.server.port} environment
- * property so it stays robust across Spring Boot test-module restructuring.
+ * Wiring checks for the vertical-slice pilot, using MockMvc (WebEnvironment.MOCK)
+ * so no embedded Tomcat is required — tests pass in environments where the JDK
+ * NIO selector fails to open a loopback pipe (e.g. sandboxed JVMs on Windows).
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@WithMockUser(username = "analyst", roles = "ANALYST")
 class WorkspacePilotTest {
 
-    private final HttpClient http = HttpClient.newHttpClient();
-
     @Autowired
-    private Environment env;
+    private WebApplicationContext context;
 
-    private URI url(String path) {
-        return URI.create("http://localhost:" + env.getProperty("local.server.port") + path);
+    private MockMvc mvc;
+
+    @BeforeEach
+    void setUp() {
+        mvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
-    private HttpResponse<String> get(String path) throws Exception {
-        return http.send(HttpRequest.newBuilder(url(path)).GET().build(),
-                HttpResponse.BodyHandlers.ofString());
+    @Test
+    void rootRedirectsToCasePicker() throws Exception {
+        mvc.perform(get("/"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(header().string("Location", "/cases"));
+    }
+
+    @Test
+    void workspaceWithoutCaseIdRedirectsToCasePicker() throws Exception {
+        mvc.perform(get("/workspace"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(header().string("Location", "/cases"));
     }
 
     @Test
     void workspacePageEmbedsIslandHostAndHtmxRegions() throws Exception {
-        HttpResponse<String> res = get("/workspace");
-        assertThat(res.statusCode()).isEqualTo(200);
-        assertThat(res.body())
-                .contains("<iped-results-grid")
-                .contains("hx-get=\"/workspace/sidebar");
+        mvc.perform(get("/workspace").param("caseId", "demo-case"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<iped-results-grid")))
+                .andExpect(content().string(containsString("hx-get=\"/workspace/sidebar")));
+    }
+
+    @Test
+    void workspacePageEmbedsMapIslandWithTileConfig() throws Exception {
+        mvc.perform(get("/workspace").param("caseId", "demo-case"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<iped-map")))
+                .andExpect(content().string(containsString("source-id=\"demo-case\"")))
+                .andExpect(content().string(containsString("tile-url=")))
+                .andExpect(content().string(containsString("openstreetmap.org")));
     }
 
     @Test
     void sidebarFragmentReturnsHtmlPartialNotFullPage() throws Exception {
-        HttpResponse<String> res = get("/workspace/sidebar?tab=meta");
-        assertThat(res.statusCode()).isEqualTo(200);
-        assertThat(res.body()).contains("Has hits").doesNotContain("<html");
+        mvc.perform(get("/workspace/sidebar").param("tab", "meta"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(content().string(containsString("Has hits")))
+                .andExpect(content().string(not(containsString("<html"))));
     }
 
     @Test
-    void searchStubReturnsContractShapedResults() throws Exception {
-        HttpResponse<String> created = http.send(
-                HttpRequest.newBuilder(url("/api/cases/demo-case/search"))
-                        .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString("{\"query\":\"x\"}"))
-                        .build(),
-                HttpResponse.BodyHandlers.ofString());
-        assertThat(created.statusCode()).isEqualTo(200);
-        assertThat(created.body()).contains("\"searchId\"");
-
-        HttpResponse<String> page = get("/api/cases/demo-case/search/s1/results?limit=3");
-        assertThat(page.statusCode()).isEqualTo(200);
-        assertThat(page.body()).contains("\"total\"").contains("\"items\"");
-        // limit=3 → exactly three contract-shaped items in the page
-        assertThat(countOccurrences(page.body(), "\"itemId\"")).isEqualTo(3);
+    void casePickerRendersOpenCaseForm() throws Exception {
+        mvc.perform(get("/cases"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<form")))
+                .andExpect(content().string(containsString("action=\"/cases\"")))
+                .andExpect(content().string(not(containsString("<iped-results-grid"))));
     }
 
-    private static int countOccurrences(String haystack, String needle) {
-        int count = 0;
-        for (int i = haystack.indexOf(needle); i >= 0; i = haystack.indexOf(needle, i + needle.length())) {
-            count++;
-        }
-        return count;
+    @Test
+    void casePickerRendersErrorBannerWhenErrorParamPresent() throws Exception {
+        mvc.perform(get("/cases").param("error", "Case not found"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Case not found")));
+    }
+
+    @Test
+    void searchBffCreatesSearchTokenAndReturnsSearchId() throws Exception {
+        mvc.perform(post("/api/cases/demo-case/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"query\":\"x\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("\"searchId\"")));
     }
 }

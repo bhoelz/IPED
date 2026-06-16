@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -35,7 +36,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     RestClient ipedWebapiClient() {
+        // Use SimpleClientHttpRequestFactory (backed by java.net.HttpURLConnection)
+        // rather than the JDK HttpClient default. The proxy is synchronous and
+        // does not need async I/O, and HttpURLConnection works in all environments.
+        var factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(10_000);
+        factory.setReadTimeout(30_000);
         return RestClient.builder()
+                .requestFactory(factory)
                 .baseUrl(properties.apiBaseUrl())
                 .build();
     }

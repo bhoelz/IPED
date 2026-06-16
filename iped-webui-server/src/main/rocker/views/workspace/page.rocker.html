@@ -1,5 +1,5 @@
 @import java.util.List
-@args (List<String> styles, List<String> scripts, String caseId)
+@args (List<String> styles, List<String> scripts, String caseId, String username, String tileUrl, String tileAttribution, String mapHeight)
 @views.layout.main.template("IPED — Investigation Platform", styles, scripts) -> {
 <div class="app">
 
@@ -9,7 +9,7 @@
       <div class="brand-mark">I</div>
       <div>
         <div class="brand-name">IPED</div>
-        <div class="brand-case mono">@caseId</div>
+        <a href="/cases" class="brand-case mono" title="Switch case" style="text-decoration:none;color:inherit;opacity:.75">@caseId</a>
       </div>
     </div>
 
@@ -52,10 +52,19 @@
       <div class="profile-area">
         <div class="avatar"><span style="color:var(--ok)">●</span></div>
         <div style="line-height:1.15">
-          <div style="font-size:11.5px">@caseId</div>
+          <div style="font-size:11.5px">@username</div>
           <div class="dim mono" style="font-size:10px">analyst</div>
         </div>
       </div>
+      <form method="post" action="/logout" style="display:contents">
+        <button type="submit" class="iconbtn" title="Sign out">
+          <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </form>
     </div>
   </header>
 
@@ -74,6 +83,7 @@
         <button data-mode="gallery" onclick="ipedSetMode('gallery')">Gallery</button>
         <button data-mode="timeline" onclick="ipedSetMode('timeline')">Timeline</button>
         <button data-mode="graph" onclick="ipedSetMode('graph')">Links</button>
+        <button data-mode="map" onclick="ipedSetMode('map')">Map</button>
       </div>
       @* Gallery-specific toolbar — shown only in gallery mode *@
       <div id="gallery-tools" hidden style="display:none;align-items:center;gap:2px;margin-right:6px">
@@ -139,6 +149,16 @@
                 api-base="/api"
                 hidden>
     </iped-graph>
+
+    @* ── Map island — Leaflet consuming GeoV2 endpoint ──────────────── *@
+    <iped-map data-view="map"
+              source-id="@caseId"
+              api-base="/api"
+              tile-url="@tileUrl"
+              tile-attribution="@tileAttribution"
+              height="@mapHeight"
+              hidden>
+    </iped-map>
   </section>
 
   <div class="resize-handle resize-handle-right" id="rh-right" title="Drag to resize right panel"></div>
@@ -146,10 +166,10 @@
   @* ══════════════════════════════════════════════════ RIGHT PANELS ════ *@
   <div class="right">
     <div class="panel" style="flex:1;min-height:0" id="info-panel"
-         hx-get="/workspace/info?tab=hits" hx-trigger="load" hx-target="#info-panel" hx-swap="innerHTML">
+         hx-get="/workspace/info?tab=hits&caseId=@caseId" hx-trigger="load" hx-target="#info-panel" hx-swap="innerHTML">
     </div>
     <div class="panel" style="flex:1;min-height:0" id="viewer-panel"
-         hx-get="/workspace/viewer?mode=preview" hx-trigger="load" hx-target="#viewer-panel" hx-swap="innerHTML">
+         hx-get="/workspace/viewer?mode=preview&caseId=@caseId" hx-trigger="load" hx-target="#viewer-panel" hx-swap="innerHTML">
     </div>
   </div>
 
@@ -245,6 +265,7 @@
   function gallery() { return document.querySelector('iped-gallery'); }
   function timeline(){ return document.querySelector('iped-timeline'); }
   function graph()   { return document.querySelector('iped-graph'); }
+  function map()     { return document.querySelector('iped-map'); }
   function allViews() { return document.querySelectorAll('[data-view]'); }
 
   // ── Search ─────────────────────────────────────────────────────────────
@@ -363,7 +384,8 @@
     htmx.ajax('GET', '/workspace/info?tab=hits&itemId=' + encodeURIComponent(id) +
                      '&caseId=' + encodeURIComponent(cid),
               { target: '#info-panel', swap: 'innerHTML' });
-    htmx.ajax('GET', '/workspace/viewer?mode=preview&itemId=' + encodeURIComponent(id),
+    htmx.ajax('GET', '/workspace/viewer?mode=preview&itemId=' + encodeURIComponent(id) +
+                     '&caseId=' + encodeURIComponent(cid),
               { target: '#viewer-panel', swap: 'innerHTML' });
     var gr = graph();
     if (gr) gr.setAttribute('item-id', id);
@@ -427,6 +449,11 @@
     // graph item-selected also loads info/viewer panels
     var gr = graph();
     if (gr) gr.addEventListener('item-selected', function (e) {
+      onItemSelected(e.detail && e.detail.itemId);
+    });
+    // map: item-selected on marker click loads info/viewer panels
+    var mp = map();
+    if (mp) mp.addEventListener('item-selected', function (e) {
       onItemSelected(e.detail && e.detail.itemId);
     });
   });

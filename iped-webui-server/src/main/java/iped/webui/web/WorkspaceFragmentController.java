@@ -140,10 +140,13 @@ public class WorkspaceFragmentController {
     @GetMapping(path = "/workspace/sidebar", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String sidebar(@RequestParam(defaultValue = "cat") String tab,
-                          @RequestParam(defaultValue = "demo-case") String caseId) {
+                          @RequestParam(required = false) String caseId) {
+        caseId = resolvedCaseId(caseId);
         String active = SIDEBAR_TABS.contains(tab) ? tab : "cat";
         var catsResult = active.equals("cat")  ? fetchCategories(caseId) : FetchResult.demo(List.<CategoryEntry>of());
         var bmsResult  = active.equals("coll") ? fetchBookmarks(caseId)  : FetchResult.demo(List.<BookmarkEntry>of());
+        // No v2 webapi endpoints exist yet for AI classifiers or evidence tree roots;
+        // these tabs show demo data until EPIC-WEB-07 / EPIC-WEB-08 ship.
         List<AiClassifier> clf  = active.equals("ai")   ? DEMO_AI_CLASSIFIERS : List.of();
         List<EvidenceNode> evid = active.equals("evid") ? DEMO_EVIDENCE_ROOTS : List.of();
 
@@ -163,7 +166,8 @@ public class WorkspaceFragmentController {
     @GetMapping(path = "/workspace/sidebar/evid-children", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String evidenceChildrenFragment(@RequestParam String nodeId,
-                                           @RequestParam(defaultValue = "demo-case") String caseId) {
+                                           @RequestParam(required = false) String caseId) {
+        caseId = resolvedCaseId(caseId);
         List<EvidenceNode> children = fetchEvidenceChildren(caseId, nodeId);
         return evidenceChildren.template(caseId, children).render().toString();
     }
@@ -213,7 +217,8 @@ public class WorkspaceFragmentController {
     @ResponseBody
     public String infoPanel(@RequestParam(defaultValue = "hits") String tab,
                             @RequestParam(required = false) String itemId,
-                            @RequestParam(defaultValue = "demo-case") String caseId) {
+                            @RequestParam(required = false) String caseId) {
+        caseId = resolvedCaseId(caseId);
         String active = INFO_TABS.contains(tab) ? tab : "hits";
         String safeId = itemId == null ? "" : itemId;
         Map<String, String> metadata = fetchMetadata(safeId);
@@ -224,9 +229,10 @@ public class WorkspaceFragmentController {
     @GetMapping(path = "/workspace/info/hits", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String infoHits(@RequestParam(required = false) String itemId,
-                           @RequestParam(defaultValue = "demo-case") String caseId,
+                           @RequestParam(required = false) String caseId,
                            @RequestParam(defaultValue = "") String query,
                            @RequestParam(defaultValue = "0") int index) {
+        caseId = resolvedCaseId(caseId);
         String safeId = itemId == null ? "" : itemId;
         List<HitSnippet> snippets = fetchHits(caseId, safeId, query);
         int cur = snippets.isEmpty() ? 0 : Math.max(0, Math.min(index, snippets.size() - 1));
@@ -265,7 +271,9 @@ public class WorkspaceFragmentController {
     @GetMapping(path = "/workspace/viewer", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String viewer(@RequestParam(defaultValue = "preview") String mode,
-                         @RequestParam(required = false) String itemId) {
+                         @RequestParam(required = false) String itemId,
+                         @RequestParam(required = false) String caseId) {
+        caseId = resolvedCaseId(caseId);
         String active = VIEWER_MODES.contains(mode) ? mode : "preview";
         String safeId = itemId == null ? "" : itemId;
         boolean needsMeta = active.equals("meta") || active.equals("preview");
@@ -294,37 +302,49 @@ public class WorkspaceFragmentController {
 
     @PostMapping(path = "/workspace/export", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
+    @SuppressWarnings("unchecked")
     public String startExport(@RequestParam(defaultValue = "checked") String scope,
                               @RequestParam(defaultValue = "zip") String format) {
-        return """
-                <div class="modal-backdrop" onclick="document.getElementById('modal').innerHTML=''"></div>
-                <div class="modal-box" role="dialog" aria-modal="true" aria-label="Export started">
-                  <div class="modal-header">
-                    <span style="font-weight:600">Export queued</span>
-                    <button class="iconbtn" style="margin-left:auto"
-                            onclick="document.getElementById('modal').innerHTML=''"
-                            title="Close">
-                      <svg class="icn" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                    </button>
-                  </div>
-                  <div class="modal-body" style="padding:16px 20px">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-                      <span class="pulse"></span>
-                      <span>Preparing <strong>%s</strong> export (%s)…</span>
-                    </div>
-                    <div style="font-size:11.5px;color:var(--text-dim)">
-                      Async export jobs (EPIC-WEB-04) are not yet wired to the engine.
-                      This will trigger a real download once the job API lands.
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button class="btn-accent" onclick="document.getElementById('modal').innerHTML=''">Close</button>
-                  </div>
-                </div>
-                """.formatted(format.toUpperCase(), scope);
+        try {
+            Map<?, ?> resp = apiClient.post()
+                    .uri("/v2/jobs")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("type", "export", "params", Map.of("scope", scope, "format", format)))
+                    .retrieve()
+                    .body(Map.class);
+            String jobId = resp != null && resp.get("id") != null ? resp.get("id").toString() : "?";
+            String status = resp != null && resp.get("status") != null ? resp.get("status").toString() : "pending";
+            return exportModal(jobId, status);
+        } catch (RestClientException e) {
+            log.warn("Export job submission failed: {}", e.getMessage());
+            return exportErrorModal("Could not queue export: iped-webapi unreachable.");
+        }
+    }
+
+    @GetMapping(path = "/workspace/export/status/{jobId}", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    @SuppressWarnings("unchecked")
+    public String exportStatus(@PathVariable String jobId) {
+        try {
+            Map<?, ?> body = apiClient.get().uri("/v2/jobs/{id}", jobId).retrieve().body(Map.class);
+            String status = body != null && body.get("status") != null ? body.get("status").toString() : "unknown";
+            boolean terminal = Set.of("done", "completed", "failed", "error", "cancelled")
+                    .contains(status.toLowerCase());
+            return exportStatusBody(jobId, status, terminal);
+        } catch (RestClientException e) {
+            log.debug("Could not poll job {}: {}", jobId, e.getMessage());
+            return exportStatusBody(jobId, "unknown", true);
+        }
     }
 
     // ── Private helpers ────────────────────────────────────────────────────
+
+    /** Returns {@code caseId} if non-blank, otherwise falls back to the session's active case. */
+    private String resolvedCaseId(String caseId) {
+        if (caseId != null && !caseId.isBlank()) return caseId;
+        String active = filterState.getActiveCaseId();
+        return active != null ? active : "";
+    }
 
     /**
      * Parses "{sourceId}:{docId}" item IDs.
@@ -367,7 +387,10 @@ public class WorkspaceFragmentController {
             Map<?, ?> body = apiClient.get().uri("/v2/bookmarks").retrieve().body(Map.class);
             if (body != null && body.get("bookmarks") instanceof List<?> list) {
                 return FetchResult.live(list.stream()
-                        .map(s -> new BookmarkEntry(s.toString(), -1L, "#888")).toList());
+                        .map(s -> {
+                            String name = s.toString();
+                            return new BookmarkEntry(name, fetchBookmarkCount(name), "#888");
+                        }).toList());
             }
         } catch (RestClientException e) {
             log.debug("Bookmarks unavailable: {}", e.getMessage());
@@ -375,12 +398,15 @@ public class WorkspaceFragmentController {
         return FetchResult.demo(DEMO_BOOKMARKS);
     }
 
-    private List<AiClassifier> fetchAiFilters(String caseId) {
-        return DEMO_AI_CLASSIFIERS;
-    }
-
-    private List<EvidenceNode> fetchEvidenceRoots(String caseId) {
-        return DEMO_EVIDENCE_ROOTS;
+    @SuppressWarnings("unchecked")
+    private long fetchBookmarkCount(String name) {
+        try {
+            Map<?, ?> body = apiClient.get().uri("/v2/bookmarks/{name}", name).retrieve().body(Map.class);
+            if (body != null && body.get("count") instanceof Number n) return n.longValue();
+        } catch (RestClientException e) {
+            log.debug("Could not fetch count for bookmark {}: {}", name, e.getMessage());
+        }
+        return -1L;
     }
 
     private List<EvidenceNode> fetchEvidenceChildren(String caseId, String nodeId) {
@@ -548,6 +574,50 @@ public class WorkspaceFragmentController {
     private static void addField(Map<String, String> out, String label, Map<?, ?> src, String key) {
         Object v = src.get(key);
         if (v != null) out.put(label, v.toString());
+    }
+
+    // ── Export HTML helpers ────────────────────────────────────────────────
+
+    private static final String CLOSE_BTN =
+            "<button class=\"iconbtn\" style=\"margin-left:auto\" " +
+            "onclick=\"document.getElementById('modal').innerHTML=''\" title=\"Close\">" +
+            "<svg class=\"icn\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" " +
+            "stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg></button>";
+
+    private static String exportModal(String jobId, String initialStatus) {
+        return "<div class=\"modal-backdrop\" onclick=\"document.getElementById('modal').innerHTML=''\"></div>" +
+               "<div class=\"modal-box\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Export progress\">" +
+               "<div class=\"modal-header\"><span style=\"font-weight:600\">Export queued</span>" + CLOSE_BTN + "</div>" +
+               "<div id=\"export-body\" hx-get=\"/workspace/export/status/" + jobId + "\"" +
+               " hx-trigger=\"load, every 3s\" hx-swap=\"outerHTML\">" +
+               exportStatusBody(jobId, initialStatus, false) + "</div>" +
+               "<div class=\"modal-footer\"><button class=\"btn-accent\"" +
+               " onclick=\"document.getElementById('modal').innerHTML=''\">Close</button></div></div>";
+    }
+
+    private static String exportErrorModal(String message) {
+        return "<div class=\"modal-backdrop\" onclick=\"document.getElementById('modal').innerHTML=''\"></div>" +
+               "<div class=\"modal-box\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Export error\">" +
+               "<div class=\"modal-header\"><span style=\"font-weight:600\">Export failed</span>" + CLOSE_BTN + "</div>" +
+               "<div class=\"modal-body\" style=\"padding:16px 20px;color:var(--error,#e74c3c);font-size:12px\">" +
+               message + "</div>" +
+               "<div class=\"modal-footer\"><button class=\"btn-accent\"" +
+               " onclick=\"document.getElementById('modal').innerHTML=''\">Close</button></div></div>";
+    }
+
+    private static String exportStatusBody(String jobId, String status, boolean terminal) {
+        boolean done   = status.equalsIgnoreCase("done") || status.equalsIgnoreCase("completed");
+        boolean failed = status.equalsIgnoreCase("failed") || status.equalsIgnoreCase("error");
+        String indicator = done   ? "<span style=\"color:var(--ok,#27ae60)\">✔</span>" :
+                           failed ? "<span style=\"color:var(--error,#e74c3c)\">✖</span>" :
+                                    "<span class=\"pulse\"></span>";
+        String body = "<div class=\"modal-body\" style=\"padding:16px 20px\">" +
+                      "<div style=\"display:flex;align-items:center;gap:10px\">" +
+                      indicator + "<span>Job <code class=\"mono\">" + jobId + "</code> — " + status + "</span>" +
+                      "</div></div>";
+        if (terminal) return body;
+        return "<div id=\"export-body\" hx-get=\"/workspace/export/status/" + jobId + "\"" +
+               " hx-trigger=\"every 3s\" hx-swap=\"outerHTML\">" + body + "</div>";
     }
 
     // ── Error state helpers ────────────────────────────────────────────────

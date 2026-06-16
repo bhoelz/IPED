@@ -11,6 +11,17 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@@400;500;600&family=IBM+Plex+Sans:wght@@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/workspace.css">
   <script src="/vendor/htmx.min.js" defer></script>
+  <script>
+    // Inject the XSRF-TOKEN cookie value as X-XSRF-TOKEN on every mutating HTMX request.
+    // Required because CookieCsrfTokenRepository sets the token in a cookie but HTMX
+    // does not read it automatically.
+    document.addEventListener('htmx:configRequest', function (e) {
+      var verb = (e.detail.verb || '').toLowerCase();
+      if (verb === 'get') return;
+      var match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+      if (match) e.detail.headers['X-XSRF-TOKEN'] = decodeURIComponent(match[1]);
+    });
+  </script>
 @for (String href : styles) {
   <link rel="stylesheet" href="@href">
 }

@@ -4,11 +4,28 @@ server:
 spring:
   application:
     name: iped-webui-server
+  # Activate the demo profile so DemoDataController stub endpoints are served
+  # during local development. Remove or override in production deployments.
+  profiles:
+    active: demo
+  # Built-in single analyst account for Phase 3 pilot.
+  # Replace with LDAP / OIDC before any multi-user or internet-facing deployment.
+  security:
+    user:
+      name: analyst
+      # {noop} = no password encoding; switch to {bcrypt} for production.
+      password: "{noop}iped"
+      roles: ANALYST
 
 iped:
   webui:
     # Base URL of the backing Jersey iped-webapi that /api/** is proxied to.
     api-base-url: ${IPED_WEBAPI_BASE_URL:http://localhost:8080}
+    map:
+      # Leaflet tile URL template. Override with an internal tile server for air-gapped deployments.
+      tile-url: ${IPED_MAP_TILE_URL:https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png}
+      tile-attribution: ${IPED_MAP_TILE_ATTRIBUTION:"&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"}
+      height: ${IPED_MAP_HEIGHT:420px}
 
 logging:
   level:

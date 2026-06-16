@@ -33,6 +33,22 @@ public class FilterState implements Serializable {
     public record ActiveFilter(String id, String type, String label) {}
 
     private final Map<String, ActiveFilter> filters = new LinkedHashMap<>();
+    private String activeCaseId;
+
+    /**
+     * Called when the workspace is loaded with a new caseId. Clears all active
+     * filters if the case has changed so stale filter chips don't bleed across cases.
+     */
+    public void switchCase(String newCaseId) {
+        if (!java.util.Objects.equals(activeCaseId, newCaseId)) {
+            filters.clear();
+            activeCaseId = newCaseId;
+        }
+    }
+
+    public String getActiveCaseId() {
+        return activeCaseId;
+    }
 
     public void put(String id, String type, String label) {
         filters.put(id, new ActiveFilter(id, type, label));

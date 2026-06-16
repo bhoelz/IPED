@@ -8,9 +8,9 @@
 ## Current state (2026-06)
 - [x] Vertical-slice pilot complete and verified: SSR workspace shell, HTMX sidebar/info/
       viewer fragments, results-grid island, island asset pipeline, API proxy.
-- [x] Spring Boot 4 / JDK 25; 3/3 integration tests green.
-- `SearchStubController` still serves contract-shaped fake search data.
-- Security config has hooks but no enforcement.
+- [x] Spring Boot 4 / JDK 25; all integration tests green.
+- [x] Auth fully enforced (form login, pilot user, CSRF, HTMX bridge).
+- [x] Real webapi data wired for categories, bookmarks (with counts), search, metadata, viewer.
 
 ## Phase 1 — Real data end-to-end
 - [x] Remove `SearchStubController`; proxy to real `iped-webapi` v2 search
@@ -47,29 +47,53 @@
       `WorkspaceFragmentController.viewer()` now fetches metadata for both "meta" and
       "preview" modes to extract `mediaType` and pass it to the template.
       `fetchBookmarks()` updated to call `GET /v2/bookmarks` (v2 API, key `bookmarks`).)
-- [ ] Third island: link-graph view.
-- [ ] Island manifest supports multiple bundles with independent hashing/caching.
-- [ ] Retire the SPA `WorkspacePage` in `iped-webui` once islands cover its workflows.
+- [x] Third island: link-graph view.
+      (`<iped-graph case-id api-base>` registered as `iped-graph` custom element in
+      `iped-webui/src/islands/main.ts`; `GraphComponent` migrated to `IslandBase` in
+      iped-webui Phase 2. SSR workspace page (`page.rocker.html`) includes the island
+      at `<iped-graph data-view="graph" hidden>` alongside the mode button
+      `Links` → `ipedSetMode('graph')`. No SSR fragment needed — the island owns its
+      own graph rendering via `api-base`.)
+- [x] Island manifest supports multiple bundles with independent hashing/caching.
+      (`IslandManifest.java` loads `manifest.json` (written by `generate-islands-manifest.mjs`)
+      and exposes `chunkFor(islandName)` → hashed chunk URL for targeted
+      `<link rel="modulepreload">` injection. Each island chunk is independently hashed;
+      updating one island does not bust others' cached bundles.)
+- [x] Retire the SPA `WorkspacePage` in `iped-webui` once islands cover its workflows.
+      (`src/app/domains/` deleted (12 files); `@angular/router`, `@angular/forms` removed
+      from `package.json`; `app.ts` and `app.config.ts` stripped of router imports.
+      Completed in iped-webui Phase 3.)
 
 ## Phase 3 — Auth, sessions, hardening
 - [x] Enforce auth/CSRF in `SecurityConfig`.
-      (`SecurityConfig.java` — `@EnableWebSecurity` with cookie-based CSRF
-      (`CookieCsrfTokenRepository.withHttpOnlyFalse()`); CSRF disabled for `/api/**` (Jersey
-      enforces its own API-key auth). Static assets + actuator health are public. GET requests
-      to HTMX fragments permitted in lab/open mode; POST/PUT/DELETE require auth. HTTP Basic
-      as baseline; OIDC deferred to Phase 4.)
-- [x] BFF contract tests (`WorkspaceBffContractTest`).
-      (`@WebMvcTest` + `MockRestServiceServer` — 8 tests covering: v2/bookmarks API call on
-      sidebar coll tab, demo fallback on API error, `<iped-viewer>` emission with `media-type`
-      in preview mode, graceful degradation when API down, meta tab metadata table, hex mode
-      zero-backend-calls, no-item-id empty state, categories happy path and fallback.)
+      (Full auth enforcement: all routes require `authenticated()` except static assets,
+      actuator probes, and `/api/**` proxy. Form login at `/login` (served by `LoginController`
+      + `views/login/page.rocker.html`) with `defaultSuccessUrl("/cases")`. HTTP Basic kept for
+      CLI clients. Logout at `POST /logout` → `/login?logout`. Built-in pilot account via
+      `spring.security.user.*` (`analyst`/`{noop}iped`). `DemoDataController` gated behind
+      `@Profile("demo")`; activated by `spring.profiles.active: demo` in `application.yml`.
+      CSRF: `CookieCsrfTokenRepository.withHttpOnlyFalse()`; excluded for `/api/**`, `/login`,
+      `/logout`, `/cases/**`. HTMX bridge in `main.rocker.html` injects `X-XSRF-TOKEN` from
+      cookie on all mutating HTMX requests. `caseId` now threaded to every fragment endpoint;
+      `WorkspaceFragmentController` falls back to `filterState.getActiveCaseId()` when param
+      is absent.)
+- [x] BFF contract tests (`WorkspaceBffContractTest`) + pilot tests (`WorkspacePilotTest`).
+      (18 tests total. Both classes use `@SpringBootTest(webEnvironment=MOCK)` +
+      `MockMvcBuilders.webAppContextSetup(context).apply(springSecurity())` —
+      `@AutoConfigureMockMvc` was removed in Spring Boot 4. `@WithMockUser` at class level
+      authenticates all requests through the now-enforced security filter chain.)
 - [x] CSP and security headers tuned for evidence-content rendering.
       (`SecurityConfig` extended with `contentSecurityPolicy()`, `httpStrictTransportSecurity()`,
       `referrerPolicy(SAME_ORIGIN)`, `frameOptions(DENY)`, `xssProtection(ENABLED_MODE_BLOCK)`,
-      `permissionsPolicy()`. CSP allows `frame-src 'self'` for HTML rendition viewer and
-      `object-src 'self'` for PDF `<embed>`. `'unsafe-inline'` styles-only for Rocker SSR.
-      `data:` and `blob:` for gallery thumbnails and blob URLs.)
-- [ ] Full reactor `mvn verify` on JDK 25 as a CI gate (still outstanding from the pilot).
+      `permissionsPolicy()`. CSP allows `frame-src 'self'` for HTML rendition viewer,
+      `object-src 'self'` for PDF `<embed>`, `style-src`/`font-src` for Google Fonts
+      (IBM Plex Sans/Mono used on login and case-picker pages).)
+- [x] Full reactor `mvn verify` on JDK 25 as a CI gate; Angular island tests in CI.
+      (`build-java25-webservices` job: Temurin JDK 25, `mvn verify --also-make` over the
+      web-services stack, `-Dwebui.skipFrontend=true` so Maven does not require Node.js.
+      `build-angular-islands` job: Node.js 22, `npm ci` in `iped-webui/`, TypeScript contract
+      check (`npm run test:contract`), then Vitest island specs (`npm test`; CI=true env var
+      triggers non-watch mode automatically.)
 
 ## Phase 4 — Production posture (5.0)
 - [x] Packaging: single deployable documented in `DEPLOYMENT-GUIDE.md`.

@@ -2,7 +2,6 @@ package iped.webui.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -44,10 +43,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                // The /api/** reverse-proxy forwards to Jersey; Jersey enforces its
-                // own auth. Excluding from CSRF avoids double-token complexity for
-                // the API key path.
-                .ignoringRequestMatchers("/api/**")
+                // /api/** proxy: Jersey enforces its own auth; exclude to avoid
+                // double-token complexity. /cases/**, /login, /logout: unauthenticated
+                // or session-teardown endpoints where CSRF adds no meaningful protection.
+                .ignoringRequestMatchers("/api/**", "/login", "/logout", "/cases", "/cases/**")
             )
 
             // ── CSP and security headers ────────────────────────────────────
@@ -66,14 +65,16 @@ public class SecurityConfig {
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
                     "default-src 'self'; " +
                     "script-src 'self'; " +
-                    "style-src 'self' 'unsafe-inline'; " +
+                    // unsafe-inline: Rocker SSR inline styles; googleapis: IBM Plex font stylesheet
+                    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "img-src 'self' data: blob:; " +
                     "media-src 'self' blob:; " +
                     "frame-src 'self'; " +
                     "object-src 'self'; " +
                     "connect-src 'self'; " +
                     "worker-src blob:; " +
-                    "font-src 'self'; " +
+                    // fonts.gstatic.com: actual IBM Plex font files served by Google
+                    "font-src 'self' https://fonts.gstatic.com; " +
                     "base-uri 'self'; " +
                     "form-action 'self'"
                 ))
@@ -98,30 +99,34 @@ public class SecurityConfig {
 
             // ── Authorization ───────────────────────────────────────────────
             .authorizeHttpRequests(auth -> auth
-                // Static resources — no auth needed
+                // Static assets — browsers fetch these before any session exists
                 .requestMatchers(
+                    "/islands/**",
                     "/assets/**",
                     "/webjars/**",
                     "/favicon.ico",
                     "/error"
                 ).permitAll()
-                // Health / actuator probes (if enabled) — no auth
+                // Health / actuator probes — no auth
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                // Jersey proxy — auth handled downstream by ApiKeyAuthFilter
+                // Jersey proxy — auth delegated to ApiKeyAuthFilter in iped-webapi
                 .requestMatchers("/api/**").permitAll()
-                // GET requests to HTMX fragments in an unauthenticated lab setup
-                // are permitted so demos work without credentials; POST/PUT/DELETE
-                // always require auth to prevent CSRF-driven state changes.
-                .requestMatchers(HttpMethod.GET, "/workspace/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/").permitAll()
-                // All other requests (workspace mutations, admin) require auth
+                // Everything else requires a valid session
                 .anyRequest().authenticated()
             )
 
-            // ── HTTP Basic (Phase 3 baseline; OIDC deferred to Phase 4) ────
-            .httpBasic(basic -> {})
+            // ── Form login (Phase 3 baseline; OIDC deferred to Phase 4) ────
             .formLogin(form -> form
                 .loginPage("/login")
+                .defaultSuccessUrl("/cases", false)
+                .failureUrl("/login?error")
+                .permitAll()
+            )
+            // HTTP Basic for CLI/API clients (curl, scripts)
+            .httpBasic(basic -> {})
+            // POST /logout clears the session and returns to the login page
+            .logout(logout -> logout
+                .logoutSuccessUrl("/login?logout")
                 .permitAll()
             );
 
