@@ -2,6 +2,8 @@ package iped.viewers.util;
 
 import iped.io.IStreamSource;
 import iped.io.SeekableInputStream;
+import iped.utils.SeekableByteChannelImpl;
+import iped.utils.SeekableFileInputStream;
 
 import java.io.File;
 import java.io.IOException;

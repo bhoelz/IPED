@@ -1,4 +1,4 @@
-package iped.app.ui;
+package iped.utils;
 
 import javax.swing.*;
 import java.awt.*;

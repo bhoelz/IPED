@@ -20,7 +20,7 @@ package iped.app.ui;
 
 import iped.app.ui.utils.UiIconSize;
 import iped.engine.data.SimpleFilterNode;
-import iped.app.ui.QualityIcon;
+import iped.utils.QualityIcon;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
