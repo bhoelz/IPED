@@ -34,7 +34,7 @@ public class LOExtractor extends CancelableWorker<Object, Object> {
 
         try {
             if (output.exists()) {
-                if (IOUtil.countSubFiles(output) >= numSubitens) {
+                if (Files.walk(output.toPath()).filter(p -> !Files.isDirectory(p)).count() >= numSubitens) {
                     return true;
                 } else {
                     IOUtil.deleteDirectory(output);

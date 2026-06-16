@@ -56,7 +56,7 @@ public class FileInputStreamFactory extends SeekableInputStreamFactory {
         if (file.isFile())
             return new SeekableFileInputStream(file);
         else
-            return new EmptyInputStream();
+            return null;
     }
 
 }

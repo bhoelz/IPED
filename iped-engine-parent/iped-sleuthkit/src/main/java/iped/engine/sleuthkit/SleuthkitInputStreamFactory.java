@@ -3,7 +3,6 @@ package iped.engine.sleuthkit;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.FileSystemConfig;
 import iped.io.SeekableInputStream;
-import iped.utils.EmptyInputStream;
 import iped.utils.IOUtil;
 import iped.utils.SeekableInputStreamFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -113,7 +112,7 @@ public class SleuthkitInputStreamFactory extends SeekableInputStreamFactory {
     @Override
     public SeekableInputStream getSeekableInputStream(String identifier) throws IOException {
         if (emptyContent) {
-            return new EmptyInputStream();
+            return null;
         }
         FileSystemConfig fsConfig = ConfigurationManager.get().findObject(FileSystemConfig.class);
         long tskId = Long.valueOf(identifier);

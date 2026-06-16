@@ -17,8 +17,18 @@
 - [ ] Extract release/distribution assembly (conf aggregation, lib/tools/plugins layout,
       launcher scripts) into a dedicated packaging module so UI changes don't churn the
       release pipeline.
-- [ ] CLI processing entry point (`iped-app` headless mode) decoupled from Swing classes
+- [x] CLI processing entry point (`iped-app` headless mode) decoupled from Swing classes
       — processing a case on a server must not initialize any UI toolkit.
+      (`Bootstrap.java` refactored with template-method hooks: `configLoaded()`,
+      `onChildProcessStarted(Process)`, `extendClasspath(Main, String)` — all no-ops in
+      the headless base class. `BootstrapUI.java` overrides all three: starts splash
+      screen, registers child PID, discovers LibreOffice UNO JARs. All AWT/Swing/
+      LibreOffice imports confined to `BootstrapUI`; `Bootstrap` imports only iped-engine
+      and JDK classes. `separator` promoted to `protected static final` for subclass
+      access. `IpedAppBootstrapArchitectureTest` — three ArchUnit rules enforcing no
+      `java.awt`, `javax.swing`, `javafx`, or `iped.app.ui` deps in any bootstrap class
+      other than `BootstrapUI`. Test deps (`junit-jupiter`, `archunit-junit5`) added to
+      pom.xml.)
 
 ## Phase 2 — Maintenance mode for Swing analysis UI
 - [ ] Feature freeze policy: bug fixes and viewer parity support only; new analyst

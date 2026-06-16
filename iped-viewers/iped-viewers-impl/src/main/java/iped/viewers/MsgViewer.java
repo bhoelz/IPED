@@ -4,7 +4,7 @@ import iped.io.IStreamSource;
 import iped.parsers.util.ToXMLContentHandler;
 import iped.parsers.util.Util;
 import iped.properties.MediaTypes;
-import iped.utils.FileContentSource;
+import iped.viewers.util.FileContentSource;
 import iped.utils.IOUtil;
 import iped.utils.SimpleHTMLEncoder;
 import iped.viewers.localization.Messages;

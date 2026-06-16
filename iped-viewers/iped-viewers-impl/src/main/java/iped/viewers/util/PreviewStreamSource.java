@@ -1,4 +1,4 @@
-package iped.utils;
+package iped.viewers.util;
 
 import iped.data.IItemReader;
 import iped.io.IStreamSource;

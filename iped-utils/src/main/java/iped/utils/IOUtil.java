@@ -207,36 +207,6 @@ public class IOUtil {
         }
     }
 
-    public static List<File> getAllFileChildren(File file) {
-        List<File> list = new ArrayList<>();
-        String[] subFileName = file.list();
-        if (subFileName != null) {
-            for (int i = 0; i < subFileName.length; i++) {
-                File subFile = new File(file, subFileName[i]);
-
-                if (subFile.isDirectory())
-                    list.addAll(getAllFileChildren(subFile));
-                else
-                    list.add(subFile);
-            }
-        }
-        return list;
-    }
-
-    public static int countSubFiles(File file) {
-        int result = 0;
-        String[] subFileName = file.list();
-        if (subFileName != null)
-            for (int i = 0; i < subFileName.length; i++) {
-                File subFile = new File(file, subFileName[i]);
-                if (subFile.isDirectory())
-                    result += countSubFiles(subFile);
-                else
-                    result++;
-            }
-        return result;
-    }
-
     public static void deleteDirectory(File file) {
         try {
             deleteDirectory(file, true);
@@ -336,21 +306,6 @@ public class IOUtil {
         copyDirectory(origem, destino, true);
     }
 
-    /**
-     * Use this method with CAUTION, it buffers all input stream data on memory and
-     * could cause OOME.
-     *
-     */
-    public static byte[] loadInputStream(InputStream is) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] buf = new byte[8192];
-        int len = 0;
-        while ((len = is.read(buf)) != -1)
-            bos.write(buf, 0, len);
-
-        return bos.toByteArray();
-    }
-
     public static byte[] readByteArray(DataInputStream is, int len) throws Exception {
         byte[] arr = new byte[len];
         int read = 0;
@@ -360,35 +315,6 @@ public class IOUtil {
             read += r;
         }
         return len == read ? arr : null;
-    }
-
-    public static int[] readIntArray(DataInputStream is, int len) throws Exception {
-        len <<= 2;
-        byte[] arr = new byte[len];
-        int read = 0;
-        while (read < len) {
-            int r = is.read(arr, read, len - read);
-            if (r < 0) break;
-            read += r;
-        }
-        if (len != read) return null;
-        int[] ret = new int[len >>> 2];
-        for (int i = 0; i < arr.length; i += 4) {
-            ret[i >>> 2] = ((arr[i] & 0xFF) << 24) + ((arr[i + 1] & 0xFF) << 16) + ((arr[i + 2] & 0xFF) << 8) + ((arr[i + 3] & 0xFF) << 0);
-        }
-        return ret;
-    }
-
-    public static void writeIntArray(DataOutputStream os, int[] arr) throws Exception {
-        byte[] buf = new byte[arr.length << 2];
-        for (int i = 0; i < buf.length; i += 4) {
-            int v = arr[i >>> 2];
-            buf[i] = (byte) (v >>> 24);
-            buf[i + 1] = (byte) (v >>> 16);
-            buf[i + 2] = (byte) (v >>> 8);
-            buf[i + 3] = (byte) (v >>> 0);
-        }
-        os.write(buf);
     }
 
     public static boolean hasFile(IItemReader item) {
@@ -404,10 +330,6 @@ public class IOUtil {
         return null;
     }
 
-    public static class ContainerVolatile {
-        public volatile boolean progress = false;
-    }
-
     public static void ignoreInputStream(final InputStream stream) {
         ignoreInputStream0(stream);
     }
@@ -418,11 +340,6 @@ public class IOUtil {
 
     public static void ignoreErrorStream(Process p) {
         ignoreInputStream0(p.getErrorStream());
-    }
-
-    @Deprecated
-    public static void ignoreInputStream(final InputStream stream, final ContainerVolatile msg) {
-        ignoreInputStream0(stream);
     }
 
     private static void ignoreInputStream0(final InputStream stream) {

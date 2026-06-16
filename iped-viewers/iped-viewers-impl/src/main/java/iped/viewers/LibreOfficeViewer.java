@@ -39,7 +39,7 @@ import com.sun.star.view.DocumentZoomType;
 import com.sun.star.view.XSelectionSupplier;
 import iped.io.IStreamSource;
 import iped.utils.IOUtil;
-import iped.utils.ProcessUtil;
+import iped.viewers.util.ProcessUtil;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
 import lombok.extern.slf4j.Slf4j;

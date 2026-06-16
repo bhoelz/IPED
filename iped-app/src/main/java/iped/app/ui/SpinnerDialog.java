@@ -1,4 +1,4 @@
-package iped.utils;
+package iped.app.ui;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;

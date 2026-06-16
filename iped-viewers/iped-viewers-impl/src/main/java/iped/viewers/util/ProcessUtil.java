@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with IPED.  If not, see <http://www.gnu.org/licenses/>.
  */
-package iped.utils;
+package iped.viewers.util;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

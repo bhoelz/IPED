@@ -666,7 +666,7 @@ public class Item implements IItem {
         }
 
         if (stream == null)
-            return new EmptyInputStream();
+            return null;
 
         return stream;
     }

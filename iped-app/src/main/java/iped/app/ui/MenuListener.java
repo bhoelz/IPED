@@ -32,7 +32,7 @@ import iped.engine.data.ItemId;
 import iped.engine.preview.PreviewRepositoryManager;
 import iped.properties.ExtraProperties;
 import iped.utils.SeekableFileInputStream;
-import iped.utils.SpinnerDialog;
+import iped.app.ui.SpinnerDialog;
 import iped.viewers.api.AbstractViewer;
 import lombok.extern.slf4j.Slf4j;
 

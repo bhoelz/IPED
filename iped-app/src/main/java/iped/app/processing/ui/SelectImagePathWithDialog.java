@@ -1,6 +1,6 @@
 package iped.app.processing.ui;
 
-import iped.utils.Messages;
+import iped.app.ui.Messages;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;

@@ -2,7 +2,6 @@ package iped.engine.preview;
 
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
-import iped.utils.EmptyInputStream;
 import iped.utils.SeekableFileInputStream;
 import iped.utils.SeekableInputStreamFactory;
 import org.apache.commons.codec.binary.Base64;
@@ -40,7 +39,7 @@ public class PreviewInputStreamFactory extends SeekableInputStreamFactory {
 
         String[] identifierParts = identifier.split(IDENTIFIER_SEPARATOR);
         if (identifierParts.length != 2) {
-            return new EmptyInputStream();
+            return null;
         }
 
         PreviewKey key = new PreviewKey(Base64.decodeBase64(identifierParts[0]));

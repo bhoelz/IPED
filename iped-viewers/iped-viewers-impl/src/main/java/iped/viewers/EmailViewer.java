@@ -7,7 +7,7 @@ import iped.parsers.mail.RFC822Parser;
 import iped.parsers.util.Util;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import iped.utils.FileContentSource;
+import iped.viewers.util.FileContentSource;
 import iped.utils.IOUtil;
 import iped.utils.SimpleHTMLEncoder;
 import iped.viewers.api.AttachmentSearcher;

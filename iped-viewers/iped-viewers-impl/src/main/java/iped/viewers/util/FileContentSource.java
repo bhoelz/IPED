@@ -1,4 +1,4 @@
-package iped.utils;
+package iped.viewers.util;
 
 import iped.io.IStreamSource;
 import iped.io.SeekableInputStream;

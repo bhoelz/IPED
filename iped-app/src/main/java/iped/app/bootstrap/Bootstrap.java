@@ -1,23 +1,17 @@
 package iped.app.bootstrap;
 
-import ag.ion.bion.officelayer.application.IOfficeApplication;
 import iped.app.config.LogConfiguration;
 import iped.app.processing.Main;
-import iped.app.ui.splash.SplashScreenManager;
-import iped.app.ui.splash.StartUpControl;
 import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.PluginConfig;
 import iped.engine.util.Util;
 import iped.utils.IOUtil;
-import iped.viewers.util.LibreOfficeFinder;
-import iped.viewers.util.UNOLibFinder;
 import org.apache.tika.utils.SystemUtils;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +31,7 @@ public class Bootstrap {
     public static final String UI_REPORT_SYS_PROP = "iped.ui.report";
     public static final String SUB_PROCESS_TEMP_FOLDER = "IpedSubProcessTempFolder: ";
 
-    private static String separator = SystemUtils.IS_OS_WINDOWS ? ";" : ":";
+    protected static final String separator = SystemUtils.IS_OS_WINDOWS ? ";" : ":";
 
     private static volatile File subProcessTempFolder;
 
@@ -138,7 +132,7 @@ public class Bootstrap {
                 classpath += separator + pluginConfig.getPluginFolder().getAbsolutePath() + "/*";
             }
 
-            classpath = fillClassPathWithLibreOfficeJars(iped, classpath, iped.getCmdLineArgs().isNogui());
+            classpath = extendClasspath(iped, classpath);
 
             String javaBin = "java";
             if (SystemUtils.IS_OS_WINDOWS) {
@@ -171,7 +165,7 @@ public class Bootstrap {
             pb.command(cmd);
 
             Process process = pb.start();
-            System.setProperty(StartUpControl.ipedChildProcessPID, String.valueOf(process.pid()));
+            onChildProcessStarted(process);
 
             redirectStream(process.getInputStream(), System.out);
             redirectStream(process.getErrorStream(), System.err);
@@ -214,11 +208,36 @@ public class Bootstrap {
     }
 
     /**
-     * Called when loadConfigurables is done, inside run. Allow subclasses do custom
-     * actions at this execution point.
+     * Called after configuration is loaded, before the child process is forked.
+     * Subclasses may start a splash screen or other UI here.
+     * The headless {@code Bootstrap} base class is a no-op.
      */
     protected void configLoaded() {
-        new SplashScreenManager().start();
+        // headless: nothing to start
+    }
+
+    /**
+     * Extension hook called after the forked child process is started.
+     * Subclasses may record the child PID for a splash screen or progress tracking.
+     * The headless base class is a no-op.
+     *
+     * @param process the newly started child JVM process
+     */
+    protected void onChildProcessStarted(Process process) {
+        // headless: nothing to do
+    }
+
+    /**
+     * Hook for subclasses to append additional JARs to the child-process classpath
+     * (e.g. LibreOffice UNO JARs for the GUI bootstrap).
+     * The headless base class returns {@code classpath} unchanged.
+     *
+     * @param iped      the processing Main instance (provides root path and config)
+     * @param classpath the classpath assembled so far
+     * @return the (possibly extended) classpath string
+     */
+    protected String extendClasspath(Main iped, String classpath) throws Exception {
+        return classpath;
     }
 
     private static List<String> getCustomJVMArgs(){
@@ -266,21 +285,6 @@ public class Bootstrap {
             }
         }
         return props;
-    }
-
-    private static String fillClassPathWithLibreOfficeJars(Main iped, String classpath, boolean isNogui)
-            throws URISyntaxException, IOException {
-        System.setProperty(IOfficeApplication.NOA_NATIVE_LIB_PATH,
-                new File(iped.getRootPath(), "lib/nativeview").getAbsolutePath());
-        LibreOfficeFinder loFinder = new LibreOfficeFinder(new File(iped.getRootPath()));
-        if (loFinder.getLOPath(isNogui) != null) {
-            List<File> jars = new ArrayList<>();
-            UNOLibFinder.addUNOJars(loFinder.getLOPath(isNogui), jars);
-            for (File jar : jars) {
-                classpath += separator + jar.getCanonicalPath();
-            }
-        }
-        return classpath;
     }
 
     private static void redirectStream(InputStream is, OutputStream os) {
