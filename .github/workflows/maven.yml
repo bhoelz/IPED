@@ -111,3 +111,57 @@ jobs:
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+
+  # ── JDK 25 gate for the web-services modules ──────────────────────────────
+  # Verifies the modules that target JDK 25 (Spring Boot 4, MCP, Jersey API):
+  #   iped-api, iped-utils, iped-engine-core, iped-webapi,
+  #   iped-webui-server, iped-mcp, iped-runner.
+  # Runs `mvn verify` (not just package) so all unit tests execute.
+  # --also-make builds each module's in-reactor dependencies first.
+  build-java25-webservices:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 25
+      uses: actions/setup-java@v4
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Verify web-services stack on JDK 25
+      run: |
+        mvn -B verify --no-transfer-progress \
+          -pl iped-api,iped-utils,iped-engine-parent/iped-engine-core,iped-webapi,iped-webui-server,iped-mcp,iped-runner \
+          --also-make \
+          -Dwebui.skipFrontend=true
+
+  # ── Angular island unit tests ─────────────────────────────────────────────
+  # Runs Vitest (via ng test) for all six island component specs.
+  # Vitest automatically uses --run (non-watch) mode when CI=true.
+  build-angular-islands:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+        cache-dependency-path: iped-webui/package-lock.json
+
+    - name: Install dependencies
+      working-directory: iped-webui
+      run: npm ci
+
+    - name: TypeScript contract check
+      working-directory: iped-webui
+      run: npm run test:contract
+
+    - name: Island unit tests
+      working-directory: iped-webui
+      run: npm test

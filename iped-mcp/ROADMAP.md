@@ -33,8 +33,10 @@
 - [x] Request tracing: `McpSessionContext.sessionId` UUID forwarded as
       `X-MCP-Session-Id` on every `WebApiClient` request; `--api-key` forwarded as
       `Authorization: Bearer` for iped-webapi auth.
-- [ ] Access-control model shared with `iped-webapi` auth (one permission system) —
-      deferred to Phase 4 (requires iped-webapi auth backend).
+- [x] Access-control model shared with `iped-webapi` auth (one permission system) —
+      completed in iped-webapi Phase 6: `iped.webapi.allowed-sources` config mirrors
+      `--allowed-cases`; operators set both to the same IDs to create a unified
+      per-source permission boundary across the MCP and REST surfaces.
 
 ## Phase 3 — Write and job tools
 - [x] Capability grant system: `--capabilities=bookmarks,jobs` CLI flag; `GrantedCapabilities` enum;
