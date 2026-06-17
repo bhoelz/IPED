@@ -37,9 +37,15 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/run':    'http://localhost:8092',
-      '/browse': 'http://localhost:8092',
-      '/runner': 'http://localhost:8092', // static assets (runner.css, fonts, etc.)
+      '/run':      'http://localhost:8092',
+      '/runs':     'http://localhost:8092',
+      '/browse':   'http://localhost:8092',
+      '/runner':   'http://localhost:8092',
+      '/v2':       'http://localhost:8092',
+      '/queue':    'http://localhost:8092',
+      '/metrics':  'http://localhost:8092',
+      '/profiles': 'http://localhost:8092',
+      '/api':      'http://localhost:8092',
     },
   },
 })
