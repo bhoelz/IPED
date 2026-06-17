@@ -6,7 +6,7 @@ import iped.utils.UTF8Properties;
 public class HtmlReportTaskConfig extends AbstractTaskPropertiesConfig {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 
@@ -116,7 +116,7 @@ public class HtmlReportTaskConfig extends AbstractTaskPropertiesConfig {
 
     @Override
     public void processProperties(UTF8Properties properties) {
-        
+
         String value = properties.getProperty("ItemsPerPage"); //$NON-NLS-1$
         if (value != null) {
             itemsPerPage = Integer.parseInt(value.trim());

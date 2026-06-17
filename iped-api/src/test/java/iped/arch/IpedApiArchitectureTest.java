@@ -44,10 +44,7 @@ class IpedApiArchitectureTest {
         ArchRule rule = noClasses()
                 .that().resideInAPackage("iped..")
                 .and().haveSimpleNameNotContaining("Test")
-                .should().beAnnotatedWith(
-                        com.tngtech.archunit.core.domain.properties.HasAnnotations.Predicates
-                                .annotatedWith("org.springframework.stereotype.Service")
-                )
+                .should().beAnnotatedWith("org.springframework.stereotype.Service")
                 .because("iped-api should contain only interfaces, annotations, and value types");
         rule.check(API_CLASSES);
     }

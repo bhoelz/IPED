@@ -48,7 +48,7 @@ try {
 const jsFiles = files.filter(f => f.endsWith('.js'));
 
 // Find the main entrypoint (no chunk- prefix)
-const mainFile = jsFiles.find(f => f.startsWith('main.'));
+const mainFile = jsFiles.find(f => /^main[.\-]/.test(f));
 if (!mainFile) {
   console.error(`[islands-manifest] Could not find main.*.js in ${distDir}`);
   process.exit(1);

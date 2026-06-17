@@ -92,6 +92,16 @@
             <artifactId>kafka-clients</artifactId>
         </dependency>
 
+        <!-- Jackson: JSON serialisation for RunHistory and webhook payloads -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
         <!-- Lombok @Slf4j / @RequiredArgsConstructor; version managed by Spring Boot BOM -->
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -72,6 +72,29 @@
 
     <build>
         <plugins>
+            <!-- Convert the parent basedir Windows path to a forward-slash URI for the OpenAPI generator -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>set-spec-uri</id>
+                        <phase>initialize</phase>
+                        <goals><goal>regex-properties</goal></goals>
+                        <configuration>
+                            <regexPropertySettings>
+                                <regexPropertySetting>
+                                    <name>spec.basedir.forward</name>
+                                    <value>${project.basedir}</value>
+                                    <regex>\\</regex>
+                                    <replacement>/</replacement>
+                                    <failIfNoMatch>false</failIfNoMatch>
+                                </regexPropertySetting>
+                            </regexPropertySettings>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -81,7 +104,7 @@
                         <id>generate-python-client</id>
                         <goals><goal>generate</goal></goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/../specs/84-phase-1-openapi-initial.yaml</inputSpec>
+                            <inputSpec>file:///${spec.basedir.forward}/../specs/84-phase-1-openapi-initial.yaml</inputSpec>
                             <generatorName>python</generatorName>
                             <output>${project.build.directory}/generated-clients/python</output>
                             <configOptions>

@@ -66,6 +66,8 @@ import org.apache.tika.mime.MediaType;
 
 import java.awt.*;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URI;

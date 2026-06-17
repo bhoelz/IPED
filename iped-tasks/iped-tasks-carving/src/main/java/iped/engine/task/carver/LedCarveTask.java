@@ -301,7 +301,12 @@ public class LedCarveTask extends BaseCarveTask {
                         byte[] md5_64k = IOUtil.readByteArray(is, len);
                         if (md5_64k != null) {
                             len = is.readInt();
-                            byte[] _hb = is.readNBytes(len * 4); int[] hashIds = (_hb.length == len * 4) ? ByteBuffer.wrap(_hb).order(ByteOrder.BIG_ENDIAN).asIntBuffer().get(new int[len]) : null;
+                            byte[] _hb = is.readNBytes(len * 4);
+                            int[] hashIds = null;
+                            if (_hb.length == len * 4) {
+                                hashIds = new int[len];
+                                ByteBuffer.wrap(_hb).order(ByteOrder.BIG_ENDIAN).asIntBuffer().get(hashIds);
+                            }
                             if (hashIds != null) {
                                 ledHashDB = new LedHashDB(md5_512, md5_64k, hashIds);
                                 ret = true;

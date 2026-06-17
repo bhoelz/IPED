@@ -110,7 +110,7 @@ export class GraphComponent extends IslandBase implements OnChanges, AfterViewIn
     this.startLoop();
   }
 
-  ngOnDestroy(): void {
+  override ngOnDestroy(): void {
     cancelAnimationFrame(this.rafId);
     this.resizeObserver?.disconnect();
   }

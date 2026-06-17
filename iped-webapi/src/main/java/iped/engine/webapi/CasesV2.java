@@ -79,7 +79,7 @@ public class CasesV2 {
                 return Response.status(Response.Status.CONFLICT)
                         .entity(Map.of("error", "Case '" + id + "' is already open")).build();
             }
-            return Response.status(Response.Status.UNPROCESSABLE_ENTITY)
+            return Response.status(422)
                     .entity(Map.of("error", e.getMessage())).build();
         }
     }
@@ -132,7 +132,7 @@ public class CasesV2 {
         try {
             IIPEDSource handle = Sources.services().sources().getSourceHandle(sd.getId());
             if (handle != null) {
-                m.put("itemCount", handle.getTotalItens());
+                m.put("itemCount", handle.getTotalItems());
             }
         } catch (Exception ignored) {}
 

@@ -1,6 +1,6 @@
 import {
   ChangeDetectionStrategy, Component, computed, HostListener, inject,
-  Input, OnChanges, signal,
+  Input, OnChanges, signal, CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {forkJoin} from 'rxjs';
@@ -49,6 +49,7 @@ interface EmailData {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HexViewerComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './viewer.component.html',
   styleUrl: './viewer.component.scss',
 })
@@ -244,7 +245,7 @@ export class ViewerComponent extends IslandBase implements OnChanges {
     });
   }
 
-  private dispatchReady(type: ViewerType): void {
+  protected dispatchReady(type: ViewerType): void {
     this.dispatch(viewerReadyEvent({itemId: this.itemId, viewerType: type, mediaType: this.mediaType}));
   }
 

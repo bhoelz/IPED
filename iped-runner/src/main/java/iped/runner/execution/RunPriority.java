@@ -11,4 +11,8 @@ public enum RunPriority {
     RunPriority(int weight) {
         this.weight = weight;
     }
+
+    public int weight() {
+        return weight;
+    }
 }

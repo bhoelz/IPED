@@ -21,8 +21,8 @@ package iped.parsers.util;
 import iped.io.URLUtil;
 import iped.utils.IOUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
@@ -91,7 +91,7 @@ public class PDFToImage implements Closeable {
 
     public static class NoResourceCache extends DefaultResourceCache {
         @Override
-        public void put(COSObject indirect, PDXObject xobject) throws IOException {
+        public void put(COSObject indirect, PDXObject xobject) {
             // do not cache images to prevent OutOfMemory
         }
     }
@@ -104,7 +104,7 @@ public class PDFToImage implements Closeable {
         input = pdfFile;
         try {
             if (PDFLIB.equals(PDFBOX)) {
-                document = PDDocument.load(pdfFile, MemoryUsageSetting.setupMixed(10000000));
+                document = Loader.loadPDF(pdfFile);
                 document.setResourceCache(new NoResourceCache());
                 pdfRenderer = new PDFRenderer(document);
                 pdfRenderer.setSubsamplingAllowed(true);

@@ -6,11 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,14 +50,19 @@ class ConfigurationManagerConcurrentCaseTest {
         }
 
         @Override
-        public void processConfigs(List<Path> resources) {
-            // No file I/O needed — the sentinel value is set directly.
-            this.value = "case-" + caseId;
+        public DirectoryStream.Filter<Path> getResourceLookupFilter() {
+            return path -> false;
         }
 
         @Override
-        public String getTaskEnableProperty() {
-            return null;
+        public void processConfig(Path resource) throws IOException {
+            // not called — processConfigs is overridden directly
+        }
+
+        @Override
+        public void processConfigs(List<Path> resources) {
+            // No file I/O needed — the sentinel value is set directly.
+            this.value = "case-" + caseId;
         }
 
         int getCaseId() {
@@ -65,10 +72,10 @@ class ConfigurationManagerConcurrentCaseTest {
 
     /** Minimal directory that returns an empty path list for all configurables. */
     static class EmptyDirectory implements IConfigurationDirectory {
-        @Override
-        public List<Path> lookUpResource(Configurable<?> configurable) {
-            return List.of();
-        }
+        @Override public void addPath(Path path) {}
+        @Override public List<Path> getResourceLookupFolders() { return List.of(); }
+        @Override public List<Path> lookUpResource(Predicate<Path> predicate) { return List.of(); }
+        @Override public List<Path> lookUpResource(Configurable<?> configurable) { return List.of(); }
     }
 
     @Test

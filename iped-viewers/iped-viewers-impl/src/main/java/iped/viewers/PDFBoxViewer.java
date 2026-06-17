@@ -4,7 +4,8 @@ import iped.io.IStreamSource;
 import iped.utils.IOUtil;
 import iped.viewers.api.AbstractViewer;
 import iped.viewers.localization.Messages;
-import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 
@@ -185,7 +186,7 @@ public class PDFBoxViewer extends AbstractViewer {
                     return;
                 try {
                     is = content.getSeekableInputStream();
-                    document = PDDocument.load(is, MemoryUsageSetting.setupMixed(100000000));
+                    document = Loader.loadPDF(new RandomAccessReadBuffer(is));
                     // document.setResourceCache(new NoResourceCache());
                     pdfRenderer = new PDFRenderer(document);
                     pdfRenderer.setSubsamplingAllowed(true);

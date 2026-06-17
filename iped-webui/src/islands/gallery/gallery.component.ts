@@ -14,6 +14,7 @@ import {
   resultsLoadedEvent,
   selectionChangedEvent,
   similarImageSearchEvent,
+  SimilarImageSearchDetail,
 } from '../shared/events';
 
 /**
@@ -100,6 +101,7 @@ export class GalleryComponent extends IslandBase implements OnChanges {
   protected readonly grayEnabled = signal(false);
 
   protected readonly Math = Math;
+  protected readonly similarImageSearchEvent = (detail: SimilarImageSearchDetail) => similarImageSearchEvent(detail);
 
   ngOnChanges(): void {
     const c = parseInt(this.columns, 10);

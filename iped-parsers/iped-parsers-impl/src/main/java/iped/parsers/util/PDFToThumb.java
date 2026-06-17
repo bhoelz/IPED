@@ -1,6 +1,6 @@
 package iped.parsers.util;
 
-import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -20,7 +20,7 @@ public class PDFToThumb implements Closeable {
     public BufferedImage getPdfThumb(File file, int targetSize) throws Exception {
         BufferedImage img = null;
         try {
-            document = PDDocument.load(file, MemoryUsageSetting.setupMixed(1 << 24, 1 << 28));
+            document = Loader.loadPDF(file);
             // document.setResourceCache(new NoResourceCache());
             PDPage page = document.getPage(0);
             PDFRenderer pdfRenderer = new PDFRenderer(document);

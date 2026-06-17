@@ -1,6 +1,14 @@
 package org.arabidopsis.ahocorasick;
 
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -24,7 +32,7 @@ import java.util.regex.Pattern;
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@State(Scope.Benchmark)
+@org.openjdk.jmh.annotations.State(Scope.Benchmark)
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 5, time = 2)
 @Fork(1)
@@ -72,7 +80,7 @@ public class AhoCorasickBenchmark {
         regexPattern = Pattern.compile(rx.toString());
     }
 
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     public int ahoCorasick() {
         int count = 0;
         Iterator<SearchResult> it = tree.search(HAYSTACK);
@@ -83,20 +91,19 @@ public class AhoCorasickBenchmark {
         return count;
     }
 
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     public int ahoCorasickLengthAware() {
-        // Exercise the length-aware path (SearchResult with explicit length bound)
+        // Exercise the length-aware continueSearch path with an explicit length bound
         int count = 0;
-        SearchResult startResult = new SearchResult(tree.root, HAYSTACK, 0, HAYSTACK.length);
-        Iterator<SearchResult> it = tree.continueSearch(startResult);
-        while (it.hasNext()) {
-            it.next();
+        SearchResult result = tree.continueSearch(new SearchResult(tree.root, HAYSTACK, 0, HAYSTACK.length));
+        while (result != null) {
             count++;
+            result = tree.continueSearch(result);
         }
         return count;
     }
 
-    @Benchmark
+    @org.openjdk.jmh.annotations.Benchmark
     public int javaRegex() {
         int count = 0;
         Matcher m = regexPattern.matcher(new String(HAYSTACK, StandardCharsets.UTF_8));
