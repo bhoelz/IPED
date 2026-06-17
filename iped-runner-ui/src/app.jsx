@@ -4,6 +4,9 @@ import { LANGS, STRINGS } from './i18n.js'
 import { INITIAL_STATE, buildCommand, validateState } from './command.js'
 import { ScreenEntradas, ScreenSaida, ScreenProcessamento, ScreenRelatorio, ScreenAvancado } from './screens.jsx'
 import { useTweaks, TweaksPanel, TweakSection, TweakColor, TweakRadio, TweakToggle } from './tweaks-panel.jsx'
+import { DashboardView } from './dashboard.jsx'
+import { apiFetch, setUnauthorizedHandler, getApiKey, setApiKey } from './api.js'
+import { ApiKeyModal } from './auth.jsx'
 
 const TWEAK_DEFAULTS = {
   accent: '#58b6e8',
@@ -11,18 +14,20 @@ const TWEAK_DEFAULTS = {
   showFlags: true,
 }
 
-const NAV = [
-  { key: 'entradas', icon: 'login', screen: ScreenEntradas },
-  { key: 'saida', icon: 'terminal', screen: ScreenSaida },
-  { key: 'processamento', icon: 'cpu', screen: ScreenProcessamento },
-  { key: 'relatorio', icon: 'fileText', screen: ScreenRelatorio },
-  { key: 'avancado', icon: 'settings', screen: ScreenAvancado },
+const CONFIG_NAV = [
+  { key: 'entradas',      icon: 'login',    screen: ScreenEntradas },
+  { key: 'saida',         icon: 'terminal', screen: ScreenSaida },
+  { key: 'processamento', icon: 'cpu',      screen: ScreenProcessamento },
+  { key: 'relatorio',     icon: 'fileText', screen: ScreenRelatorio },
+  { key: 'avancado',      icon: 'settings', screen: ScreenAvancado },
 ]
 
 function persistedConfig() {
   try { const raw = localStorage.getItem('iped.config'); if (raw) return JSON.parse(raw) } catch (e) {}
   return null
 }
+
+// ── Toasts ────────────────────────────────────────────────────────────────────
 
 function Toasts({ items }) {
   return (
@@ -35,6 +40,8 @@ function Toasts({ items }) {
     </div>
   )
 }
+
+// ── Command bar ───────────────────────────────────────────────────────────────
 
 function CommandBar({ cmd, issues, t }) {
   const [open, setOpen] = useState(false)
@@ -75,6 +82,8 @@ function CommandBar({ cmd, issues, t }) {
     </div>
   )
 }
+
+// ── File browser modal ────────────────────────────────────────────────────────
 
 function FileBrowserModal({ dir: initialDir, accept, onSelect, onClose, t }) {
   const [dir, setDir] = useState(initialDir || '')
@@ -160,18 +169,23 @@ function FileBrowserModal({ dir: initialDir, accept, onSelect, onClose, t }) {
   )
 }
 
-function RunModal({ open, onClose, cmd, issues, s, t, lang }) {
+// ── Run modal ─────────────────────────────────────────────────────────────────
+
+const PRIORITIES = ['HIGH', 'NORMAL', 'LOW']
+
+function RunModal({ open, onClose, cmd, issues, s, t, lang, serverProfiles }) {
   const [phase, setPhase] = useState('review')
   const [logs, setLogs] = useState([])
   const [exitCode, setExitCode] = useState(null)
+  const [priority, setPriority] = useState('NORMAL')
   const runIdRef = useRef(null)
   const esRef = useRef(null)
   const logEndRef = useRef(null)
   const errors = issues.filter((i) => i.level === 'error')
-  const warns = issues.filter((i) => i.level === 'warn')
+  const warns  = issues.filter((i) => i.level === 'warn')
 
   useEffect(() => {
-    if (open) { setPhase('review'); setLogs([]); setExitCode(null); runIdRef.current = null }
+    if (open) { setPhase('review'); setLogs([]); setExitCode(null); setPriority('NORMAL'); runIdRef.current = null }
     return () => { if (esRef.current) { esRef.current.close(); esRef.current = null } }
   }, [open])
 
@@ -188,10 +202,10 @@ function RunModal({ open, onClose, cmd, issues, s, t, lang }) {
         : null,
     }))
     try {
-      const resp = await fetch('/run', {
+      const resp = await apiFetch('/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tokens: rawTokens }),
+        body: JSON.stringify({ tokens: rawTokens, priority }),
       })
       if (!resp.ok) throw new Error('Server responded ' + resp.status)
       const body = await resp.json()
@@ -228,7 +242,7 @@ function RunModal({ open, onClose, cmd, issues, s, t, lang }) {
   const abort = async () => {
     if (esRef.current) { esRef.current.close(); esRef.current = null }
     if (runIdRef.current) {
-      try { await fetch('/run/' + runIdRef.current, { method: 'DELETE' }) } catch (e) {}
+      try { await apiFetch('/run/' + runIdRef.current, { method: 'DELETE' }) } catch (e) {}
       runIdRef.current = null
     }
     setPhase('error'); setExitCode(null)
@@ -239,10 +253,11 @@ function RunModal({ open, onClose, cmd, issues, s, t, lang }) {
   const checkItems = []
   if (errors.length === 0) checkItems.push({ level: 'ok', text: t.cmd.valid })
   errors.forEach((e) => checkItems.push({ level: 'error', text: t.validation[e.key] }))
-  warns.forEach((w) => checkItems.push({ level: 'warn', text: t.validation[w.key] }))
+  warns.forEach((w)  => checkItems.push({ level: 'warn',  text: t.validation[w.key] }))
 
-  const isDone = phase === 'done'
+  const isDone  = phase === 'done'
   const isError = phase === 'error'
+  const td = t.dashboard
 
   return (
     <div className="overlay" onClick={phase === 'running' ? undefined : onClose}>
@@ -274,6 +289,26 @@ function RunModal({ open, onClose, cmd, issues, s, t, lang }) {
                   </div>
                 ))}
               </div>
+
+              {/* Priority selector */}
+              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+                {td.priority.title}
+              </div>
+              <div className="priority-select" style={{ marginBottom: 20 }}>
+                {PRIORITIES.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`priority-opt ${priority === p ? 'active ' + p : ''}`}
+                    onClick={() => setPriority(p)}
+                  >
+                    {p === 'HIGH' && <Icon name="arrowUp" size={12} />}
+                    {p === 'LOW'  && <Icon name="arrowDown" size={12} />}
+                    {p === 'HIGH' ? td.priority.high : p === 'LOW' ? td.priority.low : td.priority.normal}
+                  </button>
+                ))}
+              </div>
+
               <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>{t.run.command}</div>
               <div className="cmd-code" style={{ background: '#06090f', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
                 <span className="fl">iped</span>{cmd.tokens.map((tk, i) => (
@@ -357,6 +392,49 @@ function RunModal({ open, onClose, cmd, issues, s, t, lang }) {
   )
 }
 
+// ── Session menu ──────────────────────────────────────────────────────────────
+
+function SessionMenu({ hasKey, onChangeKey, onClearKey, t }) {
+  const [open, setOpen] = useState(false)
+  const tk = t.keyMenu
+  useEffect(() => {
+    if (!open) return
+    const h = () => setOpen(false)
+    window.addEventListener('click', h)
+    return () => window.removeEventListener('click', h)
+  }, [open])
+  return (
+    <div className="lang" onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
+      <button className="top-icon" style={{ position: 'relative' }} onClick={() => setOpen((o) => !o)}>
+        <Icon name="user" size={19} />
+        <span className={`key-dot${hasKey ? '' : ' none'}`} />
+      </button>
+      {open && (
+        <div className="lang-menu" style={{ right: 0, left: 'auto', minWidth: 180 }}>
+          <div style={{ padding: '8px 14px 6px', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: .5 }}>
+            {tk.title}
+          </div>
+          <div style={{ padding: '4px 14px 8px', fontSize: 12.5, color: hasKey ? 'var(--ok)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className={`key-dot${hasKey ? '' : ' none'}`} style={{ position: 'static', flexShrink: 0 }} />
+            {hasKey ? tk.keySet : tk.keyNone}
+          </div>
+          <div style={{ height: 1, background: 'var(--border)', margin: '0 8px 6px' }} />
+          <button className="lang-item" onClick={() => { setOpen(false); onChangeKey() }}>
+            <Icon name="lock" size={14} /> {tk.change}
+          </button>
+          {hasKey && (
+            <button className="lang-item" style={{ color: 'var(--danger)' }} onClick={() => { setOpen(false); onClearKey() }}>
+              <Icon name="unlock" size={14} /> {tk.clear}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Language menu ─────────────────────────────────────────────────────────────
+
 function LangMenu({ lang, onChange }) {
   const [open, setOpen] = useState(false)
   const cur = LANGS.find((l) => l.code === lang)
@@ -385,18 +463,25 @@ function LangMenu({ lang, onChange }) {
   )
 }
 
+// ── App root ──────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS)
   const [lang, setLang] = useState(() => localStorage.getItem('iped.lang') || 'pt')
-  const [active, setActive] = useState('entradas')
+  const [view, setView] = useState('assets')          // 'dashboard' | 'assets'
+  const [active, setActive] = useState('entradas')    // config sub-screen
   const [s, setS] = useState(() => ({ ...INITIAL_STATE, ...(persistedConfig() || {}) }))
   const [runOpen, setRunOpen] = useState(false)
   const [toasts, setToasts] = useState([])
   const [browser, setBrowser] = useState(null)
+  const [serverProfiles, setServerProfiles] = useState([])
+  const [authNeeded, setAuthNeeded] = useState(false)
+  const [hasKey,     setHasKey]     = useState(() => !!getApiKey())
   const toastId = useRef(0)
 
   const t = STRINGS[lang]
 
+  // Accent / font tweaks
   useEffect(() => {
     const root = document.documentElement
     root.style.setProperty('--accent', tw.accent)
@@ -407,7 +492,18 @@ export default function App() {
   useEffect(() => { localStorage.setItem('iped.lang', lang); document.documentElement.lang = lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'pt-BR' }, [lang])
   useEffect(() => { try { localStorage.setItem('iped.config', JSON.stringify(s)) } catch (e) {} }, [s])
 
-  const patch = (partial) => setS((prev) => ({ ...prev, ...partial }))
+  // Register global 401 handler — shows ApiKeyModal whenever a protected request is rejected
+  useEffect(() => {
+    setUnauthorizedHandler(() => setAuthNeeded(true))
+    return () => setUnauthorizedHandler(null)
+  }, [])
+
+  // Fetch server profile list
+  useEffect(() => {
+    apiFetch('/profiles').then(r => r.ok ? r.json() : []).then(list => setServerProfiles(list || [])).catch(() => {})
+  }, [])
+
+  const patch  = (partial) => setS((prev) => ({ ...prev, ...partial }))
   const notify = (msg) => {
     const id = ++toastId.current
     setToasts((p) => [...p, { id, msg }])
@@ -427,7 +523,12 @@ export default function App() {
 
   const getIssue = (key) => issues.find((i) => i.key === key) || null
 
-  const ActiveScreen = NAV.find((n) => n.key === active).screen
+  const ActiveScreen = CONFIG_NAV.find((n) => n.key === active).screen
+
+  const switchView = (v) => {
+    setView(v)
+    setRunOpen(false)
+  }
 
   return (
     <div className="app">
@@ -439,15 +540,28 @@ export default function App() {
             <div className="brand-sub">{t.appSub}</div>
           </div>
         </div>
-        <nav className="nav">
-          {NAV.map((n) => (
-            <button key={n.key} className={`navitem ${active === n.key ? 'active' : ''}`} onClick={() => setActive(n.key)}>
-              <span className="nav-ico"><Icon name={n.icon} size={18} /></span>
-              {t.nav[n.key]}
-              {errCountByScreen[n.key] ? <span className="nav-badge">{errCountByScreen[n.key]}</span> : null}
+
+        {view === 'assets' && (
+          <nav className="nav">
+            {CONFIG_NAV.map((n) => (
+              <button key={n.key} className={`navitem ${active === n.key ? 'active' : ''}`} onClick={() => setActive(n.key)}>
+                <span className="nav-ico"><Icon name={n.icon} size={18} /></span>
+                {t.nav[n.key]}
+                {errCountByScreen[n.key] ? <span className="nav-badge">{errCountByScreen[n.key]}</span> : null}
+              </button>
+            ))}
+          </nav>
+        )}
+
+        {view === 'dashboard' && (
+          <nav className="nav">
+            <button className="navitem active">
+              <span className="nav-ico"><Icon name="activity" size={18} /></span>
+              {t.topnav.dashboard}
             </button>
-          ))}
-        </nav>
+          </nav>
+        )}
+
         <div className="sidebar-foot">
           <button className="navitem"><span className="nav-ico"><Icon name="helpCircle" size={18} /></span>{t.support}</button>
         </div>
@@ -457,29 +571,55 @@ export default function App() {
         <header className="topbar">
           <span className="topbar-brand">{t.brand}</span>
           <nav className="topnav">
-            <button className="topnav-link">{t.topnav.dashboard}</button>
-            <button className="topnav-link">{t.topnav.cases}</button>
-            <button className="topnav-link active">{t.topnav.assets}</button>
+            <button className={`topnav-link ${view === 'dashboard' ? 'active' : ''}`} onClick={() => switchView('dashboard')}>
+              {t.topnav.dashboard}
+            </button>
+            <button className="topnav-link" style={{ opacity: .45, cursor: 'default' }}>
+              {t.topnav.cases}
+            </button>
+            <button className={`topnav-link ${view === 'assets' ? 'active' : ''}`} onClick={() => switchView('assets')}>
+              {t.topnav.assets}
+            </button>
           </nav>
           <div className="topbar-right">
             <LangMenu lang={lang} onChange={setLang} />
             <button className="top-icon"><Icon name="settings" size={19} /></button>
-            <button className="top-icon"><Icon name="user" size={19} /></button>
+            <SessionMenu
+              hasKey={hasKey}
+              onChangeKey={() => setAuthNeeded(true)}
+              onClearKey={() => { setApiKey(''); setHasKey(false) }}
+              t={t}
+            />
             <button className="btn btn-ghost" style={{ marginLeft: 4 }}><Icon name="helpCircle" size={15} /> {t.help}</button>
             <button className="btn btn-primary" onClick={() => setRunOpen(true)}><Icon name="play" size={14} /> {t.runBtn}</button>
           </div>
         </header>
 
-        <div className="content">
-          <div className="content-inner" key={active + lang}>
-            <ActiveScreen s={s} patch={patch} t={t} getIssue={getIssue} notify={notify} openBrowser={openBrowser} />
-          </div>
-        </div>
-
-        <CommandBar cmd={cmd} issues={issues} t={t} />
+        {view === 'dashboard' ? (
+          <DashboardView t={t} openBrowser={openBrowser} serverProfiles={serverProfiles} notify={notify} />
+        ) : (
+          <>
+            <div className="content">
+              <div className="content-inner" key={active + lang}>
+                <ActiveScreen s={s} patch={patch} t={t} getIssue={getIssue} notify={notify} openBrowser={openBrowser} />
+              </div>
+            </div>
+            <CommandBar cmd={cmd} issues={issues} t={t} />
+          </>
+        )}
       </div>
 
-      <RunModal open={runOpen} onClose={() => setRunOpen(false)} cmd={cmd} issues={issues} s={s} t={t} lang={lang} />
+      <RunModal
+        open={runOpen}
+        onClose={() => setRunOpen(false)}
+        cmd={cmd}
+        issues={issues}
+        s={s}
+        t={t}
+        lang={lang}
+        serverProfiles={serverProfiles}
+      />
+      <ApiKeyModal open={authNeeded} onConnect={() => { setAuthNeeded(false); setHasKey(true) }} t={t} />
       <Toasts items={toasts} />
 
       {browser && (
