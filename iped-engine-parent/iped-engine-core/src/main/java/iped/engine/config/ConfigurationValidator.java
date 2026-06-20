@@ -91,7 +91,11 @@ public class ConfigurationValidator {
         try {
             for (Configurable<?> configurable : configManager.getObjects()) {
                 Class<?> configurableClass = configurable.getClass();
-                boolean valid = validateConfiguration(configurable, configurableClass);
+                // Validate the canonical config snapshot, not the live engine object: the
+                // latter can carry expensive derived getters (e.g. TaskInstallerConfig's
+                // task-graph resolution) or third-party object graphs Jackson can't safely
+                // walk, neither of which the JSON schemas describe.
+                boolean valid = validateConfiguration(configurable.getConfiguration(), configurableClass);
 
                 if (valid) {
                     stats.successCount++;

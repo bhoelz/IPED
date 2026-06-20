@@ -2,7 +2,10 @@ package iped.engine.config.schema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +15,14 @@ import java.util.List;
  * Provides detailed validation error messages.
  */
 public class SchemaValidator {
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper()
+            // Some Configurables expose third-party object graphs (e.g. Tika's MediaType,
+            // whose internal baseType field points back to itself for parameterless types)
+            // that aren't real JSON cycles but trip Jackson's bean-serialization recursion
+            // guard. Serializing them as their string form matches what every schema that
+            // references them ("type": "string") actually expects anyway.
+            .registerModule(new SimpleModule().addSerializer(org.apache.tika.mime.MediaType.class, ToStringSerializer.instance))
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     /**
      * Validate a configuration object against its schema.
