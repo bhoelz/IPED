@@ -27,6 +27,7 @@ import iped.engine.config.AnalysisConfig;
 import iped.engine.config.CategoryConfig;
 import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
+import iped.engine.config.EngineConfigContributor;
 import iped.engine.datasource.SleuthkitReader;
 import iped.engine.index.IndexExtraAttributes;
 import iped.engine.index.IndexMetadata;
@@ -176,7 +177,7 @@ public class IPEDSource implements IIPEDSource {
         // sourceId = nextId.getAndIncrement();
 
         try {
-            Configuration.getInstance().loadConfigurables(moduleDir.getAbsolutePath(), true);
+            Configuration.getInstance().loadConfigurables(moduleDir.getAbsolutePath(), true, EngineConfigContributor.INSTANCE);
 
             isReport = new File(moduleDir, "data/containsReport.flag").exists(); //$NON-NLS-1$
 

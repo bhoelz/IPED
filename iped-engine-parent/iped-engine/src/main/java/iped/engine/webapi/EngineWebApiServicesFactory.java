@@ -6,6 +6,7 @@ import iped.data.IItemId;
 import iped.data.IMultiBookmarks;
 import iped.engine.config.Configuration;
 import iped.engine.config.ConfigurationManager;
+import iped.engine.config.EngineConfigContributor;
 import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.data.ItemId;
@@ -114,7 +115,7 @@ public class EngineWebApiServicesFactory implements WebApiServicesFactory {
                 sourcePathToStringID.put(file.toString(), id);
 
                 if (!confInited) {
-                    Configuration.getInstance().loadConfigurables(file + File.separator + "iped", true);
+                    Configuration.getInstance().loadConfigurables(file + File.separator + "iped", true, EngineConfigContributor.INSTANCE);
                     confInited = true;
                 }
                 sources.add(new IPEDSource(file));

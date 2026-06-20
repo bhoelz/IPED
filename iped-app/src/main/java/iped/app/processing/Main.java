@@ -31,6 +31,7 @@ import iped.engine.CmdLineArgs;
 import iped.engine.CmdLineArgsImpl;
 import iped.engine.Version;
 import iped.engine.config.Configuration;
+import iped.engine.config.EngineConfigContributor;
 import iped.engine.core.Manager;
 import iped.engine.io.ImagePathResolverProvider;
 import iped.engine.localization.Messages;
@@ -404,7 +405,7 @@ public class Main {
                 Configuration.getInstance().saveIpedRoot(iped.rootPath);
             }
 
-            Configuration.getInstance().loadConfigurables(iped.configPath, true);
+            Configuration.getInstance().loadConfigurables(iped.configPath, true, EngineConfigContributor.INSTANCE);
 
             SystemOut.println(Bootstrap.SUB_PROCESS_TEMP_FOLDER + System.getProperty("java.io.tmpdir"));
 

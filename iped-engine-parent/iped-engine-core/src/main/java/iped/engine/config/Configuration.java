@@ -191,6 +191,10 @@ public class Configuration {
         loadConfigurables(configPathStr, false);
     }
 
+    public void loadConfigurables(String configPathStr, boolean loadAll) throws IOException {
+        loadConfigurables(configPathStr, loadAll, null);
+    }
+
     private void addProfileToConfigDirectory(ConfigurationDirectory configDirectory, File profile) {
         File mainConfig = new File(profile, CONFIG_FILE);
         if (mainConfig.exists()) {
@@ -206,7 +210,14 @@ public class Configuration {
         }
     }
 
-    public void loadConfigurables(String configPathStr, boolean loadAll) throws IOException {
+    /**
+     * @param extraConfigs optional hook invoked just before the batched
+     *     {@code configManager.loadConfigs()}, for registering {@link Configurable}s
+     *     that {@code iped-engine-core} cannot construct directly because their
+     *     implementation classes live in a module that depends on this one (e.g.
+     *     {@code iped-engine}). Ignored when {@code loadAll} is {@code false}.
+     */
+    public void loadConfigurables(String configPathStr, boolean loadAll, ConfigContributor extraConfigs) throws IOException {
 
         if (loaded.getAndSet(true))
             return;
@@ -252,26 +263,9 @@ public class Configuration {
         loadNativeLibs();
 
         configManager.addObject(new LocalConfig());
-//        configManager.addObject(new OCRConfig());
-//        configManager.addObject(new FileSystemConfig());
-//        configManager.addObject(new AnalysisConfig());
-//        configManager.addObject(new AIFiltersConfig());
-//        configManager.addObject(new ProcessingPriorityConfig());
-//
-//        configManager.addObject(new EnableTaskProperty(FaceRecognitionConfig.enableParam));
-//        configManager.addObject(new EnableTaskProperty(AgeEstimationConfig.enableParam));
-//
-//        TaskInstallerConfig taskConfig = new TaskInstallerConfig();
-//        configManager.addObject(taskConfig);
-//
-//        // must load taskConfig before using it
-//        configManager.loadConfig(taskConfig);
-//
-//        for (AbstractTask task : taskConfig.getNewTaskInstances()) {
-//            for (Configurable<?> configurable : task.getConfigurables()) {
-//                configManager.addObject(configurable);
-//            }
-//        }
+        if (extraConfigs != null) {
+            extraConfigs.contribute(configManager);
+        }
 
         configManager.loadConfigs();
 
