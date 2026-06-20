@@ -75,10 +75,17 @@ class TaskRegistry {
     private List<TaskRegistration> resolveOrder() {
         Map<String, Set<String>> adjacency = new HashMap<>();
         Map<String, Integer> indegree = new HashMap<>();
+        // Most pipeline tasks declare no explicit dependency metadata at all, so the
+        // topological sort below must fall back to original declaration order among
+        // tasks with no ordering constraint between them - that's the only thing that
+        // makes TaskInstaller.toml's "order is very sensitive" guarantee actually hold.
+        Map<String, Integer> declarationOrder = new HashMap<>();
 
+        int i = 0;
         for (String id : registrations.keySet()) {
             adjacency.put(id, new java.util.LinkedHashSet<>());
             indegree.put(id, 0);
+            declarationOrder.put(id, i++);
         }
 
         for (TaskRegistration registration : registrations.values()) {
@@ -101,7 +108,7 @@ class TaskRegistry {
             }
         }
 
-        Deque<String> queue = new ArrayDeque<>();
+        Queue<String> queue = new PriorityQueue<>(Comparator.comparingInt(declarationOrder::get));
         for (Map.Entry<String, Integer> entry : indegree.entrySet()) {
             if (entry.getValue() == 0) {
                 queue.add(entry.getKey());
