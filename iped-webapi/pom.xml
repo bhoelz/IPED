@@ -117,6 +117,40 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${lib.dir}</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <excludeScope>provided</excludeScope>
+                            <!-- iped-webapi isn't a dependency of iped-app, so iped-app's own
+                                 copy-dependencies execution never copies iped-webapi-only
+                                 dependencies (jersey-jetty, swagger-*, json-simple, lucene-core)
+                                 into lib/. Without this, iped-webapi.jar's Class-Path manifest
+                                 references jars that were never actually copied there, and the
+                                 resulting NoClassDefFoundError at startup gets confusingly
+                                 mis-reported by the JDK 25 launcher as a missing JavaFX runtime.
+
+                                 Unlike iped-app, iped-webapi has no separate plugins-folder
+                                 classpath augmentation at startup, and plain pipeline tasks
+                                 (declared by class name in TaskInstaller.toml, e.g.
+                                 IgnoreHardLinkTask) are instantiated via plain Class.forName(),
+                                 not the plugin SPI. So task/parser/carver modules must NOT be
+                                 excluded here; they need to be directly on the classpath. -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
                     <execution>

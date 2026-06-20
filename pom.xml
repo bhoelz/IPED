@@ -58,6 +58,24 @@
         <java.dbx.version>1.1-p6</java.dbx.version>
     </properties>
 
+    <!-- Without this, individual modules' transitive dependencies (e.g. swagger-core,
+         jersey-media-json-jackson) can each pull a different jackson-annotations/-core/
+         -databind version onto the classpath; whichever copy lands in lib/'s Class-Path
+         first silently wins class loading, regardless of which one is actually compatible
+         with the rest of the jackson stack. Importing the BOM pins every Jackson artifact
+         in the reactor to one consistent version. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <repositories>
         <repository>
             <id>central</id>
