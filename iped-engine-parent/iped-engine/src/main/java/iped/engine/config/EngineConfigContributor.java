@@ -1,20 +1,25 @@
 package iped.engine.config;
 
-import iped.configuration.Configurable;
-import iped.engine.task.AbstractTask;
-
 import java.io.IOException;
 
 /**
- * Registers the {@link Configurable}s that {@code iped-engine-core}'s
- * {@link Configuration} cannot construct directly, because their implementation
- * classes live here in {@code iped-engine} (which depends on {@code iped-engine-core},
- * not the other way around).
+ * Registers the {@link iped.configuration.Configurable}s that
+ * {@code iped-engine-core}'s {@link Configuration} cannot construct directly,
+ * because their implementation classes live here in {@code iped-engine} (which
+ * depends on {@code iped-engine-core}, not the other way around).
  *
- * <p>Pass {@link #INSTANCE} as the {@code extraConfigs} argument to
- * {@link Configuration#loadConfigurables(String, boolean, ConfigContributor)} from
- * any caller that needs the full engine config set (i.e. anywhere {@code loadAll}
- * is {@code true}: actual case processing, the web API, and {@link iped.engine.data.IPEDSource}).
+ * <p>This covers only the configs needed to open and read an already-processed
+ * case (search, browse, view results) -- none of it touches the task pipeline,
+ * so callers that just need read access to results pull in no dependency on any
+ * task/parser/carver plugin module. Pass {@link #INSTANCE} as the
+ * {@code extraConfigs} argument to
+ * {@link Configuration#loadConfigurables(String, boolean, ConfigContributor)}
+ * from any such caller: {@link iped.engine.data.IPEDSource}, the web API.
+ *
+ * <p>Actual case processing needs more than this -- see
+ * {@link ProcessingConfigContributor}, which extends this with the task
+ * pipeline. {@code iped-app}'s {@code Main} (the only real processing entry
+ * point) is the only caller that should use that one instead.
  */
 public class EngineConfigContributor implements ConfigContributor {
 
@@ -22,10 +27,33 @@ public class EngineConfigContributor implements ConfigContributor {
 
     @Override
     public void contribute(ConfigurationManager configManager) throws IOException {
-        // OCRConfig/FileSystemConfig must be registered before the task-discovery loop
-        // below: ParsingTaskConfig.processProperties() requires OCRConfig to already be
-        // loaded, but ParsingTask.getConfigurables() lists itself before OCRConfig in its
-        // own configurable list, so relying solely on that loop would load them too late.
+        contributeBaseConfigs(configManager);
+
+        // The real IndexSettings impl (IndexTaskConfig) is only registered by the
+        // task pipeline (see ProcessingConfigContributor), which read-only callers
+        // never run. Without this fallback, AppAnalyzer's
+        // findObjectInstanceOf(IndexSettings.class) lookup returns null and NPEs.
+        configManager.addObject(DefaultIndexSettings.INSTANCE);
+
+        // Same situation for CategoryConfig: normally registered only by
+        // SetCategoryTask.getConfigurables() in the task loop. Unlike IndexSettings
+        // there's no plugin-module dependency issue here -- CategoryConfig lives in
+        // iped-engine itself -- so this is just a plain extra registration, not a
+        // fallback that risks shadowing a "real" one (this contributor never runs
+        // alongside the task loop; see ProcessingConfigContributor).
+        configManager.addObject(new CategoryConfig());
+    }
+
+    /**
+     * Registers the configs shared by both the read-only path (this class) and
+     * the processing path ({@link ProcessingConfigContributor}). Package-private:
+     * {@link ProcessingConfigContributor} calls this directly instead of
+     * {@link #contribute}, so it never registers {@link DefaultIndexSettings} --
+     * its task loop registers the real {@code IndexTaskConfig} instead, and
+     * {@code findObjectInstanceOf} would otherwise return whichever IndexSettings
+     * was registered first rather than the real one.
+     */
+    static void contributeBaseConfigs(ConfigurationManager configManager) throws IOException {
         configManager.addObject(new OCRConfig());
         configManager.addObject(new FileSystemConfig());
         configManager.addObject(new AnalysisConfig());
@@ -34,17 +62,5 @@ public class EngineConfigContributor implements ConfigContributor {
 
         configManager.addObject(new EnableTaskProperty(FaceRecognitionConfig.enableParam));
         configManager.addObject(new EnableTaskProperty(AgeEstimationConfig.enableParam));
-
-        TaskInstallerConfig taskConfig = new TaskInstallerConfig();
-        configManager.addObject(taskConfig);
-
-        // must load taskConfig before using it
-        configManager.loadConfig(taskConfig);
-
-        for (AbstractTask task : taskConfig.getNewTaskInstances()) {
-            for (Configurable<?> configurable : task.getConfigurables()) {
-                configManager.addObject(configurable);
-            }
-        }
     }
 }
