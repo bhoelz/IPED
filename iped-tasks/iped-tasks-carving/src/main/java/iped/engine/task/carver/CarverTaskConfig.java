@@ -62,7 +62,7 @@ public class CarverTaskConfig extends AbstractTaskConfig<XMLCarverConfiguration>
 
         if (resource.endsWith(GLOBAL_CARVER_CONFIG_TOML)) {
             TomlCarverConfiguration toml = new TomlCarverConfiguration();
-            toml.loadTomlConfigFile(resource.toFile());
+            toml.loadTomlConfigFile(resource);
             carverConfiguration = toml;
             return;
         }
@@ -70,11 +70,11 @@ public class CarverTaskConfig extends AbstractTaskConfig<XMLCarverConfiguration>
         // XML files: applied on top of whatever configuration is already loaded,
         // allowing user-supplied XML overrides to augment or replace TOML defaults.
         if (resource.endsWith(GLOBAL_CARVER_CONFIG)) {
-            carverConfiguration.loadXMLConfigFile(resource.toFile());
+            carverConfiguration.loadXMLConfigFile(resource);
         }
         String fileName = resource.getFileName() != null ? resource.getFileName().toString() : "";
         if (fileName.startsWith(CARVER_CONFIG_PREFIX) && fileName.endsWith(CARVER_CONFIG_SUFFIX)) {
-            carverConfiguration.loadXMLConfigFile(resource.toFile());
+            carverConfiguration.loadXMLConfigFile(resource);
         }
     }
 }

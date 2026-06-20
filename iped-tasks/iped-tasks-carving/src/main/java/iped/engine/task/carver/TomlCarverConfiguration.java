@@ -8,8 +8,10 @@ import iped.carvers.api.Signature.SignatureType;
 import iped.carvers.standard.DefaultCarver;
 import org.apache.tika.mime.MediaType;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 
 /**
@@ -27,10 +29,10 @@ public class TomlCarverConfiguration extends XMLCarverConfiguration {
 
     private static final TomlMapper MAPPER = new TomlMapper();
 
-    public void loadTomlConfigFile(File confFile) throws IOException {
+    public void loadTomlConfigFile(Path confFile) throws IOException {
         JsonNode root;
-        try {
-            root = MAPPER.readTree(confFile);
+        try (InputStream is = Files.newInputStream(confFile)) {
+            root = MAPPER.readTree(is);
         } catch (Exception e) {
             throw new IOException("Failed to parse TOML carver config: " + confFile, e);
         }

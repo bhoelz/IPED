@@ -124,7 +124,7 @@ public class RegexTaskConfig extends AbstractTaskConfig<Pair<Boolean, List<iped.
     @Override
     public void processTaskConfig(Path resource) throws IOException {
 
-        String content = Util.readUTF8Content(resource.toFile());
+        String content = Util.readUTF8Content(resource);
         for (String line : content.split("\n")) { //$NON-NLS-1$
             line = line.trim();
             if (line.startsWith("#") || line.isEmpty()) //$NON-NLS-1$

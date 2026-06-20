@@ -222,7 +222,17 @@ public class Util {
     }
 
     public static String readUTF8Content(File file) throws IOException {
-        byte[] bytes = Files.readAllBytes(file.toPath());
+        return readUTF8Content(file.toPath());
+    }
+
+    /**
+     * Path-based overload: unlike {@link #readUTF8Content(File)}, this works for
+     * any {@link Path} implementation, including a {@code ZipPath} pointing at a
+     * resource inside a jar (e.g. a module's classpath-default config). Calling
+     * {@code path.toFile()} on such a path throws {@link UnsupportedOperationException}.
+     */
+    public static String readUTF8Content(Path path) throws IOException {
+        byte[] bytes = Files.readAllBytes(path);
         // BOM test
         if (bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF) {
             bytes[0] = bytes[1] = bytes[2] = 0;
