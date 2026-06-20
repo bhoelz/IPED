@@ -11,8 +11,11 @@ logging:
 
 runner:
   # Path (or command) used to launch IPED.  Split on whitespace by ExecutionService so
-  # multi-word forms like "java -jar /opt/iped/iped-app.jar" work without shell escaping.
-  executable: iped
+  # multi-word forms work without shell escaping.  Relative paths (like the .ps1 below)
+  # resolve against the iped-runner process' working directory (repo root, when started
+  # via start-iped-runner.ps1).  start-iped-app.ps1 forwards any unrecognized flags
+  # straight through to iped.jar.
+  executable: powershell -ExecutionPolicy Bypass -File .\start-iped-app.ps1
 
   # Set to true to serve each JS file via Babel CDN (no Vite build step needed).
   # Launch with: mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Drunner.dev=true"

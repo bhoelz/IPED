@@ -58,7 +58,7 @@ function CommandBar({ cmd, issues, t }) {
       {open && (
         <div className="cmd-panel">
           <div className="cmd-code">
-            <span className="fl">iped</span>{'\n'}
+            <span className="fl">.\start-iped-app.ps1</span>{'\n'}
             {cmd.tokens.map((tk, i) => (
               <span key={i}>{'  '}<span className="fl">{tk.flag}</span>{tk.val !== null ? <span className="vl"> {tk.val}</span> : null}<span className="cont"> \</span>{'\n'}</span>
             ))}
@@ -66,8 +66,8 @@ function CommandBar({ cmd, issues, t }) {
         </div>
       )}
       <div className="cmd-line">
-        <span className="cmd-prompt">$ iped</span>
-        <div className="cmd-str tech">{cmd.tokens.length === 0 ? <span style={{ opacity: .6 }}>{t.cmd.empty}</span> : cmd.str.replace(/^iped /, '')}</div>
+        <span className="cmd-prompt">$ .\start-iped-app.ps1</span>
+        <div className="cmd-str tech">{cmd.tokens.length === 0 ? <span style={{ opacity: .6 }}>{t.cmd.empty}</span> : cmd.str.replace(/^\.\\start-iped-app\.ps1 /, '')}</div>
         {errors.length > 0
           ? <span className="cmd-status bad"><Icon name="alert" size={13} /> {t.cmd.issues(errors.length)}</span>
           : <span className="cmd-status ok"><Icon name="check" size={13} /> {t.cmd.valid}</span>}
@@ -311,7 +311,7 @@ function RunModal({ open, onClose, cmd, issues, s, t, lang, serverProfiles }) {
 
               <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: .6, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>{t.run.command}</div>
               <div className="cmd-code" style={{ background: '#06090f', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
-                <span className="fl">iped</span>{cmd.tokens.map((tk, i) => (
+                <span className="fl">.\start-iped-app.ps1</span>{cmd.tokens.map((tk, i) => (
                   <span key={i}> <span className="fl">{tk.flag}</span>{tk.val !== null ? <span className="vl"> {tk.val}</span> : null}</span>
                 ))}
               </div>
@@ -469,6 +469,7 @@ export default function App() {
   const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS)
   const [lang, setLang] = useState(() => localStorage.getItem('iped.lang') || 'pt')
   const [view, setView] = useState('assets')          // 'dashboard' | 'assets'
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('iped.sidebarCollapsed') === '1')
   const [active, setActive] = useState('entradas')    // config sub-screen
   const [s, setS] = useState(() => ({ ...INITIAL_STATE, ...(persistedConfig() || {}) }))
   const [runOpen, setRunOpen] = useState(false)
@@ -490,6 +491,7 @@ export default function App() {
   }, [tw.accent, tw.techFont, tw.showFlags])
 
   useEffect(() => { localStorage.setItem('iped.lang', lang); document.documentElement.lang = lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'pt-BR' }, [lang])
+  useEffect(() => { localStorage.setItem('iped.sidebarCollapsed', sidebarCollapsed ? '1' : '0') }, [sidebarCollapsed])
   useEffect(() => { try { localStorage.setItem('iped.config', JSON.stringify(s)) } catch (e) {} }, [s])
 
   // Register global 401 handler — shows ApiKeyModal whenever a protected request is rejected
@@ -531,11 +533,11 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-icon"><Icon name="shield" size={20} /></div>
-          <div>
+          <div className="brand-text">
             <div className="brand-name">{t.appName}</div>
             <div className="brand-sub">{t.appSub}</div>
           </div>
@@ -544,9 +546,9 @@ export default function App() {
         {view === 'assets' && (
           <nav className="nav">
             {CONFIG_NAV.map((n) => (
-              <button key={n.key} className={`navitem ${active === n.key ? 'active' : ''}`} onClick={() => setActive(n.key)}>
+              <button key={n.key} className={`navitem ${active === n.key ? 'active' : ''}`} onClick={() => setActive(n.key)} title={sidebarCollapsed ? t.nav[n.key] : undefined}>
                 <span className="nav-ico"><Icon name={n.icon} size={18} /></span>
-                {t.nav[n.key]}
+                <span className="nav-label">{t.nav[n.key]}</span>
                 {errCountByScreen[n.key] ? <span className="nav-badge">{errCountByScreen[n.key]}</span> : null}
               </button>
             ))}
@@ -555,21 +557,28 @@ export default function App() {
 
         {view === 'dashboard' && (
           <nav className="nav">
-            <button className="navitem active">
+            <button className="navitem active" title={sidebarCollapsed ? t.topnav.dashboard : undefined}>
               <span className="nav-ico"><Icon name="activity" size={18} /></span>
-              {t.topnav.dashboard}
+              <span className="nav-label">{t.topnav.dashboard}</span>
             </button>
           </nav>
         )}
 
         <div className="sidebar-foot">
-          <button className="navitem"><span className="nav-ico"><Icon name="helpCircle" size={18} /></span>{t.support}</button>
+          <button className="navitem" title={sidebarCollapsed ? t.support : undefined}>
+            <span className="nav-ico"><Icon name="helpCircle" size={18} /></span>
+            <span className="nav-label">{t.support}</span>
+          </button>
+          <button className="navitem" onClick={() => setSidebarCollapsed((c) => !c)}
+            title={sidebarCollapsed ? t.expandSidebar : t.collapseSidebar}>
+            <span className="nav-ico"><Icon name={sidebarCollapsed ? 'chevronRight' : 'chevronLeft'} size={18} /></span>
+            <span className="nav-label">{t.collapseSidebar}</span>
+          </button>
         </div>
       </aside>
 
       <div className="main">
         <header className="topbar">
-          <span className="topbar-brand">{t.brand}</span>
           <nav className="topnav">
             <button className={`topnav-link ${view === 'dashboard' ? 'active' : ''}`} onClick={() => switchView('dashboard')}>
               {t.topnav.dashboard}

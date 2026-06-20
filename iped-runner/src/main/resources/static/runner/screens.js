@@ -75,22 +75,12 @@ function ScreenEntradas({ s, patch, t, getIssue, openBrowser }) {
           )}
         </Card>
 
-        <div className="grid-2">
-          <Card title={tt.keywordsTitle} flag="-l" desc={tt.keywordsDesc}>
-            <FilePicker fileName={s.keywords} buttonLabel={tt.chooseFile} emptyLabel={tt.noFile}
-              onPick={() => openBrowser(s.keywords, 'file', (p) => patch({ keywords: p }))}
-              onClear={() => patch({ keywords: '' })} />
-            {s.keywords && <span className="hinttext ok" style={{ marginTop: 8 }}><Icon name="check" size={13} /> FileExistsValidator — OK</span>}
-          </Card>
-
-          <Card title={tt.asapTitle} flag="-asap" desc={tt.asapDesc}>
-            <FilePicker fileName={s.asap} buttonLabel={tt.chooseFile} emptyLabel={tt.noFile}
-              invalid={!!getIssue('asapExt')}
-              onPick={() => openBrowser(s.asap, 'file', (p) => patch({ asap: p }))}
-              onClear={() => patch({ asap: '' })} />
-            {getIssue('asapExt') && <span className="hinttext err" style={{ marginTop: 8 }}><Icon name="alert" size={13} /> {t.validation.asapExt}</span>}
-          </Card>
-        </div>
+        <Card title={tt.keywordsTitle} flag="-l" desc={tt.keywordsDesc}>
+          <FilePicker fileName={s.keywords} buttonLabel={tt.chooseFile} emptyLabel={tt.noFile}
+            onPick={() => openBrowser(s.keywords, 'file', (p) => patch({ keywords: p }))}
+            onClear={() => patch({ keywords: '' })} />
+          {s.keywords && <span className="hinttext ok" style={{ marginTop: 8 }}><Icon name="check" size={13} /> FileExistsValidator — OK</span>}
+        </Card>
 
         <Card title={tt.passwordsTitle} flag="-p" desc={tt.passwordsDesc}
           action={<button className="btn btn-soft btn-sm" onClick={addPw}><Icon name="plus" size={15} /> {tt.addPassword}</button>}>
@@ -126,29 +116,16 @@ function ScreenSaida({ s, patch, t, getIssue, openBrowser }) {
           </Field>
         </Card>
 
-        <div className="grid-2">
-          <Card title={tt.logTitle} flag="-log" desc={tt.logDesc} icon={<Icon name="fileText" size={17} />}>
-            <Field label={tt.logFile}>
-              <TextInput value={s.logFile} onChange={(v) => patch({ logFile: v })} placeholder={tt.logFilePh}
-                affix={<Icon name="folder" size={16} />}
-                onAffix={() => openBrowser(s.logFile, 'any', (p) => patch({ logFile: p }))} />
-            </Field>
-            <div style={{ marginTop: 6 }}>
-              <FlagSwitch name={tt.nologfile} flag="--nologfile" desc={tt.nologfileDesc} on={s.nologfile} onChange={(v) => patch({ nologfile: v })} />
-            </div>
-          </Card>
-
-          <Card title={tt.caseMgmtTitle} desc={tt.caseMgmtDesc} icon={<Icon name="hardDrive" size={17} />}>
-            <FlagSwitch name={tt.append} flag="--append" desc={tt.appendDesc} on={s.append} onChange={(v) => patch({ append: v })} />
-            <div className="flag-row box">
-              <div className="flag-main">
-                <div className="flag-name">{tt.remove} <Pill>-remove</Pill></div>
-                <div className="flag-sub" style={{ marginBottom: 9 }}>{tt.removeDesc}</div>
-                <TextInput value={s.remove} onChange={(v) => patch({ remove: v })} placeholder={tt.removePh} />
-              </div>
-            </div>
-          </Card>
-        </div>
+        <Card title={tt.logTitle} flag="-log" desc={tt.logDesc} icon={<Icon name="fileText" size={17} />}>
+          <Field label={tt.logFile}>
+            <TextInput value={s.logFile} onChange={(v) => patch({ logFile: v })} placeholder={tt.logFilePh}
+              affix={<Icon name="folder" size={16} />}
+              onAffix={() => openBrowser(s.logFile, 'any', (p) => patch({ logFile: p }))} />
+          </Field>
+          <div style={{ marginTop: 6 }}>
+            <FlagSwitch name={tt.nologfile} flag="--nologfile" desc={tt.nologfileDesc} on={s.nologfile} onChange={(v) => patch({ nologfile: v })} />
+          </div>
+        </Card>
       </div>
     </>
   );
@@ -157,6 +134,7 @@ function ScreenSaida({ s, patch, t, getIssue, openBrowser }) {
 // ============================ PROCESSAMENTO ============================
 function ScreenProcessamento({ s, patch, t, notify }) {
   const tt = t.proc;
+  const ts = t.saida;
   const modeOpts = [
     { value: 'normal', label: tt.modeNormal },
     { value: 'continue', label: tt.modeContinue, flag: '--continue' },
@@ -202,6 +180,17 @@ function ScreenProcessamento({ s, patch, t, notify }) {
           <Card title={tt.flagsTitle} icon={<Icon name="flag" size={16} />} bar>
             <FlagSwitch name={tt.addowner} flag="--addowner" desc={tt.addownerDesc} on={s.addowner} onChange={(v) => patch({ addowner: v })} />
             <FlagSwitch name={tt.downloadInternet} flag="--downloadInternetData" desc={tt.downloadInternetDesc} on={s.downloadInternet} onChange={(v) => patch({ downloadInternet: v })} />
+          </Card>
+
+          <Card title={ts.caseMgmtTitle} desc={ts.caseMgmtDesc} icon={<Icon name="hardDrive" size={17} />} bar>
+            <FlagSwitch name={ts.append} flag="--append" desc={ts.appendDesc} on={s.append} onChange={(v) => patch({ append: v })} />
+            <div className="flag-row box">
+              <div className="flag-main">
+                <div className="flag-name">{ts.remove} <Pill>-remove</Pill></div>
+                <div className="flag-sub" style={{ marginBottom: 9 }}>{ts.removeDesc}</div>
+                <TextInput value={s.remove} onChange={(v) => patch({ remove: v })} placeholder={ts.removePh} />
+              </div>
+            </div>
           </Card>
         </div>
       </div>

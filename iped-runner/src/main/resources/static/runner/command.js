@@ -51,11 +51,9 @@ const TIMEZONES = buildTimezones();
 
 const INITIAL_STATE = {
   datasources: [
-    { path: 'E:\\Images\\Evidence_001.E01', type: 'e01', dname: 'Evidence_001' },
     { path: '', type: 'auto', dname: '' },
   ],
   keywords: '',
-  asap: '',
   passwords: ['Pa55w0rd!', ''],
   output: '',
   logFile: '',
@@ -102,7 +100,6 @@ function buildCommand(s) {
     }
   });
   if (s.keywords) push('-l', q(s.keywords));
-  if (s.asap) push('-asap', q(s.asap));
   s.passwords.forEach((p) => { if (p.trim()) push('-p', q(p.trim())); });
 
   if (s.output.trim()) push('-o', q(s.output.trim()));
@@ -131,7 +128,7 @@ function buildCommand(s) {
 
   s.extra.forEach((e) => { if (e.k.trim()) push(`-X${e.k.trim()}=${e.v.trim()}`); });
 
-  const str = 'iped ' + t.map((x) => (x.val !== null && x.val !== undefined ? `${x.flag} ${x.val}` : x.flag)).join(' ');
+  const str = '.\\start-iped-app.ps1 ' + t.map((x) => (x.val !== null && x.val !== undefined ? `${x.flag} ${x.val}` : x.flag)).join(' ');
   return { tokens: t, str };
 }
 
@@ -144,7 +141,6 @@ function validateState(s) {
       issues.push({ id: 'srcEmpty-' + i, screen: 'entradas', level: 'error', key: 'sourceEmpty' });
     }
   });
-  if (s.asap && !/\.asap$/i.test(s.asap)) issues.push({ id: 'asapExt', screen: 'entradas', level: 'error', key: 'asapExt' });
   s.passwords.forEach((p, i) => {
     if (i < s.passwords.length - 1 && !p.trim()) issues.push({ id: 'pw-' + i, screen: 'entradas', level: 'warn', key: 'passwordEmpty' });
   });

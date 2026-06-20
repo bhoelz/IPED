@@ -7,13 +7,13 @@ const LANGS = [
 
 const STRINGS = {
   pt: {
-    brand: 'Forensic Processor',
     appName: 'IPED Runner',
     appSub: 'Processing Config',
     topnav: { dashboard: 'Painel', cases: 'Casos', assets: 'Artefatos' },
     help: 'Ajuda', runBtn: 'Executar', save: 'Salvar Configuração', support: 'Suporte',
     restore: 'Restaurar Padrões',
     required: 'obrigatório', optional: 'opcional', addRow: 'Adicionar',
+    collapseSidebar: 'Recolher barra lateral', expandSidebar: 'Expandir barra lateral',
 
     nav: {
       entradas: 'Entradas', saida: 'Saída e Logs', processamento: 'Processamento',
@@ -28,7 +28,6 @@ const STRINGS = {
       displayName: 'Nome de Exibição', selectPath: 'Selecionar caminho…', autoGen: 'Gerar automaticamente',
       noSources: 'Nenhuma fonte adicionada. Adicione ao menos uma fonte de dados.',
       keywordsTitle: 'Lista de Palavras-chave', keywordsDesc: 'Forneça um arquivo de texto com palavras-chave para indexação.',
-      asapTitle: 'Arquivo ASAP', asapDesc: 'Carregue um perfil de análise automatizada (.asap).',
       chooseFile: 'Escolher arquivo', noFile: 'Nenhum arquivo escolhido',
       passwordsTitle: 'Senhas Conhecidas', passwordsDesc: 'Senhas a tentar em contêineres ou arquivos criptografados.',
       addPassword: 'Adicionar Senha', enterPassword: 'Inserir senha…',
@@ -107,7 +106,6 @@ const STRINGS = {
       sourceEmpty: 'Informe o caminho da fonte de dados.',
       needOutput: 'O diretório de saída é obrigatório.',
       keywordsMissing: 'Arquivo de palavras-chave não encontrado (FileExistsValidator).',
-      asapExt: 'O arquivo ASAP deve ter extensão .asap.',
       passwordEmpty: 'Há um campo de senha vazio.',
       extraKeyEmpty: 'Há um parâmetro extra sem chave.',
       sourceHint: 'Fonte verificada (DatasourceExistsValidator).',
@@ -119,10 +117,11 @@ const STRINGS = {
   },
 
   en: {
-    brand: 'Forensic Processor', appName: 'IPED Runner', appSub: 'Processing Config',
+    appName: 'IPED Runner', appSub: 'Processing Config',
     topnav: { dashboard: 'Dashboard', cases: 'Cases', assets: 'Assets' },
     help: 'Help', runBtn: 'Run', save: 'Save Configuration', support: 'Support',
     restore: 'Restore Defaults', required: 'required', optional: 'optional', addRow: 'Add',
+    collapseSidebar: 'Collapse sidebar', expandSidebar: 'Expand sidebar',
     nav: { entradas: 'Inputs', saida: 'Output & Logs', processamento: 'Processing', relatorio: 'Report/Export', avancado: 'Advanced' },
     entradas: {
       title: 'Inputs', desc: 'Configure data sources and input parameters for the forensic extraction process.',
@@ -131,7 +130,6 @@ const STRINGS = {
       selectPath: 'Select path…', autoGen: 'Auto-generate',
       noSources: 'No sources added. Add at least one data source.',
       keywordsTitle: 'Keyword List', keywordsDesc: 'Provide a text file containing keywords for indexing.',
-      asapTitle: 'ASAP File', asapDesc: 'Load a predefined automated analysis profile (.asap).',
       chooseFile: 'Choose file', noFile: 'No file chosen',
       passwordsTitle: 'Known Passwords', passwordsDesc: 'Passwords to attempt for encrypted containers or files.',
       addPassword: 'Add Password', enterPassword: 'Enter password…', noPasswords: 'No passwords added.',
@@ -196,17 +194,18 @@ const STRINGS = {
     validation: {
       needSource: 'Add at least one data source.', sourceEmpty: 'Provide the data source path.',
       needOutput: 'The output directory is required.', keywordsMissing: 'Keyword file not found (FileExistsValidator).',
-      asapExt: 'The ASAP file must have a .asap extension.', passwordEmpty: 'There is an empty password field.',
+      passwordEmpty: 'There is an empty password field.',
       extraKeyEmpty: 'There is an extra parameter without a key.', sourceHint: 'Source verified (DatasourceExistsValidator).',
     },
     tweaks: { title: 'Tweaks', accent: 'Accent color', techFont: 'Technical values', mono: 'Mono', sans: 'Sans', flagPills: 'Flag pills', density: 'Density' },
   },
 
   es: {
-    brand: 'Forensic Processor', appName: 'IPED Runner', appSub: 'Configuración',
+    appName: 'IPED Runner', appSub: 'Configuración',
     topnav: { dashboard: 'Panel', cases: 'Casos', assets: 'Artefactos' },
     help: 'Ayuda', runBtn: 'Ejecutar', save: 'Guardar Configuración', support: 'Soporte',
     restore: 'Restaurar Valores', required: 'obligatorio', optional: 'opcional', addRow: 'Añadir',
+    collapseSidebar: 'Colapsar barra lateral', expandSidebar: 'Expandir barra lateral',
     nav: { entradas: 'Entradas', saida: 'Salida y Logs', processamento: 'Procesamiento', relatorio: 'Informe/Exportación', avancado: 'Avanzado' },
     entradas: {
       title: 'Entradas', desc: 'Configure las fuentes de datos y parámetros de entrada del proceso forense.',
@@ -215,7 +214,6 @@ const STRINGS = {
       selectPath: 'Seleccionar ruta…', autoGen: 'Generar automáticamente',
       noSources: 'Sin fuentes. Añada al menos una fuente de datos.',
       keywordsTitle: 'Lista de Palabras Clave', keywordsDesc: 'Proporcione un archivo de texto con palabras clave para indexación.',
-      asapTitle: 'Archivo ASAP', asapDesc: 'Cargue un perfil de análisis automatizado (.asap).',
       chooseFile: 'Elegir archivo', noFile: 'Ningún archivo elegido',
       passwordsTitle: 'Contraseñas Conocidas', passwordsDesc: 'Contraseñas a probar en contenedores o archivos cifrados.',
       addPassword: 'Añadir Contraseña', enterPassword: 'Introducir contraseña…', noPasswords: 'Sin contraseñas.',
@@ -280,7 +278,7 @@ const STRINGS = {
     validation: {
       needSource: 'Añada al menos una fuente de datos.', sourceEmpty: 'Indique la ruta de la fuente de datos.',
       needOutput: 'El directorio de salida es obligatorio.', keywordsMissing: 'Archivo de palabras clave no encontrado (FileExistsValidator).',
-      asapExt: 'El archivo ASAP debe tener extensión .asap.', passwordEmpty: 'Hay un campo de contraseña vacío.',
+      passwordEmpty: 'Hay un campo de contraseña vacío.',
       extraKeyEmpty: 'Hay un parámetro extra sin clave.', sourceHint: 'Fuente verificada (DatasourceExistsValidator).',
     },
     tweaks: { title: 'Tweaks', accent: 'Color de acento', techFont: 'Valores técnicos', mono: 'Mono', sans: 'Sans', flagPills: 'Píldoras de flag', density: 'Densidad' },
