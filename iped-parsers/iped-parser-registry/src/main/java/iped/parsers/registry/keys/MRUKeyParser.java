@@ -5,7 +5,7 @@ import iped.parsers.registry.model.KeyValue;
 import iped.parsers.util.EmbeddedItem;
 import iped.parsers.util.EmbeddedParent;
 import iped.properties.ExtraProperties;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;

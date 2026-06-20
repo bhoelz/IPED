@@ -10,7 +10,7 @@ import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
 import iped.search.IMultiSearchResult;
 import iped.viewers.api.IResultSetFilter;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
 

@@ -3,7 +3,7 @@ package iped.parsers.skype;
 import iped.data.IItemReader;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.io.InputStream;

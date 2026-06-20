@@ -1,6 +1,6 @@
 package iped.parsers.registry.model;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;

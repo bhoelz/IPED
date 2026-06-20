@@ -7,7 +7,7 @@ import iped.geo.parsers.kmlstore.FeatureListFactoryRegister;
 import iped.geo.parsers.kmlstore.Folder;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -202,7 +202,7 @@ public class GeofileParser extends AbstractParser {
                     FeatureJSON fjson = new FeatureJSON();
                     StringWriter writer = new StringWriter();
 
-                    feature.setAttribute("description", StringEscapeUtils.escapeJavaScript(feature.getAttribute("description").toString()));
+                    feature.setAttribute("description", StringEscapeUtils.escapeEcmaScript(feature.getAttribute("description").toString()));
                     fjson.writeFeature(feature, writer);
 
                     String str = writer.toString();

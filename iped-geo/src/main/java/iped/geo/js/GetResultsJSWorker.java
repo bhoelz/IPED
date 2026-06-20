@@ -13,7 +13,7 @@ import iped.search.IIPEDSearcher;
 import iped.search.IMultiSearchResult;
 import iped.utils.SimpleHTMLEncoder;
 import iped.viewers.api.IMultiSearchResultProvider;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.tika.metadata.Metadata;
@@ -412,7 +412,7 @@ public class GetResultsJSWorker extends iped.viewers.api.CancelableWorker<KMLRes
                                 if (finalGids.length() > 1) {
                                     finalGids.append(",");
                                 }
-                                finalGids.append("['" + gid + "'," + finalRow + ",'" + StringEscapeUtils.escapeJavaScript(htmlFormat(doc.get(BasicProps.NAME))) + "','" + Messages.getString("KMLResult.SearchResultsDescription") + "'," + lat
+                                finalGids.append("['" + gid + "'," + finalRow + ",'" + StringEscapeUtils.escapeEcmaScript(htmlFormat(doc.get(BasicProps.NAME))) + "','" + Messages.getString("KMLResult.SearchResultsDescription") + "'," + lat
                                         + "," + longit + "," + checked + "," + selected + "]");
 
                                 updateViewableRegion(longit, lat);
@@ -438,7 +438,7 @@ public class GetResultsJSWorker extends iped.viewers.api.CancelableWorker<KMLRes
                                     if (finalGids.length() > 1) {
                                         finalGids.append(",");
                                     }
-                                    finalGids.append("['" + gid + "'," + finalRow + ",'" + StringEscapeUtils.escapeJavaScript(htmlFormat(doc.get(BasicProps.NAME))) + "','" + Messages.getString("KMLResult.SearchResultsDescription") + "',"
+                                    finalGids.append("['" + gid + "'," + finalRow + ",'" + StringEscapeUtils.escapeEcmaScript(htmlFormat(doc.get(BasicProps.NAME))) + "','" + Messages.getString("KMLResult.SearchResultsDescription") + "',"
                                             + lat + "," + longit + "," + checked + "," + selected + "]");
 
                                     updateViewableRegion(longit, lat);

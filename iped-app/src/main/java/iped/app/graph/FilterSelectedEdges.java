@@ -11,7 +11,7 @@ import iped.search.IMultiSearchResult;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IResultSetFilter;
 import iped.viewers.api.IResultSetFilterer;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.kharon.Edge;
 import org.kharon.Graph;
 import org.kharon.OverlappedEdges;

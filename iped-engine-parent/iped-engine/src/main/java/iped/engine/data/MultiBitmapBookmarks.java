@@ -4,7 +4,7 @@ import iped.data.*;
 import iped.engine.search.MultiSearchResult;
 import iped.engine.util.Util;
 import iped.search.IMultiSearchResult;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.roaringbitmap.RoaringBitmap;
 
 import java.awt.*;

@@ -6,7 +6,6 @@ import iped.parsers.skype.v8.SkypeConversationV14;
 import iped.parsers.skype.v8.SkypeMessageV12;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.Messages;
-import iped.parsers.util.Util;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
 import iped.utils.SimpleHTMLEncoder;
@@ -126,7 +125,7 @@ public class ReportGenerator {
                     IItemReader item = sm.getAnexoUri().getCacheFile();
                     byte[] thumb = item.getThumb();
                     String query = BasicProps.HASH + ":" + item.getHash();
-                    String exportPath = iped.parsers.util.Util.getExportPath(item);
+                    String exportPath = Util.getExportPath(item);
                     out.println("<input class=\"check\" type=\"checkbox\" onclick=app.check(\"" + query
                             + "\",this.checked) name=\"" + item.getHash() + "\" />");
                     out.println("<a onclick=app.open(\"" + query + "\") "); //$NON-NLS-1$
