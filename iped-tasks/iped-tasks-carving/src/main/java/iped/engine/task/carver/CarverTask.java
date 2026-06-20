@@ -33,8 +33,31 @@ public class CarverTask extends BaseCarveTask {
     public static boolean enableCarving = false;
     public static boolean ignoreCorrupted = true;
 
-    private static CarverType[] carverTypes;
     private static int largestPatternLen = 100;
+
+    /**
+     * Case-scoped carver type table. carverTypes is derived from the per-case
+     * CarverConfig.toml/xml; keeping it static would leak case 1's signature table
+     * into case 2 when several cases are processed in the same JVM (batch/report mode).
+     */
+    static final class CarverAccumulator {
+        static final String KEY = CarverAccumulator.class.getName();
+        CarverType[] carverTypes;
+    }
+
+    private CarverAccumulator accum() {
+        CarverAccumulator a = (CarverAccumulator) caseData.getCaseObject(CarverAccumulator.KEY);
+        if (a == null) {
+            synchronized (CarverTask.class) {
+                a = (CarverAccumulator) caseData.getCaseObject(CarverAccumulator.KEY);
+                if (a == null) {
+                    a = new CarverAccumulator();
+                    caseData.putCaseObject(CarverAccumulator.KEY, a);
+                }
+            }
+        }
+        return a;
+    }
 
     protected HashMap<CarverType, Carver> registeredCarvers = new HashMap<CarverType, Carver>();
     private CarvedItemListener carvedItemListener = null;
@@ -65,8 +88,8 @@ public class CarverTask extends BaseCarveTask {
 
         // Ao terminar o tratamento do item, caso haja referência ao mesmo no mapa de
         // itens carveados através do LedCarving, esta pode ser removida.
-        synchronized (ledCarved) {
-            ledCarved.remove(evidence);
+        synchronized (ledCarved()) {
+            ledCarved().remove(evidence);
         }
     }
 
@@ -91,12 +114,12 @@ public class CarverTask extends BaseCarveTask {
 
             // faz um loop na hierarquia de tipos mime
             while (!MediaType.OCTET_STREAM.equals(type)) {
-                if (carverConfig.isToNotProcess(type) && !isPUBFile) {
+                if (getCarverConfig().isToNotProcess(type) && !isPUBFile) {
                     tis.close();
                     return;
                 }
                 // avança 1 byte para não recuperar o próprio arquivo analisado
-                if (carverConfig.isToCarve(type)) {
+                if (getCarverConfig().isToCarve(type)) {
                     prevLen = (int) tis.skip(1);
                     // break;
                 }
@@ -129,12 +152,13 @@ public class CarverTask extends BaseCarveTask {
     }
 
     private Hit findSig(InputStream in) throws Exception {
+        CarverType[] carverTypes = accum().carverTypes;
         HashMap<CarverType, TreeMap<Long, Integer>> map = new HashMap<>();
         for (int i = 0; i < carverTypes.length; i++) {
             map.put(carverTypes[i], new TreeMap<Long, Integer>());
         }
 
-        AhoCorasick tree = carverConfig.getPopulatedTree();
+        AhoCorasick tree = getCarverConfig().getPopulatedTree();
         SearchResult lastResult = new SearchResult(tree.root, null, 0);
         do {
             fillBuf(in);
@@ -207,16 +231,19 @@ public class CarverTask extends BaseCarveTask {
 
         enableCarving = ctConfig.isEnabled();
 
-        if (carverTypes == null && enableCarving && !fsConfig.isToAddUnallocated())
+        if (accum().carverTypes == null && enableCarving && !fsConfig.isToAddUnallocated())
             log.error("addUnallocated is disabled, so carving will NOT be done in unallocated space!"); //$NON-NLS-1$
 
         carvedItemListener = getCarvedItemListener();
 
-        if (carverConfig == null) {
-            carverConfig = ctConfig.getConfiguration();
-            carverConfig.configListener(carvedItemListener);
-            carverTypes = carverConfig.getCarverTypes();
-            ignoreCorrupted = carverConfig.isToIgnoreCorrupted();
+        if (getCarverConfig() == null) {
+            CarverConfiguration cc = ctConfig.getConfiguration();
+            cc.configListener(carvedItemListener);
+            ignoreCorrupted = cc.isToIgnoreCorrupted();
+            setCarverConfig(cc);
+        }
+        if (accum().carverTypes == null) {
+            accum().carverTypes = getCarverConfig().getCarverTypes();
         }
     }
 
@@ -243,14 +270,14 @@ public class CarverTask extends BaseCarveTask {
             if (carver == null) {
                 if (ct.getCarverClass().equals(JSCarver.class.getName())) {
                     File script = new File(new File(this.output, "conf"), ct.getCarverScript());
-                    carver = carverConfig.createCarverFromJSName(script);
+                    carver = getCarverConfig().createCarverFromJSName(script);
                     carver.registerCarvedItemListener(getCarvedItemListener());
                 } else {
                     Class<?> classe = this.getClass().getClassLoader().loadClass(ct.getCarverClass());
                     carver = (Carver) classe.getDeclaredConstructor().newInstance();
                     carver.registerCarvedItemListener(getCarvedItemListener());
                 }
-                carver.setIgnoreCorrupted(carverConfig.isToIgnoreCorrupted());
+                carver.setIgnoreCorrupted(getCarverConfig().isToIgnoreCorrupted());
                 registeredCarvers.put(ct, carver);
             }
         } catch (Exception e) {

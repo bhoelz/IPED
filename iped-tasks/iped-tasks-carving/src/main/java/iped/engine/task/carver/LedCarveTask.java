@@ -46,29 +46,31 @@ public class LedCarveTask extends BaseCarveTask {
     private static final AtomicBoolean init = new AtomicBoolean(false);
 
     /**
-     * Objeto estático para sincronizar finalização.
+     * Case-scoped finalization flag and processing counters. Held in caseData so
+     * concurrent/sequential cases don't share or leak each other's counters.
      */
-    private static final AtomicBoolean finished = new AtomicBoolean(false);
+    static final class LedCarveAccumulator {
+        static final String KEY = LedCarveAccumulator.class.getName();
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        final AtomicInteger numCarvedItems = new AtomicInteger();
+        final AtomicLong bytesHashed = new AtomicLong();
+        final AtomicLong num512total = new AtomicLong();
+        final AtomicLong num512hit = new AtomicLong();
+    }
 
-    /**
-     * Contador de arquivos recuperados.
-     */
-    private static final AtomicInteger numCarvedItems = new AtomicInteger();
-
-    /**
-     * Contador de bytes com hash calculado.
-     */
-    private static final AtomicLong bytesHashed = new AtomicLong();
-
-    /**
-     * Contador do total de blocos de 512 processados.
-     */
-    private static final AtomicLong num512total = new AtomicLong();
-
-    /**
-     * Contador do total de hits em blocos de 512 bytes.
-     */
-    private static final AtomicLong num512hit = new AtomicLong();
+    private LedCarveAccumulator accum() {
+        LedCarveAccumulator a = (LedCarveAccumulator) caseData.getCaseObject(LedCarveAccumulator.KEY);
+        if (a == null) {
+            synchronized (LedCarveTask.class) {
+                a = (LedCarveAccumulator) caseData.getCaseObject(LedCarveAccumulator.KEY);
+                if (a == null) {
+                    a = new LedCarveAccumulator();
+                    caseData.putCaseObject(LedCarveAccumulator.KEY, a);
+                }
+            }
+        }
+        return a;
+    }
 
     /**
      * Digest utilizado para cálculo do MD5.
@@ -149,16 +151,17 @@ public class LedCarveTask extends BaseCarveTask {
      * Finaliza a tarefa.
      */
     public void finish() throws Exception {
-        synchronized (finished) {
-            if (taskEnabled && !finished.get()) {
+        LedCarveAccumulator a = accum();
+        synchronized (a.finished) {
+            if (taskEnabled && !a.finished.get()) {
                 ledHashDB = null;
                 hashDBDataSource.close();
-                ledCarved.clear();
+                ledCarved().clear();
                 NumberFormat nf = new DecimalFormat("#,##0");
-                log.info("Carved files: " + nf.format(numCarvedItems.get()));
-                log.info("512 blocks (Hits / Total): " + nf.format(num512hit.get()) + " / " + nf.format(num512total.get()));
-                log.info("Bytes hashed: " + nf.format(bytesHashed.get()));
-                finished.set(true);
+                log.info("Carved files: " + nf.format(a.numCarvedItems.get()));
+                log.info("512 blocks (Hits / Total): " + nf.format(a.num512hit.get()) + " / " + nf.format(a.num512total.get()));
+                log.info("Bytes hashed: " + nf.format(a.bytesHashed.get()));
+                a.finished.set(true);
             }
         }
     }
@@ -218,8 +221,8 @@ public class LedCarveTask extends BaseCarveTask {
                                         cntCarvedItems++;
                                         if (offsets == null) {
                                             offsets = new HashSet<Long>();
-                                            synchronized (ledCarved) {
-                                                ledCarved.put(evidence, offsets);
+                                            synchronized (ledCarved()) {
+                                                ledCarved().put(evidence, offsets);
                                             }
                                         }
                                         offsets.add(offset);
@@ -237,10 +240,11 @@ public class LedCarveTask extends BaseCarveTask {
         } finally {
             IOUtil.closeQuietly(is);
         }
-        numCarvedItems.addAndGet(cntCarvedItems);
-        num512hit.addAndGet(cnt512hit);
-        num512total.addAndGet(cnt512total);
-        bytesHashed.addAndGet(cntBytesHashed);
+        LedCarveAccumulator a = accum();
+        a.numCarvedItems.addAndGet(cntCarvedItems);
+        a.num512hit.addAndGet(cnt512hit);
+        a.num512total.addAndGet(cnt512total);
+        a.bytesHashed.addAndGet(cntBytesHashed);
     }
 
     public static boolean isAcceptedType(MediaType mediaType) {

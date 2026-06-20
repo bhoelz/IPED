@@ -48,10 +48,26 @@
       `validateCarvedObject()` check — any `false` discards the candidate item.
       Third-party code can attach validators to any `CarverType` at startup without
       subclassing `AbstractCarver`.
-- [ ] Carver plugin SPI parity with parsers: third parties can ship a carver plugin jar
-      with signatures + validator.
+- [x] Carver plugin SPI parity with parsers: `CarverPlugin` interface added to
+      `iped-carvers-api`, discovered via `ServiceLoader` in `XMLCarverConfiguration`
+      (the common base of `TomlCarverConfiguration`) right before the signature tree is
+      built in `configListener()`. A third party drops a jar with
+      `META-INF/services/iped.carvers.api.CarverPlugin` on the plugins classpath — its
+      `CarverType[]` (with any `CarvedItemValidator`s already attached) are merged into
+      the active carver type table with zero edits to `CarverConfig.toml`/`.xml`. Mirrors
+      how Tika `Parser` plugins are discovered for the parsers side.
 - [ ] Distributed carving: unallocated-space ranges as Kafka work units (coordinate with
-      `iped-distributed` work-unit model).
+      `iped-distributed` work-unit model). **Investigated, not yet buildable**:
+      `iped.distributed.workunit.WorkUnit` (`AdaptiveWorkUnitPlanner`) only packs
+      *whole items by UUID* into a unit — there is no concept of a sub-item byte
+      range. Splitting a single unallocated-space item into independently-carved
+      ranges needs new, correctness-critical logic: overlap windows so a signature
+      spanning a chunk boundary isn't missed, and dedup so it isn't double-carved —
+      a real feature with forensic-correctness risk, not a mechanical refactor.
+      Concrete next step: extend `WorkUnit`/the planner with a byte-range variant
+      (`startOffset`/`endOffset` + overlap) scoped to `UNALLOCATED`-typed items
+      specifically, and design the merge/dedup pass before writing the splitting
+      logic itself.
 
 ## Progress checks
 - Fixture suite green; benchmark numbers recorded per release.

@@ -47,14 +47,52 @@ public abstract class BaseCarveTask extends AbstractTask {
     public static final String NUM_CARVED = "numCarved";
     public static final String CARVED_ID = "carvedId";
 
-    protected static CarverConfiguration carverConfig = null;
-
+    /**
+     * itensCarved is intentionally left static: it's read externally as a
+     * cumulative run counter (UI progress, Statistics log), not per-case data.
+     */
     private static int itensCarved;
 
     private Set<Long> ledCarvedOffsets;
     private IItem prevEvidence;
 
-    protected static final Map<IItem, Set<Long>> ledCarved = new HashMap<IItem, Set<Long>>();
+    /**
+     * Case-scoped state shared by all carve task subclasses (CarverTask,
+     * LedCarveTask, KnownMetCarveTask). carverConfig is derived from the per-case
+     * CarverConfig.toml/xml and ledCarved tracks per-item carved offsets; keeping
+     * either static would leak case 1's data into case 2 in a batch/report run.
+     */
+    static final class CarveAccumulator {
+        static final String KEY = CarveAccumulator.class.getName();
+        CarverConfiguration carverConfig;
+        final Map<IItem, Set<Long>> ledCarved = new HashMap<IItem, Set<Long>>();
+    }
+
+    private CarveAccumulator accum() {
+        CarveAccumulator a = (CarveAccumulator) caseData.getCaseObject(CarveAccumulator.KEY);
+        if (a == null) {
+            synchronized (BaseCarveTask.class) {
+                a = (CarveAccumulator) caseData.getCaseObject(CarveAccumulator.KEY);
+                if (a == null) {
+                    a = new CarveAccumulator();
+                    caseData.putCaseObject(CarveAccumulator.KEY, a);
+                }
+            }
+        }
+        return a;
+    }
+
+    protected CarverConfiguration getCarverConfig() {
+        return accum().carverConfig;
+    }
+
+    protected void setCarverConfig(CarverConfiguration carverConfig) {
+        accum().carverConfig = carverConfig;
+    }
+
+    protected Map<IItem, Set<Long>> ledCarved() {
+        return accum().ledCarved;
+    }
 
     private final synchronized static void incItensCarved() {
         itensCarved++;
@@ -137,7 +175,7 @@ public abstract class BaseCarveTask extends AbstractTask {
 
     protected boolean isToProcess(IItem evidence) {
         if (evidence.isCarved() || evidence.getExtraAttribute(BaseCarveTask.FILE_FRAGMENT) != null
-                || !carverConfig.isToProcess((MediaType) evidence.getMediaType())) {
+                || !getCarverConfig().isToProcess((MediaType) evidence.getMediaType())) {
             return false;
         }
         return true;
@@ -145,8 +183,8 @@ public abstract class BaseCarveTask extends AbstractTask {
 
     private boolean ledCarvedExists(IItem parentEvidence, long off) {
         if (!parentEvidence.equals(prevEvidence)) {
-            synchronized (ledCarved) {
-                ledCarvedOffsets = ledCarved.get(parentEvidence);
+            synchronized (ledCarved()) {
+                ledCarvedOffsets = ledCarved().get(parentEvidence);
             }
             prevEvidence = parentEvidence;
         }

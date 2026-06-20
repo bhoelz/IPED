@@ -104,39 +104,38 @@ public class VideoThumbTask extends ThumbTask {
     private static final AtomicBoolean init = new AtomicBoolean(false);
 
     /**
-     * Objeto estático para sincronizar finalização.
+     * Case-scoped state: per-case finalization flag, processing counters, and the
+     * processed-videos reuse cache. Held in caseData so concurrent/sequential
+     * cases don't share or leak each other's counters and cached results.
      */
-    private static final AtomicBoolean finished = new AtomicBoolean(false);
+    static final class VideoThumbAccumulator {
+        static final String KEY = VideoThumbAccumulator.class.getName();
 
-    /**
-     * Objeto estático com total de videos processados .
-     */
-    private static final AtomicLong totalVideosProcessed = new AtomicLong();
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        final AtomicLong totalVideosProcessed = new AtomicLong();
+        final AtomicLong totalVideosFailed = new AtomicLong();
+        final AtomicLong totalVideosTime = new AtomicLong();
+        final AtomicLong totalAnimatedImagesProcessed = new AtomicLong();
+        final AtomicLong totalAnimatedImagesFailed = new AtomicLong();
+        final AtomicLong totalAnimatedImagesTime = new AtomicLong();
+        final AtomicLong totalTimeGallery = new AtomicLong();
+        final AtomicLong totalGallery = new AtomicLong();
+        final HashMap<String, VideoProcessResult> processedVideos = new HashMap<String, VideoProcessResult>();
+    }
 
-    /**
-     * Objeto estático com total de videos que falharam.
-     */
-    private static final AtomicLong totalVideosFailed = new AtomicLong();
-
-    /**
-     * Objeto estático com total de tempo gasto no processamento de vídeos, em
-     * milisegundos.
-     */
-    private static final AtomicLong totalVideosTime = new AtomicLong();
-
-    // Statistics for animated images
-    private static final AtomicLong totalAnimatedImagesProcessed = new AtomicLong();
-    private static final AtomicLong totalAnimatedImagesFailed = new AtomicLong();
-    private static final AtomicLong totalAnimatedImagesTime = new AtomicLong();
-
-    private static final AtomicLong totalTimeGallery = new AtomicLong();
-    private static final AtomicLong totalGallery = new AtomicLong();
-
-
-    /**
-     * Mapa com resultado do processamento dos vídeos
-     */
-    private static final HashMap<String, VideoProcessResult> processedVideos = new HashMap<String, VideoProcessResult>();
+    private VideoThumbAccumulator accum() {
+        VideoThumbAccumulator a = (VideoThumbAccumulator) caseData.getCaseObject(VideoThumbAccumulator.KEY);
+        if (a == null) {
+            synchronized (VideoThumbTask.class) {
+                a = (VideoThumbAccumulator) caseData.getCaseObject(VideoThumbAccumulator.KEY);
+                if (a == null) {
+                    a = new VideoThumbAccumulator();
+                    caseData.putCaseObject(VideoThumbAccumulator.KEY, a);
+                }
+            }
+        }
+        return a;
+    }
 
     private static final Map<String, String> videoToTikaMetadata = getVideoToTikaMetadata();
 
@@ -271,34 +270,35 @@ public class VideoThumbTask extends ThumbTask {
      * no Log.
      */
     public void finish() throws Exception {
-        synchronized (finished) {
-            if (taskEnabled && !finished.get()) {
-                processedVideos.clear();
-                finished.set(true);
+        VideoThumbAccumulator a = accum();
+        synchronized (a.finished) {
+            if (taskEnabled && !a.finished.get()) {
+                a.processedVideos.clear();
+                a.finished.set(true);
 
                 // Videos statistics
-                log.info("Total videos processed: " + totalVideosProcessed); //$NON-NLS-1$
-                log.info("Total videos failed (MPlayer failed to create thumbs): " + totalVideosFailed); //$NON-NLS-1$
-                long total = totalVideosProcessed.longValue() + totalVideosFailed.longValue();
+                log.info("Total videos processed: " + a.totalVideosProcessed); //$NON-NLS-1$
+                log.info("Total videos failed (MPlayer failed to create thumbs): " + a.totalVideosFailed); //$NON-NLS-1$
+                long total = a.totalVideosProcessed.longValue() + a.totalVideosFailed.longValue();
                 if (total > 0)
                     log.info("Average video processing time (milliseconds/video): " //$NON-NLS-1$
-                            + (totalVideosTime.longValue() / total));
+                            + (a.totalVideosTime.longValue() / total));
 
                 // Animated images statistics
-                log.info("Total animated images processed: " + totalAnimatedImagesProcessed); //$NON-NLS-1$
+                log.info("Total animated images processed: " + a.totalAnimatedImagesProcessed); //$NON-NLS-1$
                 log.info(
-                        "Total animated images failed (MPlayer failed to create thumbs): " + totalAnimatedImagesFailed); //$NON-NLS-1$
-                total = totalAnimatedImagesProcessed.longValue() + totalAnimatedImagesFailed.longValue();
+                        "Total animated images failed (MPlayer failed to create thumbs): " + a.totalAnimatedImagesFailed); //$NON-NLS-1$
+                total = a.totalAnimatedImagesProcessed.longValue() + a.totalAnimatedImagesFailed.longValue();
                 if (total > 0)
                     log.info("Average animated image processing time (milliseconds/image): " //$NON-NLS-1$
-                            + (totalAnimatedImagesTime.longValue() / total));
+                            + (a.totalAnimatedImagesTime.longValue() / total));
 
                 // Gallery thumb generation statistics
-                total = totalGallery.longValue();
+                total = a.totalGallery.longValue();
                 if (total > 0) {
                     log.info("Total gallery thumbs generated: " + total); //$NON-NLS-1$
                     log.info("Average gallery thumb generation time (milliseconds/item): " //$NON-NLS-1$
-                            + (totalTimeGallery.longValue() / total));
+                            + (a.totalTimeGallery.longValue() / total));
                 }
             }
         }
@@ -332,6 +332,9 @@ public class VideoThumbTask extends ThumbTask {
         if (!taskEnabled) {
             return;
         }
+
+        VideoThumbAccumulator accum = accum();
+        HashMap<String, VideoProcessResult> processedVideos = accum.processedVideos;
 
         // TODO: update this results reusage logic to work when frames as subitems is
         // enabled
@@ -404,7 +407,7 @@ public class VideoThumbTask extends ThumbTask {
                         if (!previewExists) {
                             previewRepo.storeRawPreview(evidence, Files.newInputStream(mainTmpFile));
                         }
-                        (isAnimated ? totalAnimatedImagesProcessed : totalVideosProcessed).incrementAndGet();
+                        (isAnimated ? accum.totalAnimatedImagesProcessed : accum.totalVideosProcessed).incrementAndGet();
                     } catch (SQLException | IOException e) {
                         log.warn("Error storing videoThumb preview: " + evidence, e);
                         r.setSuccess(false);
@@ -412,14 +415,14 @@ public class VideoThumbTask extends ThumbTask {
                 }
 
                 if (!r.isSuccess()) {
-                    (isAnimated ? totalAnimatedImagesFailed : totalVideosFailed).incrementAndGet();
+                    (isAnimated ? accum.totalAnimatedImagesFailed : accum.totalVideosFailed).incrementAndGet();
                     if (r.isTimeout()) {
                         stats.incTimeouts();
                         evidence.setExtraAttribute(ImageThumbTask.THUMB_TIMEOUT, Boolean.toString(true));
                         log.warn("Timeout creating video thumbs: {} ({} bytes)", evidence.getPath(), evidence.getLength());
                     }
                 }
-                (isAnimated ? totalAnimatedImagesTime : totalVideosTime).addAndGet(t);
+                (isAnimated ? accum.totalAnimatedImagesTime : accum.totalVideosTime).addAndGet(t);
             }
         } catch (Exception e) {
             log.warn(evidence.toString(), e);
@@ -464,8 +467,8 @@ public class VideoThumbTask extends ThumbTask {
                         File thumbFile = getThumbFile(evidence);
                         saveThumb(evidence, thumbFile);
                         t = System.currentTimeMillis() - t;
-                        totalTimeGallery.addAndGet(t);
-                        totalGallery.incrementAndGet();
+                        accum.totalTimeGallery.addAndGet(t);
+                        accum.totalGallery.incrementAndGet();
                     }
                 } catch (Throwable e) {
                     log.warn(evidence.toString(), e);

@@ -58,14 +58,28 @@ public class KnownMetCarveTask extends BaseCarveTask {
     private static final AtomicBoolean init = new AtomicBoolean(false);
 
     /**
-     * Objeto estático para sincronizar finalização.
+     * Case-scoped finalization flag and carved-item counter. Held in caseData so
+     * concurrent/sequential cases don't share or leak each other's counters.
      */
-    private static final AtomicBoolean finished = new AtomicBoolean(false);
+    static final class KnownMetAccumulator {
+        static final String KEY = KnownMetAccumulator.class.getName();
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        final AtomicInteger numCarvedItems = new AtomicInteger();
+    }
 
-    /**
-     * Contador de arquivos recuperados.
-     */
-    private static final AtomicInteger numCarvedItems = new AtomicInteger();
+    private KnownMetAccumulator accum() {
+        KnownMetAccumulator a = (KnownMetAccumulator) caseData.getCaseObject(KnownMetAccumulator.KEY);
+        if (a == null) {
+            synchronized (KnownMetCarveTask.class) {
+                a = (KnownMetAccumulator) caseData.getCaseObject(KnownMetAccumulator.KEY);
+                if (a == null) {
+                    a = new KnownMetAccumulator();
+                    caseData.putCaseObject(KnownMetAccumulator.KEY, a);
+                }
+            }
+        }
+        return a;
+    }
 
     /**
      * Media type dos arquivos recuperados.
@@ -129,10 +143,11 @@ public class KnownMetCarveTask extends BaseCarveTask {
      */
     @Override
     public void finish() throws Exception {
-        synchronized (finished) {
-            if (taskEnabled && !finished.get()) {
-                finished.set(true);
-                log.info("Carved Items: " + numCarvedItems.get()); //$NON-NLS-1$
+        KnownMetAccumulator a = accum();
+        synchronized (a.finished) {
+            if (taskEnabled && !a.finished.get()) {
+                a.finished.set(true);
+                log.info("Carved Items: " + a.numCarvedItems.get()); //$NON-NLS-1$
             }
         }
     }
@@ -141,6 +156,8 @@ public class KnownMetCarveTask extends BaseCarveTask {
         // Verifica se está desabilitado e se o tipo de arquivo é tratado
         if (!taskEnabled || caseData.isIpedReport() || !isAcceptedType((MediaType) evidence.getMediaType()))
             return;
+
+        AtomicInteger numCarvedItems = accum().numCarvedItems;
 
         // Percorre conteúdo buscando padrões plausíveis de arquivos known.met
         byte[] bb = new byte[1];

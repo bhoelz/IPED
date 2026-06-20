@@ -42,9 +42,26 @@ public class ImageThumbTask extends ThumbTask {
     private static final int numStats = 22;
 
 
-    private static final Map<String, long[]> performanceStatsPerType = new HashMap<String, long[]>();
-    private static final AtomicBoolean logInit = new AtomicBoolean(false);
-    private static final AtomicBoolean finished = new AtomicBoolean(false);
+    static final class ImageThumbAccumulator {
+        static final String KEY = ImageThumbAccumulator.class.getName();
+        final Map<String, long[]> performanceStatsPerType = new HashMap<String, long[]>();
+        final AtomicBoolean logInit = new AtomicBoolean(false);
+        final AtomicBoolean finished = new AtomicBoolean(false);
+    }
+
+    private ImageThumbAccumulator accum() {
+        ImageThumbAccumulator a = (ImageThumbAccumulator) caseData.getCaseObject(ImageThumbAccumulator.KEY);
+        if (a == null) {
+            synchronized (ImageThumbTask.class) {
+                a = (ImageThumbAccumulator) caseData.getCaseObject(ImageThumbAccumulator.KEY);
+                if (a == null) {
+                    a = new ImageThumbAccumulator();
+                    caseData.putCaseObject(ImageThumbAccumulator.KEY, a);
+                }
+            }
+        }
+        return a;
+    }
 
     private static ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -103,6 +120,7 @@ public class ImageThumbTask extends ThumbTask {
         maxViewImageSize = imgThumbConfig.getMaxViewImageSize();
         mimesToCreateView = imgThumbConfig.getMimesToCreateView();
 
+        AtomicBoolean logInit = accum().logInit;
         synchronized (logInit) {
             if (isEnabled() && !logInit.get()) {
                 logInit.set(true);
@@ -162,6 +180,8 @@ public class ImageThumbTask extends ThumbTask {
             executor.shutdownNow();
 
         externalImageConverter.close();
+        Map<String, long[]> performanceStatsPerType = accum().performanceStatsPerType;
+        AtomicBoolean finished = accum().finished;
         synchronized (finished) {
             if (isEnabled() && !finished.get()) {
                 finished.set(true);
@@ -401,6 +421,7 @@ public class ImageThumbTask extends ThumbTask {
             performanceStats[21] += System.currentTimeMillis() - t;
 
             String type = evidence.getMediaTypeString();
+            Map<String, long[]> performanceStatsPerType = accum().performanceStatsPerType;
             synchronized (performanceStatsPerType) {
                 long[] s = performanceStatsPerType.get(type);
                 if (s == null) {

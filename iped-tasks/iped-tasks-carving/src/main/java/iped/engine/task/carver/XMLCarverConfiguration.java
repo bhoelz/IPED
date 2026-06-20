@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.ServiceLoader;
 
 public class XMLCarverConfiguration implements CarverConfiguration, Serializable {
     /**
@@ -36,6 +37,29 @@ public class XMLCarverConfiguration implements CarverConfiguration, Serializable
     protected HashSet<String> TYPES_TO_NOT_PROCESS = new HashSet<String>();
     protected HashSet<MediaType> TYPES_TO_CARVE = new HashSet<MediaType>();
     protected ArrayList<CarverType> carverTypesArray = new ArrayList<CarverType>();
+
+    private boolean pluginsLoaded = false;
+
+    /**
+     * Discovers third-party {@link CarverPlugin} implementations via
+     * {@link ServiceLoader} (one jar on the plugins classpath +
+     * {@code META-INF/services/iped.carvers.api.CarverPlugin} — no
+     * {@code CarverConfig.toml}/{@code CarverConfig.xml} edits required) and merges
+     * their {@link CarverType} definitions into the active carver type table.
+     * Runs once per JVM, right before the signature tree is built.
+     */
+    private synchronized void loadPluginCarverTypes() {
+        if (pluginsLoaded) {
+            return;
+        }
+        for (CarverPlugin plugin : ServiceLoader.load(CarverPlugin.class)) {
+            for (CarverType ct : plugin.getCarverTypes()) {
+                TYPES_TO_CARVE.add(ct.getMimeType());
+                carverTypesArray.add(ct);
+            }
+        }
+        pluginsLoaded = true;
+    }
 
     public void loadXMLConfigFile(File confFile) throws IOException {
         originalXmls.add(Files.readString(confFile.toPath()));
@@ -242,6 +266,7 @@ public class XMLCarverConfiguration implements CarverConfiguration, Serializable
     synchronized public void configListener(CarvedItemListener carvedItemListener)
             throws CarverConfigurationException {
         try {
+            loadPluginCarverTypes();
             CarverType[] carverTypes = carverTypesArray.toArray(new CarverType[0]);
 
             if (tree == null) {
