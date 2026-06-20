@@ -7,46 +7,42 @@
     Maven package (skipping tests) to refresh the JARs, then launches Bootstrap
     via 'java -jar iped.jar'.
 
-    Use -Build to recompile iped-app and all upstream modules before launching.
-    Use -Debug to attach a remote debugger on the forked child process (JDWP).
+    Use -Compile to recompile iped-app and all upstream modules before launching.
+    Use -Jdwp to attach a remote debugger on the forked child process.
 
-    iped arguments (-d, -o, -profile, etc.) are passed through to iped.jar.
-
-.PARAMETER d
-    Input data source (folder, image, .iped file…). Can be repeated: -d src1 -d src2.
-
-.PARAMETER o
-    Output / case folder.
+    All real iped.jar arguments (-d, -o, -profile, -l, -p, -b, --portable, -X..., etc.)
+    are forwarded verbatim. This script deliberately declares NO formal param() block
+    at all and parses $args itself in a plain loop below, matching only a short list of
+    exact, full-length names (-r, -IpedHome, -Compile, -Jdwp, -JdwpPort, -Xmx) before
+    forwarding everything else untouched, in order. This is intentional and load-bearing:
+      - Any [CmdletBinding()]/[Parameter(...)] attribute makes PowerShell an "advanced"
+        script, which (a) abbreviation-matches "-x" tokens against every declared
+        parameter name via unique prefix, and (b) exposes its own reserved common
+        parameters (-Debug, -OutVariable, -OutBuffer, -ProgressAction, -PipelineVariable,
+        etc.) — both silently swallow short iped flags ("-d"->-Debug, "-o" ambiguous
+        with -OutVariable/-OutBuffer, "-p" ambiguous with -ProgressAction/-PipelineVariable).
+      - Even a formal param() block with NO attributes (a "simple" script) still gets
+        automatic *positional* binding in declaration order. When invoked via the call
+        operator or a bare path from within a live PowerShell session (as opposed to
+        `powershell -File`, which is how iped-runner's ExecutionService launches this
+        script), any "-x" token PowerShell doesn't recognize as a parameter name is
+        bound POSITIONALLY to the next unfilled parameter instead of being left alone —
+        e.g. "-dname Evidence_001" silently landing on an unrelated positional slot.
+    Manually walking $args sidesteps the parameter binder entirely, so behavior is
+    identical regardless of how the script is invoked. Do NOT reintroduce a param()
+    block or give this script a new option whose name could collide with an iped flag
+    (current iped short flags: -d/-data, -dname, -o/-output, -remove, -l/-keywordlist,
+    -ocr, -log, -nocontent, -tz/-timezone, -b/-blocksize, -p/-password, -profile,
+    -splash, -X).
 
 .PARAMETER r
-    Open an existing case folder in search UI mode.
-
-.PARAMETER profile
-    Processing profile (e.g. forensic, pedo, fastmode, blind, triage).
-
-.PARAMETER log
-    Redirect log to a specific file.
-
-.PARAMETER nogui
-    Text-mode processing (no progress window).
-
-.PARAMETER nologfile
-    Log to stdout instead of a log file.
-
-.PARAMETER append
-    Add data to an existing case (--append).
-
-.PARAMETER Continue
-    Continue a stopped or aborted processing (--continue).
-
-.PARAMETER restart
-    Discard last aborted processing and restart (--restart).
+    Open an existing case folder in search UI mode (dev convenience, not an iped.jar flag).
 
 .PARAMETER IpedHome
     Path to the built IPED release directory.
     Defaults to <repo-root>/target/release/iped-<version from pom.xml>.
 
-.PARAMETER Build
+.PARAMETER Compile
     Run 'mvn package -pl iped-app -am -DskipTests -q' before launching.
 
 .PARAMETER Jdwp
@@ -63,7 +59,7 @@
     .\start-iped-app.ps1
 
 .EXAMPLE
-    .\start-iped-app.ps1 -Build -d C:\temp -o H:\output
+    .\start-iped-app.ps1 -Compile -d C:\temp -o H:\output
 
 .EXAMPLE
     .\start-iped-app.ps1 -d C:\evidence -o H:\case --append
@@ -71,38 +67,35 @@
 .EXAMPLE
     .\start-iped-app.ps1 -Jdwp -JdwpPort 5005 -d C:\temp -o H:\output
 #>
-[CmdletBinding()]
-param(
-    # ---- iped arguments ----
-    [Alias('data')]
-    [string[]]$d,
-
-    [Alias('output')]
-    [string]$o,
-
-    [string]$r,
-
-    [string]$profile,
-
-    [string]$log,
-
-    [switch]$nogui,
-    [switch]$nologfile,
-    [switch]$append,
-    [switch]$Continue,
-    [switch]$restart,
-    [switch]$portable,
-
-    # ---- dev/launcher options ----
-    [string]$IpedHome  = '',
-    [switch]$Build,
-    [switch]$Jdwp,
-    [int]$JdwpPort     = 5005,
-    [string]$Xmx       = ''
-)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# ---------------------------------------------------------------------------
+# Manual argument parsing (see .DESCRIPTION for why this can't be a param() block)
+# ---------------------------------------------------------------------------
+
+$r               = $null
+$IpedHome        = ''
+$Compile         = $false
+$Jdwp            = $false
+$JdwpPort        = 5005
+$Xmx             = ''
+$passthroughArgs = [System.Collections.Generic.List[string]]::new()
+
+$i = 0
+while ($i -lt $args.Count) {
+    switch ($args[$i]) {
+        '-r'        { $i++; $r = $args[$i] }
+        '-IpedHome' { $i++; $IpedHome = $args[$i] }
+        '-Compile'  { $Compile = $true }
+        '-Jdwp'     { $Jdwp = $true }
+        '-JdwpPort' { $i++; $JdwpPort = [int]$args[$i] }
+        '-Xmx'      { $i++; $Xmx = $args[$i] }
+        default     { $passthroughArgs.Add($args[$i]) }
+    }
+    $i++
+}
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -120,7 +113,7 @@ function Resolve-IpedHome {
     if (-not (Test-Path (Join-Path $candidate 'iped.jar'))) {
         throw @"
 Release not found at: $candidate
-Build the project first (or pass -Build):
+Build the project first (or pass -Compile):
     mvn package -pl iped-app -am -DskipTests -q
 "@
     }
@@ -166,7 +159,7 @@ function Resolve-Java {
 # Optional rebuild
 # ---------------------------------------------------------------------------
 
-if ($Build) {
+if ($Compile) {
     Write-Host '[0/2] Building iped-app (mvn package -pl iped-app -am -DskipTests -q)...'
     $mvn = if (Get-Command mvn -ErrorAction SilentlyContinue) { 'mvn' } else {
         $m = Join-Path $env:MAVEN_HOME 'bin\mvn.cmd'
@@ -212,21 +205,9 @@ if ($Jdwp) {
 
 $ipedArgs = [System.Collections.Generic.List[string]]::new()
 
-foreach ($src in $d) {
-    $ipedArgs.Add('-d')
-    $ipedArgs.Add($src)
-}
-if ($o)       { $ipedArgs.Add('-o');       $ipedArgs.Add($o)       }
-if ($r)       { $ipedArgs.Add('-r');       $ipedArgs.Add($r)       }
-if ($profile) { $ipedArgs.Add('-profile'); $ipedArgs.Add($profile) }
-if ($log)     { $ipedArgs.Add('-log');     $ipedArgs.Add($log)     }
-if ($Xmx)     { $ipedArgs.Add("-Xmx$Xmx")                         }
-if ($nogui)   { $ipedArgs.Add('--nogui')                           }
-if ($nologfile) { $ipedArgs.Add('--nologfile')                     }
-if ($append)  { $ipedArgs.Add('--append')                          }
-if ($Continue){ $ipedArgs.Add('--continue')                        }
-if ($restart) { $ipedArgs.Add('--restart')                         }
-if ($portable){ $ipedArgs.Add('--portable')                        }
+if ($r)   { $ipedArgs.Add('-r'); $ipedArgs.Add($r) }
+if ($Xmx) { $ipedArgs.Add("-Xmx$Xmx") }
+$ipedArgs.AddRange([string[]]$passthroughArgs)
 
 $launchArgs = [System.Collections.Generic.List[string]]::new()
 $launchArgs.AddRange($jvmArgs)
