@@ -11,8 +11,6 @@ import org.apache.tika.mime.MediaTypeRegistry;
  */
 public class MediaTypes {
 
-    private static final MediaTypeRegistry MEDIA_TYPE_REGISTRY = TikaConfig.getDefaultConfig().getMediaTypeRegistry();
-
     /** Parent type of items that are metadata entries, not real files. */
     public static final MediaType METADATA_ENTRY = MediaType.application("x-metadata-entry"); //$NON-NLS-1$
     /** Chat message decoded from an application database. */
@@ -70,6 +68,15 @@ public class MediaTypes {
 
     /** Subtype prefix common to all media types decoded from UFED extractions. */
     public static final String UFED_MIME_PREFIX = "x-ufed-"; //$NON-NLS-1$
+
+    /**
+     * Declared last (after all the MediaType constants above) so that Tika's
+     * DefaultParser construction — triggered by TikaConfig.getDefaultConfig() —
+     * can reflectively instantiate parsers that read those constants in their own
+     * static initializers (e.g. UfedMessageParser) via ServiceLoader without
+     * re-entering this class's still-incomplete <clinit> and seeing them as null.
+     */
+    private static final MediaTypeRegistry MEDIA_TYPE_REGISTRY = TikaConfig.getDefaultConfig().getMediaTypeRegistry();
 
     /**
      * @return the Tika media type registry with the type hierarchy
