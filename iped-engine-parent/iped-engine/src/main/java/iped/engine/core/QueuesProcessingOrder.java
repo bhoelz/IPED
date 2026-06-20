@@ -132,6 +132,13 @@ public class QueuesProcessingOrder {
     /** Obtém a prioridade de processamento do mimeType */
     public static int getProcessingQueue(MediaType mediaType) {
 
+        // Root items (the datasource itself) never go through signature detection,
+        // so their mediaType is legitimately null here. Treat that the same as "no
+        // priority configured" instead of failing the ConcurrentHashMap lookup below.
+        if (mediaType == null) {
+            return 0;
+        }
+
         if (mediaRegistry == null) {
             setMediaRegistry();
         }
