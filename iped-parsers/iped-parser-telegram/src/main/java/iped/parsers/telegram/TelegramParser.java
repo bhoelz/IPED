@@ -18,6 +18,7 @@
  */
 package iped.parsers.telegram;
 
+import iped.parsers.util.ConversationConstants;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.ParserConstants;
 
@@ -295,13 +296,13 @@ public class TelegramParser extends SQLite3DBParser {
             meta.set(ExtraProperties.MESSAGE_BODY, m.getData());
 
             for (Message media : m.getMessages()) {
-                meta.add("mediaName", media.getMediaName());
+                meta.add(ConversationConstants.MEDIA_NAME, media.getMediaName());
 
                 if (media.getMediaMime() != null) {
                     meta.add(ExtraProperties.MESSAGE_BODY, ATTACHMENT_MESSAGE + media.getMediaMime());
                 }
                 if (media.getMediaSize() != 0) {
-                    meta.set("mediaSize", Long.toString(media.getMediaSize()));
+                    meta.set(ConversationConstants.MEDIA_SIZE, Long.toString(media.getMediaSize()));
                 }
                 if (Util.isValidHash(media.getMediaHash())) {
                     meta.add(ParserConstants.INDEXER_CONTENT_TYPE, TELEGRAM_ATTACHMENT.toString());

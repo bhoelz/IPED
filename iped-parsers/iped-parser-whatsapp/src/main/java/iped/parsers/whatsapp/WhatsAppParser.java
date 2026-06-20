@@ -24,6 +24,7 @@ import iped.io.SeekableInputStream;
 import iped.parsers.plist.detector.PListDetector;
 import iped.parsers.sqlite.SQLite3DBParser;
 import iped.parsers.sqlite.SQLite3Parser;
+import iped.parsers.util.ConversationConstants;
 import iped.parsers.util.ParserConstants;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.PhoneParsingConfig;
@@ -308,7 +309,7 @@ public class WhatsAppParser extends SQLite3DBParser {
                 if (frag > 0 || nextBytes != null)
                     chatName += "_" + frag++; //$NON-NLS-1$
 
-                chatMetadata.set("chatId", Long.toString(c.getId()));
+                chatMetadata.set(ConversationConstants.CHAT_ID, Long.toString(c.getId()));
                 chatMetadata.set(TikaCoreProperties.TITLE, chatName);
                 chatMetadata.set(ParserConstants.INDEXER_CONTENT_TYPE, WHATSAPP_CHAT.toString());
                 chatMetadata.set(ExtraProperties.ITEM_VIRTUAL_ID, Integer.toString(chatVirtualId));
@@ -1064,10 +1065,10 @@ public class WhatsAppParser extends SQLite3DBParser {
             meta.set(ExtraProperties.MESSAGE_BODY, m.getData());
             meta.set(ExtraProperties.URL, m.getUrl());
 
-            meta.set("mediaName", m.getMediaName()); //$NON-NLS-1$
-            meta.set("mediaMime", m.getMediaMime()); //$NON-NLS-1$
+            meta.set(ConversationConstants.MEDIA_NAME, m.getMediaName());
+            meta.set(ConversationConstants.MEDIA_MIME, m.getMediaMime());
             if (m.getMediaSize() != 0) {
-                meta.set("mediaSize", Long.toString(m.getMediaSize()));
+                meta.set(ConversationConstants.MEDIA_SIZE, Long.toString(m.getMediaSize()));
             }
             if (m.getMediaQuery() != null && m.getMediaSize() > 2) {
                 meta.set(ParserConstants.INDEXER_CONTENT_TYPE, WHATSAPP_ATTACHMENT.toString());
@@ -1088,12 +1089,12 @@ public class WhatsAppParser extends SQLite3DBParser {
             }
 
             if (m.getMessageStatus() != null) {
-                meta.set("messageStatus", m.getMessageStatus().toString()); //$NON-NLS-1$
+                meta.set(ConversationConstants.MESSAGE_STATUS, m.getMessageStatus().toString());
             }
 
             if (m.isCall()) {
                 meta.set(ParserConstants.INDEXER_CONTENT_TYPE, WHATSAPP_CALL.toString());
-                meta.set("duration", ReportGenerator.formatMMSS(m.getDuration())); //$NON-NLS-1$
+                meta.set(ConversationConstants.MESSAGE_DURATION, ReportGenerator.formatMMSS(m.getDuration()));
             }
 
             if (meta.get(ExtraProperties.MESSAGE_BODY) == null) {

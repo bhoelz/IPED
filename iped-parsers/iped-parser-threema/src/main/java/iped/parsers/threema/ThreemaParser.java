@@ -18,6 +18,7 @@
  */
 package iped.parsers.threema;
 
+import iped.parsers.util.ConversationConstants;
 import iped.parsers.util.ParserConstants;
 
 import iped.data.IItemReader;
@@ -257,7 +258,7 @@ public class ThreemaParser extends SQLite3DBParser {
                 if (frag > 0 || nextBytes != null)
                     chatName += "_" + frag++; //$NON-NLS-1$
 
-                chatMetadata.set("chatId", Long.toString(c.getId()));
+                chatMetadata.set(ConversationConstants.CHAT_ID, Long.toString(c.getId()));
                 chatMetadata.set(TikaCoreProperties.TITLE, chatName);
                 chatMetadata.set(ParserConstants.INDEXER_CONTENT_TYPE, THREEMA_CHAT.toString());
                 chatMetadata.set(ExtraProperties.ITEM_VIRTUAL_ID, Integer.toString(chatVirtualId));
@@ -364,10 +365,10 @@ public class ThreemaParser extends SQLite3DBParser {
             meta.set(ExtraProperties.MESSAGE_BODY, m.getText());
             meta.set(ExtraProperties.URL, m.getUrl());
 
-            meta.set("mediaName", m.getMediaName()); //$NON-NLS-1$
-            meta.set("mediaMime", m.getMediaMime()); //$NON-NLS-1$
+            meta.set(ConversationConstants.MEDIA_NAME, m.getMediaName());
+            meta.set(ConversationConstants.MEDIA_MIME, m.getMediaMime());
             if (m.getMediaSize() != 0) {
-                meta.set("mediaSize", Long.toString(m.getMediaSize()));
+                meta.set(ConversationConstants.MEDIA_SIZE, Long.toString(m.getMediaSize()));
             }
             if (m.getMediaQuery() != null && m.getMediaSize() > 2) {
                 meta.set(ParserConstants.INDEXER_CONTENT_TYPE, THREEMA_ATTACHMENT.toString());
@@ -388,12 +389,12 @@ public class ThreemaParser extends SQLite3DBParser {
             }
 
             if (m.getMessageStatus() != null) {
-                meta.set("messageStatus", m.getMessageStatus().toString()); //$NON-NLS-1$
+                meta.set(ConversationConstants.MESSAGE_STATUS, m.getMessageStatus().toString());
             }
 
             if (m.getMessageType() == MessageType.THREEMA_CALL) {
                 meta.set(ParserConstants.INDEXER_CONTENT_TYPE, THREEMA_CALL.toString());
-                meta.set("duration", m.getMediaDuration()); //$NON-NLS-1$
+                meta.set(ConversationConstants.MESSAGE_DURATION, m.getMediaDuration());
             }
 
             if (meta.get(ExtraProperties.MESSAGE_BODY) == null) {

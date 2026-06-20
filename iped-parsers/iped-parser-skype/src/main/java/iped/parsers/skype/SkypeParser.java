@@ -3,6 +3,7 @@ package iped.parsers.skype;
 import iped.data.IItemReader;
 import iped.parsers.sqlite.SQLite3Parser;
 import iped.parsers.util.ChildPornHashLookup;
+import iped.parsers.util.ConversationConstants;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
@@ -200,7 +201,7 @@ public class SkypeParser extends AbstractParser {
                             meta.set(Metadata.MESSAGE_FROM, formatSkypeName(contactMap, sm.getAutor()));
                             meta.set(Metadata.MESSAGE_TO, formatSkypeName(contactMap, sm.getDestino()));
                             meta.set(ExtraProperties.MESSAGE_BODY, sm.getConteudo());
-                            meta.set("messageStatus", String.valueOf(sm.getChatMessageStatus()));
+                            meta.set(ConversationConstants.MESSAGE_STATUS, String.valueOf(sm.getChatMessageStatus()));
                             meta.set("sendingStatus", String.valueOf(sm.getSendingStatus()));
                             meta.set(BasicProps.LENGTH, "");
 
