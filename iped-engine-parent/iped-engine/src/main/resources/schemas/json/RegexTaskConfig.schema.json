@@ -2,46 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iped.digital-forensics.org/schema/RegexTaskConfig.schema.json",
   "title": "Regular Expression Task Configuration",
-  "description": "Configuration for regex pattern matching and searching",
-  "type": "object",
-  "properties": {
-    "enableRegex": {
-      "type": "boolean",
-      "description": "Enable regex pattern searching",
-      "default": true
-    },
-    "patterns": {
-      "type": "array",
-      "description": "Regular expression patterns to search for",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Pattern name/identifier"
-          },
-          "regex": {
-            "type": "string",
-            "description": "Regular expression pattern"
-          },
-          "category": {
-            "type": "string",
-            "description": "Category for results (EMAIL, URL, IP, PHONE, etc.)"
-          }
-        },
-        "required": ["name", "regex"]
-      }
-    },
-    "formatRegexMatches": {
-      "type": "boolean",
-      "description": "Format regex matches in results",
-      "default": true
-    },
-    "ignoreCase": {
-      "type": "boolean",
-      "description": "Case-insensitive pattern matching",
-      "default": false
-    }
-  },
-  "additionalProperties": false
+  "description": "getConfiguration() returns a Pair<Boolean formatRegexMatches, List<RegexEntry> regexList>. Jackson serializes Apache Commons Pair via its Map.Entry semantics as a single entry keyed by the *string value* of formatRegexMatches (e.g. {\"true\": [...]}), so no fixed property name can be validated here. Schema intentionally only checks the outer shape until this config is migrated to a named POJO.",
+  "type": "object"
 }

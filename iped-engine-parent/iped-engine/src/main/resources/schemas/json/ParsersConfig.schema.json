@@ -2,53 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iped.digital-forensics.org/schema/ParsersConfig.schema.json",
   "title": "Parsers Configuration",
-  "description": "Configuration for Tika parsers and custom parser integration",
-  "type": "object",
-  "properties": {
-    "parsers": {
-      "type": "array",
-      "description": "List of parser configurations",
-      "items": {
-        "type": "object",
-        "description": "A single parser configuration",
-        "properties": {
-          "class": {
-            "type": "string",
-            "description": "Fully qualified class name of the parser"
-          },
-          "params": {
-            "type": "object",
-            "description": "Parser-specific parameters",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "mimeExclusions": {
-            "type": "array",
-            "description": "MIME types this parser should not process",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": ["class"]
-      }
-    },
-    "encodingDetectors": {
-      "type": "array",
-      "description": "List of text encoding detection configurations",
-      "items": {
-        "type": "object",
-        "properties": {
-          "class": {
-            "type": "string",
-            "description": "Fully qualified class name of the encoding detector"
-          }
-        },
-        "required": ["class"]
-      }
-    }
-  },
-  "required": ["parsers"],
-  "additionalProperties": false
+  "description": "Tika parser wiring (ParserConfig.xml). Currently stored and exposed as a raw XML document, not structured JSON — this schema intentionally only checks that, until ParserConfig.xml is migrated to a structured format.",
+  "type": "string"
 }

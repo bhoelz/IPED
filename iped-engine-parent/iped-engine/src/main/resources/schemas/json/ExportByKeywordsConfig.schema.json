@@ -2,22 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iped.digital-forensics.org/schema/ExportByKeywordsConfig.schema.json",
   "title": "Export By Keywords Configuration",
-  "description": "Configuration for exporting results filtered by keywords",
-  "type": "object",
-  "properties": {
-    "keywords": {
-      "type": "array",
-      "description": "Keywords to filter export results",
-      "items": {
-        "type": "string"
-      }
-    },
-    "matchMode": {
-      "type": "string",
-      "description": "Keyword matching mode",
-      "enum": ["all", "any", "exact"],
-      "default": "any"
-    }
-  },
-  "additionalProperties": false
+  "description": "getConfiguration() returns a List<String> of keywords, not a structured object. Schema intentionally only checks that until this config is migrated to a named POJO.",
+  "type": "array",
+  "items": {
+    "type": "string"
+  }
 }

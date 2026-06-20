@@ -2,35 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iped.digital-forensics.org/schema/AIFiltersConfig.schema.json",
   "title": "AI Filters Configuration",
-  "description": "Configuration for AI-based content filtering",
-  "type": "object",
-  "properties": {
-    "enableAIFilters": {
-      "type": "boolean",
-      "description": "Enable AI-based content filtering",
-      "default": false
-    },
-    "nudityDetection": {
-      "type": "boolean",
-      "description": "Detect nudity and adult content",
-      "default": false
-    },
-    "violenceDetection": {
-      "type": "boolean",
-      "description": "Detect violent content",
-      "default": false
-    },
-    "confidentceThreshold": {
-      "type": "number",
-      "description": "Confidence threshold for AI predictions",
-      "default": 0.7,
-      "minimum": 0.0,
-      "maximum": 1.0
-    },
-    "modelPath": {
-      "type": "string",
-      "description": "Path to AI model files"
-    }
-  },
-  "additionalProperties": false
+  "description": "getConfiguration() returns the raw config file text, not a structured object. Schema intentionally only checks that until this config is migrated to a named POJO.",
+  "type": "string"
 }

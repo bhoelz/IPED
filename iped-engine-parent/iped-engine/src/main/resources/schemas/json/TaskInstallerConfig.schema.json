@@ -2,28 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iped.digital-forensics.org/schema/TaskInstallerConfig.schema.json",
   "title": "Task Installer Configuration",
-  "description": "Configuration for IPED processing task installation and ordering (TaskInstaller.toml)",
-  "type": "object",
-  "properties": {
-    "tasks": {
-      "type": "array",
-      "description": "Ordered list of processing pipeline entries. Order is critical - some tasks depend on results of others. Entries ending in .js or .py are scripts from the scripts/tasks folder; any other entry is a fully qualified task class name implementing AbstractTask.",
-      "items": {
-        "type": "string",
-        "description": "Task class name (e.g. iped.engine.task.HashTask) or script file name (e.g. RefineCategoryTask.js)",
-        "minLength": 1
-      }
-    }
-  },
-  "required": ["tasks"],
-  "additionalProperties": false,
-  "examples": [
-    {
-      "tasks": [
-        "iped.engine.task.HashTask",
-        "iped.engine.task.SignatureTask",
-        "RefineCategoryTask.js"
-      ]
-    }
-  ]
+  "description": "getConfiguration() returns the raw TaskInstaller.toml text, not a structured object. Schema intentionally only checks that until this config is migrated to a named POJO.",
+  "type": "string"
 }

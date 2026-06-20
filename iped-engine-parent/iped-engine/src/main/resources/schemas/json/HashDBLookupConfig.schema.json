@@ -2,24 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iped.digital-forensics.org/schema/HashDBLookupConfig.schema.json",
   "title": "Hash Database Lookup Configuration",
-  "description": "Configuration for hash database lookup during processing",
-  "type": "object",
-  "properties": {
-    "enableLookup": {
-      "type": "boolean",
-      "description": "Enable hash database lookups",
-      "default": true
-    },
-    "databasePath": {
-      "type": "string",
-      "description": "Path to hash database files"
-    },
-    "timeout": {
-      "type": "integer",
-      "description": "Lookup timeout in seconds",
-      "minimum": 1,
-      "default": 30
-    }
-  },
-  "additionalProperties": false
+  "description": "getConfiguration() returns a Pair<Boolean excludeKnown, String nsrlConfig>. Jackson serializes Apache Commons Pair via its Map.Entry semantics as a single entry keyed by the *string value* of excludeKnown (e.g. {\"true\": \"...\"}), so no fixed property name can be validated here. Schema intentionally only checks the outer shape until this config is migrated to a named POJO.",
+  "type": "object"
 }

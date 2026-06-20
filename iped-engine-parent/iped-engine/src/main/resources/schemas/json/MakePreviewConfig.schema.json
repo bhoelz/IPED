@@ -2,31 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iped.digital-forensics.org/schema/MakePreviewConfig.schema.json",
   "title": "Make Preview Configuration",
-  "description": "Configuration for preview/viewer file generation",
-  "type": "object",
-  "properties": {
-    "enablePreview": {
-      "type": "boolean",
-      "description": "Generate preview files for viewing",
-      "default": true
-    },
-    "supportedMimes": {
-      "type": "array",
-      "description": "MIME types to generate previews for",
-      "items": {
-        "type": "string"
-      }
-    },
-    "previewDirectory": {
-      "type": "string",
-      "description": "Directory to store generated previews"
-    },
-    "previewFormat": {
-      "type": "string",
-      "description": "Output format for previews",
-      "enum": ["html", "pdf", "images"],
-      "default": "html"
+  "description": "getConfiguration() returns a List<Set<String>> of MIME-type groups, not a structured object. Schema intentionally only checks that until this config is migrated to a named POJO.",
+  "type": "array",
+  "items": {
+    "type": "array",
+    "items": {
+      "type": "string"
     }
-  },
-  "additionalProperties": false
+  }
 }

@@ -2,27 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iped.digital-forensics.org/schema/ExportByCategoriesConfig.schema.json",
   "title": "Export by Categories Configuration",
-  "description": "Configuration for exporting results by file category",
-  "type": "object",
-  "properties": {
-    "categories": {
-      "type": "array",
-      "description": "Categories to export",
-      "items": {
-        "type": "string"
-      }
-    },
-    "exportFormat": {
-      "type": "string",
-      "description": "Export format",
-      "enum": ["folder", "zip", "tarball"],
-      "default": "folder"
-    },
-    "includeMetadata": {
-      "type": "boolean",
-      "description": "Include metadata in exports",
-      "default": true
-    }
-  },
-  "additionalProperties": false
+  "description": "getConfiguration() returns a Set<String> of category names, not a structured object. Schema intentionally only checks that until this config is migrated to a named POJO.",
+  "type": "array",
+  "items": {
+    "type": "string"
+  }
 }
