@@ -1,5 +1,7 @@
 package iped.carvers.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 
 public class Signature implements Serializable {
@@ -25,6 +27,11 @@ public class Signature implements Serializable {
         return signatureType;
     }
 
+    // Back-reference to the owning CarverType, which in turn holds this Signature in
+    // its own signatures list — a genuine bidirectional cycle, not just a deep object
+    // graph. Excluded from JSON serialization (schema validation, etc.); the JSON view
+    // of a carver type only needs to walk forward (CarverType -> signatures), never back.
+    @JsonIgnore
     public CarverType getCarverType() {
         return carverType;
     }

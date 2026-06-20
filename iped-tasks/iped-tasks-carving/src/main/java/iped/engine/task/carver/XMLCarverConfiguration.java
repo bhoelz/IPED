@@ -1,5 +1,6 @@
 package iped.engine.task.carver;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import iped.carvers.api.*;
 import iped.carvers.api.Signature.SignatureType;
 import iped.carvers.standard.DefaultCarver;
@@ -15,8 +16,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,15 +64,17 @@ public class XMLCarverConfiguration implements CarverConfiguration, Serializable
         pluginsLoaded = true;
     }
 
-    public void loadXMLConfigFile(File confFile) throws IOException {
-        originalXmls.add(Files.readString(confFile.toPath()));
+    public void loadXMLConfigFile(Path confFile) throws IOException {
+        originalXmls.add(Files.readString(confFile));
         Document doc = null;
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(false);
             DocumentBuilder docBuilder = dbf.newDocumentBuilder();
 
-            doc = docBuilder.parse(confFile);
+            try (InputStream is = Files.newInputStream(confFile)) {
+                doc = docBuilder.parse(is);
+            }
 
             Element root = doc.getDocumentElement();
 
@@ -294,6 +299,12 @@ public class XMLCarverConfiguration implements CarverConfiguration, Serializable
         }
     }
 
+    /**
+     * Internal runtime state (the built Aho-Corasick automaton), not configuration
+     * data — its suffix-link structure also isn't safely serializable. Excluded
+     * from JSON tooling (schema validation, the config-editor API).
+     */
+    @JsonIgnore
     public AhoCorasick getPopulatedTree() {
         return tree;
     }

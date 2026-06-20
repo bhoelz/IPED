@@ -1,5 +1,6 @@
 package iped.engine.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import iped.configuration.Configurable;
 import iped.engine.task.AbstractTask;
 import iped.exception.IPEDException;
@@ -28,6 +29,14 @@ public class TaskInstallerConfig implements Configurable<String> {
 
     private final List<String> tomlContents = new ArrayList<>();
 
+    /**
+     * Not configuration data: resolves and instantiates the entire task pipeline
+     * from scratch on every call. Excluded from JSON serialization (schema
+     * validation, the config-editor REST API, etc.) so those generic, bean-style
+     * tools don't trigger an expensive, non-idempotent task-graph rebuild just by
+     * looking at this object.
+     */
+    @JsonIgnore
     public List<AbstractTask> getNewTaskInstances() {
         Map<String, TaskRegistry.TaskRegistration> pipelineTasks = new LinkedHashMap<>();
         try {
