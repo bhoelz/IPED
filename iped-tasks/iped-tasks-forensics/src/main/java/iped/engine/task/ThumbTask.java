@@ -2,7 +2,7 @@ package iped.engine.task;
 
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
-import iped.engine.config.HtmlReportTaskConfig;
+import iped.engine.config.ReportEnablementSettings;
 import iped.engine.localization.Messages;
 import iped.engine.preview.ThumbConstants;
 import iped.engine.util.Util;
@@ -23,7 +23,8 @@ public abstract class ThumbTask extends AbstractTask {
     private static final String INSERT_THUMB = "INSERT INTO thumbs(id, thumb) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET thumb=? WHERE thumb IS NULL;"; //$NON-NLS-1$
 
     protected File getThumbFile(IItem evidence) throws Exception {
-        HtmlReportTaskConfig htmlReportConfig = ConfigurationManager.get().findObject(HtmlReportTaskConfig.class);
+        ReportEnablementSettings htmlReportConfig = ConfigurationManager.get()
+                .findObjectInstanceOf(ReportEnablementSettings.class);
         boolean storeThumbsInDisk = caseData.containsReport() && htmlReportConfig.isEnabled();
         if (storeThumbsInDisk) {
             String reportSubFolderName = Messages.getString("HTMLReportTask.ReportSubFolder"); //$NON-NLS-1$

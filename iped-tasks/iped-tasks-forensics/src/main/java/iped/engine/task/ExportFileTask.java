@@ -174,7 +174,8 @@ public class ExportFileTask extends AbstractTask {
     }
 
     private static boolean storeInSQLite(ICaseData caseData, File output) {
-        HtmlReportTaskConfig htmlReportConfig = ConfigurationManager.get().findObject(HtmlReportTaskConfig.class);
+        ReportEnablementSettings htmlReportConfig = ConfigurationManager.get()
+                .findObjectInstanceOf(ReportEnablementSettings.class);
         return !caseData.containsReport() || !htmlReportConfig.isEnabled();
     }
 
@@ -377,7 +378,8 @@ public class ExportFileTask extends AbstractTask {
     }
 
     private void copyViewFile(IItem evidence) {
-        HtmlReportTaskConfig htmlReportConfig = ConfigurationManager.get().findObject(HtmlReportTaskConfig.class);
+        ReportEnablementSettings htmlReportConfig = ConfigurationManager.get()
+                .findObjectInstanceOf(ReportEnablementSettings.class);
         File viewFile = evidence.getViewFile();
         if (viewFile != null) {
             if (htmlReportConfig.isEnabled()) {

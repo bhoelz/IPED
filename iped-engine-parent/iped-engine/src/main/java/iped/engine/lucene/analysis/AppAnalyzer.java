@@ -19,7 +19,7 @@
 package iped.engine.lucene.analysis;
 
 import iped.engine.config.ConfigurationManager;
-import iped.engine.config.IndexTaskConfig;
+import iped.engine.config.IndexSettings;
 import iped.engine.hash.HashAlgorithm;
 import iped.engine.hashdb.PhotoDNAConstants;
 import iped.engine.index.IndexMetadata;
@@ -57,7 +57,7 @@ public class AppAnalyzer {
         analyzerPerField.put(IndexItem.CHANGED, new KeywordAnalyzer());
         analyzerPerField.put(IndexItem.TIMESTAMP, new KeywordAnalyzer());
 
-        IndexTaskConfig indexConfig = ConfigurationManager.get().findObject(IndexTaskConfig.class);
+        IndexSettings indexConfig = ConfigurationManager.get().findObjectInstanceOf(IndexSettings.class);
         StandardASCIIAnalyzer hashAnalyzer = new StandardASCIIAnalyzer();
         hashAnalyzer.setMaxTokenLength(Integer.MAX_VALUE);
         hashAnalyzer.setConvertCharsToLower(true);

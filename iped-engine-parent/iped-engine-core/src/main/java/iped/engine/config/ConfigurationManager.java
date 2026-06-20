@@ -158,6 +158,23 @@ public class ConfigurationManager implements ObjectManager<Configurable<?>>, ITy
         return null;
     }
 
+    /**
+     * Finds a registered configurable by interface, matching via
+     * {@code instanceof} rather than exact class. Lets a caller depend on an
+     * interface declared here in {@code iped-engine-core} without needing the
+     * concrete {@link Configurable} implementation's class on its classpath —
+     * useful when the implementation is owned by a module that would otherwise
+     * create a dependency cycle (e.g. a task module that depends on the engine).
+     */
+    public <I> I findObjectInstanceOf(Class<I> iface) {
+        for (Configurable<?> configurable : this.loadedConfigurables.keySet()) {
+            if (iface.isInstance(configurable)) {
+                return iface.cast(configurable);
+            }
+        }
+        return null;
+    }
+
     // -------------------------------------------------------------------------
     // ITypedConfigAccess implementation
     // -------------------------------------------------------------------------

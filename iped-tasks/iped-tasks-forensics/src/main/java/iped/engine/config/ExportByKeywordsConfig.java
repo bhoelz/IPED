@@ -7,7 +7,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExportByKeywordsConfig extends AbstractTaskConfig<List<String>> implements Externalizable {
+public class ExportByKeywordsConfig extends AbstractTaskConfig<List<String>>
+        implements Externalizable, ExportEnablementSettings {
 
     /**
      *

@@ -1,7 +1,7 @@
 package iped.engine.lucene;
 
 import iped.engine.config.ConfigurationManager;
-import iped.engine.config.IndexTaskConfig;
+import iped.engine.config.IndexSettings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
@@ -14,7 +14,7 @@ public class ConfiguredFSDirectory {
 
 
     public static FSDirectory open(File indexDir) throws IOException {
-        IndexTaskConfig config = ConfigurationManager.get().findObject(IndexTaskConfig.class);
+        IndexSettings config = ConfigurationManager.get().findObjectInstanceOf(IndexSettings.class);
 
         FSDirectory result;
         if (config != null && config.isUseNIOFSDirectory()) {

@@ -14,13 +14,39 @@
 ## Phase 1 — Finish config/code ownership moves
 - [x] `ImageThumbTaskConfig` → `iped-tasks-image` + `ImageThumbsConfig.toml` moved.
 - [x] `VideoThumbsConfig` → `iped-tasks-image` + `VideoThumbsConfig.toml` moved.
-- [x] `HtmlReportTaskConfig` → `iped-tasks-report` + `HTMLReportConfig.toml` moved.
-- [~] `IndexTaskConfig` — deferred: `ConfiguredFSDirectory`, `AppAnalyzer`, and
-      `QueryBuilder` in `iped-engine` read this config directly. Moving it to
-      `iped-tasks-storage-index` would create a circular dependency. Resolution:
-      extract an `IndexSettings` interface to `iped-engine-core` or `iped-api`,
-      implement in `iped-tasks-storage-index`, and have engine internals depend on
-      the interface only.
+- [~] `HtmlReportTaskConfig`: only `HTMLReportConfig.toml` moved to `iped-tasks-report`;
+      the `.java` class itself was never actually relocated — it still lives in, and
+      is owned by, `iped-engine` (`HTMLReportTask` in `iped-tasks-report` resolves it
+      via its existing `iped-engine` dependency through a wildcard import). Verified
+      this isn't a split-package hazard (only one copy of the class exists), just a
+      stale completion claim. Same root blocker as `IndexTaskConfig` below — no
+      consumer inside `iped-engine` itself reads it directly here, so once the
+      `IndexSettings`-interface pattern is proven out, this one is a pure move with
+      no engine-internal callers to redirect.
+- [x] `IndexTaskConfig` → `iped-tasks-storage-index` + `IndexTaskConfig.toml` moved.
+      `Manager`, `AppAnalyzer`, `ConfiguredFSDirectory`, `QueryBuilder` (all in
+      `iped-engine`) couldn't depend on the concrete class without creating a cycle
+      (`iped-tasks-storage-index` already depends on `iped-engine`), and the existing
+      `ConfigurationManager.findObject(Class)` lookup matches by exact class equality,
+      so an interface alone wasn't enough — the engine side would have no concrete
+      class to pass as the lookup key. Resolved by: (1) adding `IndexSettings`
+      interface to `iped-engine-core` (the 7 accessors the four engine classes
+      actually call: `isUseNIOFSDirectory`, `isForceMerge`, `getCommitIntervalSeconds`,
+      `getMaxTokenLength`, `isFilterNonLatinChars`, `isConvertCharsToAscii`,
+      `isConvertCharsToLowerCase`, `getExtraCharsToIndex`); (2) adding
+      `ConfigurationManager.findObjectInstanceOf(Class<I>)` — an `instanceof`-based
+      lookup alongside the existing exact-class `findObject`; (3) moving
+      `IndexTaskConfig.java` + `IndexTaskConfig.toml` to `iped-tasks-storage-index`,
+      implementing `IndexSettings`; (4) switching the four engine call sites to
+      `findObjectInstanceOf(IndexSettings.class)`. `iped-app`'s `MenuClass` and
+      `iped-tasks-storage-index`'s own `IndexTask`/`ElasticSearchIndexTask` keep
+      referencing the concrete `IndexTaskConfig` directly (for `isStoreTermVectors()`,
+      not part of the engine-facing interface) — both already depended on
+      `iped-tasks-storage-index`, so no cycle there. Verified: `iped-engine-core`,
+      `iped-engine`, `iped-tasks-storage-index` test suites green; `iped-app` compiles.
+      In the process, found `HtmlReportTaskConfig`'s earlier "moved" entry above was
+      inaccurate — see that line for the correction; same root pattern, but no
+      engine-internal caller exists for it, so it's a simpler pure move when picked up.
 - [x] ArchUnit guard added to `iped-tasks.spi` (SPI may only import `iped-api`)
       and `iped-tasks-forensics` (task code may not import `iped.app.*`).
 

@@ -2,7 +2,7 @@ package iped.engine.search;
 
 import iped.data.IIPEDSource;
 import iped.engine.config.ConfigurationManager;
-import iped.engine.config.IndexTaskConfig;
+import iped.engine.config.IndexSettings;
 import iped.engine.data.IPEDSource;
 import iped.engine.index.IndexMetadata;
 import iped.engine.localization.CategoryLocalization;
@@ -365,7 +365,7 @@ return getQuery(texto, ((IPEDSource) ipedCase).getAnalyzer());
             fieldBoost.put(IndexItem.NAME, 1000.0f);
             parser.setFieldsBoost(fieldBoost);
 
-            IndexTaskConfig indexConfig = ConfigurationManager.get().findObject(IndexTaskConfig.class);
+            IndexSettings indexConfig = ConfigurationManager.get().findObjectInstanceOf(IndexSettings.class);
             // removes diacritics, StandardQueryParser doesn't remove them from WildcardQueries
             if (analyzer != spaceAnalyzer && indexConfig.isConvertCharsToAscii()) {
                 texto = IndexMetadata.normalize(texto, false);

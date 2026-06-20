@@ -131,7 +131,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
     private LocalConfig localConfig;
     private AnalysisConfig analysisConfig;
-    private IndexTaskConfig indexConfig;
+    private IndexSettings indexConfig;
     private CmdLineArgs args;
 
     private Thread commitThread = null;
@@ -232,7 +232,7 @@ public class Manager implements iped.engine.datasource.IDatasourceRegistry {
 
         this.localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
         this.analysisConfig = ConfigurationManager.get().findObject(AnalysisConfig.class);
-        this.indexConfig = ConfigurationManager.get().findObject(IndexTaskConfig.class);
+        this.indexConfig = ConfigurationManager.get().findObjectInstanceOf(IndexSettings.class);
 
         this.indexDir = localConfig.getIndexTemp();
         this.sources = sources;

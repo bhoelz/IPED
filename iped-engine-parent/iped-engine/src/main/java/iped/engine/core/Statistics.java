@@ -323,13 +323,15 @@ public class Statistics {
             log.error("Alert: Processed " + processed + " items of " + discovered); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        // ExportByCategoriesConfig was moved to the iped-tasks-forensics module and is not
-        // visible from iped-engine. Use the shared enable property as the engine-level gate
-        // for "automatic file export active" (the property is shared by the categories and
-        // keywords export configs), combined with the keywords config available here.
-        ExportByKeywordsConfig exportByKeywords = ConfigurationManager.get().findObject(ExportByKeywordsConfig.class);
+        // ExportByCategoriesConfig and ExportByKeywordsConfig were moved to the
+        // iped-tasks-forensics module and are not visible from iped-engine. Look up the
+        // keywords config via the shared ExportEnablementSettings interface, and use the
+        // shared enable property literal (both configs' ENABLE_PARAM has this same value)
+        // as the engine-level gate for "automatic file export active".
+        ExportEnablementSettings exportByKeywords = ConfigurationManager.get()
+                .findObjectInstanceOf(ExportEnablementSettings.class);
         boolean automaticExportEnabled = ConfigurationManager.get()
-                .getEnableTaskProperty(ExportByKeywordsConfig.ENABLE_PARAM);
+                .getEnableTaskProperty("enableAutomaticExportFiles");
 
         if (!(automaticExportEnabled || exportByKeywords.isEnabled())) {
             if (indexed != discovered - carvedIgnored - ignored) {

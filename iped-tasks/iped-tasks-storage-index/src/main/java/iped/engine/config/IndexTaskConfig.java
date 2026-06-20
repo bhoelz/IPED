@@ -4,7 +4,7 @@ import iped.utils.UTF8Properties;
 
 import java.util.ArrayList;
 
-public class IndexTaskConfig extends AbstractTaskPropertiesConfig {
+public class IndexTaskConfig extends AbstractTaskPropertiesConfig implements IndexSettings {
 
     /**
      *
