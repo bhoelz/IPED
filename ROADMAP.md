@@ -195,16 +195,40 @@ Mitigations:
 - Feature flags and staged rollouts.
 
 ## Per-Module Roadmaps
-Each module has its own `ROADMAP.md` at its root with phased, checkbox-tracked plans
-aligned to the workstreams above:
-- Contracts/utilities: `iped-api`, `iped-utils`
-- Engine: `iped-engine-parent` (overview) plus one per submodule — `iped-engine-core`,
-  `iped-engine`, `iped-engine-graph`, `iped-engine-hashdb`, `iped-sleuthkit`,
-  `iped-ufed`, `iped-ad1`, `iped-distributed`, `iped-additional-index`
-- Content pipeline: `iped-parsers`, `iped-carvers`, `iped-tasks`, `iped-viewers`, `iped-geo`
-- Services: `iped-webapi`, `iped-webui-server`, `iped-runner`, `iped-mcp`
-- Frontends: `iped-webui`, `iped-runner-ui`, `iped-ui`
-- Desktop/distribution: `iped-app`
+Every module/submodule has its own roadmap under [`docs/roadmaps/`](docs/roadmaps/),
+named `<module>-ROADMAP.md`, linked from that module's own `README.md`. See
+[docs/roadmaps/README.md](docs/roadmaps/README.md) for the full index. Grouped by
+workstream:
+- Contracts/utilities: [iped-api](docs/roadmaps/iped-api-ROADMAP.md), [iped-utils](docs/roadmaps/iped-utils-ROADMAP.md)
+- Engine: [iped-engine-parent](docs/roadmaps/iped-engine-parent-ROADMAP.md) (overview) plus one per submodule —
+  [iped-engine-core](docs/roadmaps/iped-engine-core-ROADMAP.md),
+  [iped-engine](docs/roadmaps/iped-engine-ROADMAP.md) (plus its
+  [plugin registry](docs/roadmaps/iped-engine-plugin-registry-ROADMAP.md) and
+  [schemas](docs/roadmaps/iped-engine-schemas-ROADMAP.md) sub-roadmaps),
+  [iped-engine-graph](docs/roadmaps/iped-engine-graph-ROADMAP.md),
+  [iped-engine-hashdb](docs/roadmaps/iped-engine-hashdb-ROADMAP.md),
+  [iped-sleuthkit](docs/roadmaps/iped-sleuthkit-ROADMAP.md),
+  [iped-ufed](docs/roadmaps/iped-ufed-ROADMAP.md),
+  [iped-ad1](docs/roadmaps/iped-ad1-ROADMAP.md),
+  [iped-distributed](docs/roadmaps/iped-distributed-ROADMAP.md),
+  [iped-additional-index](docs/roadmaps/iped-additional-index-ROADMAP.md)
+- Content pipeline: [iped-parsers](docs/roadmaps/iped-parsers-ROADMAP.md),
+  [iped-carvers](docs/roadmaps/iped-carvers-ROADMAP.md),
+  [iped-tasks](docs/roadmaps/iped-tasks-ROADMAP.md),
+  [iped-viewers](docs/roadmaps/iped-viewers-ROADMAP.md),
+  [iped-geo](docs/roadmaps/iped-geo-ROADMAP.md)
+- Services: [iped-webapi](docs/roadmaps/iped-webapi-ROADMAP.md),
+  [iped-webui-server](docs/roadmaps/iped-webui-server-ROADMAP.md),
+  [iped-runner](docs/roadmaps/iped-runner-ROADMAP.md),
+  [iped-mcp](docs/roadmaps/iped-mcp-ROADMAP.md)
+- Frontends: [iped-webui](docs/roadmaps/iped-webui-ROADMAP.md) (see also the
+  [web UI implementation plan](docs/roadmaps/web-ui-implementation-ROADMAP.md)),
+  [iped-runner-ui](docs/roadmaps/iped-runner-ui-ROADMAP.md),
+  [iped-ui](docs/roadmaps/iped-ui-ROADMAP.md)
+- Desktop/distribution: [iped-app](docs/roadmaps/iped-app-ROADMAP.md)
+
+See also: [STATE-OF-IPED.md](STATE-OF-IPED.md) for a generated rollup of progress
+across all of the above.
 
 ## Acceptance Criteria for 5.0
 - Browser UI is the primary supported interface for core analyst workflows.

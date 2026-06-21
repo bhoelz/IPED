@@ -32,3 +32,7 @@ npm run generate:api
 - Conectar o client gerado aos primeiros fluxos de sessão e busca.
 - Implementar o domínio `session` para bootstrap de caso.
 - Substituir placeholders da shell pelos primeiros painéis reais de análise.
+
+## Roadmap
+
+Veja [iped-webui-ROADMAP.md](../docs/roadmaps/iped-webui-ROADMAP.md) para o plano de trabalho, status das fases e issues vinculadas.
