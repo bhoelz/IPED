@@ -1,5 +1,15 @@
 # Plano de Implementação: Processamento Distribuído IPED via Kafka
 
+> **Nota de status (2026-06-21):** este documento descreve o design original do módulo
+> `iped-distributed`. A implementação já cobre a maior parte do desenho aqui descrito —
+> `TaskAgent`, `CoordinatorServer`, `AgentRegistry`, `DlqManager`/`DlqAutoRetrier`,
+> `DualRunManager`, `ProcessingAuditLog` e o `DistributedConfig` já existem em
+> `src/main/java/iped/distributed/`. Mantido como referência de arquitetura/racional de
+> design — para status atual e trabalho pendente, ver
+> [iped-distributed-ROADMAP.md](../../docs/roadmaps/iped-distributed-ROADMAP.md) (100% das
+> issues da fase atual marcadas `done`) e o guia operacional em
+> [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md).
+
 ## 1. Princípios Norteadores
 
 | Princípio | Como será respeitado |

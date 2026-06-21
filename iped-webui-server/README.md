@@ -107,3 +107,13 @@ Add islands incrementally (viewer, link graph) the same way — each a custom
 element with an attributes-in / events-out contract; the SSR shell grows HTMX
 regions around them. Defer any real micro-frontend platform (module federation,
 independent deploys) until multiple teams or release cadences actually require it.
+
+## Roadmap
+
+See [iped-webui-server-ROADMAP.md](../docs/roadmaps/iped-webui-server-ROADMAP.md) for planned work, current phase status, and linked issues.
+
+## Design docs
+
+- [FRONTEND_IMPLEMENTATION_PLAN.md](FRONTEND_IMPLEMENTATION_PLAN.md) — per-component Swing-origin → web-approach mapping for the main window migration (historical design rationale; most components are already implemented).
+- [REFACTORING_PLAN.md](REFACTORING_PLAN.md) — history of the SSR + HTMX + Angular-islands pilot (architecture decisions, Spring Boot 4 migration notes); the boundary rules it documents are now also stated above as the current standing rules.
+- [SECURITY-FIX-PLAN.md](SECURITY-FIX-PLAN.md) — security review findings and remediation status. Most are resolved; the one still-open finding is tracked as ISSUE-446 in the roadmap above.

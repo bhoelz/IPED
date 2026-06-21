@@ -78,3 +78,11 @@ src/
 ## Browser Support
 
 Works with modern browsers (Chrome, Firefox, Safari, Edge).
+
+## Roadmap
+
+See [iped-ui-ROADMAP.md](../docs/roadmaps/iped-ui-ROADMAP.md) for planned work, current phase status, and linked issues.
+
+## Deployment
+
+See [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) for build, run, and production deployment instructions (including Docker).

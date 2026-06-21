@@ -164,9 +164,8 @@ public class MyTask extends AbstractTask {
 
 ## Going Deeper
 
-- See [ARCHITECTURE.md](ARCHITECTURE.md) for system design
-- See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed API docs
-- See [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for project status
+- See [ARCHITECTURE.md](ARCHITECTURE.md) for system design and implementation status
+- See [MULTI-CASE-MIGRATION-GUIDE.md](MULTI-CASE-MIGRATION-GUIDE.md) for detailed API docs
 
 ## Key Classes to Know
 
@@ -237,13 +236,13 @@ CaseContextThreadLocal.clear();
 
 ## Next Steps
 
-1. Read [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) if implementing custom integration
+1. Read [MULTI-CASE-MIGRATION-GUIDE.md](MULTI-CASE-MIGRATION-GUIDE.md) if implementing custom integration
 2. Check your existing code - it likely works unchanged
 3. Use [ARCHITECTURE.md](ARCHITECTURE.md) as reference for design questions
 4. Run the Phase 10 tests to validate in your environment
 
 ## Support
 
-- Tests: `iped-engine/src/test/java/iped/engine/core/`
-- Documentation: Root directory (*.md files)
+- Tests: `iped-engine-parent/iped-engine/src/test/java/iped/engine/core/`
+- Documentation: this module's `README.md` and the files above
 - HTTP API: `iped-webapi/src/main/java/iped/engine/webapi/Cases.java` and `Stats.java`

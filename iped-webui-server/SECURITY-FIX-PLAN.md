@@ -1,33 +1,38 @@
 # Security Fix Plan — `feature/kafka-distributed-processing`
 
-Status: **Draft / Open**
+Status: **Partially resolved** (re-verified against code 2026-06-21, see below)
 Branch: `feature/kafka-distributed-processing`
-Date: 2026-06-09
+Date: 2026-06-09 (original review); re-verified 2026-06-21
 Owner: _unassigned_
 
-This plan tracks remediation of the security findings from the branch security
-review. Three XSS vulnerabilities were confirmed at high confidence in the new
-web UI; two additional findings are tracked as "harden before shipping" items
-because they are not currently reachable in the shipped deployment.
-
-The web UI (`iped-webui-server`) ships **without** Spring Security, CSRF
-protection, or authentication. This amplifies every XSS finding below, because a
-successful script injection runs in the analyst's session with full access to
-the unauthenticated `/api/**` surface. Adding an authentication/CSRF baseline
-(Task 0) is therefore a prerequisite, not an optional hardening step.
+This plan originally tracked remediation of the security findings from the
+branch security review. Re-checking against the current codebase on 2026-06-21
+(while triaging `docs/needs-revision/`) found that **Tasks 0, 2, and 3 are
+already resolved** by later, unrelated work (the auth/CSRF hardening pass and
+the SSR/islands migration respectively). **Task 1 is still open** and is now
+tracked as [ISSUE-446](../docs/issues/ISSUE-446-fix-onclick-js-string-xss.md).
+Tasks 4 and 5 remain correctly deferred — their gating features still haven't
+shipped.
 
 ---
 
-## Summary of findings
+## Summary of findings (updated 2026-06-21)
 
 | # | Severity | Category | Location | Status |
 |---|----------|----------|----------|--------|
-| 1 | High | XSS — DOM event-handler context | `iped-webui-server` Rocker `on*` handlers | Open |
-| 2 | High | XSS — stored (sanitizer bypass) | `iped-webui` Angular viewer | Open |
-| 3 | Medium | XSS — reflected | `WorkspaceFragmentController.startExport` | Open |
-| 0 | High (prereq) | Missing authn / CSRF baseline | `iped-webui-server` | Open |
-| 4 | Low / deferred | Plugin signature bypass (no prod caller) | `iped-engine` registry skeleton | Deferred |
-| 5 | Low / deferred | Config API arbitrary-path write (not started in prod) | `iped-engine` config API | Deferred |
+| 1 | High | XSS — DOM event-handler context | `iped-webui-server` Rocker `on*` handlers | **Still Open** — see ISSUE-446 |
+| 2 | High | XSS — stored (sanitizer bypass) | `iped-webui` Angular viewer | **Resolved** — vulnerable code path removed |
+| 3 | Medium | XSS — reflected | `WorkspaceFragmentController.startExport` | **Resolved** — endpoint rewritten |
+| 0 | High (prereq) | Missing authn / CSRF baseline | `iped-webui-server` | **Resolved** — `SecurityConfig` exists and enforces both |
+| 4 | Low / deferred | Plugin signature bypass (no prod caller) | `iped-engine` registry skeleton | Deferred (still not wired up) |
+| 5 | Low / deferred | Config API arbitrary-path write (not started in prod) | `iped-engine` config API | Deferred (still not exposed) |
+
+### Verification notes (2026-06-21)
+- **Task 0 resolved:** `iped-webui-server/src/main/java/iped/webui/config/SecurityConfig.java` exists; the roadmap (`iped-webui-server-ROADMAP.md` Phase 3, ISSUE-425/427) records auth/CSRF/CSP as `done`.
+- **Task 1 still open:** the exact interpolation patterns described below (`itemList.rocker.html:55`, `sidebar.rocker.html:52,70,93`, `evidenceChildren.rocker.html:8`) are unchanged in the current code. Tracked as ISSUE-446.
+- **Task 2 resolved:** `iped-webui/src/app/domains/viewer/data-access/viewer.facade.ts` no longer exists — that whole SPA "domains" tree was deleted when the app migrated to Angular-elements islands. The replacement, `iped-webui/src/islands/viewer/viewer.component.html`, uses plain `[innerHTML]` bindings with no `bypassSecurityTrustHtml` call anywhere in the codebase, so Angular's default sanitizer is no longer bypassed.
+- **Task 3 resolved:** `WorkspaceFragmentController.startExport` no longer builds raw HTML via `%s`-formatted strings from `scope`/`format`. It now POSTs `scope`/`format` as JSON body values to `iped-webapi`'s `/v2/jobs` endpoint and renders the result through `exportModal()`/`exportErrorModal()`. Those helper methods do still interpolate the backend-returned `jobId` unescaped into HTML — a much smaller residual risk since `jobId` is server-controlled, not attacker-controlled like the original `scope`/`format` reflection — worth a defense-in-depth follow-up but not the same finding.
+- **Tasks 4/5 still correctly deferred:** the plugin-registry install flow and the standalone Configuration API are both still not wired into any production path (see `docs/roadmaps/iped-engine-plugin-registry-ROADMAP.md`), so these remain pre-emptive hardening items, not live vulnerabilities.
 
 ---
 

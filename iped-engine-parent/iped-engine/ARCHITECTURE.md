@@ -320,3 +320,33 @@ Worker.run() {
 3. **Distributed Processing:** Multiple orchestrators across JVMs
 4. **Metrics Export:** Prometheus/StatsD integration for monitoring
 5. **Smart Backpressure:** Predict memory needs, schedule accordingly
+
+## Implementation status & inventory
+
+All 10 phases of this architecture are implemented and tested (absorbed here from the
+former standalone `IMPLEMENTATION_SUMMARY.md`, which duplicated most of this document).
+
+| Phase | Component | Files | Tests |
+|-------|-----------|-------|-------|
+| 1 | CaseContext & ThreadLocal | 2 | 5 |
+| 2 | Manager De-singletoning | 2 | 3 |
+| 3 | Statistics De-singletoning | 2 | 3 |
+| 4 | Item Counter Scoping | 1 | 5 |
+| 5 | UIPropertyListener Scoping | 1 | 3 |
+| 6 | SaveStateThread Multi-Case | 1 | 4 |
+| 7 | GraphService Isolation | 2 | 7 |
+| 8 | ProcessingOrchestrator | 4 | 12 |
+| 9 | HTTP Monitoring | 6 | 2 |
+| 10 | Integration Tests & Docs | 4 | 13 |
+| **Total** | | **26 files** | **57 tests** |
+
+### Core components (infrastructure)
+`CaseContext`, `CaseContextThreadLocal`, `ProcessingOrchestratorConfig`, `ProcessingOrchestrator`, `ResourceManager`, `ConfigurationView` — all in `iped-engine-parent/iped-engine/src/main/java/iped/engine/core/`.
+
+### HTTP API
+`Cases.java`, `Stats.java`, `CaseStatusJSON.java`, `GlobalStatsJSON.java`, `CaseStatsJSON.java`, plus `Main.java` updated to initialize the orchestrator — in `iped-webapi`.
+
+### Files modified (not created) to wire this in
+`Manager.java`, `Worker.java`, `Statistics.java` (iped-engine), `Main.java` (iped-webapi), `GraphGenerator.java` (iped-engine graph support).
+
+This work corresponds to `iped-engine-ROADMAP.md` Phase 2 ("Multi-case hardening"), which the consolidated issue tracker already records as `done`.

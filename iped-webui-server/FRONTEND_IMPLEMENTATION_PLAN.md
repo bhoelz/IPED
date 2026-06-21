@@ -1,5 +1,15 @@
 # IPED Desktop → Web: Main Window Migration Plan
 
+> **Status note (2026-06-21):** verified against the current codebase — sidebar tabs
+> (C-02 through C-07), the results grid (C-08), gallery (C-09), timeline (C-10), graph
+> (C-11), info-panel tabs (C-12/C-13), viewer tabs (C-14 through C-17), the export dialog
+> (C-18), similar-image search wiring (C-19), and layout resize handles (C-20) all have
+> matching code in `iped-webui`/`iped-webui-server` already. This plan is kept as the
+> detailed per-component design rationale (Swing origin → web approach mapping) rather
+> than a live backlog — see [iped-webui-ROADMAP.md](../docs/roadmaps/iped-webui-ROADMAP.md)
+> and [iped-webui-server-ROADMAP.md](../docs/roadmaps/iped-webui-server-ROADMAP.md) for
+> current, issue-tracked status.
+
 ## Architecture recap
 
 ```

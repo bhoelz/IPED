@@ -53,3 +53,12 @@ Para executar testes do módulo:
 ```bash
 mvn -pl iped-api test
 ```
+
+## Roadmap
+
+See [iped-api-ROADMAP.md](../docs/roadmaps/iped-api-ROADMAP.md) for planned work, current phase status, and linked issues.
+
+## Versioning & testing
+
+- [VERSIONING.md](VERSIONING.md) — semantic versioning scheme, stability tiers, and deprecation process for this module's public contracts.
+- [TEST-COVERAGE-REPORT.md](TEST-COVERAGE-REPORT.md) — JaCoCo coverage snapshot and per-package test inventory (point-in-time; re-run `mvn test jacoco:report` for current numbers).
