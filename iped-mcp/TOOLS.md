@@ -148,6 +148,40 @@ List all leaf item categories available in a forensic source.
 
 ---
 
+## OSINT
+
+### `iped_osint_plugin_list`
+List OSINT plugins available in the engine.
+
+### `iped_osint_plugin_get`
+Get one OSINT plugin descriptor.
+
+**Parameters:** `pluginId` (string, required)
+
+### `iped_osint_search`
+Execute an OSINT query for an explicit indicator or for a case item.
+
+**Parameters:**
+- `sourceId` (string, required)
+- `itemId` (integer, optional when `indicatorType` and `value` are provided)
+- `pluginId` (string, optional)
+- `pluginIds` (array, optional)
+- `indicatorType` (string, optional)
+- `value` (string, optional)
+- `options` (object, optional)
+
+### `iped_osint_result_list`
+List persisted OSINT results.
+
+**Parameters:** `sourceId` (string, optional), `itemId` (integer, optional), `pluginId` (string, optional), `limit` (integer, optional)
+
+### `iped_osint_result_get`
+Get one persisted OSINT result by execution id.
+
+**Parameters:** `executionId` (string, required), `sourceId` (string, optional)
+
+---
+
 ## Bookmarks (read — always available)
 
 ### `iped_bookmark_list`

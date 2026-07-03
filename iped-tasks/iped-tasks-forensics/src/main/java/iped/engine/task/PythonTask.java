@@ -6,6 +6,7 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.LocalConfig;
 import iped.engine.data.CaseData;
 import iped.engine.data.IPEDSource;
+import iped.engine.osint.EngineOsintServices;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.task.index.IndexItem.KnnVector;
 import iped.parsers.python.PythonParser;
@@ -84,6 +85,7 @@ public class PythonTask extends AbstractTask {
         setGlobalVar(jep, "logger", log);
         setGlobalVar(jep, "javaConverter", new Converter());
         setGlobalVar(jep, "ImageUtil", new ImageUtil());
+        setGlobalVar(jep, "osint", EngineOsintServices.scriptingFacade(this.output));
 
         LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
         setGlobalVar(jep, "numThreads", Integer.valueOf(localConfig.getNumThreads()));

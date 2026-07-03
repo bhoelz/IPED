@@ -90,6 +90,16 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-osint-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>iped</groupId>
+            <artifactId>iped-osint-store</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>${lucene.version}</version>

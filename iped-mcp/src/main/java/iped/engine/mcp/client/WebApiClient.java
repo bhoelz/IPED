@@ -247,6 +247,43 @@ public class WebApiClient {
         return get("/v2/bookmarks/" + encodePath(name) + "/items", new TypeReference<>() {});
     }
 
+    // ── OSINT ──────────────────────────────────────────────────────────────────
+
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> listOsintPlugins() throws WebApiException {
+        Map<String, Object> body = get("/v2/osint/plugins", new TypeReference<>() {});
+        Object plugins = body.get("plugins");
+        return plugins instanceof List<?> list ? (List<Map<String, Object>>) plugins : List.of();
+    }
+
+    public Map<String, Object> getOsintPlugin(String pluginId) throws WebApiException {
+        return get("/v2/osint/plugins/" + encodePath(pluginId), new TypeReference<>() {});
+    }
+
+    public Map<String, Object> searchOsint(Map<String, Object> body) throws WebApiException {
+        return postJson("/v2/osint/search", body, new TypeReference<>() {});
+    }
+
+    public Map<String, Object> listOsintResults(String sourceId, Integer itemId, String pluginId, int limit) throws WebApiException {
+        StringBuilder path = new StringBuilder("/v2/osint/results?limit=").append(limit);
+        if (sourceId != null && !sourceId.isBlank()) {
+            path.append("&sourceId=").append(encode(sourceId));
+        }
+        if (itemId != null) {
+            path.append("&itemId=").append(itemId);
+        }
+        if (pluginId != null && !pluginId.isBlank()) {
+            path.append("&pluginId=").append(encode(pluginId));
+        }
+        return get(path.toString(), new TypeReference<>() {});
+    }
+
+    public Map<String, Object> getOsintResult(String sourceId, String executionId) throws WebApiException {
+        String path = "/v2/osint/results/" + encodePath(executionId)
+                + (sourceId == null || sourceId.isBlank() ? "" : "?sourceId=" + encode(sourceId));
+        return get(path, new TypeReference<>() {});
+    }
+
     /** {@code PUT /v2/bookmarks/{name}/items} — add items. */
     public void addBookmarkItems(String name, List<Map<String, Object>> items) throws WebApiException {
         putJson("/v2/bookmarks/" + encodePath(name) + "/items", items);

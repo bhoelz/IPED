@@ -60,6 +60,9 @@ public class McpEvalTest {
         // Document
         assertContains(names, "iped_item_get", "iped_item_preview",
                 "iped_item_related", "iped_category_list");
+        // OSINT
+        assertContains(names, "iped_osint_plugin_list", "iped_osint_plugin_get",
+                "iped_osint_search", "iped_osint_result_list", "iped_osint_result_get");
         // Bookmark — read + write (BOOKMARKS granted)
         assertContains(names, "iped_bookmark_list", "iped_bookmark_items",
                 "iped_bookmark_create", "iped_bookmark_delete",
@@ -69,8 +72,8 @@ public class McpEvalTest {
         // Jobs (JOBS granted)
         assertContains(names, "iped_job_export", "iped_job_status", "iped_job_cancel");
 
-        // 4 + 1 + 4 + 7 + 2 + 3 = 21
-        assertEquals(21, names.size(), "Unexpected tool count: " + names);
+        // 4 + 1 + 4 + 5 + 7 + 2 + 3 = 26
+        assertEquals(26, names.size(), "Unexpected tool count: " + names);
     }
 
     @Test
@@ -83,13 +86,14 @@ public class McpEvalTest {
         // Read tools present
         assertTrue(names.contains("iped_bookmark_list"));
         assertTrue(names.contains("iped_search"));
+        assertTrue(names.contains("iped_osint_plugin_list"));
         // Write tools absent
         assertFalse(names.contains("iped_bookmark_create"), "write tool should be absent");
         assertFalse(names.contains("iped_item_tag"),        "write tool should be absent");
         assertFalse(names.contains("iped_job_export"),      "write tool should be absent");
 
-        // 4 + 1 + 4 + 2 = 11
-        assertEquals(11, names.size(), "Unexpected read-only tool count: " + names);
+        // 4 + 1 + 4 + 5 + 2 = 16
+        assertEquals(16, names.size(), "Unexpected read-only tool count: " + names);
     }
 
     // ── Triage workflow ───────────────────────────────────────────────────────
@@ -179,6 +183,15 @@ public class McpEvalTest {
         JsonNode status = parse(statusResult);
         assertEquals("running", status.get("status").asText());
         assertEquals(50,        status.get("progress").asInt());
+    }
+
+    @Test
+    void step7_osintSearchForItem() throws Exception {
+        var result = invoke("iped_osint_search", Map.of("sourceId", "demo-1", "itemId", 7));
+        assertSuccess(result);
+        JsonNode json = parse(result);
+        assertEquals("demo-1", json.get("sourceId").asText());
+        assertTrue(stub.calls.contains("searchOsint:demo-1"));
     }
 
     // ── Audit log coverage ────────────────────────────────────────────────────
