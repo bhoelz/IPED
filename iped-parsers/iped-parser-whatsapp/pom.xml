@@ -46,7 +46,7 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.51.3.0</version>
+            <version>${xerial.sqlite.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.80</version>
+            <version>${bouncycastle.jdk18on.version}</version>
         </dependency>
         <!-- Xerces: MalformedByteSequenceException used by WhatsAppParser -->
         <dependency>

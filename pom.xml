@@ -51,6 +51,15 @@
         <icepdf.version>7.4.1</icepdf.version>
 
 <!--        <xerial.sqlite.version>3.41.2.2</xerial.sqlite.version>-->
+        <xerial.sqlite.version>3.53.1.0</xerial.sqlite.version>
+        <!-- Current (jdk18on) and legacy (jdk15on) BouncyCastle artifact families both land
+             on the reactor classpath transitively (jdk18on via libfqlite/Tika's newer modules,
+             jdk15on via Tika's PDFBox-related modules). They are different Maven artifactIds,
+             not just different versions of the same GA, so this dependencyManagement only
+             converges duplicate versions *within* each family; it does not merge the two
+             families into one (see DEPENDENCIES.md risk #4 follow-up). -->
+        <bouncycastle.jdk18on.version>1.83</bouncycastle.jdk18on.version>
+        <bouncycastle.jdk15on.version>1.70</bouncycastle.jdk15on.version>
         <dockingframes.version>1.1.2</dockingframes.version>
         <telegram.version>1.0.14</telegram.version>
         <twelvemonkeys.version>3.10.1</twelvemonkeys.version>
@@ -72,6 +81,49 @@
                 <version>${jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- PI-1-F1-S2: converge duplicate SQLite JDBC / BouncyCastle versions found
+                 across the reactor (DEPENDENCIES.md risk #4) to a single version per
+                 artifact, reactor-wide, instead of relying on "nearest/first wins". -->
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>${xerial.sqlite.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bouncycastle.jdk18on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>${bouncycastle.jdk18on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcutil-jdk18on</artifactId>
+                <version>${bouncycastle.jdk18on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcjmail-jdk18on</artifactId>
+                <version>${bouncycastle.jdk18on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>${bouncycastle.jdk15on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>${bouncycastle.jdk15on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcutil-jdk15on</artifactId>
+                <version>${bouncycastle.jdk15on.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
