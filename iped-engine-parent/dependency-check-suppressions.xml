@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OWASP Dependency-Check suppression baseline for the IPED reactor.
+
+  Story: PI-1-F1-S1 (Baseline de ferramentas de seguranca).
+
+  IMPORTANT — execution limitation (documented per DoD/NFR-E5):
+  This file was authored WITHOUT a real, completed OWASP Dependency-Check run
+  against the IPED reactor. The sandbox this file was authored in has outbound
+  network access, but NOT a valid `NVD_API_KEY` (the CI secret used by
+  `.github/workflows/pr-quality-gates.yml`), and a full first-time NVD data-feed
+  sync + reactor-wide scan (every module in `iped-engine-parent`, `iped-webui`,
+  `iped-distributed`, etc.) is a multi-hour operation unsuited to this
+  environment. Consequently:
+    - There are currently ZERO <suppress> entries below — none were fabricated
+      to hit the "<=5" target artificially, per the story's explicit
+      instruction not to invent justifications just to fit the goal.
+    - The suppression baseline count of "0" is NOT yet a validated/confirmed
+      baseline. It reflects "no run has happened", not "no findings exist".
+    - A CI run of the `dependency-check` job (or a human with NVD API access)
+      MUST execute this scan for real, then triage any High/Critical findings
+      here, each with a `<notes>` block containing:
+        justificativa: <why this is an accepted risk or false positive>
+        data_revisao: <YYYY-MM-DD>
+      before this baseline can be considered complete per NFR-E5.
+    - See `.claude/sdlc/DEPENDENCIES.md` ("Existing Security Tooling") for the
+      status of this scan and the escalation note if the real finding count
+      exceeds the Epic's <=5 target.
+
+  Suppression entry template (for the next reviewer running the real scan):
+
+  <suppress>
+     <notes><![CDATA[
+        justificativa: <reason this CVE does not apply / is an accepted risk>
+        data_revisao: <YYYY-MM-DD>
+     ]]></notes>
+     <packageUrl regex="true">^pkg:maven/group\.id/artifact-id@.*$</packageUrl>
+     <cve>CVE-YYYY-NNNNN</cve>
+  </suppress>
+
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+</suppressions>
