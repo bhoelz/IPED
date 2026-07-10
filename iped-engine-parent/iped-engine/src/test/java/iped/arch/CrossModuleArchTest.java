@@ -143,6 +143,14 @@ public class CrossModuleArchTest {
      * dependents) or removing the filter methods from the public bookmarks API
      * (breaks app/engine/geo callers), so the {@code data -> search} edge is
      * ignored explicitly here instead.</p>
+     *
+     * <p><b>Known accepted cycle:</b> {@code iped.data} &harr; {@code iped.datasource}
+     * (both inside the iped-api module, so the Maven build DAG is unaffected).
+     * {@link iped.data.IItem#setDataSource(iped.datasource.IDataSource)} is the
+     * item&rarr;source back-reference, while {@code iped.datasource.IDataSourceReader#iterator()}
+     * must yield {@code Iterator<IItem>}. The edge is semantically necessary in
+     * both directions, so the {@code data -> datasource} edge is ignored
+     * explicitly here instead.</p>
      */
     @ArchTest
     static final ArchRule no_cycles_between_top_level_iped_packages =
@@ -150,5 +158,6 @@ public class CrossModuleArchTest {
             .matching("iped.(*)..")
             .should().beFreeOfCycles()
             .ignoreDependency(resideInAPackage("iped.data.."), resideInAPackage("iped.search.."))
+            .ignoreDependency(resideInAPackage("iped.data.."), resideInAPackage("iped.datasource.."))
             .because("circular dependencies between top-level iped packages break the module DAG and prevent independent releases");
 }
