@@ -110,6 +110,25 @@ public class DistributedMetrics {
      * @return UTF-8 Prometheus text (content-type {@code text/plain; version=0.0.4})
      */
     public String scrape(AgentRegistry registry, Map<LagKey, Long> lagByKey) {
+        return scrape(registry, lagByKey, Map.of(), Map.of());
+    }
+
+    /**
+     * Produces a complete Prometheus text-format scrape body, including the optional
+     * DLQ-depth and case-stall gauges.
+     *
+     * @param registry       live agent registry for in-flight / free-slot gauges
+     * @param lagByKey       consumer-lag snapshot from {@link ConsumerLagProvider};
+     *                       pass {@code Map.of()} when Kafka is unavailable
+     * @param dlqCountByCase DLQ entry count per case, from {@link iped.distributed.kafka.DlqManager#count(String)};
+     *                       pass {@code Map.of()} to omit the family
+     * @param stalledByCase  stall flag per case, from
+     *                       {@link iped.distributed.coordinator.CaseCompletionMonitor#isStalled(String, long)};
+     *                       pass {@code Map.of()} to omit the family
+     * @return UTF-8 Prometheus text (content-type {@code text/plain; version=0.0.4})
+     */
+    public String scrape(AgentRegistry registry, Map<LagKey, Long> lagByKey,
+                          Map<String, Long> dlqCountByCase, Map<String, Boolean> stalledByCase) {
         StringBuilder sb = new StringBuilder(4096);
 
         // ── Per-stage processing counters ──────────────────────────────────────
@@ -146,6 +165,27 @@ public class DistributedMetrics {
                         escape(k.caseId()), escape(k.consumerGroup()),
                         escape(k.topic()), k.partition());
                 appendSample(sb, "iped_distributed_consumer_lag", lbl, e.getValue());
+            }
+        }
+
+        // -- DLQ depth (optional) ------------------------------------------------
+        if (!dlqCountByCase.isEmpty()) {
+            appendHelp(sb, "iped_distributed_dlq_count", "gauge",
+                    "Unconsumed dead-letter-queue entries per case.");
+            for (var e : dlqCountByCase.entrySet()) {
+                String lbl = String.format("case_id=\"%s\"", escape(e.getKey()));
+                appendSample(sb, "iped_distributed_dlq_count", lbl, e.getValue());
+            }
+        }
+
+        // -- Case-stall detection (optional) -------------------------------------
+        if (!stalledByCase.isEmpty()) {
+            appendHelp(sb, "iped_distributed_case_stalled", "gauge",
+                    "1 when a case appears stalled (items discovered but not completed, "
+                    + "none in flight, no status events for the configured stall window); 0 otherwise.");
+            for (var e : stalledByCase.entrySet()) {
+                String lbl = String.format("case_id=\"%s\"", escape(e.getKey()));
+                appendSample(sb, "iped_distributed_case_stalled", lbl, e.getValue() ? 1L : 0L);
             }
         }
 

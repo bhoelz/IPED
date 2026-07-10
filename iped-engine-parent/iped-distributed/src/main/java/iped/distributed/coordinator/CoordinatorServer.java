@@ -64,7 +64,13 @@ import java.util.stream.Collectors;
  *   POST   /api/v1/dlq/{caseId}/requeue     Requeue items — body: {"positions":[…], "delayMs":0}
  *   POST   /api/v1/dlq/{caseId}/discard     Discard items — body: {"positions":[{dlqTopic,partition,offset},...]}
  *
- *   GET    /api/v1/health                   Coordinator health: status/activeCases/liveAgents/uptimeMs
+ *   GET    /api/v1/health                   Coordinator readiness: status/activeCases/liveAgents/uptimeMs/
+ *                                            brokerReachable. Verifies real Kafka broker connectivity
+ *                                            (3s-timeout AdminClient.describeCluster probe); returns
+ *                                            HTTP 200 {"status":"ok",...,"brokerReachable":true} when the
+ *                                            broker answers, HTTP 503 {"status":"degraded",...,
+ *                                            "brokerReachable":false} when it is unreachable/times out/
+ *                                            errors (fail-open — never a raw 500 from this check).
  *
  *   GET    /api/v1/agents/{agentId}         Full registration details for a single agent
  *   GET    /api/v1/agents/summary           Pool summary grouped by taskType (includes pressure)
@@ -104,6 +110,7 @@ public class CoordinatorServer {
     private DlqAutoRetrier        dlqAutoRetrier;
     private DistributedMetrics    metrics;
     private ConsumerLagProvider   lagProvider;
+    private BrokerHealthProbe     brokerHealthProbe;
     private DualRunManager        dualRunManager;
     private ProcessingAuditLog    auditLog;
     private AgentTopicAssigner    topicAssigner;
@@ -160,6 +167,10 @@ public class CoordinatorServer {
         // Metrics
         metrics     = new DistributedMetrics();
         lagProvider = new ConsumerLagProvider(cfg.getKafkaBootstrapServers());
+
+        // /health readiness probe: one long-lived AdminClient (same discipline as
+        // ConsumerLagProvider) reused across requests instead of opening a new one per call.
+        brokerHealthProbe = new BrokerHealthProbe(cfg.getKafkaBootstrapServers());
 
         // Timeout + automatic case-completion detection driven by iped.status
         statusProducer    = new ItemStatusProducer(cfg.getKafkaBootstrapServers());
@@ -220,6 +231,7 @@ public class CoordinatorServer {
         if (statusProducer != null) statusProducer.close();
         if (dlqManager     != null) dlqManager.close();
         if (lagProvider    != null) lagProvider.close();
+        if (brokerHealthProbe != null) brokerHealthProbe.close();
         if (server != null) server.stop();
     }
 
@@ -451,17 +463,37 @@ public class CoordinatorServer {
             resp.getWriter().write("{\"caseId\":\"" + caseId + "\",\"status\":\"deleted\"}");
         }
 
+        /**
+         * Readiness check: liveness (process is up, serving requests) plus a real Kafka
+         * broker connectivity probe (PI-1-F3-S1). Never throws — a probe failure (timeout,
+         * broker down, unexpected error) is reported as {@code brokerReachable:false} /
+         * HTTP 503, not propagated as a 500.
+         */
         private void handleHealth(HttpServletResponse resp) throws IOException {
             long activeCases = lifecycle.allCases().stream()
                     .filter(s -> s.state == CaseLifecycleManager.CaseStatus.State.RUNNING)
                     .count();
             int liveAgents = registry.liveAgents().size();
             long uptimeMs  = System.currentTimeMillis() - startedAtMs;
-            resp.setStatus(200);
-            resp.getWriter().write(String.format(
+            // brokerHealthProbe is only null if /health is somehow reached before start()
+            // finished initialising it (should not happen via the real Jetty servlet, but
+            // fail closed rather than lying about readiness).
+            BrokerHealthProbe.ProbeResult probe = (brokerHealthProbe != null)
+                    ? brokerHealthProbe.probe()
+                    : BrokerHealthProbe.ProbeResult.degraded("Health probe not yet initialised");
+            boolean brokerReachable = probe.reachable();
+            String status = brokerReachable ? "ok" : "degraded";
+            resp.setStatus(brokerReachable ? 200 : 503);
+            StringBuilder json = new StringBuilder(String.format(
                     java.util.Locale.ROOT,
-                    "{\"status\":\"ok\",\"activeCases\":%d,\"liveAgents\":%d,\"uptimeMs\":%d}",
-                    activeCases, liveAgents, uptimeMs));
+                    "{\"status\":\"%s\",\"activeCases\":%d,\"liveAgents\":%d,\"uptimeMs\":%d,"
+                            + "\"brokerReachable\":%b",
+                    status, activeCases, liveAgents, uptimeMs, brokerReachable));
+            if (!brokerReachable && probe.reason() != null) {
+                json.append(",\"reason\":").append(mapper.writeValueAsString(probe.reason()));
+            }
+            json.append('}');
+            resp.getWriter().write(json.toString());
         }
 
         private void handleAgentDetail(HttpServletResponse resp, String agentId) throws IOException {
@@ -719,7 +751,28 @@ public class CoordinatorServer {
                     .collect(Collectors.toList());
             Map<DistributedMetrics.LagKey, Long> lag = lagProvider.getLagForCases(caseIds);
 
-            String body = metrics.scrape(registry, lag);
+            // DLQ depth and stall status per active (RUNNING) case only — same scoping as
+            // /health (see handleHealth above): a COMPLETED/FAILED/PAUSED case has no active
+            // work, so computing/publishing its DLQ-count and stall gauges is both misleading
+            // (a completed case would show case_stalled=1 forever) and needless per-scrape
+            // cost across the coordinator's entire case history.
+            // (best-effort; both providers never throw — DlqManager#count and
+            // CaseCompletionMonitor#isStalled degrade to 0/false on error rather than failing
+            // the whole scrape).
+            List<String> activeCaseIds = lifecycle.allCases().stream()
+                    .filter(s -> s.state == CaseLifecycleManager.CaseStatus.State.RUNNING)
+                    .map(s -> s.caseId)
+                    .collect(Collectors.toList());
+            long stallWindowMs = cfg.getItemTimeoutSeconds() * 1000L;
+            // Batched across all active cases: a handful of AdminClient round-trips total
+            // instead of a describeTopics+listOffsets sequence per case (see DlqManager#countForCases).
+            Map<String, Long> dlqCountByCase = dlqManager.countForCases(activeCaseIds);
+            Map<String, Boolean> stalledByCase = new java.util.LinkedHashMap<>();
+            for (String caseId : activeCaseIds) {
+                stalledByCase.put(caseId, completionMonitor.isStalled(caseId, stallWindowMs));
+            }
+
+            String body = metrics.scrape(registry, lag, dlqCountByCase, stalledByCase);
             resp.setContentType("text/plain; version=0.0.4; charset=utf-8");
             resp.setStatus(200);
             resp.getWriter().write(body);

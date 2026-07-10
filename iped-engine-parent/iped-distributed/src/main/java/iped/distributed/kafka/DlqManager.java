@@ -65,6 +65,13 @@ public class DlqManager implements AutoCloseable {
         this.admin = AdminClient.create(p);
     }
 
+    /** Test-only constructor — injects a (possibly mocked) {@link AdminClient} directly. */
+    DlqManager(String dlqSuffix, AdminClient admin) {
+        this.bootstrapServers = null;
+        this.dlqSuffix        = dlqSuffix;
+        this.admin            = admin;
+    }
+
     // -----------------------------------------------------------------------
     // List (read-only peek)
     // -----------------------------------------------------------------------
@@ -237,29 +244,130 @@ public class DlqManager implements AutoCloseable {
      * Returns the total number of unconsumed DLQ entries for the given case across all
      * DLQ topics.  Lightweight alternative to {@link #list} for monitoring dashboards.
      *
+     * <p>Implemented purely via the {@code AdminClient} already held by this instance
+     * (long-lived, created once in the constructor) — it does <em>not</em> open a
+     * {@code KafkaConsumer} per call.
+     *
+     * <p><b>Prefer {@link #countForCases(Collection)}</b> when computing counts for
+     * multiple cases in the same scrape (e.g. {@code CoordinatorServer.MetricsServlet}):
+     * this single-case method issues its own {@code describeTopics}/{@code listOffsets}
+     * round-trips, so calling it once per case in a loop is O(N) broker round-trips for
+     * N cases. {@link #countForCases(Collection)} batches all cases into a small constant
+     * number of round-trips regardless of case count.
+     *
      * @return entry count; {@code 0} when no DLQ topics exist or the broker is unreachable
      */
     public long count(String caseId) {
+        Map<String, Long> result = countForCases(List.of(caseId));
+        return result.getOrDefault(caseId, 0L);
+    }
+
+    /**
+     * Explicit bound on the batched {@code describeTopics}/{@code listOffsets} round-trips
+     * issued by {@link #countForCases(Collection)}, mirroring {@code BrokerHealthProbe}'s
+     * timeout discipline (NFR-E2). No timeout previously existed on this path.
+     */
+    static final int COUNT_TIMEOUT_MS = 5000;
+
+    /**
+     * Batched, multi-case equivalent of {@link #count(String)}.
+     *
+     * <p>Computes unconsumed DLQ entry counts for every given case in a small constant
+     * number of {@code AdminClient} round-trips — one {@code listTopics}, one
+     * {@code describeTopics} covering every case's DLQ topics, and two {@code listOffsets}
+     * calls (earliest/latest) covering every case's DLQ topic-partitions — instead of
+     * repeating that whole sequence once per case. This is what
+     * {@code CoordinatorServer.MetricsServlet} should call on every Prometheus scrape,
+     * since a per-case loop over {@link #count(String)} would issue O(active cases)
+     * blocking round-trips per scrape.
+     *
+     * <p>Best-effort: on any broker error/timeout, returns {@code 0} for every requested
+     * case rather than propagating an exception, matching {@link #count(String)}'s
+     * fail-open behavior.
+     *
+     * @param caseIds the case identifiers to compute DLQ counts for
+     * @return map from caseId to entry count; every requested caseId is present (0 when
+     *         no DLQ topics exist for it)
+     */
+    public Map<String, Long> countForCases(Collection<String> caseIds) {
+        Map<String, Long> result = new LinkedHashMap<>();
+        for (String caseId : caseIds) {
+            result.put(caseId, 0L);
+        }
+        if (caseIds.isEmpty()) return result;
+
         try {
-            Set<String> dlqTopics = dlqTopicsForCase(caseId);
-            if (dlqTopics.isEmpty()) return 0L;
-            String peekGroup = "iped.dlq.count." + java.util.UUID.randomUUID();
-            long total = 0L;
-            try (KafkaConsumer<String, KafkaItemMessage> consumer = buildConsumer(peekGroup)) {
-                List<TopicPartition> partitions = assignedPartitions(consumer, dlqTopics);
-                if (partitions.isEmpty()) return 0L;
-                Map<TopicPartition, Long> beginOffsets = consumer.beginningOffsets(partitions);
-                Map<TopicPartition, Long> endOffsets   = consumer.endOffsets(partitions);
-                for (TopicPartition tp : partitions) {
-                    long begin = beginOffsets.getOrDefault(tp, 0L);
-                    long end   = endOffsets.getOrDefault(tp, 0L);
-                    if (end > begin) total += end - begin;
+            // 1) Discover all DLQ topics across all requested cases in a single listTopics call,
+            //    and record which case each topic belongs to (topic names encode the case id).
+            Set<String> allTopicNames = admin.listTopics(
+                            new org.apache.kafka.clients.admin.ListTopicsOptions().timeoutMs(COUNT_TIMEOUT_MS))
+                    .names().get(COUNT_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+            Map<String, String> topicToCaseId = new HashMap<>();
+            for (String caseId : caseIds) {
+                String prefix = TopicProvisioner.TOPIC_PREFIX + caseId + TopicProvisioner.STAGE_INFIX;
+                for (String topic : allTopicNames) {
+                    if (topic.startsWith(prefix) && topic.endsWith(dlqSuffix)) {
+                        topicToCaseId.put(topic, caseId);
+                    }
                 }
             }
-            return total;
+            if (topicToCaseId.isEmpty()) return result;
+
+            // 2) Describe every DLQ topic for every case in a single batched call.
+            Map<String, org.apache.kafka.clients.admin.TopicDescription> descriptions =
+                    admin.describeTopics(topicToCaseId.keySet(),
+                                    new org.apache.kafka.clients.admin.DescribeTopicsOptions()
+                                            .timeoutMs(COUNT_TIMEOUT_MS))
+                            .allTopicNames()
+                            .get(COUNT_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+            Map<TopicPartition, String> partitionToCaseId = new LinkedHashMap<>();
+            for (var descr : descriptions.values()) {
+                String caseId = topicToCaseId.get(descr.name());
+                if (caseId == null) continue;
+                descr.partitions().forEach(p ->
+                        partitionToCaseId.put(new TopicPartition(descr.name(), p.partition()), caseId));
+            }
+            if (partitionToCaseId.isEmpty()) return result;
+
+            // 3) Batch the earliest/latest offset lookups across every case's partitions
+            //    into a single listOffsets call each, instead of one pair of calls per case.
+            Map<TopicPartition, org.apache.kafka.clients.admin.OffsetSpec> earliestSpecs = new HashMap<>();
+            Map<TopicPartition, org.apache.kafka.clients.admin.OffsetSpec> latestSpecs   = new HashMap<>();
+            for (TopicPartition tp : partitionToCaseId.keySet()) {
+                earliestSpecs.put(tp, org.apache.kafka.clients.admin.OffsetSpec.earliest());
+                latestSpecs.put(tp, org.apache.kafka.clients.admin.OffsetSpec.latest());
+            }
+
+            org.apache.kafka.clients.admin.ListOffsetsOptions offsetsOptions =
+                    new org.apache.kafka.clients.admin.ListOffsetsOptions().timeoutMs(COUNT_TIMEOUT_MS);
+
+            Map<TopicPartition, org.apache.kafka.clients.admin.ListOffsetsResult.ListOffsetsResultInfo>
+                    beginOffsets = admin.listOffsets(earliestSpecs, offsetsOptions)
+                            .all().get(COUNT_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS);
+            Map<TopicPartition, org.apache.kafka.clients.admin.ListOffsetsResult.ListOffsetsResultInfo>
+                    endOffsets   = admin.listOffsets(latestSpecs, offsetsOptions)
+                            .all().get(COUNT_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+            for (var entry : partitionToCaseId.entrySet()) {
+                TopicPartition tp = entry.getKey();
+                String caseId = entry.getValue();
+                var beginInfo = beginOffsets.get(tp);
+                var endInfo   = endOffsets.get(tp);
+                if (beginInfo == null || endInfo == null) continue;
+                long begin = beginInfo.offset();
+                long end   = endInfo.offset();
+                if (end > begin) {
+                    result.merge(caseId, end - begin, Long::sum);
+                }
+            }
+            return result;
         } catch (Exception e) {
-            log.debug("DLQ count failed for case '{}': {}", caseId, e.getMessage());
-            return 0L;
+            log.debug("Batched DLQ count failed for {} case(s): {}", caseIds.size(), e.getMessage());
+            Map<String, Long> zeroed = new LinkedHashMap<>();
+            for (String caseId : caseIds) zeroed.put(caseId, 0L);
+            return zeroed;
         }
     }
 

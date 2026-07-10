@@ -1,0 +1,134 @@
+# Prometheus alerting rules for the IPED distributed pipeline coordinator.
+#
+# Story: PI-1-F2-S1 (.claude/sdlc/BACKLOG.md)
+# Scope: 3 alert rules for the 3 known failure modes (DLQ overflow, consumer
+# lag growth, stall detection).
+#
+# UPDATE (impediment resolved): the original spec assumed "nenhuma
+# instrumentacao nova" (no new instrumentation) was in scope. That premise
+# turned out to be wrong for 2 of the 3 signals — DLQ depth and case-stall
+# status were only reachable via REST/in-process methods, never exported as
+# Prometheus gauges. The Business Owner explicitly waived the "no new
+# instrumentation" constraint and approved adding the missing gauges instead
+# of changing the alerting mechanism.
+#
+# `DistributedMetrics.scrape()` (iped.distributed.metrics.DistributedMetrics,
+# the only producer of the `/metrics` body — see CoordinatorServer's
+# MetricsServlet) now exports:
+#   - iped_distributed_items_processed_total{case_id,task_type,stage}
+#   - iped_distributed_items_failed_total{case_id,task_type,stage}
+#   - iped_distributed_processing_duration_ms_total{case_id,task_type,stage}
+#   - iped_distributed_agent_inflight{agent_id,task_type,stage,hostname}
+#   - iped_distributed_agent_free_slots{agent_id,task_type,stage,hostname}
+#   - iped_distributed_consumer_lag{case_id,consumer_group,topic,partition}
+#   - iped_distributed_dlq_count{case_id} (gauge; new — sourced from
+#     DlqManager#count(caseId), scraped per active case by
+#     CoordinatorServer.MetricsServlet)
+#   - iped_distributed_case_stalled{case_id} (gauge, 0|1; new — sourced from
+#     CaseCompletionMonitor#isStalled(caseId, stallWindowMs), scraped per
+#     active case by CoordinatorServer.MetricsServlet; stallWindowMs reuses
+#     the coordinator's existing itemTimeoutSeconds configuration)
+#
+# All 3 rules below are now live (no longer commented out).
+#
+# Runbook cross-reference: annotations.runbook_url below point at the
+# PI-1-F2-S2 runbook files. Each runbook additionally documents the
+# `brokerReachable` / `status: degraded` field of GET /health (PI-1-F3-S1) as
+# contextual signal — NOT as a condition of these Prometheus rules themselves,
+# per this story's 4th acceptance criterion.
+
+groups:
+  - name: iped-distributed-consumer-lag
+    rules:
+      # Verified against real metric: iped_distributed_consumer_lag (gauge),
+      # labels: case_id, consumer_group, topic, partition — see
+      # DistributedMetrics.scrape() "Consumer lag (optional)" section.
+      #
+      # Threshold rationale (default, tunable): 1000 messages sustained for
+      # 10m. No numeric NFR pins this value (NFR-E3 only requires coverage,
+      # not a specific threshold — see BACKLOG.md Technical Specification for
+      # PI-1-F2-S1). 1000 is chosen as an order-of-magnitude signal that a
+      # consumer group is falling meaningfully behind rather than reacting to
+      # a normal short burst; 10m as `for:` avoids flapping on transient
+      # spikes during agent restarts/rebalances. Both require operational
+      # validation once Prometheus is actually wired up (Spike S2, still
+      # deferred per the Program Board).
+      - alert: IpedConsumerLagGrowing
+        expr: iped_distributed_consumer_lag > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            Consumer lag for case {{ $labels.case_id }}, topic
+            {{ $labels.topic }} (group {{ $labels.consumer_group }},
+            partition {{ $labels.partition }}) has stayed above 1000 messages
+            for 10 minutes.
+          description: >-
+            iped_distributed_consumer_lag={{ $value }} for
+            case_id={{ $labels.case_id }} consumer_group={{ $labels.consumer_group }}
+            topic={{ $labels.topic }} partition={{ $labels.partition }}.
+            Check GET /health for brokerReachable/status:degraded as a
+            possible root cause before assuming a slow consumer.
+          runbook_url: >-
+            https://github.com/sepinf-inc/IPED/blob/master/.claude/sdlc/runbooks/consumer-lag-growing.md
+
+  - name: iped-distributed-dlq
+    rules:
+      # Verified against real metric: iped_distributed_dlq_count (gauge),
+      # label: case_id — see DistributedMetrics.scrape() "DLQ depth (optional)"
+      # section, sourced from DlqManager#count(caseId).
+      #
+      # Threshold rationale (default, tunable): depth > 100 for 5m. Rationale:
+      # DlqManager's REST list endpoint already defaults `limit` to 100
+      # (DlqManager.DEFAULT_LIST_LIMIT, see CoordinatorServer
+      # /api/v1/dlq/{caseId}), so 100 is the natural "operator can no longer
+      # eyeball the DLQ in one default page" boundary; 5m `for:` filters out a
+      # brief burst of a few bad items that auto-retries (DlqAutoRetrier) may
+      # still clear on its own sweep interval.
+      - alert: IpedDlqOverflow
+        expr: iped_distributed_dlq_count > 100
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: >-
+            DLQ depth for case {{ $labels.case_id }} exceeded 100 entries
+            for 5 minutes.
+          description: >-
+            iped_distributed_dlq_count={{ $value }} for
+            case_id={{ $labels.case_id }}. Confirm via
+            GET /api/v1/dlq/{caseId}/count and
+            GET /api/v1/dlq/{caseId}/stats. Check GET /health for
+            brokerReachable/status:degraded as possible root cause.
+          runbook_url: >-
+            https://github.com/sepinf-inc/IPED/blob/master/.claude/sdlc/runbooks/dlq-overflow.md
+
+  - name: iped-distributed-stall
+    rules:
+      # Verified against real metric: iped_distributed_case_stalled (gauge,
+      # 0|1), label: case_id — see DistributedMetrics.scrape()
+      # "Case-stall detection (optional)" section, sourced from
+      # CaseCompletionMonitor#isStalled(caseId, stallWindowMs).
+      #
+      # stallWindowMs is supplied by CoordinatorServer.MetricsServlet at
+      # scrape time, reusing the coordinator's existing itemTimeoutSeconds
+      # configuration — the staleness window is already baked into the
+      # gauge's own 0/1 value, so this rule's `for:` only adds a small
+      # debounce against a single flaky scrape.
+      - alert: IpedCaseStalled
+        expr: iped_distributed_case_stalled == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: >-
+            Case {{ $labels.case_id }} appears stalled: items discovered but
+            not completed, none in flight, no status events for the
+            configured stall window.
+          description: >-
+            CaseCompletionMonitor.isStalled(case_id={{ $labels.case_id }})
+            reports true. Check GET /health for brokerReachable/status:degraded
+            as possible root cause before assuming a stuck agent.
+          runbook_url: >-
+            https://github.com/sepinf-inc/IPED/blob/master/.claude/sdlc/runbooks/case-stalled.md

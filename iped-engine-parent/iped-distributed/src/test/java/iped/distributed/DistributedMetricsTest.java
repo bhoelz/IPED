@@ -275,6 +275,82 @@ class DistributedMetricsTest {
     }
 
     // =========================================================================
+    // DLQ depth gauge
+    // =========================================================================
+
+    @Test
+    void dlqCountFamilyAppearsWhenNonEmpty() {
+        String scrape = metrics.scrape(registry, Map.of(), Map.of("case1", 42L), Map.of());
+        assertTrue(scrape.contains("iped_distributed_dlq_count"));
+        assertTrue(scrape.contains("case_id=\"case1\""));
+        assertTrue(scrape.contains("} 42"));
+    }
+
+    @Test
+    void dlqCountFamilyAbsentWhenEmpty() {
+        String scrape = metrics.scrape(registry, Map.of(), Map.of(), Map.of());
+        assertFalse(scrape.contains("iped_distributed_dlq_count"),
+                "dlq_count family must be omitted when no data is passed in");
+    }
+
+    @Test
+    void dlqCountFamilyHasHelpAndGaugeType() {
+        String scrape = metrics.scrape(registry, Map.of(), Map.of("case1", 5L), Map.of());
+        assertTrue(scrape.contains("# HELP iped_distributed_dlq_count"));
+        assertTrue(scrape.contains("# TYPE iped_distributed_dlq_count gauge"));
+    }
+
+    @Test
+    void dlqCountMultipleCasesAllAppear() {
+        Map<String, Long> counts = Map.of("caseA", 1L, "caseB", 2L);
+        String scrape = metrics.scrape(registry, Map.of(), counts, Map.of());
+        assertTrue(scrape.contains("case_id=\"caseA\""));
+        assertTrue(scrape.contains("case_id=\"caseB\""));
+    }
+
+    // =========================================================================
+    // Case-stall gauge
+    // =========================================================================
+
+    @Test
+    void caseStalledFamilyAppearsWhenNonEmpty() {
+        String scrape = metrics.scrape(registry, Map.of(), Map.of(), Map.of("case1", true));
+        assertTrue(scrape.contains("iped_distributed_case_stalled"));
+        assertTrue(scrape.contains("case_id=\"case1\""));
+        assertTrue(scrape.contains("} 1"));
+    }
+
+    @Test
+    void caseStalledIsZeroWhenNotStalled() {
+        String scrape = metrics.scrape(registry, Map.of(), Map.of(), Map.of("case1", false));
+        assertTrue(scrape.lines()
+                .filter(l -> l.startsWith("iped_distributed_case_stalled{"))
+                .anyMatch(l -> l.endsWith("} 0")));
+    }
+
+    @Test
+    void caseStalledFamilyAbsentWhenEmpty() {
+        String scrape = metrics.scrape(registry, Map.of(), Map.of(), Map.of());
+        assertFalse(scrape.contains("iped_distributed_case_stalled"),
+                "case_stalled family must be omitted when no data is passed in");
+    }
+
+    @Test
+    void caseStalledFamilyHasHelpAndGaugeType() {
+        String scrape = metrics.scrape(registry, Map.of(), Map.of(), Map.of("case1", true));
+        assertTrue(scrape.contains("# HELP iped_distributed_case_stalled"));
+        assertTrue(scrape.contains("# TYPE iped_distributed_case_stalled gauge"));
+    }
+
+    @Test
+    void twoArgScrapeOverloadStillOmitsDlqAndStallFamilies() {
+        metrics.recordEvent(completedEvent("c1", "T", 0, 1));
+        String scrape = metrics.scrape(registry, Map.of());
+        assertFalse(scrape.contains("iped_distributed_dlq_count"));
+        assertFalse(scrape.contains("iped_distributed_case_stalled"));
+    }
+
+    // =========================================================================
     // Label escaping
     // =========================================================================
 
