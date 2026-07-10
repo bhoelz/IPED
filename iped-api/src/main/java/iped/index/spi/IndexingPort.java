@@ -50,4 +50,31 @@ public interface IndexingPort {
      * @throws IOException if the index cannot be read
      */
     void forEachDocument(Consumer<IndexedDocument> consumer) throws IOException;
+
+    /**
+     * Opens a single near-real-time reader, hands an {@link IndexingSession}
+     * bound to it to {@code sessionConsumer}, then closes the reader. Lets a
+     * caller that needs several sequential field queries/scans (each
+     * equivalent to one {@link #forEachDocument}/{@link #distinctFieldValues}
+     * call) do so against ONE open reader, instead of one open/close per
+     * call.
+     *
+     * <p>Prefer this over several separate {@link #forEachDocument}/
+     * {@link #distinctFieldValues} calls whenever more than one such call is
+     * made within the same logical unit of work (e.g. a Task's {@code init()}).
+     *
+     * @param sessionConsumer callback invoked once with the open session
+     * @throws IOException if the index cannot be read
+     */
+    void withSession(SessionConsumer sessionConsumer) throws IOException;
+
+    /**
+     * Callback for {@link #withSession}; a {@link Consumer}-like functional
+     * interface that is allowed to throw {@link IOException}, mirroring the
+     * checked-exception contracts of {@link IndexingSession}'s methods.
+     */
+    @FunctionalInterface
+    interface SessionConsumer {
+        void accept(IndexingSession session) throws IOException;
+    }
 }

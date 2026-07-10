@@ -2,6 +2,7 @@ package iped.engine.lucene;
 
 import iped.index.spi.IndexedDocument;
 import iped.index.spi.IndexingPort;
+import iped.index.spi.IndexingSession;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexReader;
@@ -51,21 +52,7 @@ public final class LuceneIndexingAdapter implements IndexingPort {
     @Override
     public Stream<String> distinctFieldValues(String field) throws IOException {
         List<String> values = new ArrayList<>();
-        try (IndexReader reader = DirectoryReader.open(writer, true, true)) {
-            LeafReader aReader = SlowCompositeReaderWrapper.wrap(reader);
-            SortedDocValues sdv = aReader.getSortedDocValues(field);
-            if (sdv != null) {
-                for (int ord = 0; ord < sdv.getValueCount(); ord++) {
-                    String value = sdv.lookupOrd(ord).utf8ToString();
-                    if (value != null && !value.isEmpty()) {
-                        values.add(value);
-                    }
-                }
-            }
-        } catch (IndexNotFoundException e) {
-            // index does not yet exist: return an empty stream
-            return Stream.empty();
-        }
+        withSession(session -> session.distinctFieldValues(field).forEach(values::add));
         return values.stream();
     }
 
@@ -79,29 +66,122 @@ public final class LuceneIndexingAdapter implements IndexingPort {
      * The view (and the field-value caches it shares with sibling views of
      * the same scan) is only valid until the reader is closed at the end of
      * this method.
+     *
+     * <p>Delegates to {@link #withSession} so single-call and multi-call
+     * (session-based) scans share the exact same reader-open/document-scan
+     * code path.
      */
     @Override
     public void forEachDocument(Consumer<IndexedDocument> consumer) throws IOException {
+        withSession(session -> session.forEachDocument(consumer));
+    }
+
+    /**
+     * Opens ONE near-real-time reader over {@link #writer}, hands a session
+     * bound to it to {@code sessionConsumer}, then closes the reader. Fixes a
+     * performance regression where a caller issuing several sequential
+     * {@link #forEachDocument}/{@link #distinctFieldValues} calls (e.g.
+     * {@code SkipCommitedTask.init()}) paid for one NRT reader open per call
+     * -- NRT opens can trigger writer flush/segment-merge overhead -- instead
+     * of one open for the whole unit of work.
+     */
+    @Override
+    public void withSession(SessionConsumer sessionConsumer) throws IOException {
         try (IndexReader reader = DirectoryReader.open(writer, true, true)) {
             LeafReader aReader = SlowCompositeReaderWrapper.wrap(reader);
+            sessionConsumer.accept(new LuceneIndexingSession(aReader));
+        } catch (IndexNotFoundException e) {
+            // index does not yet exist: session sees zero documents/values, exactly as
+            // the previous per-call forEachDocument/distinctFieldValues behaved.
+            sessionConsumer.accept(EMPTY_SESSION);
+        }
+    }
+
+    private static final IndexingSession EMPTY_SESSION = new IndexingSession() {
+        @Override
+        public Stream<String> distinctFieldValues(String field) {
+            return Stream.empty();
+        }
+
+        @Override
+        public void forEachDocument(Consumer<IndexedDocument> consumer) {
+            // no visible documents
+        }
+
+        @Override
+        public boolean fieldExists(String field) {
+            return false;
+        }
+    };
+
+    /**
+     * {@link IndexingSession} bound to a single already-open {@link LeafReader},
+     * reused across every field query/scan issued within one
+     * {@link #withSession} callback. Only the {@code LeafReader} and the
+     * stateless {@code fieldExistsCache} are shared across multiple
+     * {@link #forEachDocument} calls made against this session; the
+     * doc-values caches ({@code sortedCache}/{@code numericCache}) are
+     * created fresh for each {@link #forEachDocument} call, since
+     * {@code SortedDocValues}/{@code NumericDocValues} are forward-only
+     * iterators that cannot be reused across a second full document scan.
+     */
+    private static final class LuceneIndexingSession implements IndexingSession {
+
+        private final LeafReader aReader;
+        private final Map<String, Boolean> fieldExistsCache = new HashMap<>();
+
+        LuceneIndexingSession(LeafReader aReader) {
+            this.aReader = aReader;
+        }
+
+        @Override
+        public Stream<String> distinctFieldValues(String field) throws IOException {
+            List<String> values = new ArrayList<>();
+            SortedDocValues sdv = aReader.getSortedDocValues(field);
+            if (sdv != null) {
+                for (int ord = 0; ord < sdv.getValueCount(); ord++) {
+                    String value = sdv.lookupOrd(ord).utf8ToString();
+                    if (value != null && !value.isEmpty()) {
+                        values.add(value);
+                    }
+                }
+            }
+            return values.stream();
+        }
+
+        @Override
+        public void forEachDocument(Consumer<IndexedDocument> consumer) throws IOException {
+            // sortedCache/numericCache MUST be scoped to this single forEachDocument
+            // call, never shared across calls: SortedDocValues/NumericDocValues are
+            // forward-only iterators (advanceExact only moves forward), so reusing the
+            // same instance across a second full scan within the same session would
+            // silently return null/false for every document once the first scan has
+            // advanced past it, for sparse fields (not present on every document).
+            // Only the LeafReader itself (and the stateless fieldExistsCache) are safe
+            // to share across multiple forEachDocument calls in one session.
             Map<String, SortedDocValues> sortedCache = new HashMap<>();
             Map<String, NumericDocValues> numericCache = new HashMap<>();
-            Map<String, Boolean> fieldExistsCache = new HashMap<>();
             int maxDoc = aReader.maxDoc();
             for (int doc = 0; doc < maxDoc; doc++) {
                 consumer.accept(new LuceneIndexedDocument(aReader, doc, sortedCache, numericCache, fieldExistsCache));
             }
-        } catch (IndexNotFoundException e) {
-            // index does not yet exist: no callback invocations
+        }
+
+        @Override
+        public boolean fieldExists(String field) {
+            return fieldExistsCache.computeIfAbsent(field, f -> aReader.getFieldInfos().fieldInfo(f) != null);
         }
     }
 
     /**
      * {@link IndexedDocument} view backed by a single doc id of an open
      * {@link LeafReader}. Caches the per-field doc-values objects (not
-     * per-doc values) across the whole scan, mirroring how
-     * {@code SkipCommitedTask}'s previous direct-Lucene code fetched each
-     * doc-values field once and advanced it per document.
+     * per-doc values) across a single {@code forEachDocument} scan, mirroring
+     * how {@code SkipCommitedTask}'s previous direct-Lucene code fetched each
+     * doc-values field once and advanced it per document. These doc-values
+     * caches are scoped to one scan only -- see
+     * {@link LuceneIndexingSession#forEachDocument} -- since
+     * {@code SortedDocValues}/{@code NumericDocValues} are forward-only.
      */
     private static final class LuceneIndexedDocument implements IndexedDocument {
 

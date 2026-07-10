@@ -191,6 +191,40 @@ class LuceneIndexingAdapterTest {
     }
 
     @Test
+    void secondForEachDocumentCallInSameSessionStillReadsSparseSortedFieldCorrectly() throws IOException {
+        // Regression test for a bug where SortedDocValues/NumericDocValues were
+        // cached at the SESSION level and reused across multiple forEachDocument
+        // calls within the same withSession block. Those doc-values accessors are
+        // forward-only iterators: once a first full scan advances through them,
+        // reusing the very same instance for a second scan silently returns
+        // null/false for every document from that point on -- but only for SPARSE
+        // fields (not present on every document), since dense fields can mask the
+        // bug via random-access codecs. Here SORTED_FIELD is present on only two
+        // of three documents, making it genuinely sparse.
+        addDoc("uuid-1", "/root/a.txt", 1L);
+        addDoc(null, "/root/b.txt", 2L); // sparse: no SORTED_FIELD on this doc
+        addDoc("uuid-3", "/root/c.txt", 3L);
+
+        List<String> firstScanUuids = new ArrayList<>();
+        List<String> secondScanUuids = new ArrayList<>();
+        port.withSession(session -> {
+            session.forEachDocument(doc -> firstScanUuids.add(doc.getString(SORTED_FIELD)));
+            session.forEachDocument(doc -> secondScanUuids.add(doc.getString(SORTED_FIELD)));
+        });
+
+        List<String> expected = new ArrayList<>();
+        expected.add("uuid-1");
+        expected.add(null);
+        expected.add("uuid-3");
+
+        assertEquals(expected, firstScanUuids, "first scan establishes the baseline");
+        assertEquals(expected, secondScanUuids,
+                "second forEachDocument call within the same session must re-read the sparse sorted field correctly, "
+                        + "not silently return null due to a stale, already-advanced-past SortedDocValues instance "
+                        + "reused from the first call");
+    }
+
+    @Test
     void perDocumentCorrelationKeepsFieldsOfTheSameDocumentTogether() throws IOException {
         addDoc("uuid-1", "/root/a.txt", 1L);
         addDoc("uuid-2", "/root/b.txt", 2L);

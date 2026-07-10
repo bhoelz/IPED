@@ -10,6 +10,7 @@ import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.index.spi.IndexingPort;
+import iped.index.spi.IndexingSession;
 import iped.properties.BasicProps;
 import iped.utils.HashValue;
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +81,16 @@ public class SkipCommitedTask extends AbstractTask {
 
         IndexingPort indexingPort = worker.getIndexingPort();
 
-        indexingPort.forEachDocument(doc -> {
+        // All of init()'s reads are performed within a SINGLE session, i.e. against
+        // ONE already-open NRT reader, instead of one reader open/close per
+        // forEachDocument/distinctFieldValues call (each NRT open can trigger a
+        // writer flush/segment merge -- see ADR-0002 addendum on IndexingSession).
+        indexingPort.withSession(this::initFromSession);
+    }
+
+    private void initFromSession(IndexingSession session) throws IOException {
+
+        session.forEachDocument(doc -> {
             String uuid = doc.getString(BasicProps.EVIDENCE_UUID);
             if (uuid != null && !prevRootNameToEvidenceUUID.containsValue(uuid)) {
                 String path = doc.getString(BasicProps.PATH);
@@ -101,11 +111,11 @@ public class SkipCommitedTask extends AbstractTask {
         }
 
         List<HashValue> trackIds = new ArrayList<>();
-        indexingPort.distinctFieldValues(IndexItem.TRACK_ID).forEach(trackID -> trackIds.add(new HashValue(trackID)));
+        session.distinctFieldValues(IndexItem.TRACK_ID).forEach(trackID -> trackIds.add(new HashValue(trackID)));
         commitedtrackIDs = trackIds.toArray(new HashValue[0]);
         // Arrays.sort(commitedtrackIDs);
 
-        indexingPort.forEachDocument(doc -> {
+        session.forEachDocument(doc -> {
             String hashVal = doc.getString(IndexItem.PARENT_TRACK_ID);
             if (hashVal != null && !hashVal.isEmpty()) {
                 HashValue persistParent = new HashValue(hashVal);
@@ -128,8 +138,8 @@ public class SkipCommitedTask extends AbstractTask {
 
         caseData.putCaseObject(trackID_ID_MAP, globalToIdMap);
 
-        collectParentsWithoutAllSubitems(indexingPort, IndexItem.CONTAINER_TRACK_ID, ParsingTaskSupport.NUM_SUBITEMS);
-        collectParentsWithoutAllSubitems(indexingPort, IndexItem.PARENT_TRACK_ID, BaseCarveTask.NUM_CARVED_AND_FRAGS);
+        collectParentsWithoutAllSubitems(session, IndexItem.CONTAINER_TRACK_ID, ParsingTaskSupport.NUM_SUBITEMS);
+        collectParentsWithoutAllSubitems(session, IndexItem.PARENT_TRACK_ID, BaseCarveTask.NUM_CARVED_AND_FRAGS);
 
         caseData.putCaseObject(PARENTS_WITH_LOST_SUBITEMS, parentsWithLostSubitems);
 
@@ -149,13 +159,23 @@ public class SkipCommitedTask extends AbstractTask {
      * string-keyed map above the {@link IndexingPort}, per ADR-0002: the
      * per-document scan is unchanged, only the correlation is re-expressed
      * without leaking Lucene ordinal/term APIs through the port.
+     *
+     * <p>Restores the original pre-migration short-circuit: if
+     * {@code subitemCountField} (e.g. {@code NUM_SUBITEMS}) is absent
+     * index-wide -- the common case early in processing, before any item has
+     * produced it -- neither scan below can possibly flag a parent with lost
+     * subitems, so both full-index passes are skipped entirely.
      */
-    private void collectParentsWithoutAllSubitems(IndexingPort indexingPort, String parentIdField,
+    private void collectParentsWithoutAllSubitems(IndexingSession session, String parentIdField,
             String subitemCountField) throws IOException {
+        if (!session.fieldExists(subitemCountField)) {
+            return;
+        }
+
         Map<String, Integer> referencingSubitems = new HashMap<>();
         Set<Integer> countedIds = new HashSet<>();
 
-        indexingPort.forEachDocument(doc -> {
+        session.forEachDocument(doc -> {
             Long longId = doc.getNumeric(IndexItem.ID);
             if (longId == null) {
                 return;
@@ -172,7 +192,7 @@ public class SkipCommitedTask extends AbstractTask {
             countedIds.add(id);
         });
 
-        indexingPort.forEachDocument(doc -> {
+        session.forEachDocument(doc -> {
             Long subitemsCount = doc.getNumeric(subitemCountField);
             if (subitemsCount == null) {
                 return;
