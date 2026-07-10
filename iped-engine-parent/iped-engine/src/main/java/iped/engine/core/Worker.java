@@ -27,8 +27,10 @@ import iped.engine.task.TaskInstaller;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
+import iped.index.spi.IndexingPort;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.index.IndexWriter;
+import iped.engine.lucene.LuceneIndexingAdapter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -66,6 +68,13 @@ public class Worker extends Thread {
     public IndexWriter writer;
     String baseFilePath;
 
+    /**
+     * Lazily-created, per-Worker {@link IndexingPort}. Never shared across
+     * Workers: each instance wraps this Worker's own {@link #writer}. See
+     * ADR 0001 (ports-and-adapters-indexing-seam) for the rationale.
+     */
+    private IndexingPort indexingPort;
+
     public volatile AbstractTask runningTask;
     public List<AbstractTask> tasks = new ArrayList<AbstractTask>();
     private AbstractTask firstTask;
@@ -95,6 +104,20 @@ public class Worker extends Thread {
     public void decItemsBeingProcessed() {
         itemsBeingProcessed--;
         manager.getProcessingQueues().decItemsBeingProcessed();
+    }
+
+    /**
+     * Returns this Worker's {@link IndexingPort}, creating it lazily on first
+     * access. The returned instance always wraps <em>this</em> Worker's
+     * {@link #writer} — it is never a shared singleton across Workers.
+     *
+     * @return this Worker's indexing port
+     */
+    public IndexingPort getIndexingPort() {
+        if (indexingPort == null) {
+            indexingPort = new LuceneIndexingAdapter(writer);
+        }
+        return indexingPort;
     }
 
     /**

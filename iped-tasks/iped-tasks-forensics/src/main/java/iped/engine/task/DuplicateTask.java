@@ -5,10 +5,8 @@ import iped.data.IHashValue;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.EnableTaskProperty;
-import iped.engine.lucene.SlowCompositeReaderWrapper;
 import iped.engine.task.index.IndexItem;
 import iped.utils.HashValue;
-import org.apache.lucene.index.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -78,21 +76,10 @@ public class DuplicateTask extends AbstractTask {
             hashMap = new HashMap<IHashValue, IHashValue>();
             caseData.putCaseObject(HASH_MAP, hashMap);
 
-            try (IndexReader reader = DirectoryReader.open(worker.writer, true, true)) {
-                LeafReader aReader = SlowCompositeReaderWrapper.wrap(reader);
-                SortedDocValues sdv = aReader.getSortedDocValues(IndexItem.HASH);
-                if (sdv != null) {
-                    for (int ord = 0; ord < sdv.getValueCount(); ord++) {
-                        String hash = sdv.lookupOrd(ord).utf8ToString();
-                        if (hash != null && !hash.isEmpty()) {
-                            IHashValue hValue = new HashValue(hash);
-                            hashMap.put(hValue, hValue);
-                        }
-                    }
-                }
-            } catch (IndexNotFoundException e) {
-                // ignore
-            }
+            worker.getIndexingPort().distinctFieldValues(IndexItem.HASH).forEach(hash -> {
+                IHashValue hValue = new HashValue(hash);
+                hashMap.put(hValue, hValue);
+            });
         }
 
     }
