@@ -12,10 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * ADR 0001 (ports-and-adapters-indexing-seam): {@code DuplicateTask} is the
- * PI-1-F4a-S1 POC sample Task migrated to depend on {@code iped.index.spi.IndexingPort}
- * instead of Lucene directly. This guards the seam: the sample Task must not
- * reintroduce a dependency on {@code org.apache.lucene..}.
+ * ADR 0001 (ports-and-adapters-indexing-seam) and ADR 0002 (IndexingPort
+ * extension for SkipCommitedTask): {@code DuplicateTask} (PI-1-F4a-S1) and
+ * {@code SkipCommitedTask} (PI-1-F4b-S1) are the Tasks migrated to depend on
+ * {@code iped.index.spi.IndexingPort} instead of Lucene directly. This
+ * guards the seam: neither Task may reintroduce a dependency on
+ * {@code org.apache.lucene..}.
  *
  * <p>A negative test proves the rule has teeth by running it against a
  * fixture class ({@link iped.arch.fixture.LuceneOffendingTask}) that
@@ -25,10 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class IndexingPortSeamTest {
 
     private static final ArchRule SAMPLE_TASK_MUST_NOT_DEPEND_ON_LUCENE = noClasses()
-            .that().haveSimpleName("DuplicateTask")
+            .that().haveSimpleName("DuplicateTask").or().haveSimpleName("SkipCommitedTask")
             .should().dependOnClassesThat().resideInAPackage("org.apache.lucene..")
-            .because("ADR 0001: DuplicateTask is migrated behind IndexingPort and must not "
-                    + "depend on org.apache.lucene.. directly");
+            .because("ADR 0001/0002: DuplicateTask and SkipCommitedTask are migrated behind "
+                    + "IndexingPort and must not depend on org.apache.lucene.. directly");
 
     @Test
     void duplicateTaskMustNotDependOnLuceneDirectly() {

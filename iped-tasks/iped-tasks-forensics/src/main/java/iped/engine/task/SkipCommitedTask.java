@@ -5,18 +5,14 @@ import iped.data.IItem;
 import iped.engine.CmdLineArgs;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.datasource.UfedXmlReader;
-import iped.engine.lucene.DocValuesUtil;
-import iped.engine.lucene.SlowCompositeReaderWrapper;
 import iped.engine.task.carver.BaseCarveTask;
 import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
+import iped.index.spi.IndexingPort;
 import iped.properties.BasicProps;
 import iped.utils.HashValue;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.*;
-import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 import java.util.*;
@@ -82,138 +78,121 @@ public class SkipCommitedTask extends AbstractTask {
             return;
         }
 
-        try (IndexReader reader = DirectoryReader.open(worker.writer, true, true)) {
-            LeafReader aReader = SlowCompositeReaderWrapper.wrap(reader);
+        IndexingPort indexingPort = worker.getIndexingPort();
 
-            SortedDocValues evidenceUUIDs = aReader.getSortedDocValues(BasicProps.EVIDENCE_UUID);
-            for (int doc = 0; doc < aReader.maxDoc(); doc++) {
-                String uuid = DocValuesUtil.getVal(evidenceUUIDs, doc);
-                if (uuid != null && !prevRootNameToEvidenceUUID.containsValue(uuid)) {
-                    Document luceneDoc = aReader.storedFields().document(doc);
-                    String path = luceneDoc.get(BasicProps.PATH);
-                    prevRootNameToEvidenceUUID.put(Util.getRootName(path), uuid);
-                }
+        indexingPort.forEachDocument(doc -> {
+            String uuid = doc.getString(BasicProps.EVIDENCE_UUID);
+            if (uuid != null && !prevRootNameToEvidenceUUID.containsValue(uuid)) {
+                String path = doc.getString(BasicProps.PATH);
+                prevRootNameToEvidenceUUID.put(Util.getRootName(path), uuid);
             }
-            args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
+        });
 
-            Set<String> evidenceNames = (Set<String>) caseData.getCaseObject(SkipCommitedTaskSupport.DATASOURCE_NAMES);
-            for (String name : evidenceNames) {
-                if (!args.isContinue() && prevRootNameToEvidenceUUID.containsKey(name))
-                    throw new IPEDException("Evidence name already exists in case: " + name);
-            }
+        args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
 
-            if (!args.isContinue()) {
-                return;
-            }
-
-            SortedDocValues persistIds = aReader.getSortedDocValues(IndexItem.TRACK_ID);
-            int size = persistIds == null ? 0 : persistIds.getValueCount();
-            commitedtrackIDs = new HashValue[size];
-            for (int ord = 0; ord < commitedtrackIDs.length; ord++) {
-                String trackID = persistIds.lookupOrd(ord).utf8ToString();
-                commitedtrackIDs[ord] = new HashValue(trackID);
-            }
-            // Arrays.sort(trackIDs);
-
-            SortedDocValues globalParents = aReader.getSortedDocValues(IndexItem.PARENT_TRACK_ID);
-            SortedDocValues hasChildValues = aReader.getSortedDocValues(IndexItem.HASCHILD);
-            SortedDocValues isDirValues = aReader.getSortedDocValues(IndexItem.ISDIR);
-            SortedDocValues isRootValues = aReader.getSortedDocValues(IndexItem.ISROOT);
-            SortedDocValues hasSplittedText = aReader.getSortedDocValues(TEXT_SPLITTED);
-            NumericDocValues prevParentIds = aReader.getNumericDocValues(IndexItem.PARENTID);
-            NumericDocValues prevIds = aReader.getNumericDocValues(IndexItem.ID);
-            for (int doc = 0; doc < aReader.maxDoc(); doc++) {
-                String hashVal = globalParents == null ? null : DocValuesUtil.getVal(globalParents, doc);
-                if (hashVal != null && !hashVal.isEmpty()) {
-                    HashValue persistParent = new HashValue(hashVal);
-                    if (prevParentIds != null && Arrays.binarySearch(commitedtrackIDs, persistParent) < 0) {
-                        globalToIdMap.put(persistParent, DocValuesUtil.get(prevParentIds, doc).intValue());
-                    }
-                }
-                boolean hasChild = hasChildValues != null && Boolean.valueOf(DocValuesUtil.getVal(hasChildValues, doc));
-                boolean isDir = isDirValues != null && Boolean.valueOf(DocValuesUtil.getVal(isDirValues, doc));
-                boolean isRoot = isRootValues != null && Boolean.valueOf(DocValuesUtil.getVal(isRootValues, doc));
-                boolean isTexSplitted = hasSplittedText != null && Boolean.valueOf(DocValuesUtil.getVal(hasSplittedText, doc));
-                if (prevIds != null && persistIds != null && (hasChild || isDir || isRoot || isTexSplitted)) {
-                    HashValue trackID = new HashValue(DocValuesUtil.getVal(persistIds, doc));
-                    globalToIdMap.put(trackID, DocValuesUtil.get(prevIds, doc).intValue());
-                }
-            }
-
-            caseData.putCaseObject(trackID_ID_MAP, globalToIdMap);
-
-            collectParentsWithoutAllSubitems(aReader, IndexItem.CONTAINER_TRACK_ID, ParsingTaskSupport.NUM_SUBITEMS);
-            collectParentsWithoutAllSubitems(aReader, IndexItem.PARENT_TRACK_ID, BaseCarveTask.NUM_CARVED_AND_FRAGS);
-
-            caseData.putCaseObject(PARENTS_WITH_LOST_SUBITEMS, parentsWithLostSubitems);
-
-            log.info("Commited items: {}", commitedtrackIDs.length);
-            log.info("Parents with lost subitems: {}", parentsWithLostSubitems.size());
-
-        } catch (IndexNotFoundException e) {
-            commitedtrackIDs = new HashValue[0];
+        Set<String> evidenceNames = (Set<String>) caseData.getCaseObject(SkipCommitedTaskSupport.DATASOURCE_NAMES);
+        for (String name : evidenceNames) {
+            if (!args.isContinue() && prevRootNameToEvidenceUUID.containsKey(name))
+                throw new IPEDException("Evidence name already exists in case: " + name);
         }
 
+        if (!args.isContinue()) {
+            return;
+        }
+
+        List<HashValue> trackIds = new ArrayList<>();
+        indexingPort.distinctFieldValues(IndexItem.TRACK_ID).forEach(trackID -> trackIds.add(new HashValue(trackID)));
+        commitedtrackIDs = trackIds.toArray(new HashValue[0]);
+        // Arrays.sort(commitedtrackIDs);
+
+        indexingPort.forEachDocument(doc -> {
+            String hashVal = doc.getString(IndexItem.PARENT_TRACK_ID);
+            if (hashVal != null && !hashVal.isEmpty()) {
+                HashValue persistParent = new HashValue(hashVal);
+                Long prevParentId = doc.getNumeric(IndexItem.PARENTID);
+                if (prevParentId != null && Arrays.binarySearch(commitedtrackIDs, persistParent) < 0) {
+                    globalToIdMap.put(persistParent, prevParentId.intValue());
+                }
+            }
+            boolean hasChild = Boolean.valueOf(doc.getString(IndexItem.HASCHILD));
+            boolean isDir = Boolean.valueOf(doc.getString(IndexItem.ISDIR));
+            boolean isRoot = Boolean.valueOf(doc.getString(IndexItem.ISROOT));
+            boolean isTexSplitted = Boolean.valueOf(doc.getString(TEXT_SPLITTED));
+            Long prevId = doc.getNumeric(IndexItem.ID);
+            String trackIdVal = doc.getString(IndexItem.TRACK_ID);
+            if (prevId != null && trackIdVal != null && (hasChild || isDir || isRoot || isTexSplitted)) {
+                HashValue trackID = new HashValue(trackIdVal);
+                globalToIdMap.put(trackID, prevId.intValue());
+            }
+        });
+
+        caseData.putCaseObject(trackID_ID_MAP, globalToIdMap);
+
+        collectParentsWithoutAllSubitems(indexingPort, IndexItem.CONTAINER_TRACK_ID, ParsingTaskSupport.NUM_SUBITEMS);
+        collectParentsWithoutAllSubitems(indexingPort, IndexItem.PARENT_TRACK_ID, BaseCarveTask.NUM_CARVED_AND_FRAGS);
+
+        caseData.putCaseObject(PARENTS_WITH_LOST_SUBITEMS, parentsWithLostSubitems);
+
+        log.info("Commited items: {}", commitedtrackIDs.length);
+        log.info("Parents with lost subitems: {}", parentsWithLostSubitems.size());
     }
 
-    private void collectParentsWithoutAllSubitems(LeafReader aReader, String parentIdField, String subitemCountField)
-            throws IOException {
-        // reset doc values to iterate again
-        SortedDocValues persistIds = aReader.getSortedDocValues(IndexItem.TRACK_ID);
-        NumericDocValues ids = aReader.getNumericDocValues(IndexItem.ID);
-        SortedDocValues parentContainers = aReader.getSortedDocValues(parentIdField);
+    /**
+     * Counts, per parent-field string value, how many documents reference it
+     * (subject to the subitem-count-inclusion rule below), then flags any
+     * potential parent (a document carrying {@code subitemCountField}) whose
+     * expected subitem count does not match the number of references found.
+     *
+     * <p>Relocated from a Lucene-ordinal-space implementation
+     * (referencingSubitems[ord] arrays keyed by {@code parentContainers}
+     * term ordinal, {@code parentContainers.lookupTerm(...)}) to a
+     * string-keyed map above the {@link IndexingPort}, per ADR-0002: the
+     * per-document scan is unchanged, only the correlation is re-expressed
+     * without leaking Lucene ordinal/term APIs through the port.
+     */
+    private void collectParentsWithoutAllSubitems(IndexingPort indexingPort, String parentIdField,
+            String subitemCountField) throws IOException {
+        Map<String, Integer> referencingSubitems = new HashMap<>();
+        Set<Integer> countedIds = new HashSet<>();
 
-        if (parentContainers == null || persistIds == null || ids == null) {
-            return;
-        }
-        NumericDocValues numSubitems = aReader.getNumericDocValues(subitemCountField);
-        if (numSubitems == null) {
-            return;
-        }
-        SortedDocValues subitems = aReader.getSortedDocValues(BasicProps.SUBITEM);
-
-        int[] referencingSubitems = new int[parentContainers.getValueCount()];
-
-        BitSet countedIds = new BitSet();
-        for (int doc = 0; doc < aReader.maxDoc(); doc++) {
-            Long longId = DocValuesUtil.get(ids, doc);
+        indexingPort.forEachDocument(doc -> {
+            Long longId = doc.getNumeric(IndexItem.ID);
             if (longId == null) {
-                continue;
+                return;
             }
             int id = longId.intValue();
-            int ord = DocValuesUtil.getOrd(parentContainers, doc);
-            if (ord != -1 && !countedIds.get(id)) {
-                if (parentIdField == IndexItem.CONTAINER_TRACK_ID || subitems == null
-                        || !Boolean.valueOf(DocValuesUtil.getVal(subitems, doc))) {
-                    referencingSubitems[ord]++;
+            String parentVal = doc.getString(parentIdField);
+            if (parentVal != null && !countedIds.contains(id)) {
+                boolean isSubitem = Boolean.valueOf(doc.getString(BasicProps.SUBITEM));
+                if (parentIdField.equals(IndexItem.CONTAINER_TRACK_ID) || !isSubitem) {
+                    referencingSubitems.merge(parentVal, 1, Integer::sum);
                 }
             }
             // splited items occur more than once, so we track seen ids
-            countedIds.set(id);
-        }
+            countedIds.add(id);
+        });
 
-        for (int doc = 0; doc < aReader.maxDoc(); doc++) {
-            Long subitemsCount = DocValuesUtil.get(numSubitems, doc);
-            if (subitemsCount != null) {
-                if (!persistIds.advanceExact(doc))
-                    continue;
-
-                BytesRef persistId = persistIds.lookupOrd(persistIds.ordValue());
-                int ord = parentContainers.lookupTerm(persistId);
-                int carvedIgnored = 0;
-                if (subitemCountField == BaseCarveTask.NUM_CARVED_AND_FRAGS) {
-                    carvedIgnored = stats.getCarvedIgnoredNum(new HashValue(persistId.utf8ToString()));
-                }
-                int references = ord < 0 ? 0 : referencingSubitems[ord];
-                if (subitemsCount != references + carvedIgnored) {
-                    parentsWithLostSubitems.add(new HashValue(persistId.utf8ToString()));
-                    // System.out.println("Parent with lost child " + persistId.utf8ToString() + "
-                    // subitems " + subitemsCount +
-                    // " carvedIgnored " + carvedIgnored + (ord >= 0 ? " references " +
-                    // referencingSubitems[ord] : ""));
-                }
+        indexingPort.forEachDocument(doc -> {
+            Long subitemsCount = doc.getNumeric(subitemCountField);
+            if (subitemsCount == null) {
+                return;
             }
-        }
+            String persistId = doc.getString(IndexItem.TRACK_ID);
+            if (persistId == null) {
+                return;
+            }
+            int carvedIgnored = 0;
+            if (subitemCountField.equals(BaseCarveTask.NUM_CARVED_AND_FRAGS)) {
+                carvedIgnored = stats.getCarvedIgnoredNum(new HashValue(persistId));
+            }
+            int references = referencingSubitems.getOrDefault(persistId, 0);
+            if (subitemsCount != references + carvedIgnored) {
+                parentsWithLostSubitems.add(new HashValue(persistId));
+                // System.out.println("Parent with lost child " + persistId + " subitems " +
+                // subitemsCount + " carvedIgnored " + carvedIgnored + " references " +
+                // references);
+            }
+        });
     }
 
     @Override

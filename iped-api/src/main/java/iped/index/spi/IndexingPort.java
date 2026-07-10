@@ -1,6 +1,7 @@
 package iped.index.spi;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -35,4 +36,18 @@ public interface IndexingPort {
      * @throws IOException if the index cannot be read
      */
     Stream<String> distinctFieldValues(String field) throws IOException;
+
+    /**
+     * Scans every currently-visible (near-real-time) document exactly once,
+     * invoking {@code consumer} with a read-only {@link IndexedDocument} view
+     * of each. Does nothing if the index does not yet exist. The view is
+     * valid only within the callback. Callers needing more than one pass may
+     * call this method again (each call opens and closes its own NRT
+     * reader), exactly as {@link #distinctFieldValues} is safe to call
+     * repeatedly.
+     *
+     * @param consumer callback invoked once per visible document
+     * @throws IOException if the index cannot be read
+     */
+    void forEachDocument(Consumer<IndexedDocument> consumer) throws IOException;
 }
