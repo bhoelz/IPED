@@ -4,7 +4,7 @@
     <parent>
         <groupId>iped</groupId>
         <artifactId>iped-engine-parent</artifactId>
-        <version>4.4.0-SNAPSHOT</version>
+        <version>4.4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -182,7 +182,7 @@
         <dependency>
             <groupId>iped</groupId>
             <artifactId>iped-viewers-web</artifactId>
-            <version>4.4.0-SNAPSHOT</version>
+            <version>4.4.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

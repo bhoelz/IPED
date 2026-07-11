@@ -6,7 +6,7 @@
     <parent>
         <groupId>iped</groupId>
         <artifactId>iped-parent</artifactId>
-        <version>4.4.0-SNAPSHOT</version>
+        <version>4.4.0</version>
     </parent>
 
     <artifactId>iped-tasks</artifactId>
@@ -23,6 +23,7 @@
         <module>iped-tasks-graph</module>
         <module>iped-tasks-report</module>
         <module>iped-tasks-forensics</module>
+        <module>iped-tasks-cli</module>
     </modules>
 
     <dependencyManagement>
