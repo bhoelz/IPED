@@ -49,7 +49,26 @@ public class ImageThumbTask extends ThumbTask {
         final AtomicBoolean finished = new AtomicBoolean(false);
     }
 
+    // Used in place of the case-scoped accumulator when caseData is null (i.e.
+    // running standalone, no case). Cleared in finish() so successive standalone
+    // runs in the same JVM don't share state (same pattern as the carve tasks'
+    // accum() fallback, see BaseCarveTask).
+    private static volatile ImageThumbAccumulator standaloneAccum;
+
     private ImageThumbAccumulator accum() {
+        if (caseData == null) {
+            ImageThumbAccumulator sa = standaloneAccum;
+            if (sa == null) {
+                synchronized (ImageThumbTask.class) {
+                    sa = standaloneAccum;
+                    if (sa == null) {
+                        sa = new ImageThumbAccumulator();
+                        standaloneAccum = sa;
+                    }
+                }
+            }
+            return sa;
+        }
         ImageThumbAccumulator a = (ImageThumbAccumulator) caseData.getCaseObject(ImageThumbAccumulator.KEY);
         if (a == null) {
             synchronized (ImageThumbTask.class) {
@@ -248,6 +267,9 @@ public class ImageThumbTask extends ThumbTask {
                 }
             }
         }
+        if (caseData == null) {
+            standaloneAccum = null;
+        }
     }
 
     @Override
@@ -277,7 +299,10 @@ public class ImageThumbTask extends ThumbTask {
 
         } catch (TimeoutException e) {
             future.cancel(true);
-            stats.incTimeouts();
+            // stats is null when running standalone (no case)
+            if (stats != null) {
+                stats.incTimeouts();
+            }
             evidence.setExtraAttribute(THUMB_TIMEOUT, "true"); //$NON-NLS-1$
             log.warn("Timeout creating thumb: " + evidence); //$NON-NLS-1$
         }
@@ -346,7 +371,9 @@ public class ImageThumbTask extends ThumbTask {
                         img = externalImageConverter.getImage(stream, maxViewImageSize, true, evidence.getLength(),
                                 true);
                     } catch (TimeoutException e) {
-                        stats.incTimeouts();
+                        if (stats != null) {
+                            stats.incTimeouts();
+                        }
                         evidence.setExtraAttribute(THUMB_TIMEOUT, "true");
                         log.warn("Timeout creating view: " + evidence);
                     }
@@ -369,7 +396,9 @@ public class ImageThumbTask extends ThumbTask {
                     try (BufferedInputStream stream = evidence.getBufferedInputStream()) {
                         img = externalImageConverter.getImage(stream, getThumbSize(), false, evidence.getLength(), true);
                     } catch (TimeoutException e) {
-                        stats.incTimeouts();
+                        if (stats != null) {
+                            stats.incTimeouts();
+                        }
                         evidence.setExtraAttribute(THUMB_TIMEOUT, "true");
                         log.warn("Timeout creating thumb: " + evidence);
                     }

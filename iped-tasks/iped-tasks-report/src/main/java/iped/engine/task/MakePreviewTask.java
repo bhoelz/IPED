@@ -155,7 +155,11 @@ public class MakePreviewTask extends AbstractTask {
         final TikaInputStream tis = (TikaInputStream) evidence.getTikaStream();
 
         final ParseContext context = new ParseContext();
-        IItemSearcher itemSearcher = (IItemSearcher) caseData.getCaseObject(IItemSearcher.class.getName());
+        // caseData is null when running standalone (no case): previews still work,
+        // just without resolving cross-item references (e.g. linked OLE objects).
+        IItemSearcher itemSearcher = caseData != null
+                ? (IItemSearcher) caseData.getCaseObject(IItemSearcher.class.getName())
+                : null;
         context.set(IItemSearcher.class, itemSearcher);
         context.set(IItemReader.class, evidence);
         context.set(ItemInfo.class, ItemInfoFactory.getItemInfo(evidence));
@@ -240,7 +244,9 @@ public class MakePreviewTask extends AbstractTask {
             if ((System.currentTimeMillis() - start) / 1000 >= parsingConfig.getTimeOut()) {
                 producerThread.interrupt();
                 consumerThread.interrupt();
-                stats.incTimeouts();
+                if (stats != null) {
+                    stats.incTimeouts();
+                }
                 throw new TimeoutException();
             }
             latch.await(1000, TimeUnit.MILLISECONDS);

@@ -169,7 +169,8 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
     public void finish() throws Exception {
         super.finish();
         if (isEnabled() && !statsPrinted.getAndSet(true)) {
-            int numWorkers = this.worker.manager.getNumWorkers();
+            // worker.manager is null when running standalone (no case/queue manager)
+            int numWorkers = this.worker.manager != null ? this.worker.manager.getNumWorkers() : 1;
             DecimalFormat df = new DecimalFormat();
             log.info("Time spent to send audios: {}s", df.format(audioSendingTime.get() / (1000 * numWorkers)));
             log.info("Time spent to receive transcriptions: {}s", df.format(transcriptReceiveTime.get() / (1000 * numWorkers)));
@@ -296,7 +297,9 @@ public class RemoteTranscriptionTask extends AbstractTranscriptTask {
             } catch (SocketTimeoutException | SocketException e) {
                 if (e instanceof ConnectException) {
                     numConnectErrors.incrementAndGet();
-                    if (numConnectErrors.get() / this.worker.manager.getNumWorkers() >= MAX_CONNECT_ERRORS) {
+                    // worker.manager is null when running standalone (no case/queue manager)
+                    int workers = this.worker.manager != null ? this.worker.manager.getNumWorkers() : 1;
+                    if (numConnectErrors.get() / workers >= MAX_CONNECT_ERRORS) {
                         throw new TooManyConnectException();
                     }
                     sleepBeforeRetry(requestTime);

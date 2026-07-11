@@ -45,7 +45,28 @@ public class CarverTask extends BaseCarveTask {
         CarverType[] carverTypes;
     }
 
+    // Used in place of a case-scoped accumulator when caseData is null (i.e.
+    // running standalone, no case). Static because process() (below) creates a
+    // fresh per-item CarverTask instance that must still see the same
+    // carverTypes cache. Cleared in finish() so successive standalone runs in
+    // the same JVM don't share state (the multi-case batch scenario
+    // caseData-scoping exists to protect against).
+    private static volatile CarverAccumulator standaloneAccum;
+
     private CarverAccumulator accum() {
+        if (caseData == null) {
+            CarverAccumulator a = standaloneAccum;
+            if (a == null) {
+                synchronized (CarverTask.class) {
+                    a = standaloneAccum;
+                    if (a == null) {
+                        a = new CarverAccumulator();
+                        standaloneAccum = a;
+                    }
+                }
+            }
+            return a;
+        }
         CarverAccumulator a = (CarverAccumulator) caseData.getCaseObject(CarverAccumulator.KEY);
         if (a == null) {
             synchronized (CarverTask.class) {
@@ -249,8 +270,10 @@ public class CarverTask extends BaseCarveTask {
 
     @Override
     public void finish() throws Exception {
-        // TODO Auto-generated method stub
-
+        if (caseData == null) {
+            standaloneAccum = null;
+            BaseCarveTask.clearStandaloneAccum();
+        }
     }
 
     private CarvedItemListener getCarvedItemListener() {

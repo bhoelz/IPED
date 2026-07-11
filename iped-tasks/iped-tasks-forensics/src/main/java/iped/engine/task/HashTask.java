@@ -179,7 +179,10 @@ public class HashTask extends AbstractTask {
         } catch (Exception e) {
             if (e instanceof IOException) {
                 evidence.setExtraAttribute("ioError", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-                stats.incIoErrors();
+                // stats is null when running standalone (no case)
+                if (stats != null) {
+                    stats.incIoErrors();
+                }
             }
             log.warn("{} Error computing hash {}\t{}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
                     e.toString());

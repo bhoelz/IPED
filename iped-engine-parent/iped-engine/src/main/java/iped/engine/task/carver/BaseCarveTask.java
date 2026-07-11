@@ -68,7 +68,37 @@ public abstract class BaseCarveTask extends AbstractTask {
         final Map<IItem, Set<Long>> ledCarved = new HashMap<IItem, Set<Long>>();
     }
 
+    // Used in place of a case-scoped CarveAccumulator when caseData is null (i.e.
+    // running standalone, no case). Static (not an instance field) because
+    // CarverTask.process() creates a fresh per-item task instance that must still
+    // see the same accumulator. Cleared by clearStandaloneAccum() when a
+    // standalone run finishes, so successive standalone runs in the same JVM
+    // don't share state (the multi-case batch scenario caseData-scoping exists
+    // to protect against).
+    private static volatile CarveAccumulator standaloneAccum;
+
+    /**
+     * Drops the standalone accumulator so a later standalone run in the same JVM
+     * starts fresh. Called from subclasses' finish() when caseData == null.
+     */
+    static void clearStandaloneAccum() {
+        standaloneAccum = null;
+    }
+
     private CarveAccumulator accum() {
+        if (caseData == null) {
+            CarveAccumulator a = standaloneAccum;
+            if (a == null) {
+                synchronized (BaseCarveTask.class) {
+                    a = standaloneAccum;
+                    if (a == null) {
+                        a = new CarveAccumulator();
+                        standaloneAccum = a;
+                    }
+                }
+            }
+            return a;
+        }
         CarveAccumulator a = (CarveAccumulator) caseData.getCaseObject(CarveAccumulator.KEY);
         if (a == null) {
             synchronized (BaseCarveTask.class) {

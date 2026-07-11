@@ -37,9 +37,12 @@ public class MicrosoftTranscriptTask extends AbstractTranscriptTask {
             return;
         }
 
-        CmdLineArgs args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
-        String speechSubscriptionKey = args.getExtraParams().get(SUBSCRIPTION_KEY);
-        if (speechSubscriptionKey == null && !caseData.isIpedReport()) {
+        // caseData is null when running standalone (no case, so no -X extra params
+        // mechanism either); fall through to the same "missing credential" error
+        // below rather than NPE-ing.
+        CmdLineArgs args = caseData != null ? (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName()) : null;
+        String speechSubscriptionKey = args != null ? args.getExtraParams().get(SUBSCRIPTION_KEY) : null;
+        if (speechSubscriptionKey == null && (caseData == null || !caseData.isIpedReport())) {
             throw new IPEDException(
                     "You must pass -X" + SUBSCRIPTION_KEY + "=XXX param to enable audio transcription.");
         }

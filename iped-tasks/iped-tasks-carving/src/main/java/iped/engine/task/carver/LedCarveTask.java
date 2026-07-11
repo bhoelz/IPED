@@ -58,7 +58,27 @@ public class LedCarveTask extends BaseCarveTask {
         final AtomicLong num512hit = new AtomicLong();
     }
 
+    // Used in place of a case-scoped accumulator when caseData is null (i.e.
+    // running standalone, no case). Static, consistent with the other carve
+    // tasks' accum() fallback (see BaseCarveTask), even though this task doesn't
+    // spawn per-item instances itself. Cleared in finish() so successive
+    // standalone runs in the same JVM don't share state.
+    private static volatile LedCarveAccumulator standaloneAccum;
+
     private LedCarveAccumulator accum() {
+        if (caseData == null) {
+            LedCarveAccumulator a = standaloneAccum;
+            if (a == null) {
+                synchronized (LedCarveTask.class) {
+                    a = standaloneAccum;
+                    if (a == null) {
+                        a = new LedCarveAccumulator();
+                        standaloneAccum = a;
+                    }
+                }
+            }
+            return a;
+        }
         LedCarveAccumulator a = (LedCarveAccumulator) caseData.getCaseObject(LedCarveAccumulator.KEY);
         if (a == null) {
             synchronized (LedCarveTask.class) {
@@ -164,11 +184,15 @@ public class LedCarveTask extends BaseCarveTask {
                 a.finished.set(true);
             }
         }
+        if (caseData == null) {
+            standaloneAccum = null;
+            BaseCarveTask.clearStandaloneAccum();
+        }
     }
 
     protected void process(IItem evidence) throws Exception {
         // Verifica se está desabilitado e se o tipo de arquivo é tratado
-        if (!taskEnabled || caseData.isIpedReport() || !isAcceptedType((MediaType) evidence.getMediaType()) || !isToProcess(evidence)) return;
+        if (!taskEnabled || (caseData != null && caseData.isIpedReport()) || !isAcceptedType((MediaType) evidence.getMediaType()) || !isToProcess(evidence)) return;
 
         byte[] buf512 = new byte[512];
         byte[] buf64K = new byte[65536 - buf512.length];

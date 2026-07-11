@@ -25,7 +25,9 @@ public abstract class ThumbTask extends AbstractTask {
     protected File getThumbFile(IItem evidence) throws Exception {
         ReportEnablementSettings htmlReportConfig = ConfigurationManager.get()
                 .findObjectInstanceOf(ReportEnablementSettings.class);
-        boolean storeThumbsInDisk = caseData.containsReport() && htmlReportConfig.isEnabled();
+        // caseData is null when running standalone (no case/report); fall back to the
+        // SQLite-backed storage path below, which only needs the output directory.
+        boolean storeThumbsInDisk = caseData != null && caseData.containsReport() && htmlReportConfig.isEnabled();
         if (storeThumbsInDisk) {
             String reportSubFolderName = Messages.getString("HTMLReportTask.ReportSubFolder"); //$NON-NLS-1$
             File reportSubFolder = new File(output.getParentFile(), reportSubFolderName);

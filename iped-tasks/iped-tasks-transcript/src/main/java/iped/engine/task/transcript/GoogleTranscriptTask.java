@@ -47,7 +47,8 @@ public class GoogleTranscriptTask extends AbstractTranscriptTask {
 
         // TODO how to allow user enable this task when creating report from GUI?
         // Plugin folder does not exist in case folder, so lib won't be found...
-        if (caseData.isIpedReport()) {
+        // caseData is null when running standalone (no case); nothing to opt out of.
+        if (caseData != null && caseData.isIpedReport()) {
             transcriptConfig.setEnabled(false);
             return;
         }

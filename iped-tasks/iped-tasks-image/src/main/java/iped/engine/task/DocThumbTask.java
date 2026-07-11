@@ -182,7 +182,10 @@ public class DocThumbTask extends ThumbTask {
                 future.get(timeout, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
                 future.cancel(true);
-                stats.incTimeouts();
+                // stats is null when running standalone (no case)
+                if (stats != null) {
+                    stats.incTimeouts();
+                }
                 item.setExtraAttribute(thumbTimeout, "true");
                 log.warn("Timeout creating thumb: " + item);
                 totalPdfTimeout.incrementAndGet();
@@ -205,7 +208,9 @@ public class DocThumbTask extends ThumbTask {
             future.get(timeout, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-            stats.incTimeouts();
+            if (stats != null) {
+                stats.incTimeouts();
+            }
             item.setExtraAttribute(thumbTimeout, "true");
             log.warn("Timeout creating thumb: " + item);
             totalLoTimeout.incrementAndGet();

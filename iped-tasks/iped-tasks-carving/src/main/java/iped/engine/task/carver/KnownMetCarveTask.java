@@ -67,7 +67,27 @@ public class KnownMetCarveTask extends BaseCarveTask {
         final AtomicInteger numCarvedItems = new AtomicInteger();
     }
 
+    // Used in place of a case-scoped accumulator when caseData is null (i.e.
+    // running standalone, no case). Static, consistent with the other carve
+    // tasks' accum() fallback (see BaseCarveTask), even though this task doesn't
+    // spawn per-item instances itself. Cleared in finish() so successive
+    // standalone runs in the same JVM don't share state.
+    private static volatile KnownMetAccumulator standaloneAccum;
+
     private KnownMetAccumulator accum() {
+        if (caseData == null) {
+            KnownMetAccumulator a = standaloneAccum;
+            if (a == null) {
+                synchronized (KnownMetCarveTask.class) {
+                    a = standaloneAccum;
+                    if (a == null) {
+                        a = new KnownMetAccumulator();
+                        standaloneAccum = a;
+                    }
+                }
+            }
+            return a;
+        }
         KnownMetAccumulator a = (KnownMetAccumulator) caseData.getCaseObject(KnownMetAccumulator.KEY);
         if (a == null) {
             synchronized (KnownMetCarveTask.class) {
@@ -150,11 +170,15 @@ public class KnownMetCarveTask extends BaseCarveTask {
                 log.info("Carved Items: " + a.numCarvedItems.get()); //$NON-NLS-1$
             }
         }
+        if (caseData == null) {
+            standaloneAccum = null;
+            BaseCarveTask.clearStandaloneAccum();
+        }
     }
 
     public void process(IItem evidence) {
         // Verifica se está desabilitado e se o tipo de arquivo é tratado
-        if (!taskEnabled || caseData.isIpedReport() || !isAcceptedType((MediaType) evidence.getMediaType()))
+        if (!taskEnabled || (caseData != null && caseData.isIpedReport()) || !isAcceptedType((MediaType) evidence.getMediaType()))
             return;
 
         AtomicInteger numCarvedItems = accum().numCarvedItems;

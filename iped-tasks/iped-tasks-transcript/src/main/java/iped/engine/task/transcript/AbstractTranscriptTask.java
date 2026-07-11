@@ -328,7 +328,11 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
             log.info("Failed transcriptions: " + transcriptionFail.intValue());
             log.info("Total transcription output characters: " + transcriptionChars.longValue());
             log.info("Average transcription time (ms/audio): " + (transcriptionTime.longValue() / (totTranscriptions)));
-            log.info("Total transcription throughput (audios/s): " + (1000 * this.worker.manager.getNumWorkers() * totTranscriptions / transcriptionTime.longValue()));
+            // worker.manager is null when running standalone (no case/queue manager);
+            // throughput across workers isn't meaningful there, so just skip that line.
+            if (this.worker.manager != null && transcriptionTime.longValue() > 0) {
+                log.info("Total transcription throughput (audios/s): " + (1000 * this.worker.manager.getNumWorkers() * totTranscriptions / transcriptionTime.longValue()));
+            }
             transcriptionSuccess.set(0);
             transcriptionFail.set(0);
         }
@@ -341,7 +345,10 @@ public abstract class AbstractTranscriptTask extends AbstractTask {
             tempWav = getWavFile(evidence.getTempFile(), evidence.getPath());
         } catch (TimeoutException e) {
             evidence.setTimeOut(true);
-            stats.incTimeouts();
+            // stats is null when running standalone (no case)
+            if (stats != null) {
+                stats.incTimeouts();
+            }
         }
         wavTime.addAndGet(System.currentTimeMillis() - t);
         if (tempWav == null) {
