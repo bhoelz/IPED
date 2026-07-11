@@ -1,0 +1,13 @@
+#!/bin/sh
+# Fast local gate: block secrets before they ever reach a commit.
+# Enable with: git config core.hooksPath .githooks
+
+if command -v gitleaks >/dev/null 2>&1; then
+    gitleaks protect --staged --redact -v
+    if [ $? -ne 0 ]; then
+        echo "gitleaks found a likely secret in staged changes. Fix or unstage before committing."
+        exit 1
+    fi
+else
+    echo "warning: gitleaks not installed locally, skipping secret scan (CI will still catch it)"
+fi

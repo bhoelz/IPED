@@ -1,0 +1,21 @@
+#!/bin/sh
+# Fast local gate: compile the modules touched on this branch before pushing,
+# so an obvious break is caught in seconds instead of waiting on CI.
+# Enable with: git config core.hooksPath .githooks
+
+base="$(git merge-base HEAD origin/master 2>/dev/null || echo HEAD~1)"
+changed_modules=$(git diff --name-only "$base" HEAD -- '*.java' | \
+    sed -E 's#^(iped-[^/]+)/.*#\1#' | sort -u | grep '^iped-' || true)
+
+if [ -z "$changed_modules" ]; then
+    echo "pre-push: no Java module changes detected, skipping compile check"
+    exit 0
+fi
+
+modules=$(echo "$changed_modules" | tr '\n' ',' | sed 's/,$//')
+echo "pre-push: compiling changed modules ($modules)..."
+mvn -q -pl "$modules" -am compile
+if [ $? -ne 0 ]; then
+    echo "pre-push: compilation failed, fix before pushing (or use 'git push --no-verify' to skip)"
+    exit 1
+fi
