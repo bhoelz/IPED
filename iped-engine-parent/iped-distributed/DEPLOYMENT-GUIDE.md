@@ -25,7 +25,7 @@ production cutover.
    - 7.2 [SASL authentication](#72-sasl-authentication)
    - 7.3 [Payload signing](#73-payload-signing)
    - 7.4 [Chain-of-custody audit log](#74-chain-of-custody-audit-log)
-8. [Monitoring](#8-monitoring)
+8. [Health checks and monitoring](#8-health-checks-and-monitoring)
 9. [Docker Compose quick-start](#9-docker-compose-quick-start)
 10. [Production rollout checklist](#10-production-rollout-checklist)
     - 10.1 [Pre-flight](#101-pre-flight)
@@ -467,29 +467,68 @@ package.
 
 ---
 
-## 8. Monitoring
+## 8. Health checks and monitoring
 
-The coordinator exposes a Prometheus metrics endpoint:
+### 8.1 Coordinator readiness probe
 
+The coordinator exposes a health-check endpoint for readiness/liveness verification:
+
+```bash
+GET http://coordinator:8484/api/v1/health
 ```
+
+**Response** (HTTP 200 with JSON body):
+
+```json
+{
+  "status": "ok",
+  "activeCases": 3,
+  "liveAgents": 7,
+  "uptimeMs": 3600000,
+  "brokerReachable": true
+}
+```
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `status` | string | "ok" if coordinator is accepting requests; "degraded" if broker unreachable |
+| `activeCases` | integer | Number of running cases |
+| `liveAgents` | integer | Number of agents with active heartbeat |
+| `uptimeMs` | long | Milliseconds since coordinator started |
+| `brokerReachable` | boolean | Result of real Kafka broker connectivity probe (3-second timeout) |
+
+Use this endpoint in your orchestration health-check scripts and Kubernetes liveness probes.
+A status of "degraded" indicates Kafka connectivity loss; agents are still running locally
+but cannot publish work progress to the status topic.
+
+### 8.2 Prometheus metrics endpoint
+
+The coordinator exposes Prometheus metrics for cluster monitoring:
+
+```bash
 GET http://coordinator:8484/metrics
 ```
 
 Response format: `text/plain; version=0.0.4` (Prometheus exposition format).
 
-### Key metrics
+#### Key metrics
 
 | Metric name | Type | Description |
 |-------------|------|-------------|
-| `iped_items_processed_total` | counter | Items that completed successfully |
-| `iped_items_failed_total` | counter | Items that errored (before DLQ) |
-| `iped_processing_duration_ms_total` | counter | Cumulative processing time |
-| `iped_agent_free_slots` | gauge | Free worker slots per agent |
-| `iped_agent_in_flight` | gauge | Items currently in-flight per agent |
-| `iped_consumer_lag` | gauge | Kafka consumer lag per topic/partition |
-| `iped_pressured_agents` | gauge | Agents reporting HARD backpressure |
+| `iped_distributed_items_processed_total` | counter | Items that completed successfully (labels: case_id, task_type, stage) |
+| `iped_distributed_items_failed_total` | counter | Items that encountered processing error (labels: case_id, task_type, stage) |
+| `iped_distributed_processing_duration_ms_total` | counter | Cumulative processing time in ms (labels: case_id, task_type, stage) |
+| `iped_distributed_agent_free_slots` | gauge | Available item-processing slots per agent (labels: agent_id, task_type, hostname) |
+| `iped_distributed_agent_inflight` | gauge | Items currently being processed per agent (labels: agent_id, task_type, hostname) |
+| `iped_distributed_consumer_lag` | gauge | Kafka consumer lag in messages (labels: case_id, consumer_group, topic, partition) |
+| `iped_distributed_dlq_count` | gauge | Unconsumed dead-letter-queue entries per case (labels: case_id) |
+| `iped_distributed_case_stalled` | gauge | 1 if case appears stalled, 0 otherwise (labels: case_id) |
 
-### Prometheus scrape config
+Stall detection is based on the configured `itemTimeoutSeconds` — a case is considered stalled
+when items have been discovered but none are in-flight and no status events have been emitted
+within the stall window.
+
+#### Prometheus scrape config
 
 ```yaml
 # prometheus.yml
@@ -501,25 +540,48 @@ scrape_configs:
     scrape_interval: 15s
 ```
 
-### Grafana dashboard (minimal)
+### 8.3 Alerting rules
+
+Three Prometheus alerting rules are provided in `observability/alerts.rules.yml`:
+
+1. **IpedConsumerLagGrowing** (severity: warning) — triggered when a consumer group stays
+   >1000 messages behind for 10 minutes. Indicates a slow/stalled task agent.
+   [Runbook](../../.claude/sdlc/runbooks/consumer-lag-growing.md)
+
+2. **IpedDlqOverflow** (severity: critical) — triggered when DLQ depth exceeds 100 entries
+   for 5 minutes. Indicates repeated item-processing failures requiring operator review.
+   [Runbook](../../.claude/sdlc/runbooks/dlq-overflow.md)
+
+3. **IpedCaseStalled** (severity: critical) — triggered when `iped_distributed_case_stalled==1`
+   for 2 minutes. Indicates items discovered but processing has ceased.
+   [Runbook](../../.claude/sdlc/runbooks/case-stalled.md)
+
+All three rules cross-reference the GET /health endpoint as a contextual signal — check
+`brokerReachable` first to rule out Kafka connectivity issues before assuming an agent
+problem.
+
+#### Grafana dashboard (minimal)
 
 Import the following panel queries to monitor a case:
 
 ```promql
 # Items processed per minute:
-rate(iped_items_processed_total[1m])
+rate(iped_distributed_items_processed_total[1m])
 
 # Error rate:
-rate(iped_items_failed_total[1m])
+rate(iped_distributed_items_failed_total[1m])
 
 # Consumer lag (pipeline stall indicator):
-iped_consumer_lag
+iped_distributed_consumer_lag
 
-# Agent backpressure events:
-iped_pressured_agents > 0
+# DLQ depth per case:
+iped_distributed_dlq_count
+
+# Case staleness indicator:
+iped_distributed_case_stalled
 ```
 
-### Runner dashboard
+### 8.4 Runner dashboard
 
 The IPED Runner provides a higher-level case progress dashboard aggregated from the
 `iped.status` Kafka topic:
@@ -574,14 +636,15 @@ Ports exposed to the host:
 - [ ] `iped.status` topic exists with the correct partitions and replication factor.
 - [ ] Shared storage mount is readable and writable on every node.
 - [ ] `sharedStorageRoot` resolves to the same absolute path on all nodes.
-- [ ] Coordinator is running and `/api/v1/agents` returns HTTP 200.
-- [ ] At least one agent per task type is registered.
+- [ ] Coordinator is running and `GET /api/v1/health` returns HTTP 200 with `brokerReachable: true`.
+- [ ] At least one agent per task type is registered (`GET /api/v1/agents`).
 - [ ] `coordinatorStateDir` points to a durable volume with write access.
 - [ ] `auditLogPath` points to a durable volume with write access.
 - [ ] If `payloadSigningSecret` is set, all agents have the same value.
 - [ ] If TLS is enabled, certificates are valid and trusted on all nodes.
-- [ ] Prometheus is scraping the coordinator `/metrics` endpoint.
-- [ ] Grafana or equivalent is alerting on error rate and consumer lag.
+- [ ] Prometheus is scraping the coordinator `/metrics` endpoint successfully.
+- [ ] Prometheus alerting rules from `observability/alerts.rules.yml` are loaded and active.
+- [ ] Grafana or equivalent is configured to display the 5 key metrics (processed, failed, lag, DLQ, stall).
 
 ### 10.2 Dual-run validation
 
@@ -734,12 +797,23 @@ auditLogPath = ""                 # blank = in-memory only (lost on restart)
 - Check the agent log for connection errors on startup.
 - Verify `agentExpirySeconds` is long enough for the agent to send its first heartbeat.
 
+### Broker connectivity failure (health check returns `brokerReachable: false`)
+
+- Verify all brokers in `kafkaBootstrapServers` are reachable on the configured port.
+- Check firewall rules between the coordinator and Kafka brokers.
+- If using TLS, verify certificate validity and truststore configuration on the coordinator.
+- Check Kafka broker logs for unexpected client connection errors.
+
 ### Consumer lag is growing (pipeline stall)
 
-- Check `GET /metrics` for `iped_pressured_agents > 0` — agents may be under HARD
-  backpressure (heap or disk full).
-- Check agent logs for `HARD backpressure` warnings.
+- Check `GET /api/v1/health` for `brokerReachable: true` — if false, address broker
+  connectivity first.
+- Check `GET /metrics` for `iped_distributed_consumer_lag > 1000` sustained for 10+ minutes.
+- Check `GET /metrics` for `iped_distributed_case_stalled == 1` — indicates agents have no
+  in-flight work.
+- Check agent logs for `HARD backpressure` warnings (heap or disk full).
 - Scale up agents for the bottleneck task type.
+- Consult the [consumer lag runbook](../../.claude/sdlc/runbooks/consumer-lag-growing.md).
 
 ### Items landing in DLQ
 
@@ -760,6 +834,18 @@ curl -X POST http://coordinator:8484/api/v1/dlq/case-2024-001/discard \
 
 If items consistently fail a specific task type, check the agent logs for the error
 stored in the DLQ entry's `extraAttributes.__error` field.
+
+Consult the [DLQ overflow runbook](../../.claude/sdlc/runbooks/dlq-overflow.md) if the
+DLQ depth exceeds 100 entries for sustained periods.
+
+### Case appears stalled
+
+If `iped_distributed_case_stalled == 1` is reported for a case:
+
+1. Check `GET /api/v1/health` for `brokerReachable: true`.
+2. Verify agents are running: `GET /api/v1/agents`.
+3. Check agent logs for processing errors or backpressure state.
+4. Consult the [case stalled runbook](../../.claude/sdlc/runbooks/case-stalled.md).
 
 ### Payload signature verification failures
 
