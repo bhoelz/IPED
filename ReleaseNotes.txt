@@ -1,3 +1,16 @@
+10/07/2026: IPED-4.4.0
+News:
+- Coordinator /health endpoint upgraded from liveness-only to real readiness: now probes live Kafka broker connectivity (BrokerHealthProbe, AdminClient.describeCluster() with a short timeout) and reports degraded/non-200 status when the broker is unreachable, instead of always returning 200 based on in-memory state alone.
+- Prometheus alerting for the distributed pipeline: 3 new alert rules covering DLQ count growth, consumer lag growth, and stall detection, backed by new DistributedMetrics gauges.
+- CI security-tooling baseline: Dependabot enabled; OWASP Dependency-Check wired into PR gates with a CVSS>=7 failure threshold and a suppression file for triaged findings; SpotBugs runs reactor-wide in CI as a reporting (non-blocking) job pending a future triage baseline.
+- IndexingPort: a new ports-and-adapters seam (SPI) for the indexing operation, proven on two production Tasks (DuplicateTask and SkipCommitedTask), including a session concept so a Task can share one index reader across multiple internal scans instead of reopening it repeatedly.
+
+Fixes:
+- /metrics DLQ-scrape endpoint changed from O(N) per-case broker round-trips to O(1), with an explicit 5s timeout added where none existed before.
+- Fixed a doc-values cache scoping bug found during IndexingPort extension work that could silently return stale/null values for sparse fields read across more than one scan in the same session.
+- Restored a fast-path short-circuit for absent fields in SkipCommitedTask and reduced the Task from reopening its index reader 6-7 times per run to once.
+- Converged duplicate BouncyCastle and SQLite JDBC dependency versions across 13 modules in the reactor.
+
 28/03/2026: IPED-4.3.1
 #2855: Add audio transcription results to Telegram chats reports (@hauck-jvsh)
 #2786: Regression: SharedHashes field being populated with medias received by the local account (@aberenguel)
