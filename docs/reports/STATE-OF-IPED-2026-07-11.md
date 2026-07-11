@@ -1,15 +1,15 @@
-# State of IPED — 2026-07-11
+# State of IPED — 2026-06-21
 
 Generated from [`docs/roadmaps/`](docs/roadmaps/) and [`docs/issues/`](docs/issues/) as part of the planning-docs consolidation. Regenerate after material roadmap/issue changes; the previous version (if any) is backed up to `docs/reports/STATE-OF-IPED-<date>.md` before this file is overwritten.
 
 ## Headline numbers
 
-376 tracked issues across 28 module/cross-cutting roadmaps:
+373 tracked issues across 28 module/cross-cutting roadmaps:
 
 | Status | Count | % |
 |---|---|---|
 | `done` | 248 | 66% |
-| `planned` | 112 | 30% |
+| `planned` | 109 | 29% |
 | `in_progress` | 10 | 3% |
 | `blocked` | 5 | 1% |
 | `proposed` | 1 | 0% |
@@ -40,7 +40,7 @@ The high `done` share reflects that several modules (`iped-api`, `iped-distribut
 | iped-runner | 23 | 23 | 0 | 0 | 0 | 100% | [link](docs/roadmaps/iped-runner-ROADMAP.md) |
 | iped-runner-ui | 31 | 29 | 0 | 2 | 0 | 93% | [link](docs/roadmaps/iped-runner-ui-ROADMAP.md) |
 | iped-sleuthkit | 8 | 0 | 0 | 8 | 0 | 0% | [link](docs/roadmaps/iped-sleuthkit-ROADMAP.md) |
-| iped-tasks | 25 | 16 | 1 | 6 | 1 | 64% | [link](docs/roadmaps/iped-tasks-ROADMAP.md) |
+| iped-tasks | 22 | 16 | 1 | 3 | 1 | 73% | [link](docs/roadmaps/iped-tasks-ROADMAP.md) |
 | iped-ufed | 7 | 0 | 0 | 7 | 0 | 0% | [link](docs/roadmaps/iped-ufed-ROADMAP.md) |
 | iped-ui | 6 | 0 | 0 | 6 | 0 | 0% | [link](docs/roadmaps/iped-ui-ROADMAP.md) |
 | iped-utils | 9 | 0 | 0 | 9 | 0 | 0% | [link](docs/roadmaps/iped-utils-ROADMAP.md) |
@@ -62,7 +62,6 @@ The high `done` share reflects that several modules (`iped-api`, `iped-distribut
 - **Scripting APIs / engine modularization**: `iped-engine-parent`'s cross-cutting module-split effort is only 20% done; most of the actual splitting work is `planned` or has migrated into the now-100%-done sibling modules (`iped-engine-core`, `iped-distributed`), suggesting the parent roadmap's own phase descriptions are due for a refresh next.
 - **Datasource readers** (`iped-ad1`, `iped-sleuthkit`, `iped-ufed`, `iped-engine-hashdb`): uniformly 0% done — these are stable, low-churn modules where the roadmap only captures forward-looking hardening/distributed-readiness work, not current defects.
 - **Component plugin system (proposal)**: `iped-tasks` gained a new `proposed` Phase 5 issue (ISSUE-447) after a batch of stray planning docs claiming a generic cross-component plugin SPI was "100% complete" turned out to describe work that was never actually built — filed as a go/no-go decision rather than a backlog commitment.
-- **Standalone task runner (`iped-tasks-cli`)**: a new module letting a single `AbstractTask` run without a case/index/DB. A code review of its no-case null-guards found and fixed a real NPE (`ImageThumbTask` standalone) that its own compatibility list had missed, which is why `iped-tasks` dropped from 76% to 64% this cycle — a new Phase 6 with 3 `planned` regression-test issues (ISSUE-448/449/450) was opened to close that gap rather than trusting the fix by inspection alone.
 
 ## Top risks (carried from master `ROADMAP.md`)
 

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>State of IPED — 2026-07-11</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel-border: #2a2e3a;
+    --text: #e6e8ee;
+    --muted: #9aa0ad;
+    --accent: #5b8cff;
+    --done: #3ddc84;
+    --planned: #f2b84b;
+    --in_progress: #4fc3f7;
+    --blocked: #ff6b6b;
+    --proposed: #9aa0ad;
+    --cancelled: #6c7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin: 0 0 32px; }
+  .subtitle a { color: var(--accent); text-decoration: none; }
+  .subtitle a:hover { text-decoration: underline; }
+  h2 {
+    font-size: 19px;
+    margin: 40px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+
+  /* Headline stat strip */
+  .headline { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .stat {
+    flex: 1 1 140px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat .n { font-size: 26px; font-weight: 700; }
+  .stat .l { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+  .stat.done .n { color: var(--done); }
+  .stat.planned .n { color: var(--planned); }
+  .stat.in_progress .n { color: var(--in_progress); }
+  .stat.blocked .n { color: var(--blocked); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--panel-border); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; }
+  a { color: var(--accent); }
+
+  .pct-bar {
+    display: inline-block;
+    width: 70px;
+    height: 8px;
+    background: #262a36;
+    border-radius: 4px;
+    overflow: hidden;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  .pct-bar > span { display: block; height: 100%; background: var(--done); }
+  .pct-row { display: flex; align-items: center; }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+  }
+  .badge.done { background: rgba(61,220,132,.15); color: var(--done); }
+  .badge.planned { background: rgba(242,184,75,.15); color: var(--planned); }
+  .badge.in_progress { background: rgba(79,195,247,.15); color: var(--in_progress); }
+  .badge.blocked { background: rgba(255,107,107,.15); color: var(--blocked); }
+  .badge.proposed { background: rgba(154,160,173,.15); color: var(--proposed); }
+  .badge.cancelled { background: rgba(108,114,128,.15); color: var(--cancelled); }
+
+  ul { padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  .note { color: var(--muted); font-size: 13px; margin-top: 12px; }
+  code { background: #262a36; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 48px; border-top: 1px solid var(--panel-border); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>State of IPED</h1>
+  <p class="subtitle">
+    2026-07-11 &middot; generated from <code>docs/roadmaps/</code> and <code>docs/issues/</code> as part of the
+    planning-docs consolidation. Regenerate after material roadmap/issue changes — the previous version is
+    backed up to <code>docs/reports/STATE-OF-IPED-&lt;date&gt;.md</code> before being overwritten.
+  </p>
+
+  <h2>Headline numbers</h2>
+  <p>376 tracked issues across 28 module / cross-cutting roadmaps:</p>
+  <div class="headline">
+    <div class="stat done"><div class="n">248</div><div class="l">Done · 66%</div></div>
+    <div class="stat planned"><div class="n">112</div><div class="l">Planned · 30%</div></div>
+    <div class="stat in_progress"><div class="n">10</div><div class="l">In progress · 3%</div></div>
+    <div class="stat blocked"><div class="n">5</div><div class="l">Blocked · 1%</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">Proposed · 0%</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">Cancelled · 0%</div></div>
+  </div>
+  <p class="note">
+    The high <span class="badge done">done</span> share reflects that several modules
+    (<code>iped-api</code>, <code>iped-distributed</code>, <code>iped-engine-core</code>, <code>iped-mcp</code>,
+    <code>iped-runner</code>, <code>iped-webapi</code>, <code>iped-webui</code>)
+    have already finished the phase of work captured in their current roadmap — their next roadmap phases will
+    need new issues as that work is defined.
+  </p>
+
+  <h2>Per-module status</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th class="num">Issues</th>
+          <th class="num">Done</th>
+          <th class="num">In&nbsp;progress</th>
+          <th class="num">Planned</th>
+          <th class="num">Blocked</th>
+          <th>% done</th>
+          <th>Roadmap</th>
+        </tr>
+      </thead>
+      <tbody id="module-table-body">
+      </tbody>
+    </table>
+    <p class="note">
+      <code>iped-api</code>/<code>iped-carvers</code>/<code>iped-utils</code>/<code>iped-viewers</code> don't have
+      a dedicated <code>docs/issues/</code> prefix in their filenames the way <code>iped-engine-*</code> does —
+      cross-check the <code>Roadmap:</code> field inside each issue file if a module name looks ambiguous.
+    </p>
+  </div>
+
+  <h2>Highlights by workstream <span style="color:var(--muted); font-weight:400; font-size:13px;">(from the master <code>ROADMAP.md</code>)</span></h2>
+  <div class="card">
+    <ul>
+      <li><strong>Browser-based main UI</strong>: <code>iped-webui</code> shows its current roadmap phase fully <span class="badge done">done</span> (islands architecture, real backend wiring, auth/CSRF, CI gates). <code>iped-webui-server</code> dropped from 100% to 89% this cycle — a previously-recorded "done" claim for a packaging deployment guide was found to be false (no such file ever existed for this module) and corrected back to <span class="badge planned">planned</span>, and a new security-hardening phase was opened for a still-open XSS finding. <code>iped-ui</code> (config UI) and <code>iped-viewers</code> still have open work deciding the config-UI module's fate and classifying/migrating remaining viewers to the web.</li>
+      <li><strong>Companion desktop app</strong>: <code>iped-app</code> is 40% done — release assembly and CLI bootstrap work landed; the companion handoff protocol and installer/update channel are still <span class="badge planned">planned</span>.</li>
+      <li><strong>MCP server for AI case interaction</strong>: <code>iped-mcp</code> and its <code>iped-webapi</code> dependency are both 100% done on their current phase — baseline tool surface, audit trail, tenant isolation, and the v2 webapi contract are all complete.</li>
+      <li><strong>Kafka distributed processing</strong>: <code>iped-distributed</code> and <code>iped-runner</code>/<code>iped-runner-ui</code> (dashboard) are all 100%/93% done on current scope. <code>iped-engine</code>'s own distributed-integration phase (Phase 3) is 58% done with 3 <span class="badge blocked">blocked</span> items (deferred pending coordinated cross-module changes — datasource code move, task-config relocation).</li>
+      <li><strong>Additional data stores (graph/vector/time-series)</strong>: <code>iped-additional-index</code> jumped from 0% to 36% this cycle after a previously-unimplemented-looking design doc (<code>ADDITIONAL_PROCESSING.md</code>, item-level additional task processing) turned out to be ~85% already built but entirely untracked — 5 of its 6 new issues are <span class="badge done">done</span>, with only the GUI still <span class="badge planned">planned</span>. The graph/vector/time-series connector work in this module's original Phase 1 remains untouched. <code>iped-engine-graph</code> is still 0% — entirely <span class="badge planned">planned</span>, no work started yet.</li>
+      <li><strong>Scripting APIs / engine modularization</strong>: <code>iped-engine-parent</code>'s cross-cutting module-split effort is only 20% done; most of the actual splitting work is <span class="badge planned">planned</span> or has migrated into the now-100%-done sibling modules (<code>iped-engine-core</code>, <code>iped-distributed</code>), suggesting the parent roadmap's own phase descriptions are due for a refresh next.</li>
+      <li><strong>Datasource readers</strong> (<code>iped-ad1</code>, <code>iped-sleuthkit</code>, <code>iped-ufed</code>, <code>iped-engine-hashdb</code>): uniformly 0% done — these are stable, low-churn modules where the roadmap only captures forward-looking hardening/distributed-readiness work, not current defects.</li>
+      <li><strong>Component plugin system (proposal)</strong>: <code>iped-tasks</code> gained a new <span class="badge proposed">proposed</span> Phase 5 issue (ISSUE-447) after a batch of stray planning docs claiming a generic cross-component plugin SPI was "100% complete" turned out to describe work that was never actually built — filed as a go/no-go decision rather than a backlog commitment.</li>
+      <li><strong>Standalone task runner (<code>iped-tasks-cli</code>)</strong>: a new module letting a single <code>AbstractTask</code> run without a case/index/DB. A code review of its no-case null-guards found and fixed a real NPE (<code>ImageThumbTask</code> standalone) that its own compatibility list had missed, which is why <code>iped-tasks</code> dropped from 76% to 64% this cycle — a new Phase 6 with 3 <span class="badge planned">planned</span> regression-test issues (ISSUE-448/449/450) was opened to close that gap rather than trusting the fix by inspection alone.</li>
+    </ul>
+  </div>
+
+  <h2>Top risks <span style="color:var(--muted); font-weight:400; font-size:13px;">(carried from master <code>ROADMAP.md</code>)</span></h2>
+  <div class="card">
+    <ul>
+      <li>Viewer parity delays for specialized formats blocking full Swing retirement.</li>
+      <li>Event-model drift between the legacy and Kafka-distributed processing paths.</li>
+      <li>Data consistency across complementary stores (graph/vector/time-series) once the remaining <code>iped-additional-index</code> connector work starts.</li>
+      <li><code>iped-engine-parent</code>'s low completion (20%) relative to its <span class="badge done">done</span> siblings suggests the cross-cutting roadmap needs re-scoping rather than more issues at the same granularity.</li>
+      <li>Planning-doc drift: two corrections this cycle (<code>iped-webui-server</code>'s false-<span class="badge done">done</span> deployment guide, the plugin-system docs' false "100% complete" claims) came from someone trusting a doc's own status banner instead of checking the code — worth a periodic spot-check rather than assuming roadmap/issue status is always accurate without verification.</li>
+    </ul>
+  </div>
+
+  <h2>Notable <span class="badge blocked">blocked</span> issues</h2>
+  <div class="card">
+    <ul>
+      <li><code>iped-carvers</code>: distributed carving byte-range work (1 issue) — depends on the Kafka work-unit model maturing in <code>iped-distributed</code>.</li>
+      <li><code>iped-engine</code>: 3 issues deferred pending coordinated changes across <code>iped-sleuthkit</code>/<code>iped-ufed</code>/<code>iped-ad1</code> and <code>iped-tasks-*</code> modules.</li>
+      <li><code>iped-tasks</code>: 1 issue (end-of-case finalization stage) — explicitly noted as "investigated, not yet buildable" pending external prerequisites.</li>
+    </ul>
+  </div>
+
+  <h2>How this report was built</h2>
+  <div class="card">
+    <p style="margin:0;">
+      Counts are a mechanical rollup of the <code>Status:</code> field in every <code>docs/issues/ISSUE-*.md</code> file,
+      grouped by the module each issue's <code>Roadmap:</code> link points to. Workstream highlights and risks are a manual
+      read of <code>docs/roadmaps/*.md</code> plus the root <code>ROADMAP.md</code>. Regenerate by re-running this rollup
+      whenever roadmaps or issue statuses change materially — see <code>skills/iped-roadmap-tracker/SKILL.md</code> for
+      the procedure (which also covers regenerating this HTML render).
+    </p>
+  </div>
+
+  <footer>Rendered from <code>STATE-OF-IPED.md</code>. Source of truth is the Markdown file — regenerate this HTML after the next rollup.</footer>
+</div>
+
+<script>
+  const rows = [
+    ["iped-ad1", 6, 0, 0, 6, 0, "docs/roadmaps/iped-ad1-ROADMAP.md"],
+    ["iped-additional-index", 14, 5, 0, 9, 0, "docs/roadmaps/iped-additional-index-ROADMAP.md"],
+    ["iped-api", 10, 10, 0, 0, 0, "docs/roadmaps/iped-api-ROADMAP.md"],
+    ["iped-app", 10, 4, 0, 6, 0, "docs/roadmaps/iped-app-ROADMAP.md"],
+    ["iped-carvers", 10, 9, 0, 0, 1, "docs/roadmaps/iped-carvers-ROADMAP.md"],
+    ["iped-distributed", 21, 21, 0, 0, 0, "docs/roadmaps/iped-distributed-ROADMAP.md"],
+    ["iped-engine", 12, 7, 2, 0, 3, "docs/roadmaps/iped-engine-ROADMAP.md"],
+    ["iped-engine-core", 10, 10, 0, 0, 0, "docs/roadmaps/iped-engine-core-ROADMAP.md"],
+    ["iped-engine-graph", 7, 0, 0, 7, 0, "docs/roadmaps/iped-engine-graph-ROADMAP.md"],
+    ["iped-engine-hashdb", 8, 0, 0, 8, 0, "docs/roadmaps/iped-engine-hashdb-ROADMAP.md"],
+    ["iped-engine-parent", 10, 2, 1, 7, 0, "docs/roadmaps/iped-engine-parent-ROADMAP.md"],
+    ["iped-engine-plugin-registry", 16, 2, 1, 13, 0, "docs/roadmaps/iped-engine-plugin-registry-ROADMAP.md"],
+    ["iped-engine-schemas", 10, 5, 0, 5, 0, "docs/roadmaps/iped-engine-schemas-ROADMAP.md"],
+    ["iped-geo", 7, 5, 0, 2, 0, "docs/roadmaps/iped-geo-ROADMAP.md"],
+    ["iped-mcp", 22, 22, 0, 0, 0, "docs/roadmaps/iped-mcp-ROADMAP.md"],
+    ["iped-parsers", 19, 11, 3, 5, 0, "docs/roadmaps/iped-parsers-ROADMAP.md"],
+    ["iped-runner", 23, 23, 0, 0, 0, "docs/roadmaps/iped-runner-ROADMAP.md"],
+    ["iped-runner-ui", 31, 29, 0, 2, 0, "docs/roadmaps/iped-runner-ui-ROADMAP.md"],
+    ["iped-sleuthkit", 8, 0, 0, 8, 0, "docs/roadmaps/iped-sleuthkit-ROADMAP.md"],
+    ["iped-tasks", 25, 16, 1, 6, 1, "docs/roadmaps/iped-tasks-ROADMAP.md"],
+    ["iped-ufed", 7, 0, 0, 7, 0, "docs/roadmaps/iped-ufed-ROADMAP.md"],
+    ["iped-ui", 6, 0, 0, 6, 0, "docs/roadmaps/iped-ui-ROADMAP.md"],
+    ["iped-utils", 9, 0, 0, 9, 0, "docs/roadmaps/iped-utils-ROADMAP.md"],
+    ["iped-viewers", 11, 8, 0, 3, 0, "docs/roadmaps/iped-viewers-ROADMAP.md"],
+    ["iped-webapi", 22, 22, 0, 0, 0, "docs/roadmaps/iped-webapi-ROADMAP.md"],
+    ["iped-webui", 18, 18, 0, 0, 0, "docs/roadmaps/iped-webui-ROADMAP.md"],
+    ["iped-webui-server", 19, 17, 0, 2, 0, "docs/roadmaps/iped-webui-server-ROADMAP.md"],
+    ["web-ui-implementation", 5, 2, 2, 1, 0, "docs/roadmaps/web-ui-implementation-ROADMAP.md"],
+  ];
+
+  const tbody = document.getElementById("module-table-body");
+  for (const [name, total, done, inprog, planned, blocked, link] of rows) {
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${name}</td>
+      <td class="num">${total}</td>
+      <td class="num">${done}</td>
+      <td class="num">${inprog}</td>
+      <td class="num">${planned}</td>
+      <td class="num">${blocked}</td>
+      <td>
+        <div class="pct-row">
+          <span class="pct-bar"><span style="width:${pct}%"></span></span>
+          ${pct}%
+        </div>
+      </td>
+      <td><a href="${link}">link</a></td>
+    `;
+    tbody.appendChild(tr);
+  }
+</script>
+
+</body>
+</html>

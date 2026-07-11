@@ -1,8 +1,9 @@
 # iped-tasks — Evolution Roadmap
 
 > Module purpose: parent of the processing-task modules — `iped-tasks.spi` (task SPI),
-> `iped-tasks-bom`, `iped-tasks-core`, and feature task modules (transcript, image,
-> storage-index, carving, graph, report, forensics).
+> `iped-tasks-bom`, `iped-tasks-core`, feature task modules (transcript, image,
+> storage-index, carving, graph, report, forensics), and `iped-tasks-cli` (standalone
+> single-task runner, no case/index/DB required).
 > Status legend: see linked issues in docs/issues/ for per-item status (canonical statuses: proposed, planned, in_progress, blocked, done, cancelled).
 
 ## Current state (2026-06)
@@ -42,6 +43,11 @@
 
 ## Phase 5 — Component plugin system (proposal) — `proposed`
 - [ISSUE-447](../issues/ISSUE-447-evaluate-generic-component-plugin-system.md) — Evaluate the generic component plugin system proposal — `proposed`
+
+## Phase 6 — Standalone task runner (iped-tasks-cli) hardening — `planned`
+- [ISSUE-448](../issues/ISSUE-448-standalone-cli-carving-e2e-test.md) — End-to-end standalone CarverTask test through the CLI — `planned`
+- [ISSUE-449](../issues/ISSUE-449-standalone-imagethumbtask-test.md) — Standalone ImageThumbTask test with a real image — `planned`
+- [ISSUE-450](../issues/ISSUE-450-taskexecutor-npe-classification-test.md) — Narrow TaskExecutor's NPE-to-UNSUPPORTED classification, add regression test — `planned`
 
 ## Progress checks
 - `mvn -pl iped-tasks -am verify` green; ArchUnit layering green.
