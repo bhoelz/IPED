@@ -29,8 +29,8 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.html.HtmlMapper;
-import org.apache.tika.parser.html.HtmlParser;
 import org.apache.tika.parser.html.IdentityHtmlMapper;
+import org.apache.tika.parser.html.JSoupParser;
 import org.apache.tika.sax.XHTMLContentHandler;
 import org.apache.tika.utils.SystemUtils;
 import org.slf4j.Logger;
@@ -140,7 +140,7 @@ public class ExternalParser extends AbstractParser {
 
     private int linesToIgnore = 0;
 
-    private HtmlParser htmlParser = new HtmlParser();
+    private JSoupParser htmlParser = new JSoupParser();
 
     public Set<MediaType> getSupportedTypes(ParseContext context) {
         return getSupportedTypes();
