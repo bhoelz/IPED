@@ -41,13 +41,13 @@
 - [ISSUE-321](../issues/ISSUE-321-image-task-embedding-generation-hook.md) — Image task — embedding generation hook feeding the vector store connector — `planned`
 - [ISSUE-322](../issues/ISSUE-322-report-task-align-html-with-browser-ui.md) — Report task — align HTML report output with the browser-UI rendering stack — `planned`
 
-## Phase 5 — Component plugin system (proposal) — `proposed`
-- [ISSUE-447](../issues/ISSUE-447-evaluate-generic-component-plugin-system.md) — Evaluate the generic component plugin system proposal — `proposed`
+## Phase 5 — Component plugin system (proposal) — `cancelled`
+- [ISSUE-447](../issues/ISSUE-447-evaluate-generic-component-plugin-system.md) — Evaluate the generic component plugin system proposal — `cancelled` (no-go; see ADR-0001)
 
-## Phase 6 — Standalone task runner (iped-tasks-cli) hardening — `planned`
-- [ISSUE-448](../issues/ISSUE-448-standalone-cli-carving-e2e-test.md) — End-to-end standalone CarverTask test through the CLI — `planned`
-- [ISSUE-449](../issues/ISSUE-449-standalone-imagethumbtask-test.md) — Standalone ImageThumbTask test with a real image — `planned`
-- [ISSUE-450](../issues/ISSUE-450-taskexecutor-npe-classification-test.md) — Narrow TaskExecutor's NPE-to-UNSUPPORTED classification, add regression test — `planned`
+## Phase 6 — Standalone task runner (iped-tasks-cli) hardening — `done`
+- [ISSUE-448](../issues/ISSUE-448-standalone-cli-carving-e2e-test.md) — End-to-end standalone CarverTask test through the CLI — `done`
+- [ISSUE-449](../issues/ISSUE-449-standalone-imagethumbtask-test.md) — Standalone ImageThumbTask test with a real image — `done`
+- [ISSUE-450](../issues/ISSUE-450-taskexecutor-npe-classification-test.md) — Narrow TaskExecutor's NPE-to-UNSUPPORTED classification, add regression test — `done`
 
 ## Progress checks
 - `mvn -pl iped-tasks -am verify` green; ArchUnit layering green.

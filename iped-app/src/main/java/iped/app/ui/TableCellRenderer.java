@@ -79,6 +79,10 @@ public class TableCellRenderer extends DefaultTableCellRenderer {
                     || (model instanceof DuplicatesTableModel && (colName.equalsIgnoreCase(IndexItem.PATH) || colName.equalsIgnoreCase(LocalizedProperties.getLocalizedField(IndexItem.PATH))))) {
                 try {
                     IItemId item = ((SearchResultTableModel) model).getSearchResult().getItem(idx);
+                    var executedTasks = App.get().appCase.getAdditionalDataSourceManager().getAllExecutedTasks(item.getId());
+                    if (!executedTasks.isEmpty()) {
+                        toopTip = "Additional tasks: " + String.join(", ", executedTasks);
+                    }
                     int docId = App.get().appCase.getLuceneId(item);
                     Document doc = App.get().appCase.getSearcher().storedFields().document(docId);
                     if (Boolean.valueOf(doc.get(IndexItem.ISDIR))) {

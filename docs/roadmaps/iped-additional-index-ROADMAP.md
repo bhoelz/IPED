@@ -13,14 +13,14 @@
   "additional data stores" workstream (pluggable vector/graph/time-series connectors) — see
   Phases 1-3, unrelated and much earlier-stage.
 
-## Phase 0 — Item-level additional task processing — `in_progress`
+## Phase 0 — Item-level additional task processing — `done`
 Design doc: [ADDITIONAL_PROCESSING.md](../../iped-engine-parent/iped-additional-index/ADDITIONAL_PROCESSING.md).
 - [ISSUE-440](../issues/ISSUE-440-additional-processing-api-contracts.md) — Additional-processing API contracts — `done`
 - [ISSUE-441](../issues/ISSUE-441-additional-processing-lucene-storage.md) — Lucene-backed additional-data storage and manager — `done`
 - [ISSUE-442](../issues/ISSUE-442-additional-processing-enriched-item-reader.md) — Transparent item enrichment — `done`
 - [ISSUE-443](../issues/ISSUE-443-additional-processing-task-runner-worker.md) — Additional-task runner and worker — `done`
 - [ISSUE-444](../issues/ISSUE-444-additional-processing-index-task.md) — AdditionalIndexTask terminal stage — `done`
-- [ISSUE-445](../issues/ISSUE-445-additional-processing-gui.md) — GUI for selecting items and re-running additional processing — `planned`
+- [ISSUE-445](../issues/ISSUE-445-additional-processing-gui.md) — GUI for selecting items and re-running additional processing — `done`
 
 ## Phase 1 — Connector contract — `planned`
 - [ISSUE-011](../issues/ISSUE-011-additional-index-connector-spi.md) — Define the pluggable store connector SPI — `planned`

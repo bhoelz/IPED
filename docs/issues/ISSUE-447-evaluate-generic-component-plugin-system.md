@@ -1,6 +1,6 @@
 # ISSUE-447: Evaluate the generic component plugin system proposal
 
-- Status: proposed
+- Status: cancelled
 - Roadmap: [iped-tasks-ROADMAP.md](../roadmaps/iped-tasks-ROADMAP.md)
 - Roadmap section: Phase 5 — Component plugin system (proposal)
 - Owner: unassigned
@@ -36,11 +36,16 @@ commit to building the original design as written.
 
 ## Acceptance criteria
 
-- [ ] Decide whether the generic cross-component SPI is still worth building given `TaskProvider` already covers task plugins.
-- [ ] If yes: re-scope FASE 2–7 as fresh, properly-sized issues reusing the existing `MetadataRegistry`/`FileCategoryRegistry`/`PluginResourceBundleLoader` classes rather than restarting from scratch.
-- [ ] If no: mark this issue `cancelled` and note the decision rationale here.
+- [x] Decide whether the generic cross-component SPI is still worth building given `TaskProvider` already covers task plugins.
+- [x] If no: mark this issue `cancelled` and note the decision rationale here.
+- [x] Record the decision in ADR-0001; no generic SPI code is introduced.
 
 ## Updates
+
+### 2026-07-16
+- Decision accepted: do not build a generic `ComponentProvider<T>` in this cycle.
+  Keep `TaskProvider` as the official task-extension SPI and preserve
+  domain-specific registries. See ADR-0001.
 
 ### 2026-06-21
 - Issue created while triaging stray planning docs at the repo `docs/` root. The docs were moved into `iped-tasks/iped-tasks.spi/` and a corrected status doc was written, but no implementation decision has been made — filed as `proposed` pending a go/no-go call.

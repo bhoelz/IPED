@@ -1,6 +1,6 @@
 # ISSUE-449: Standalone ImageThumbTask test with a real image
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-tasks-ROADMAP.md](../roadmaps/iped-tasks-ROADMAP.md)
 - Roadmap section: Phase 6 — Standalone task runner (iped-tasks-cli) hardening
 - Owner: unassigned

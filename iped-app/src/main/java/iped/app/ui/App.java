@@ -238,6 +238,7 @@ public class App extends JFrame implements WindowListener, IMultiSearchResultPro
     private SimilarImagesQueryFilterer similarImagesFilterer;
 
     private DuplicatesFilterer duplicatesFilterer;
+    AdditionalResultsFilterer additionalResultsFilterer;
 
     public FiltersPanel filtersPanel;
 
@@ -747,6 +748,7 @@ public class App extends JFrame implements WindowListener, IMultiSearchResultPro
         resultsTable.addKeyListener(resultTableListener);
 
         duplicatesFilterer = new DuplicatesFilterer();
+        additionalResultsFilterer = new AdditionalResultsFilterer();
 
         filterManager.addQueryFilterer(new SearchFilterer());
         filterManager.addQueryFilterer(categoryListener);
@@ -758,6 +760,7 @@ public class App extends JFrame implements WindowListener, IMultiSearchResultPro
         filterManager.addResultSetFilterer(bookmarksListener);
         filterManager.addResultSetFilterer(FilterSelectedEdges.getInstance());
         filterManager.addResultSetFilterer(duplicatesFilterer);
+        filterManager.addResultSetFilterer(additionalResultsFilterer);
         filterManager.addResultSetFilterer(similarImagesFilterer);
         filterManager.addResultSetFilterer(similarFacesSearchFilterer);
         filterManager.addResultSetFilterer(timelineListener);

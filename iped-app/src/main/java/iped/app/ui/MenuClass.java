@@ -43,7 +43,8 @@ public class MenuClass extends JPopupMenu {
             checkHighlightedAndSubItems, uncheckHighlightedAndSubItems, checkHighlightedAndParent, uncheckHighlightedAndParent, checkHighlightedAndReferences, uncheckHighlightedAndReferences, checkHighlightedAndReferencedBy, uncheckHighlightedAndReferencedBy,
             changeGalleryColCount, defaultLayout, changeLayout, previewScreenshot, manageBookmarks, clearSearchHistory, importKeywords, navigateToParent, exportTerms, manageFilters, manageColumns, exportCheckedToZip, exportCheckedTreeToZip,
             exportTree, exportTreeChecked, similarDocs, openViewfile, createReport, resetColLayout, lastColLayout, saveColLayout, addToGraph, navigateToParentChat, pinFirstColumns, similarImagesCurrent, similarImagesExternal,
-            similarFacesCurrent, similarFacesExternal, toggleTimelineView, uiZoom, catIconSize, savePanelsLayout, loadPanelsLayout;
+            similarFacesCurrent, similarFacesExternal, toggleTimelineView, uiZoom, catIconSize, savePanelsLayout, loadPanelsLayout,
+            additionalProcessing, additionalResultsFilter;
 
     MenuListener menuListener = new MenuListener(this);
     boolean isTreeMenu;
@@ -136,6 +137,17 @@ public class MenuClass extends JPopupMenu {
         manageFilters = new JMenuItem(Messages.getString("MenuClass.ManageFilters")); //$NON-NLS-1$
         manageFilters.addActionListener(menuListener);
         this.add(manageFilters);
+
+        additionalProcessing = new JMenuItem("Process selected with task");
+        additionalProcessing.addActionListener(menuListener);
+        additionalProcessing.setEnabled(App.get().resultsTable.getSelectedRowCount() > 0
+                && AdditionalProcessingUI.hasEligibleTasks());
+        this.add(additionalProcessing);
+
+        additionalResultsFilter = new JCheckBoxMenuItem("Has additional task result",
+                App.get().additionalResultsFilterer != null && App.get().additionalResultsFilterer.isEnabled());
+        additionalResultsFilter.addActionListener(menuListener);
+        this.add(additionalResultsFilter);
 
         submenu = new JMenu(Messages.getString("MenuClass.ManageColumns")); //$NON-NLS-1$
         this.add(submenu);

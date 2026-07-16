@@ -371,6 +371,20 @@ public class MenuListener implements ActionListener {
 
             App.get().filterManager.setVisible(true);
 
+        } else if (e.getSource() == menu.additionalProcessing) {
+
+            ArrayList<IItemId> selectedIds = new ArrayList<>();
+            for (int row : App.get().resultsTable.getSelectedRows()) {
+                selectedIds.add(App.get().ipedResult.getItem(App.get().resultsTable.convertRowIndexToModel(row)));
+            }
+            AdditionalProcessingUI.show(App.get(), App.get().appCase, selectedIds);
+
+        } else if (e.getSource() == menu.additionalResultsFilter) {
+
+            App.get().additionalResultsFilterer.setEnabled(menu.additionalResultsFilter.isSelected());
+            App.get().filterManager.notifyFilterChange();
+            if (App.get().searchButton != null) App.get().searchButton.doClick();
+
         } else if (e.getSource() == menu.navigateToParent) {
 
             int selIdx = App.get().resultsTable.getSelectedRow();
