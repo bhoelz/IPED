@@ -52,7 +52,7 @@
       </thead>
       <tbody>
       @for (ItemRow r : items) {
-        <tr class="item-row" onclick="ipedSelectItem('@r.iid()')" title="@r.title()" style="cursor:pointer">
+        <tr class="item-row" data-action="select-item" data-item-id="@r.iid()" title="@r.title()" style="cursor:pointer">
           <td class="v" style="padding:4px 10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
             <span class="mono" style="font-size:10.5px;color:var(--accent);margin-right:4px">@if (!r.ext().isEmpty()) {.@r.ext()}</span>@r.name()
           </td>

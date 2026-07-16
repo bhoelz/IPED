@@ -31,7 +31,7 @@
     <div class="group-label">Evidence root</div>
     <div class="tree">
       <div class="node active"
-           onclick="ipedSelectFilter('query', 'All evidence', '*')"
+           data-action="select-filter" data-filter-type="query" data-filter-label="All evidence" data-filter-query="*"
            title="Show all indexed items">
         <span class="caret"></span>
         <svg class="icn" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>
@@ -49,7 +49,7 @@
       <div class="tree">
       @for (CategoryEntry cat : categories) {
         <div class="node"
-             onclick="ipedSelectFilter('category', '@cat.name()', 'category:&quot;@cat.name()&quot;')"
+             data-action="select-filter" data-filter-type="category" data-filter-label="@cat.name()" data-filter-query="category:&quot;@cat.name()&quot;"
              title="@cat.name()">
           <span class="caret"></span>
           <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
@@ -67,7 +67,7 @@
     <div class="group-label">Evidence sources</div>
     <div class="tree">
     @for (EvidenceNode r : evidenceRoots) {
-      <div class="node expandable" id="en-@r.id()" onclick="ipedEvidToggle('@r.id()', '@caseId')" title="@r.name()">
+      <div class="node expandable" id="en-@r.id()" data-action="evidence-toggle" data-node-id="@r.id()" data-case-id="@caseId" title="@r.name()">
         <span class="caret">▸</span>
         <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         <span>@r.name()</span>
@@ -90,7 +90,7 @@
       <div class="tree">
       @for (BookmarkEntry bm : bookmarks) {
         <div class="node bm-node"
-             onclick="ipedSelectFilter('bookmark', '@bm.name()', 'bookmark:&quot;@bm.name()&quot;')"
+             data-action="select-filter" data-filter-type="bookmark" data-filter-label="@bm.name()" data-filter-query="bookmark:&quot;@bm.name()&quot;"
              title="@bm.name()">
           <span class="caret"></span>
           <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="@bm.color()" stroke-width="1.5"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
@@ -175,7 +175,7 @@
     } else {
       <div class="tree">
       @for (AiClassifier clf : classifiers) {
-        <div class="node expandable" id="ai-@clf.id()" onclick="ipedAiToggle('@clf.id()')" title="@clf.name()">
+        <div class="node expandable" id="ai-@clf.id()" data-action="ai-toggle" data-classifier-id="@clf.id()" title="@clf.name()">
           <span class="caret">▸</span>
           <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
           <span>@clf.name()</span>
@@ -184,7 +184,7 @@
         <div class="child" id="aic-@clf.id()" hidden>
         @for (AiLabel lbl : clf.labels()) {
           <div class="node"
-               onclick="ipedSelectFilter('@clf.id()', '@lbl.name()', '@clf.id():&quot;@lbl.name()&quot;')"
+               data-action="select-filter" data-filter-type="@clf.id()" data-filter-label="@lbl.name()" data-filter-query="@clf.id():&quot;@lbl.name()&quot;"
                title="@lbl.name()">
             <span class="caret"></span>
             <span>@lbl.name()</span>

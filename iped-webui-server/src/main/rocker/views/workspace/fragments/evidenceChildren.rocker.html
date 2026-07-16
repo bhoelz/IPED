@@ -5,7 +5,7 @@
    Loaded lazily on first expand; swapped into the hidden .child div. *@
 
 @for (EvidenceNode r : children) {
-  <div class="node @if(r.hasChildren()){expandable}" id="en-@r.id()" onclick="ipedEvidToggle('@r.id()', '@caseId')" title="@r.name()">
+  <div class="node @if(r.hasChildren()){expandable}" id="en-@r.id()" data-action="evidence-toggle" data-node-id="@r.id()" data-case-id="@caseId" title="@r.name()">
     <span class="caret">@if(r.hasChildren()){▸}</span>
     <svg class="icn" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
     <span>@r.name()</span>

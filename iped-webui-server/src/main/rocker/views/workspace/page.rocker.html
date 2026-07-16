@@ -423,6 +423,25 @@
     });
   }
 
+  // Delegated handlers for server-rendered fragments. Keeping untrusted values
+  // in data attributes avoids interpolating them into JavaScript string
+  // literals in Rocker templates (see ISSUE-446).
+  document.addEventListener('click', function (event) {
+    var target = event.target.closest('[data-action]');
+    if (!target) return;
+    var action = target.dataset.action;
+    if (action === 'select-item') {
+      ipedSelectItem(target.dataset.itemId);
+    } else if (action === 'select-filter') {
+      ipedSelectFilter(target.dataset.filterType, target.dataset.filterLabel,
+                       target.dataset.filterQuery);
+    } else if (action === 'evidence-toggle') {
+      ipedEvidToggle(target.dataset.nodeId, target.dataset.caseId);
+    } else if (action === 'ai-toggle') {
+      ipedAiToggle(target.dataset.classifierId);
+    }
+  });
+
   // Wire islands once they upgrade (custom elements define asynchronously)
   document.addEventListener('DOMContentLoaded', function () {
     wireIsland(grid());

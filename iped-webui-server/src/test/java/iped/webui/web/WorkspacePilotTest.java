@@ -72,6 +72,23 @@ class WorkspacePilotTest {
     }
 
     @Test
+    void workspaceUsesDelegatedDataActionsForUntrustedFragmentValues() throws Exception {
+        mvc.perform(get("/workspace").param("caseId", "demo-case"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("document.addEventListener('click'")))
+                .andExpect(content().string(containsString("data-action")))
+                .andExpect(content().string(not(containsString("onclick=\"ipedSelectItem('"))))
+                .andExpect(content().string(not(containsString("onclick=\"ipedSelectFilter('"))))
+                .andExpect(content().string(not(containsString("onclick=\"ipedEvidToggle('"))))
+                .andExpect(content().string(not(containsString("onclick=\"ipedAiToggle('"))));
+
+        mvc.perform(get("/workspace/sidebar").param("tab", "cat"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-action=\"select-filter\"")))
+                .andExpect(content().string(not(containsString("onclick=\"ipedSelectFilter('"))));
+    }
+
+    @Test
     void sidebarFragmentReturnsHtmlPartialNotFullPage() throws Exception {
         mvc.perform(get("/workspace/sidebar").param("tab", "meta"))
                 .andExpect(status().isOk())

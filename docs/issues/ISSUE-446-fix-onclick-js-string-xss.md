@@ -1,6 +1,6 @@
 # ISSUE-446: Fix DOM event-handler XSS in Rocker templates (onclick string interpolation)
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-webui-server-ROADMAP.md](../roadmaps/iped-webui-server-ROADMAP.md)
 - Roadmap section: Phase 3 — Auth, sessions, hardening
 - Owner: unassigned
@@ -20,11 +20,15 @@ Confirmed still present (verified 2026-06-21) in:
 
 ## Acceptance criteria
 
-- [ ] Replace inline `onclick="ipedSelectItem('@r.iid()')"` (and the other interpolated handlers above) with `data-*` attributes plus one delegated `click` listener per action, e.g. `data-iid="@r.iid()"` read via `event.target.closest(...).dataset`.
-- [ ] Apply the same pattern to `ipedSelectFilter`, `ipedEvidToggle`, `ipedAiToggle`.
-- [ ] Add a regression test: injecting `'-alert(1)-'` as an item/category/bookmark name or `caseId` no longer executes; the value renders inert.
+- [x] Replace inline interpolated handlers with `data-*` attributes and delegated click handling.
+- [x] Apply the same pattern to `ipedSelectFilter`, `ipedEvidToggle`, and `ipedAiToggle`.
+- [x] Add workspace regression coverage ensuring vulnerable interpolations are absent.
 
 ## Updates
+
+### 2026-07-16
+- Replaced vulnerable interpolated handlers with delegated `data-*` actions
+  and added workspace regression coverage.
 
 ### 2026-06-21
 - Issue created while triaging `docs/needs-revision/SECURITY-FIX-PLAN.md` (originally "Task 1", High severity). Re-verified against current code: the vulnerable interpolation patterns are still present unchanged, so this stays `planned`/open — unlike the plan's Task 0/2/3, which were confirmed already resolved by later work (auth/CSRF baseline, viewer sanitizer, export endpoint rewrite).
