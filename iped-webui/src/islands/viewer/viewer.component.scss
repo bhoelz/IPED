@@ -94,6 +94,21 @@
   word-break: break-all;
 }
 
+.viewer-search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border, #313244);
+  background: var(--surface, #2a2a3e);
+  flex-shrink: 0;
+
+  input { flex: 1; min-width: 0; background: transparent; color: inherit; border: 1px solid var(--border, #45475a); border-radius: 4px; padding: 4px 6px; }
+  button { background: transparent; color: inherit; border: 1px solid var(--border, #45475a); border-radius: 4px; padding: 3px 7px; cursor: pointer; }
+  button:disabled { opacity: .4; cursor: default; }
+  span { min-width: 48px; text-align: right; font-size: 11px; color: var(--muted, #6c7086); }
+}
+
 .viewer-unsupported {
   flex-direction: row;
   gap: 16px;

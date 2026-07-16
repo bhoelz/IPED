@@ -32,4 +32,5 @@ O skeleton da Fase 1 prova o fluxo fim a fim, mas ainda não cobre o conjunto de
 
 ### 2026-07-16
 - Confirmed server-side export submission/status polling and bookmark/sidebar wiring are present.
-- Remaining acceptance work is browser-level validation of bookmark mutations, viewer hit navigation, and a restricted pilot dataset.
+- Added client-side viewer search with hit count and previous/next navigation for text and HTML renditions.
+- Remaining acceptance work is browser-level validation of bookmark mutations and a restricted pilot dataset.

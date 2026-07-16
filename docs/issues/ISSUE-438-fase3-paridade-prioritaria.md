@@ -30,3 +30,4 @@ O MVP operacional cobre o núcleo analítico, mas a maioria dos fluxos recorrent
 
 ### 2026-07-16
 - Added `docs/web-ui-capability-gap-matrix.md` as the baseline for parity implementation and acceptance tracking.
+- Confirmed layout width persistence already exists through sidebar/right-panel local storage state.

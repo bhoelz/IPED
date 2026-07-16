@@ -69,6 +69,9 @@ export class ViewerComponent extends IslandBase implements OnChanges {
   protected readonly audioMetaLoading = signal(false);
   protected readonly emailData        = signal<EmailData | null>(null);
   protected readonly emailLoading     = signal(false);
+  protected readonly searchQuery      = signal('');
+  protected readonly searchHits       = signal<number[]>([]);
+  protected readonly activeHit        = signal(-1);
 
   protected readonly viewerType = computed<ViewerType>(() => resolveViewerType(this.mediaType));
 
@@ -136,6 +139,8 @@ export class ViewerComponent extends IslandBase implements OnChanges {
     this.audioMetaLoading.set(false);
     this.emailData.set(null);
     this.emailLoading.set(false);
+    this.searchHits.set([]);
+    this.activeHit.set(-1);
 
     const type = this.viewerType();
     if (!this.itemId) return;
@@ -243,6 +248,45 @@ export class ViewerComponent extends IslandBase implements OnChanges {
         this.dispatch(islandErrorEvent({island: 'viewer', message: msg, cause: e}));
       },
     });
+  }
+
+  protected searchViewer(event: Event): void {
+    event.preventDefault();
+    const query = this.searchQuery().trim().toLocaleLowerCase();
+    const content = (this.viewerType() === 'html' ? this.htmlContent() : this.textContent()).toLocaleLowerCase();
+    if (!query || !content) {
+      this.searchHits.set([]);
+      this.activeHit.set(-1);
+      return;
+    }
+    const hits: number[] = [];
+    let offset = 0;
+    while ((offset = content.indexOf(query, offset)) >= 0 && hits.length < 10_000) {
+      hits.push(offset);
+      offset += query.length;
+    }
+    this.searchHits.set(hits);
+    this.activeHit.set(hits.length ? 0 : -1);
+    this.scrollToActiveHit();
+  }
+
+  protected nextSearchHit(): void {
+    if (!this.searchHits().length) return;
+    this.activeHit.update(i => (i + 1) % this.searchHits().length);
+    this.scrollToActiveHit();
+  }
+
+  protected previousSearchHit(): void {
+    if (!this.searchHits().length) return;
+    this.activeHit.update(i => (i - 1 + this.searchHits().length) % this.searchHits().length);
+    this.scrollToActiveHit();
+  }
+
+  private scrollToActiveHit(): void {
+    const hit = this.activeHit();
+    if (hit < 0) return;
+    const node = this.hostEl.querySelector('.viewer-text, .viewer-html');
+    if (node) node.scrollTop = Math.max(0, hit * 0.45);
   }
 
   protected dispatchReady(type: ViewerType): void {

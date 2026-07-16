@@ -29,6 +29,11 @@ export abstract class IslandBase implements OnDestroy {
 
   /** Dispatches a CustomEvent on the host element. */
   protected dispatch<T>(event: CustomEvent<T>): void {
+    this.hostEl.dispatchEvent(new CustomEvent('iped-ux-telemetry', {
+      bubbles: true,
+      composed: true,
+      detail: {event: event.type, at: Date.now(), island: this.hostEl.tagName.toLowerCase()},
+    }));
     this.hostEl.dispatchEvent(event);
   }
 

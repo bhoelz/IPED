@@ -31,4 +31,5 @@ Sem hardening e um plano de rollout/rollback claro, um go-live amplo arrisca inc
 
 ### 2026-07-16
 - Added `iped-webui-server/ROLLOUT-PLAYBOOK.md` with pilot, rollout, rollback, and support gates.
-- Remaining work: frontend telemetry, automated E2E dataset execution, and runtime capability flags.
+- Added privacy-preserving UX telemetry events from Angular islands, buffered per browser session.
+- Remaining work: automated E2E regression suite and runtime capability flags.

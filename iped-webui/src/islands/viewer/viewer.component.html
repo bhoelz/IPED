@@ -34,10 +34,24 @@
          [title]="'PDF viewer for ' + itemId"
          (load)="dispatchReady('pdf')">
 } @else if (viewerType() === 'html') {
+  <form class="viewer-search" (submit)="searchViewer($event)">
+    <input [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Search in viewer…" aria-label="Search in viewer">
+    <button type="submit">Find</button>
+    <button type="button" (click)="previousSearchHit()" [disabled]="!searchHits().length">‹</button>
+    <button type="button" (click)="nextSearchHit()" [disabled]="!searchHits().length">›</button>
+    <span aria-live="polite">{{ searchHits().length ? (activeHit() + 1) + ' / ' + searchHits().length : '0 hits' }}</span>
+  </form>
   <div class="viewer-html"
        [innerHTML]="htmlContent()">
   </div>
 } @else if (viewerType() === 'text') {
+  <form class="viewer-search" (submit)="searchViewer($event)">
+    <input [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Search in viewer…" aria-label="Search in viewer">
+    <button type="submit">Find</button>
+    <button type="button" (click)="previousSearchHit()" [disabled]="!searchHits().length">‹</button>
+    <button type="button" (click)="nextSearchHit()" [disabled]="!searchHits().length">›</button>
+    <span aria-live="polite">{{ searchHits().length ? (activeHit() + 1) + ' / ' + searchHits().length : '0 hits' }}</span>
+  </form>
   <pre class="viewer-text">{{ textContent() }}</pre>
 } @else if (viewerType() === 'audio') {
   <div class="viewer-audio">

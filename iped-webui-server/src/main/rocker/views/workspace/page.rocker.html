@@ -442,6 +442,17 @@
     }
   });
 
+  // Frontend UX telemetry is emitted by Angular islands as a composed event.
+  // Keep the transport intentionally small and privacy-preserving: only event
+  // type, island name, case, and timestamp are retained in the browser buffer.
+  document.addEventListener('iped-ux-telemetry', function (event) {
+    var detail = event.detail || {};
+    var entry = {event: detail.event || 'unknown', island: detail.island || 'unknown', at: detail.at || Date.now(), caseId: '@caseId'};
+    var buffer = JSON.parse(sessionStorage.getItem('iped.ux-telemetry') || '[]');
+    buffer.push(entry);
+    sessionStorage.setItem('iped.ux-telemetry', JSON.stringify(buffer.slice(-100)));
+  });
+
   // Wire islands once they upgrade (custom elements define asynchronously)
   document.addEventListener('DOMContentLoaded', function () {
     wireIsland(grid());
