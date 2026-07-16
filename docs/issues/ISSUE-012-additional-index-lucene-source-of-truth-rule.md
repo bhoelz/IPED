@@ -1,11 +1,11 @@
 # ISSUE-012: Encode the Lucene-index-as-source-of-truth rule in tests/docs
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-additional-index-ROADMAP.md](../roadmaps/iped-additional-index-ROADMAP.md)
 - Roadmap section: Phase 1 — Connector contract
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-16
 
 ## Summary
 
@@ -24,3 +24,6 @@ Without an enforced rule, additional-store connectors could drift into becoming 
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-additional-index-ROADMAP.md`, status set to `planned` based on the original `[ ]` marker.
+
+### 2026-07-16
+- Added a regression test proving additional-index records remain traceable to the original evidence item ID and do not cross-match another item.

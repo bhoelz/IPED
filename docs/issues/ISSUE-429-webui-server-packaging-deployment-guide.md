@@ -1,11 +1,11 @@
 # ISSUE-429: Packaging — single deployable documented in a DEPLOYMENT-GUIDE.md
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-webui-server-ROADMAP.md](../roadmaps/iped-webui-server-ROADMAP.md)
 - Roadmap section: Phase 4 — Production posture (5.0)
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-16
 
 ## Summary
 
@@ -24,3 +24,6 @@ Operators need a single reference document covering how to build, configure, and
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-webui-server-ROADMAP.md`, status set to `done` based on the original `[x]` marker.
 - Status corrected to `planned`: while triaging `docs/needs-revision/`, verified no `DEPLOYMENT-GUIDE.md` actually exists anywhere under `iped-webui-server/`. The sibling module `iped-distributed/DEPLOYMENT-GUIDE.md` has the matching nginx/Docker/observability/security shape described here, which is likely what got cross-attributed during the original roadmap extraction. No file was lost — it appears it was never written for this module.
+
+### 2026-07-16
+- Added the canonical `iped-webui-server/DEPLOYMENT-GUIDE.md` covering build, configuration, TLS, Docker/Compose, observability, and security.

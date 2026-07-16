@@ -27,3 +27,6 @@ O MVP operacional cobre o núcleo analítico, mas a maioria dos fluxos recorrent
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `web-ui-implementation-ROADMAP.md` (Fase 3), status `planned` — no evidence found yet in `iped-webui-ROADMAP.md`/`iped-app-ROADMAP.md` that this phase's deliverables (companion app bridge, full layout persistence) are underway.
+
+### 2026-07-16
+- Added `docs/web-ui-capability-gap-matrix.md` as the baseline for parity implementation and acceptance tracking.

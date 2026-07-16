@@ -1,11 +1,11 @@
 # ISSUE-011: Define the pluggable additional-store connector SPI
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-additional-index-ROADMAP.md](../roadmaps/iped-additional-index-ROADMAP.md)
 - Roadmap section: Phase 1 — Connector contract
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-16
 
 ## Summary
 
@@ -25,3 +25,6 @@ There is currently no common contract for additional-store connectors, which wou
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-additional-index-ROADMAP.md`, status set to `planned` based on the original `[ ]` marker.
+
+### 2026-07-16
+- Added `IAdditionalStoreConnector` and `AdditionalStoreConsistencyPolicy` to `iped-api`, defining open/index/commit/close, item-ID traceability, and consistency policy requirements.

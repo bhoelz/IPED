@@ -29,12 +29,12 @@
 - [ISSUE-428](../issues/ISSUE-428-webui-server-ci-gate-jdk25-angular.md) — Full reactor `mvn verify` on JDK 25 as CI gate; Angular island tests in CI — `done`
 
 ## Phase 4 — Production posture (5.0) — `in_progress`
-- [ISSUE-429](../issues/ISSUE-429-webui-server-packaging-deployment-guide.md) — Packaging: single deployable documented in a DEPLOYMENT-GUIDE.md — `planned`
+- [ISSUE-429](../issues/ISSUE-429-webui-server-packaging-deployment-guide.md) — Packaging: single deployable documented in a DEPLOYMENT-GUIDE.md — `done`
 - [ISSUE-430](../issues/ISSUE-430-webui-server-topology-decision.md) — Decide long-term topology with iped-webapi — `done`
 - [ISSUE-431](../issues/ISSUE-431-webui-server-observability-request-tracing.md) — Observability: request tracing across proxy → Jersey → engine — `done`
 
 ## Phase 5 — Security hardening — `planned`
-- [ISSUE-446](../issues/ISSUE-446-fix-onclick-js-string-xss.md) — Fix DOM event-handler XSS in Rocker templates (onclick string interpolation) — `planned`
+- [ISSUE-446](../issues/ISSUE-446-fix-onclick-js-string-xss.md) — Fix DOM event-handler XSS in Rocker templates (onclick string interpolation) — `done`
 
 ## Boundary rules (standing, enforced)
 - Spring owns URLs/auth/layout; HTMX owns server-rendered fragments; Angular owns only

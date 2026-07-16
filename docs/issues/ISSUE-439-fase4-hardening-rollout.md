@@ -28,3 +28,7 @@ Sem hardening e um plano de rollout/rollback claro, um go-live amplo arrisca inc
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `web-ui-implementation-ROADMAP.md` (Fase 4). Marked `in_progress` — backend observability/CSP/CI gates are already `done` per `iped-webui-server-ROADMAP.md` Phase 3-4, but frontend telemetry, E2E regression suite, and the formal rollout playbook are not yet evidenced.
+
+### 2026-07-16
+- Added `iped-webui-server/ROLLOUT-PLAYBOOK.md` with pilot, rollout, rollback, and support gates.
+- Remaining work: frontend telemetry, automated E2E dataset execution, and runtime capability flags.

@@ -29,3 +29,7 @@ O skeleton da Fase 1 prova o fluxo fim a fim, mas ainda não cobre o conjunto de
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `web-ui-implementation-ROADMAP.md` (Fase 2). Marked `in_progress` — several deliverables (result table, basic viewers, real data wiring) already appear `done` in `iped-webui-ROADMAP.md`/`iped-webui-server-ROADMAP.md`, but export jobs and full bookmark/viewer-search parity are still tracked as open issues there.
+
+### 2026-07-16
+- Confirmed server-side export submission/status polling and bookmark/sidebar wiring are present.
+- Remaining acceptance work is browser-level validation of bookmark mutations, viewer hit navigation, and a restricted pilot dataset.

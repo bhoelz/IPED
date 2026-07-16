@@ -23,8 +23,8 @@ Design doc: [ADDITIONAL_PROCESSING.md](../../iped-engine-parent/iped-additional-
 - [ISSUE-445](../issues/ISSUE-445-additional-processing-gui.md) — GUI for selecting items and re-running additional processing — `done`
 
 ## Phase 1 — Connector contract — `planned`
-- [ISSUE-011](../issues/ISSUE-011-additional-index-connector-spi.md) — Define the pluggable store connector SPI — `planned`
-- [ISSUE-012](../issues/ISSUE-012-additional-index-lucene-source-of-truth-rule.md) — Encode the Lucene-index-as-source-of-truth rule in tests/docs — `planned`
+- [ISSUE-011](../issues/ISSUE-011-additional-index-connector-spi.md) — Define the pluggable store connector SPI — `done`
+- [ISSUE-012](../issues/ISSUE-012-additional-index-lucene-source-of-truth-rule.md) — Encode the Lucene-index-as-source-of-truth rule in tests/docs — `done`
 
 ## Phase 2 — First-class connectors — `planned`
 - [ISSUE-013](../issues/ISSUE-013-additional-index-vector-store-connector.md) — Vector store connector for semantic/similarity search — `planned`
