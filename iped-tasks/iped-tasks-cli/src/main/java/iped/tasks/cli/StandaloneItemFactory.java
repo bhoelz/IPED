@@ -4,6 +4,7 @@ import iped.data.IItem;
 import iped.engine.data.DataSource;
 import iped.engine.data.Item;
 import iped.utils.FileInputStreamFactory;
+import org.apache.tika.mime.MediaType;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +33,13 @@ public final class StandaloneItemFactory {
             throw new IllegalArgumentException("Input not found: " + input);
         }
         if (input.isFile()) {
-            Path root = input.getAbsoluteFile().getParentFile().toPath();
+            // Mirror FolderTreeReader's representation of a file passed as the
+            // evidence root: the factory root is the file itself and its
+            // relative id is empty. This lets FileInputStreamFactory resolve
+            // image-oriented access paths (getImageInputStream) correctly.
+            Path root = input.getAbsoluteFile().toPath();
             List<IItem> items = new ArrayList<>(1);
-            items.add(fromFile(input, root, input.getName()));
+            items.add(fromFile(input, root, ""));
             return items;
         }
         return fromDirectory(input, recursive);
@@ -64,6 +69,10 @@ public final class StandaloneItemFactory {
         item.setName(file.getName());
         item.setIsDir(false);
         item.setLength(file.length());
+        // Standalone execution skips the pipeline's MIME-detection stage.
+        // Tasks such as CarverTask still require a non-null type to decide
+        // whether an input should be scanned, so use the neutral base type.
+        item.setMediaType(MediaType.OCTET_STREAM);
 
         BasicFileAttributes attrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
         item.setCreationDate(new Date(attrs.creationTime().toMillis()));

@@ -69,6 +69,16 @@ public class StandaloneTaskCli {
     private boolean help = false;
 
     public static void main(String[] args) {
+        System.exit(execute(args));
+    }
+
+    /**
+     * Executes the public command-line contract without terminating the JVM.
+     * Kept package-private so integration tests and embedders can verify the
+     * same argument parsing and exit-code policy that {@link #main(String[])}
+     * exposes to shell users.
+     */
+    static int execute(String[] args) {
         StandaloneTaskCli cli = new StandaloneTaskCli();
         JCommander jc = JCommander.newBuilder().addObject(cli).programName("iped-tasks-cli").build();
         try {
@@ -76,16 +86,15 @@ public class StandaloneTaskCli {
         } catch (ParameterException e) {
             System.err.println(e.getMessage());
             jc.usage();
-            System.exit(1);
-            return;
+            return 1;
         }
 
         if (cli.help) {
             jc.usage();
-            return;
+            return 0;
         }
 
-        System.exit(cli.run());
+        return cli.run();
     }
 
     private int run() {

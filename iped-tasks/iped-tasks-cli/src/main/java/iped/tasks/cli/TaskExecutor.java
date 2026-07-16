@@ -5,6 +5,7 @@ import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.task.AbstractTask;
 import iped.engine.task.additional.AdditionalTaskWorker;
+import iped.engine.util.Util;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -36,7 +37,18 @@ public final class TaskExecutor {
      *                    of failing as UNSUPPORTED.
      */
     public static RunResult run(String taskClassName, List<IItem> items, File confDir, File childrenDir) {
-        TaskCompatibility.Classification classification = TaskCompatibility.classify(taskClassName);
+        return run(taskClassName, items, confDir, childrenDir, TaskCompatibility.classify(taskClassName));
+    }
+
+    /**
+     * Package-private seam for callers that already determined compatibility.
+     * The public entry point always obtains that classification from
+     * {@link TaskCompatibility}; keeping it explicit here also ensures the
+     * per-item failure policy uses the same classification as the pre-flight
+     * gate.
+     */
+    static RunResult run(String taskClassName, List<IItem> items, File confDir, File childrenDir,
+            TaskCompatibility.Classification classification) {
         if (classification.status() == TaskCompatibility.Status.KNOWN_UNSUPPORTED) {
             return new RunResult(taskClassName, describeInput(items), unsupportedForAll(items, classification.reason()));
         }
@@ -64,20 +76,27 @@ public final class TaskExecutor {
             registerTaskConfigurables(task);
             task.init(ConfigurationManager.get());
         } catch (Throwable t) {
-            Failure f = classifyFailure(t);
+            Failure f = classifyFailure(t, classification);
             return new RunResult(taskClassName, describeInput(items), fixedResultForAll(items, f, 0));
         }
 
         List<ItemResult> results = new ArrayList<>(items.size());
+        boolean carving = TaskCompatibility.CARVING_FAMILY.contains(taskClassName);
         for (IItem item : items) {
             long start = System.currentTimeMillis();
             try {
+                // The regular processing pipeline assigns a track ID before
+                // carving. CarverTask needs that parent ID when creating its
+                // child item, so reproduce the same prerequisite here.
+                if (carving) {
+                    Util.getTrackID(item);
+                }
                 task.processAndSendToNextTask(item);
                 long elapsed = System.currentTimeMillis() - start;
                 results.add(ItemResult.ok(item.getPath(), elapsed, sink.takeMetadata(), sink.takeExtraAttributes()));
             } catch (Throwable t) {
                 long elapsed = System.currentTimeMillis() - start;
-                Failure f = classifyFailure(t);
+                Failure f = classifyFailure(t, classification);
                 results.add(new ItemResult(item.getPath(), f.status(), f.message(), elapsed, null, null));
             }
         }
@@ -99,7 +118,7 @@ public final class TaskExecutor {
         }
     }
 
-    private static Failure classifyFailure(Throwable t) {
+    private static Failure classifyFailure(Throwable t, TaskCompatibility.Classification classification) {
         Throwable root = t;
         while (root.getCause() != null) {
             root = root.getCause();
@@ -107,7 +126,7 @@ public final class TaskExecutor {
         if (root instanceof UnsupportedOperationException) {
             return new Failure(ItemResult.UNSUPPORTED, "task creates child items: " + root.getMessage());
         }
-        if (root instanceof NullPointerException) {
+        if (root instanceof NullPointerException && classification.status() != TaskCompatibility.Status.COMPATIBLE) {
             return new Failure(ItemResult.UNSUPPORTED,
                     "task appears to require case/index state unavailable standalone (" + root + ")");
         }
