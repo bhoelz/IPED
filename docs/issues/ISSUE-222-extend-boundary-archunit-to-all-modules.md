@@ -1,11 +1,11 @@
 # ISSUE-222: Extend the no-engine-imports boundary rule to every parser module
 
-- Status: in_progress
+- Status: done
 - Roadmap: [iped-parsers-ROADMAP.md](../roadmaps/iped-parsers-ROADMAP.md)
 - Roadmap section: Phase 3 — Architecture
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-17
 
 ## Summary
 
@@ -30,7 +30,7 @@ zero boundary enforcement.
       `ParsersBoundaryTest`) to each of the 16 previously-uncovered modules' own
       `src/test/java/iped/arch/`, scanning only that module's own package (32 tests
       total, all green).
-- [ ] Build a true parent-level rule (one test that runs against every child
+- [x] Build a true parent-level rule (one test that runs against every child
       module's output) to replace the transitive-only coverage currently relied on
       for the 16 modules covered indirectly via `iped-parsers-impl` — needs a
       multi-module ArchUnit test setup not yet built.
@@ -39,3 +39,10 @@ zero boundary enforcement.
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-parsers-ROADMAP.md`, status set to `in_progress` based on the original `[~]` marker.
+
+### 2026-07-17
+- Added `AllParsersBoundaryTest` to `iped-parsers-main`, whose aggregate runtime classpath
+  contains every parser child module.
+- The parent-level test enforces both boundaries: no `iped.engine..` imports and no
+  `iped.app..` imports from any `iped.parsers..` class.
+- Validation: `mvn --% -pl iped-parsers/iped-parsers-main -am -Dtest=iped.arch.AllParsersBoundaryTest -Dsurefire.failIfNoSpecifiedTests=false test` — 2 tests passed.

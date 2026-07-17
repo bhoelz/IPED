@@ -30,7 +30,7 @@
 - [ISSUE-221](../issues/ISSUE-221-slf4j-logging-migration-complete.md) — Confirm @Slf4j logging migration complete across split parser modules — `done`
 
 ## Phase 3 — Architecture — `in_progress`
-- [ISSUE-222](../issues/ISSUE-222-extend-boundary-archunit-to-all-modules.md) — Extend the no-engine-imports boundary rule to every parser module — `in_progress`
+- [ISSUE-222](../issues/ISSUE-222-extend-boundary-archunit-to-all-modules.md) — Extend the no-engine-imports boundary rule to every parser module — `done`
 - [ISSUE-223](../issues/ISSUE-223-decouple-html-report-from-swing.md) — Decouple parser HTML report generation from Swing/viewer assumptions — `planned`
 - [ISSUE-224](../issues/ISSUE-224-external-process-parser-isolation.md) — Evaluate sandboxing/timeout hardening for external-process parsers — `planned`
 
