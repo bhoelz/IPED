@@ -18,68 +18,71 @@
  */
 package iped.engine.config.schema;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
-/**
- * Unit tests for SchemaValidationCLI.
- */
+/** Unit tests for SchemaValidationCLI. */
 class SchemaValidationCLITest {
 
-    private iped.engine.config.schema.SchemaValidationCLI cli;
+  private iped.engine.config.schema.SchemaValidationCLI cli;
 
-    @BeforeEach
-    void setUp() {
-        cli = new SchemaValidationCLI();
-    }
+  @BeforeEach
+  void setUp() {
+    cli = new SchemaValidationCLI();
+  }
 
-    @Test
-    void testValidateConfigSchema() {
-        assertDoesNotThrow(() -> {
-            cli.validateConfigSchema("AnalysisConfig");
+  @Test
+  void testValidateConfigSchema() {
+    assertDoesNotThrow(
+        () -> {
+          cli.validateConfigSchema("AnalysisConfig");
         });
-    }
+  }
 
-    @Test
-    void testValidateCLISchema() {
-        assertDoesNotThrow(() -> {
-            cli.validateCLISchema("IPEDProcessingCLI");
+  @Test
+  void testValidateCLISchema() {
+    assertDoesNotThrow(
+        () -> {
+          cli.validateCLISchema("IPEDProcessingCLI");
         });
-    }
+  }
 
-    @Test
-    void testValidateNonexistentConfigSchema() {
-        assertDoesNotThrow(() -> {
-            cli.validateConfigSchema("NonexistentConfig");
+  @Test
+  void testValidateNonexistentConfigSchema() {
+    assertDoesNotThrow(
+        () -> {
+          cli.validateConfigSchema("NonexistentConfig");
         });
-    }
+  }
 
-    @Test
-    void testValidateAllSchemas() {
-        assertDoesNotThrow(() -> {
-            cli.validateAllSchemas();
+  @Test
+  void testValidateAllSchemas() {
+    assertDoesNotThrow(
+        () -> {
+          cli.validateAllSchemas();
         });
-    }
+  }
 
-    @Test
-    void testValidateMultipleSchemas() {
-        assertDoesNotThrow(() -> {
-            cli.validateConfigSchema("AnalysisConfig");
-            cli.validateConfigSchema("OCRConfig");
-            cli.validateConfigSchema("FileSystemConfig");
-            cli.validateCLISchema("IPEDWebAPICLI");
+  @Test
+  void testValidateMultipleSchemas() {
+    assertDoesNotThrow(
+        () -> {
+          cli.validateConfigSchema("AnalysisConfig");
+          cli.validateConfigSchema("OCRConfig");
+          cli.validateConfigSchema("FileSystemConfig");
+          cli.validateCLISchema("IPEDWebAPICLI");
         });
-    }
+  }
 
-    @Test
-    void testValidationDoesNotThrowException() {
-        assertDoesNotThrow(() -> {
-            cli.validateConfigSchema("AnalysisConfig");
-            cli.validateCLISchema("IPEDProcessingCLI");
-            cli.validateAllSchemas();
+  @Test
+  void testValidationDoesNotThrowException() {
+    assertDoesNotThrow(
+        () -> {
+          cli.validateConfigSchema("AnalysisConfig");
+          cli.validateCLISchema("IPEDProcessingCLI");
+          cli.validateAllSchemas();
         });
-    }
-
+  }
 }

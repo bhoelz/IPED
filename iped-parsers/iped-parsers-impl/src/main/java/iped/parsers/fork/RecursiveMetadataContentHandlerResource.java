@@ -16,6 +16,9 @@
  */
 package iped.parsers.fork;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import org.apache.tika.fork.ForkResource;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.sax.AbstractRecursiveParserWrapperHandler;
@@ -24,60 +27,59 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 class RecursiveMetadataContentHandlerResource implements ForkResource {
 
-    private static final ContentHandler DEFAULT_HANDLER = new DefaultHandler();
-    private final AbstractRecursiveParserWrapperHandler handler;
+  private static final ContentHandler DEFAULT_HANDLER = new DefaultHandler();
+  private final AbstractRecursiveParserWrapperHandler handler;
 
-    public RecursiveMetadataContentHandlerResource(RecursiveParserWrapperHandler handler) {
-        this.handler = handler;
+  public RecursiveMetadataContentHandlerResource(RecursiveParserWrapperHandler handler) {
+    this.handler = handler;
+  }
+
+  public Throwable process(DataInputStream input, DataOutputStream output) throws IOException {
+    try {
+      internalProcess(input);
+      return null;
+    } catch (SAXException e) {
+      return e;
+    }
+  }
+
+  private void internalProcess(DataInputStream input) throws IOException, SAXException {
+    byte embeddedOrMain = input.readByte();
+    byte handlerAndMetadataOrMetadataOnly = input.readByte();
+
+    ContentHandler localContentHandler = DEFAULT_HANDLER;
+    if (handlerAndMetadataOrMetadataOnly
+        == RecursiveMetadataContentHandlerProxy.HANDLER_AND_METADATA) {
+      localContentHandler = (ContentHandler) readObject(input);
+    } else if (handlerAndMetadataOrMetadataOnly
+        != RecursiveMetadataContentHandlerProxy.METADATA_ONLY) {
+      throw new IllegalArgumentException(
+          "Expected HANDLER_AND_METADATA or METADATA_ONLY, but got:"
+              + handlerAndMetadataOrMetadataOnly);
     }
 
-    public Throwable process(DataInputStream input, DataOutputStream output) throws IOException {
-        try {
-            internalProcess(input);
-            return null;
-        } catch (SAXException e) {
-            return e;
-        }
+    Metadata metadata = (Metadata) readObject(input);
+    if (embeddedOrMain == RecursiveMetadataContentHandlerProxy.EMBEDDED_DOCUMENT) {
+      handler.endEmbeddedDocument(localContentHandler, metadata);
+    } else if (embeddedOrMain == RecursiveMetadataContentHandlerProxy.MAIN_DOCUMENT) {
+      handler.endDocument(localContentHandler, metadata);
+    } else {
+      throw new IllegalArgumentException(
+          "Expected either 0x01 or 0x02, but got: " + embeddedOrMain);
     }
-
-    private void internalProcess(DataInputStream input) throws IOException, SAXException {
-        byte embeddedOrMain = input.readByte();
-        byte handlerAndMetadataOrMetadataOnly = input.readByte();
-
-        ContentHandler localContentHandler = DEFAULT_HANDLER;
-        if (handlerAndMetadataOrMetadataOnly == RecursiveMetadataContentHandlerProxy.HANDLER_AND_METADATA) {
-            localContentHandler = (ContentHandler) readObject(input);
-        } else if (handlerAndMetadataOrMetadataOnly != RecursiveMetadataContentHandlerProxy.METADATA_ONLY) {
-            throw new IllegalArgumentException(
-                    "Expected HANDLER_AND_METADATA or METADATA_ONLY, but got:" + handlerAndMetadataOrMetadataOnly);
-        }
-
-        Metadata metadata = (Metadata) readObject(input);
-        if (embeddedOrMain == RecursiveMetadataContentHandlerProxy.EMBEDDED_DOCUMENT) {
-            handler.endEmbeddedDocument(localContentHandler, metadata);
-        } else if (embeddedOrMain == RecursiveMetadataContentHandlerProxy.MAIN_DOCUMENT) {
-            handler.endDocument(localContentHandler, metadata);
-        } else {
-            throw new IllegalArgumentException("Expected either 0x01 or 0x02, but got: " + embeddedOrMain);
-        }
-        byte isComplete = input.readByte();
-        if (isComplete != RecursiveMetadataContentHandlerProxy.COMPLETE) {
-            throw new IOException("Expected the 'complete' signal, but got: " + isComplete);
-        }
+    byte isComplete = input.readByte();
+    if (isComplete != RecursiveMetadataContentHandlerProxy.COMPLETE) {
+      throw new IOException("Expected the 'complete' signal, but got: " + isComplete);
     }
+  }
 
-    private Object readObject(DataInputStream inputStream) throws IOException {
-        try {
-            return ForkObjectInputStream.readObject(inputStream, this.getClass().getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new IOException(e);
-        }
-
+  private Object readObject(DataInputStream inputStream) throws IOException {
+    try {
+      return ForkObjectInputStream.readObject(inputStream, this.getClass().getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new IOException(e);
     }
+  }
 }

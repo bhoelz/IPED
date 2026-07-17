@@ -9,304 +9,309 @@ import iped.engine.config.FileSystemConfig;
 import iped.engine.data.Item;
 import iped.properties.MediaTypes;
 import iped.utils.IOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.mime.MediaType;
 import org.arabidopsis.ahocorasick.AhoCorasick;
 import org.arabidopsis.ahocorasick.SearchResult;
 import org.arabidopsis.ahocorasick.Searcher;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-
 /**
- * Classe responsável pelo Data Carving. Utiliza o algoritmo aho-corasick, o
- * qual gera uma máquina de estados a partir dos padrões a serem pesquisados.
- * Assim, o algoritmo é independente do número de assinaturas pesquisadas, sendo
- * proporcional ao volume de dados de entrada e ao número de padrões
- * descobertos.
+ * Classe responsável pelo Data Carving. Utiliza o algoritmo aho-corasick, o qual gera uma máquina
+ * de estados a partir dos padrões a serem pesquisados. Assim, o algoritmo é independente do número
+ * de assinaturas pesquisadas, sendo proporcional ao volume de dados de entrada e ao número de
+ * padrões descobertos.
  */
 @Slf4j
 public class CarverTask extends BaseCarveTask {
 
-    public static boolean enableCarving = false;
-    public static boolean ignoreCorrupted = true;
+  public static boolean enableCarving = false;
+  public static boolean ignoreCorrupted = true;
 
-    private static int largestPatternLen = 100;
+  private static int largestPatternLen = 100;
 
-    /**
-     * Case-scoped carver type table. carverTypes is derived from the per-case
-     * CarverConfig.toml/xml; keeping it static would leak case 1's signature table
-     * into case 2 when several cases are processed in the same JVM (batch/report mode).
-     */
-    static final class CarverAccumulator {
-        static final String KEY = CarverAccumulator.class.getName();
-        CarverType[] carverTypes;
-    }
+  /**
+   * Case-scoped carver type table. carverTypes is derived from the per-case CarverConfig.toml/xml;
+   * keeping it static would leak case 1's signature table into case 2 when several cases are
+   * processed in the same JVM (batch/report mode).
+   */
+  static final class CarverAccumulator {
+    static final String KEY = CarverAccumulator.class.getName();
+    CarverType[] carverTypes;
+  }
 
-    // Used in place of a case-scoped accumulator when caseData is null (i.e.
-    // running standalone, no case). Static because process() (below) creates a
-    // fresh per-item CarverTask instance that must still see the same
-    // carverTypes cache. Cleared in finish() so successive standalone runs in
-    // the same JVM don't share state (the multi-case batch scenario
-    // caseData-scoping exists to protect against).
-    private static volatile CarverAccumulator standaloneAccum;
+  // Used in place of a case-scoped accumulator when caseData is null (i.e.
+  // running standalone, no case). Static because process() (below) creates a
+  // fresh per-item CarverTask instance that must still see the same
+  // carverTypes cache. Cleared in finish() so successive standalone runs in
+  // the same JVM don't share state (the multi-case batch scenario
+  // caseData-scoping exists to protect against).
+  private static volatile CarverAccumulator standaloneAccum;
 
-    private CarverAccumulator accum() {
-        if (caseData == null) {
-            CarverAccumulator a = standaloneAccum;
-            if (a == null) {
-                synchronized (CarverTask.class) {
-                    a = standaloneAccum;
-                    if (a == null) {
-                        a = new CarverAccumulator();
-                        standaloneAccum = a;
-                    }
-                }
-            }
-            return a;
+  private CarverAccumulator accum() {
+    if (caseData == null) {
+      CarverAccumulator a = standaloneAccum;
+      if (a == null) {
+        synchronized (CarverTask.class) {
+          a = standaloneAccum;
+          if (a == null) {
+            a = new CarverAccumulator();
+            standaloneAccum = a;
+          }
         }
-        CarverAccumulator a = (CarverAccumulator) caseData.getCaseObject(CarverAccumulator.KEY);
+      }
+      return a;
+    }
+    CarverAccumulator a = (CarverAccumulator) caseData.getCaseObject(CarverAccumulator.KEY);
+    if (a == null) {
+      synchronized (CarverTask.class) {
+        a = (CarverAccumulator) caseData.getCaseObject(CarverAccumulator.KEY);
         if (a == null) {
-            synchronized (CarverTask.class) {
-                a = (CarverAccumulator) caseData.getCaseObject(CarverAccumulator.KEY);
-                if (a == null) {
-                    a = new CarverAccumulator();
-                    caseData.putCaseObject(CarverAccumulator.KEY, a);
-                }
+          a = new CarverAccumulator();
+          caseData.putCaseObject(CarverAccumulator.KEY, a);
+        }
+      }
+    }
+    return a;
+  }
+
+  protected HashMap<CarverType, Carver> registeredCarvers = new HashMap<CarverType, Carver>();
+  private CarvedItemListener carvedItemListener = null;
+  IItem evidence;
+
+  long prevLen = 0;
+  int len = 0, k = 0;
+  byte[] buf = new byte[1024 * 1024];
+
+  public static void setEnabled(boolean enabled) {
+    enableCarving = enabled;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return enableCarving;
+  }
+
+  public void process(IItem evidence) {
+    if (!enableCarving) {
+      return;
+    }
+
+    // Nova instancia pois o mesmo objeto é reusado e nao é imutável
+    CarverTask carver = new CarverTask();
+    carver.setWorker(worker);
+    carver.safeProcess(evidence);
+
+    // Ao terminar o tratamento do item, caso haja referência ao mesmo no mapa de
+    // itens carveados através do LedCarving, esta pode ser removida.
+    synchronized (ledCarved()) {
+      ledCarved().remove(evidence);
+    }
+  }
+
+  private void safeProcess(IItem evidence) {
+
+    this.evidence = evidence;
+
+    if (!isToProcess(evidence)) {
+      return;
+    }
+
+    InputStream tis = null;
+    try {
+      MediaType type = (MediaType) evidence.getMediaType();
+
+      tis = evidence.getBufferedInputStream();
+
+      // Images used to be carved from PUB files. But with Tika-2.4 PUB is a subtype
+      // of OLE (correct) and default carving config skips OLE files.
+      // TODO externalize this to CarverConfig.xml and implement a general approach
+      boolean isPUBFile = MediaTypes.MS_PUBLISHER.equals(type);
+
+      // faz um loop na hierarquia de tipos mime
+      while (!MediaType.OCTET_STREAM.equals(type)) {
+        if (getCarverConfig().isToNotProcess(type) && !isPUBFile) {
+          tis.close();
+          return;
+        }
+        // avança 1 byte para não recuperar o próprio arquivo analisado
+        if (getCarverConfig().isToCarve(type)) {
+          prevLen = (int) tis.skip(1);
+          // break;
+        }
+
+        type = MediaTypes.getParentType(type);
+      }
+
+      clearExtraAttributes(evidence);
+
+      findSig(tis);
+
+    } catch (Exception t) {
+      log.warn(
+          "{} Error carving on {} {}",
+          Thread.currentThread().getName(),
+          evidence.getPath(), // $NON-NLS-1$
+          t.toString());
+      t.printStackTrace();
+
+    } finally {
+      IOUtil.closeQuietly(tis);
+    }
+  }
+
+  private void fillBuf(InputStream in) throws IOException {
+    prevLen += len;
+    len = 0;
+    k = 0;
+    while (k != -1 && (len += k) < buf.length) {
+      k = in.read(buf, len, buf.length - len);
+    }
+  }
+
+  private Hit findSig(InputStream in) throws Exception {
+    CarverType[] carverTypes = accum().carverTypes;
+    HashMap<CarverType, TreeMap<Long, Integer>> map = new HashMap<>();
+    for (int i = 0; i < carverTypes.length; i++) {
+      map.put(carverTypes[i], new TreeMap<Long, Integer>());
+    }
+
+    AhoCorasick tree = getCarverConfig().getPopulatedTree();
+    SearchResult lastResult = new SearchResult(tree.root, null, 0);
+    do {
+      fillBuf(in);
+      lastResult = new SearchResult(lastResult.lastMatchedState, buf, 0, len);
+      Iterator<SearchResult> searcher = new Searcher(tree, tree.continueSearch(lastResult));
+
+      while (searcher.hasNext()) {
+        lastResult = searcher.next();
+
+        for (Object out : lastResult.getOutputs()) {
+          Object[] oarray = (Object[]) out;
+          Signature sig = (Signature) oarray[0];
+          int seq = (int) oarray[1];
+          int i = lastResult.getLastIndex() - sig.seqEndPos[seq];
+
+          // tratamento para assinaturas com ? (divididas)
+          if (sig.seqs.length > 1) {
+            Integer hits = (Integer) map.get(sig.getCarverType()).get(prevLen + i);
+            if (hits == null) {
+              hits = 0;
             }
-        }
-        return a;
-    }
-
-    protected HashMap<CarverType, Carver> registeredCarvers = new HashMap<CarverType, Carver>();
-    private CarvedItemListener carvedItemListener = null;
-    IItem evidence;
-
-    long prevLen = 0;
-    int len = 0, k = 0;
-    byte[] buf = new byte[1024 * 1024];
-
-    public static void setEnabled(boolean enabled) {
-        enableCarving = enabled;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enableCarving;
-    }
-
-    public void process(IItem evidence) {
-        if (!enableCarving) {
-            return;
-        }
-
-        // Nova instancia pois o mesmo objeto é reusado e nao é imutável
-        CarverTask carver = new CarverTask();
-        carver.setWorker(worker);
-        carver.safeProcess(evidence);
-
-        // Ao terminar o tratamento do item, caso haja referência ao mesmo no mapa de
-        // itens carveados através do LedCarving, esta pode ser removida.
-        synchronized (ledCarved()) {
-            ledCarved().remove(evidence);
-        }
-    }
-
-    private void safeProcess(IItem evidence) {
-
-        this.evidence = evidence;
-
-        if (!isToProcess(evidence)) {
-            return;
-        }
-
-        InputStream tis = null;
-        try {
-            MediaType type = (MediaType) evidence.getMediaType();
-
-            tis = evidence.getBufferedInputStream();
-
-            // Images used to be carved from PUB files. But with Tika-2.4 PUB is a subtype
-            // of OLE (correct) and default carving config skips OLE files.
-            // TODO externalize this to CarverConfig.xml and implement a general approach
-            boolean isPUBFile = MediaTypes.MS_PUBLISHER.equals(type);
-
-            // faz um loop na hierarquia de tipos mime
-            while (!MediaType.OCTET_STREAM.equals(type)) {
-                if (getCarverConfig().isToNotProcess(type) && !isPUBFile) {
-                    tis.close();
-                    return;
-                }
-                // avança 1 byte para não recuperar o próprio arquivo analisado
-                if (getCarverConfig().isToCarve(type)) {
-                    prevLen = (int) tis.skip(1);
-                    // break;
-                }
-
-                type = MediaTypes.getParentType(type);
+            if (hits != seq) {
+              continue;
             }
-
-            clearExtraAttributes(evidence);
-
-            findSig(tis);
-
-        } catch (Exception t) {
-            log.warn("{} Error carving on {} {}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
-                    t.toString());
-            t.printStackTrace();
-
-        } finally {
-            IOUtil.closeQuietly(tis);
-        }
-
-    }
-
-    private void fillBuf(InputStream in) throws IOException {
-        prevLen += len;
-        len = 0;
-        k = 0;
-        while (k != -1 && (len += k) < buf.length) {
-            k = in.read(buf, len, buf.length - len);
-        }
-    }
-
-    private Hit findSig(InputStream in) throws Exception {
-        CarverType[] carverTypes = accum().carverTypes;
-        HashMap<CarverType, TreeMap<Long, Integer>> map = new HashMap<>();
-        for (int i = 0; i < carverTypes.length; i++) {
-            map.put(carverTypes[i], new TreeMap<Long, Integer>());
-        }
-
-        AhoCorasick tree = getCarverConfig().getPopulatedTree();
-        SearchResult lastResult = new SearchResult(tree.root, null, 0);
-        do {
-            fillBuf(in);
-            lastResult = new SearchResult(lastResult.lastMatchedState, buf, 0, len);
-            Iterator<SearchResult> searcher = new Searcher(tree, tree.continueSearch(lastResult));
-
-            while (searcher.hasNext()) {
-                lastResult = searcher.next();
-
-                for (Object out : lastResult.getOutputs()) {
-                    Object[] oarray = (Object[]) out;
-                    Signature sig = (Signature) oarray[0];
-                    int seq = (int) oarray[1];
-                    int i = lastResult.getLastIndex() - sig.seqEndPos[seq];
-
-                    // tratamento para assinaturas com ? (divididas)
-                    if (sig.seqs.length > 1) {
-                        Integer hits = (Integer) map.get(sig.getCarverType()).get(prevLen + i);
-                        if (hits == null) {
-                            hits = 0;
-                        }
-                        if (hits != seq) {
-                            continue;
-                        }
-                        map.get(sig.getCarverType()).put(prevLen + i, ++hits);
-                        if (map.get(sig.getCarverType()).size() > largestPatternLen) {
-                            map.get(sig.getCarverType()).remove(map.get(sig.getCarverType()).firstKey());
-                        }
-
-                        if (hits < sig.seqs.length) {
-                            continue;
-                        }
-                    }
-
-                    Hit hit = null;
-                    hit = new Hit(sig, prevLen + i);
-
-                    Carver carver = getCarver(sig.getCarverType());
-
-                    try {
-                        carver.notifyHit(this.evidence, hit);
-                    } catch (Exception e) {
-                        log.warn("{} Skipping unexpected error carving on hit {} {} - CarverClass {}", //$NON-NLS-1$
-                                Thread.currentThread().getName(), evidence.getPath(), hit.getOffset(),
-                                carver.getClass().getName());
-                        e.printStackTrace();
-                    }
-                }
+            map.get(sig.getCarverType()).put(prevLen + i, ++hits);
+            if (map.get(sig.getCarverType()).size() > largestPatternLen) {
+              map.get(sig.getCarverType()).remove(map.get(sig.getCarverType()).firstKey());
             }
 
-        } while (k != -1);
-
-        for (Carver carver : registeredCarvers.values()) {
-            carver.notifyEnd(this.evidence);
-        }
-
-        return null;
-    }
-
-    @Override
-    public List<Configurable<?>> getConfigurables() {
-        return Arrays.asList(new CarverTaskConfig());
-    }
-
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
-
-        CarverTaskConfig ctConfig = configurationManager.findObject(CarverTaskConfig.class);
-        FileSystemConfig fsConfig = configurationManager.findObject(FileSystemConfig.class);
-
-        enableCarving = ctConfig.isEnabled();
-
-        if (accum().carverTypes == null && enableCarving && !fsConfig.isToAddUnallocated())
-            log.error("addUnallocated is disabled, so carving will NOT be done in unallocated space!"); //$NON-NLS-1$
-
-        carvedItemListener = getCarvedItemListener();
-
-        if (getCarverConfig() == null) {
-            CarverConfiguration cc = ctConfig.getConfiguration();
-            cc.configListener(carvedItemListener);
-            ignoreCorrupted = cc.isToIgnoreCorrupted();
-            setCarverConfig(cc);
-        }
-        if (accum().carverTypes == null) {
-            accum().carverTypes = getCarverConfig().getCarverTypes();
-        }
-    }
-
-    @Override
-    public void finish() throws Exception {
-        if (caseData == null) {
-            standaloneAccum = null;
-            BaseCarveTask.clearStandaloneAccum();
-        }
-    }
-
-    private CarvedItemListener getCarvedItemListener() {
-        if (carvedItemListener == null) {
-            carvedItemListener = new CarvedItemListener() {
-                public void processCarvedItem(IItem parentEvidence, IItem carvedEvidence, long off) {
-                    addCarvedEvidence((Item) parentEvidence, (Item) carvedEvidence, off);
-                }
-            };
-        }
-        return carvedItemListener;
-    }
-
-    private Carver getCarver(CarverType ct) {
-        Carver carver = registeredCarvers.get(ct);
-        try {
-            if (carver == null) {
-                if (ct.getCarverClass().equals(JSCarver.class.getName())) {
-                    File script = new File(new File(this.output, "conf"), ct.getCarverScript());
-                    carver = getCarverConfig().createCarverFromJSName(script);
-                    carver.registerCarvedItemListener(getCarvedItemListener());
-                } else {
-                    Class<?> classe = this.getClass().getClassLoader().loadClass(ct.getCarverClass());
-                    carver = (Carver) classe.getDeclaredConstructor().newInstance();
-                    carver.registerCarvedItemListener(getCarvedItemListener());
-                }
-                carver.setIgnoreCorrupted(getCarverConfig().isToIgnoreCorrupted());
-                registeredCarvers.put(ct, carver);
+            if (hits < sig.seqs.length) {
+              continue;
             }
-        } catch (Exception e) {
+          }
+
+          Hit hit = null;
+          hit = new Hit(sig, prevLen + i);
+
+          Carver carver = getCarver(sig.getCarverType());
+
+          try {
+            carver.notifyHit(this.evidence, hit);
+          } catch (Exception e) {
+            log.warn(
+                "{} Skipping unexpected error carving on hit {} {} - CarverClass {}", //$NON-NLS-1$
+                Thread.currentThread().getName(),
+                evidence.getPath(),
+                hit.getOffset(),
+                carver.getClass().getName());
             e.printStackTrace();
+          }
         }
+      }
 
-        return carver;
+    } while (k != -1);
+
+    for (Carver carver : registeredCarvers.values()) {
+      carver.notifyEnd(this.evidence);
     }
+
+    return null;
+  }
+
+  @Override
+  public List<Configurable<?>> getConfigurables() {
+    return Arrays.asList(new CarverTaskConfig());
+  }
+
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
+
+    CarverTaskConfig ctConfig = configurationManager.findObject(CarverTaskConfig.class);
+    FileSystemConfig fsConfig = configurationManager.findObject(FileSystemConfig.class);
+
+    enableCarving = ctConfig.isEnabled();
+
+    if (accum().carverTypes == null && enableCarving && !fsConfig.isToAddUnallocated())
+      log.error(
+          "addUnallocated is disabled, so carving will NOT be done in unallocated space!"); //$NON-NLS-1$
+
+    carvedItemListener = getCarvedItemListener();
+
+    if (getCarverConfig() == null) {
+      CarverConfiguration cc = ctConfig.getConfiguration();
+      cc.configListener(carvedItemListener);
+      ignoreCorrupted = cc.isToIgnoreCorrupted();
+      setCarverConfig(cc);
+    }
+    if (accum().carverTypes == null) {
+      accum().carverTypes = getCarverConfig().getCarverTypes();
+    }
+  }
+
+  @Override
+  public void finish() throws Exception {
+    if (caseData == null) {
+      standaloneAccum = null;
+      BaseCarveTask.clearStandaloneAccum();
+    }
+  }
+
+  private CarvedItemListener getCarvedItemListener() {
+    if (carvedItemListener == null) {
+      carvedItemListener =
+          new CarvedItemListener() {
+            public void processCarvedItem(IItem parentEvidence, IItem carvedEvidence, long off) {
+              addCarvedEvidence((Item) parentEvidence, (Item) carvedEvidence, off);
+            }
+          };
+    }
+    return carvedItemListener;
+  }
+
+  private Carver getCarver(CarverType ct) {
+    Carver carver = registeredCarvers.get(ct);
+    try {
+      if (carver == null) {
+        if (ct.getCarverClass().equals(JSCarver.class.getName())) {
+          File script = new File(new File(this.output, "conf"), ct.getCarverScript());
+          carver = getCarverConfig().createCarverFromJSName(script);
+          carver.registerCarvedItemListener(getCarvedItemListener());
+        } else {
+          Class<?> classe = this.getClass().getClassLoader().loadClass(ct.getCarverClass());
+          carver = (Carver) classe.getDeclaredConstructor().newInstance();
+          carver.registerCarvedItemListener(getCarvedItemListener());
+        }
+        carver.setIgnoreCorrupted(getCarverConfig().isToIgnoreCorrupted());
+        registeredCarvers.put(ct, carver);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return carver;
+  }
 }

@@ -29,6 +29,9 @@ import iped.parsers.emule.KnownMetParser;
 import iped.parsers.shareaza.ShareazaLibraryDatParser;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import javax.swing.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntPoint;
@@ -38,108 +41,115 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
-import javax.swing.*;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 public class ReferencedByTableModel extends BaseTableModel {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    public ReferencedByTableModel() {
-        cleanBeforeListItems = true;
+  public ReferencedByTableModel() {
+    cleanBeforeListItems = true;
+  }
+
+  @Override
+  public void valueChanged(ListSelectionModel lsm) {
+    int id = results.getLuceneIds()[selectedIndex];
+    IItem item = App.get().appCase.getItemByLuceneID(id);
+
+    String nameToScroll = null;
+    if (refDoc != null) {
+      if (KnownMetParser.EMULE_MIME_TYPE.equals(item.getMediaTypeString())) {
+        nameToScroll = refDoc.get(HashAlgorithm.EDONKEY.toString());
+      } else if (AresParser.ARES_MIME_TYPE.equals(item.getMediaTypeString())) {
+        nameToScroll = refDoc.get(HashAlgorithm.SHA1.toString());
+      } else if (ShareazaLibraryDatParser.LIBRARY_DAT_MIME_TYPE.equals(item.getMediaTypeString())) {
+        nameToScroll = refDoc.get(HashAlgorithm.MD5.toString());
+      } else {
+        nameToScroll = refDoc.get(BasicProps.HASH);
+      }
     }
 
-    @Override
-    public void valueChanged(ListSelectionModel lsm) {
-        int id = results.getLuceneIds()[selectedIndex];
-        IItem item = App.get().appCase.getItemByLuceneID(id);
-
-        String nameToScroll = null;
-        if (refDoc != null) {
-            if (KnownMetParser.EMULE_MIME_TYPE.equals(item.getMediaTypeString())) {
-                nameToScroll = refDoc.get(HashAlgorithm.EDONKEY.toString());
-            } else if (AresParser.ARES_MIME_TYPE.equals(item.getMediaTypeString())) {
-                nameToScroll = refDoc.get(HashAlgorithm.SHA1.toString());
-            } else if (ShareazaLibraryDatParser.LIBRARY_DAT_MIME_TYPE.equals(item.getMediaTypeString())) {
-                nameToScroll = refDoc.get(HashAlgorithm.MD5.toString());
-            } else {
-                nameToScroll = refDoc.get(BasicProps.HASH);
-            }
-        }
-
-        if (nameToScroll != null) {
-            App.get().getViewerController().getHtmlLinkViewer().setElementNameToScroll(nameToScroll);
-        }
-
-        FileProcessor parsingTask = new FileProcessor(id, false);
-        parsingTask.execute();
+    if (nameToScroll != null) {
+      App.get().getViewerController().getHtmlLinkViewer().setElementNameToScroll(nameToScroll);
     }
 
-    @Override
-    public Query createQuery(Document doc) {
-        BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
-        QueryBuilder b = new QueryBuilder(App.get().appCase);
+    FileProcessor parsingTask = new FileProcessor(id, false);
+    parsingTask.execute();
+  }
 
-        // hashes
-        String md5 = doc.get(HashAlgorithm.MD5.toString());
-        String sha1 = doc.get(HashAlgorithm.SHA1.toString());
-        String sha256 = doc.get(HashAlgorithm.SHA256.toString());
-        String edonkey = doc.get(HashAlgorithm.EDONKEY.toString());
-        String hashes = Arrays.asList(md5, sha1, sha256, edonkey).stream().filter(StringUtils::isNotBlank).collect(Collectors.joining(" "));
-        if (!hashes.isEmpty()) {
-            try {
-                queryBuilder.add(b.getQuery(ExtraProperties.LINKED_ITEMS + ":(" + hashes + ") "), Occur.SHOULD);
-                queryBuilder.add(b.getQuery(ExtraProperties.SHARED_HASHES + ":(" + hashes + ")"), Occur.SHOULD);
-            } catch (ParseException | QueryNodeException e) {
-                e.printStackTrace();
-            }
-        }
+  @Override
+  public Query createQuery(Document doc) {
+    BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
+    QueryBuilder b = new QueryBuilder(App.get().appCase);
 
-        // trackId
-        String trackId = doc.get(BasicProps.TRACK_ID);
-        if (StringUtils.isNotBlank(trackId)) {
-            String trackIdQuery = QueryBuilder.escape(BasicProps.TRACK_ID + ":" + trackId);
-            try {
-                queryBuilder.add(b.getQuery(ExtraProperties.LINKED_ITEMS + ":\"" + trackIdQuery + "\""), Occur.SHOULD);
-            } catch (ParseException | QueryNodeException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // jumpList:ids
-        String[] appIds = doc.getValues(JumpListTask.JUMPLIST_PROGRAM_APP_IDS);
-        for (String appId: appIds) {
-            String appIdQuery = QueryBuilder.escape(JumpListTask.JUMPLIST_PROGRAM_APP_IDS) + ":" + appId;
-            try {
-                queryBuilder.add(b.getQuery(ExtraProperties.LINKED_ITEMS + ":\"" + appIdQuery + "\""), Occur.SHOULD);
-            } catch (ParseException | QueryNodeException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // ufed:id
-        String ufedId = doc.get(ExtraProperties.UFED_ID);
-        if (StringUtils.isNotBlank(ufedId)) {
-            queryBuilder.add(new TermQuery(new Term(ExtraProperties.UFED_JUMP_TARGETS, ufedId)), Occur.SHOULD);
-            queryBuilder.add(new TermQuery(new Term(ExtraProperties.UFED_FILE_ID, ufedId)), Occur.SHOULD);
-            try {
-                queryBuilder.add(b.getQuery(ExtraProperties.LINKED_ITEMS + ":\"" + ufedId + "\""), Occur.SHOULD);
-            } catch (ParseException | QueryNodeException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // don't be referenced by itself
-        queryBuilder.add(IntPoint.newExactQuery(BasicProps.ID, Integer.parseInt(doc.get(BasicProps.ID))), Occur.MUST_NOT);
-
-        return queryBuilder.build();
+    // hashes
+    String md5 = doc.get(HashAlgorithm.MD5.toString());
+    String sha1 = doc.get(HashAlgorithm.SHA1.toString());
+    String sha256 = doc.get(HashAlgorithm.SHA256.toString());
+    String edonkey = doc.get(HashAlgorithm.EDONKEY.toString());
+    String hashes =
+        Arrays.asList(md5, sha1, sha256, edonkey).stream()
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(" "));
+    if (!hashes.isEmpty()) {
+      try {
+        queryBuilder.add(
+            b.getQuery(ExtraProperties.LINKED_ITEMS + ":(" + hashes + ") "), Occur.SHOULD);
+        queryBuilder.add(
+            b.getQuery(ExtraProperties.SHARED_HASHES + ":(" + hashes + ")"), Occur.SHOULD);
+      } catch (ParseException | QueryNodeException e) {
+        e.printStackTrace();
+      }
     }
 
-    @Override
-    public void onListItemsResultsComplete() {
-        App.get().referencedByDock.setTitleText(Messages.getString("ReferencedByTab.Title") + " " + results.getLength());
+    // trackId
+    String trackId = doc.get(BasicProps.TRACK_ID);
+    if (StringUtils.isNotBlank(trackId)) {
+      String trackIdQuery = QueryBuilder.escape(BasicProps.TRACK_ID + ":" + trackId);
+      try {
+        queryBuilder.add(
+            b.getQuery(ExtraProperties.LINKED_ITEMS + ":\"" + trackIdQuery + "\""), Occur.SHOULD);
+      } catch (ParseException | QueryNodeException e) {
+        e.printStackTrace();
+      }
     }
+
+    // jumpList:ids
+    String[] appIds = doc.getValues(JumpListTask.JUMPLIST_PROGRAM_APP_IDS);
+    for (String appId : appIds) {
+      String appIdQuery = QueryBuilder.escape(JumpListTask.JUMPLIST_PROGRAM_APP_IDS) + ":" + appId;
+      try {
+        queryBuilder.add(
+            b.getQuery(ExtraProperties.LINKED_ITEMS + ":\"" + appIdQuery + "\""), Occur.SHOULD);
+      } catch (ParseException | QueryNodeException e) {
+        e.printStackTrace();
+      }
+    }
+
+    // ufed:id
+    String ufedId = doc.get(ExtraProperties.UFED_ID);
+    if (StringUtils.isNotBlank(ufedId)) {
+      queryBuilder.add(
+          new TermQuery(new Term(ExtraProperties.UFED_JUMP_TARGETS, ufedId)), Occur.SHOULD);
+      queryBuilder.add(new TermQuery(new Term(ExtraProperties.UFED_FILE_ID, ufedId)), Occur.SHOULD);
+      try {
+        queryBuilder.add(
+            b.getQuery(ExtraProperties.LINKED_ITEMS + ":\"" + ufedId + "\""), Occur.SHOULD);
+      } catch (ParseException | QueryNodeException e) {
+        e.printStackTrace();
+      }
+    }
+
+    // don't be referenced by itself
+    queryBuilder.add(
+        IntPoint.newExactQuery(BasicProps.ID, Integer.parseInt(doc.get(BasicProps.ID))),
+        Occur.MUST_NOT);
+
+    return queryBuilder.build();
+  }
+
+  @Override
+  public void onListItemsResultsComplete() {
+    App.get()
+        .referencedByDock
+        .setTitleText(Messages.getString("ReferencedByTab.Title") + " " + results.getLength());
+  }
 }
-
-

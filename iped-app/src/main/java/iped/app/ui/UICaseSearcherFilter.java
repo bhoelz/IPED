@@ -23,20 +23,19 @@ import org.apache.lucene.search.Query;
 
 public class UICaseSearcherFilter extends CaseSearcherFilter {
 
-    volatile int numFilters = 0;
+  volatile int numFilters = 0;
 
-    String queryText;
-    Query query;
-    IPEDSearcher searcher;
+  String queryText;
+  Query query;
+  IPEDSearcher searcher;
 
-    public UICaseSearcherFilter(String queryText) {
-        super(queryText);
-        addCaseSearchFilterListener(new UICaseSearchFilterListener(this));
-    }
+  public UICaseSearcherFilter(String queryText) {
+    super(queryText);
+    addCaseSearchFilterListener(new UICaseSearchFilterListener(this));
+  }
 
-    public UICaseSearcherFilter(Query query) {
-        super(query);
-        addCaseSearchFilterListener(new UICaseSearchFilterListener(this));
-    }
-
+  public UICaseSearcherFilter(Query query) {
+    super(query);
+    addCaseSearchFilterListener(new UICaseSearchFilterListener(this));
+  }
 }

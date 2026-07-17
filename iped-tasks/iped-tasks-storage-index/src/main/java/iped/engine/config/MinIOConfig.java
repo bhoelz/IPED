@@ -4,85 +4,82 @@ import iped.utils.UTF8Properties;
 
 public class MinIOConfig extends AbstractTaskPropertiesConfig {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-    private static final String CONFIG_FILE = "MinIOConfig.toml";
-    private static final String ENABLE_KEY = "enableMinIO";
-    private static final String HOST_KEY = "host";
-    private static final String PORT_KEY = "port";
-    private static final String UPDATE_REFS_TO_MINIO = "updateRefsToMinIO";
-    private static final String ZIP_FILES_MAX_SIZE = "zipFilesMaxSize";
-    private static final String TIME_OUT = "timeOut";
-    private static final String RETRIES = "retries";
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    private static final int DEFAULT_TIMEOUT = 30;
-    private static final int DEFAULT_RETRIES = 1;
+  private static final String CONFIG_FILE = "MinIOConfig.toml";
+  private static final String ENABLE_KEY = "enableMinIO";
+  private static final String HOST_KEY = "host";
+  private static final String PORT_KEY = "port";
+  private static final String UPDATE_REFS_TO_MINIO = "updateRefsToMinIO";
+  private static final String ZIP_FILES_MAX_SIZE = "zipFilesMaxSize";
+  private static final String TIME_OUT = "timeOut";
+  private static final String RETRIES = "retries";
 
-    private String host;
-    private String port;
-    private long timeOut;
-    private int retries;
-    private boolean updateRefsToMinIO = false;
+  private static final int DEFAULT_TIMEOUT = 30;
+  private static final int DEFAULT_RETRIES = 1;
 
-    private long zipFilesMaxSize;
+  private String host;
+  private String port;
+  private long timeOut;
+  private int retries;
+  private boolean updateRefsToMinIO = false;
 
-    public String getHost() {
-        return host;
-    }
+  private long zipFilesMaxSize;
 
-    public String getPort() {
-        return port;
-    }
+  public String getHost() {
+    return host;
+  }
 
-    public String getHostAndPort() {
-        if (port == null || port.isBlank())
-            return host;
-        else
-            return host + ":" + port;
-    }
+  public String getPort() {
+    return port;
+  }
 
-    @Override
-    public void processProperties(UTF8Properties properties) {
+  public String getHostAndPort() {
+    if (port == null || port.isBlank()) return host;
+    else return host + ":" + port;
+  }
 
-        host = properties.getProperty(HOST_KEY).trim();
-        port = properties.getProperty(PORT_KEY).trim();
-        timeOut = Long.parseLong(properties.getProperty(TIME_OUT, Integer.toString(DEFAULT_TIMEOUT)).trim());
-        retries = Integer.parseInt(properties.getProperty(RETRIES, Integer.toString(DEFAULT_RETRIES)).trim());
-        setZipFilesMaxSize(Long.parseLong(properties.getProperty(ZIP_FILES_MAX_SIZE)));
-        updateRefsToMinIO = Boolean.valueOf(properties.getProperty(UPDATE_REFS_TO_MINIO, "false"));
-    }
+  @Override
+  public void processProperties(UTF8Properties properties) {
 
-    @Override
-    public String getTaskEnableProperty() {
-        return ENABLE_KEY;
-    }
+    host = properties.getProperty(HOST_KEY).trim();
+    port = properties.getProperty(PORT_KEY).trim();
+    timeOut =
+        Long.parseLong(properties.getProperty(TIME_OUT, Integer.toString(DEFAULT_TIMEOUT)).trim());
+    retries =
+        Integer.parseInt(properties.getProperty(RETRIES, Integer.toString(DEFAULT_RETRIES)).trim());
+    setZipFilesMaxSize(Long.parseLong(properties.getProperty(ZIP_FILES_MAX_SIZE)));
+    updateRefsToMinIO = Boolean.valueOf(properties.getProperty(UPDATE_REFS_TO_MINIO, "false"));
+  }
 
-    @Override
-    public String getTaskConfigFileName() {
-        return CONFIG_FILE;
-    }
+  @Override
+  public String getTaskEnableProperty() {
+    return ENABLE_KEY;
+  }
 
-    public long getZipFilesMaxSize() {
-        return zipFilesMaxSize;
-    }
+  @Override
+  public String getTaskConfigFileName() {
+    return CONFIG_FILE;
+  }
 
-    public void setZipFilesMaxSize(long zipFilesMaxSize) {
-        this.zipFilesMaxSize = zipFilesMaxSize;
-    }
+  public long getZipFilesMaxSize() {
+    return zipFilesMaxSize;
+  }
 
-    public boolean isToUpdateRefsToMinIO() {
-        return this.updateRefsToMinIO;
-    }
+  public void setZipFilesMaxSize(long zipFilesMaxSize) {
+    this.zipFilesMaxSize = zipFilesMaxSize;
+  }
 
-    public long getTimeOut() {
-        return timeOut;
-    }
+  public boolean isToUpdateRefsToMinIO() {
+    return this.updateRefsToMinIO;
+  }
 
-    public int getRetries() {
-        return retries;
-    }
+  public long getTimeOut() {
+    return timeOut;
+  }
 
-
+  public int getRetries() {
+    return retries;
+  }
 }

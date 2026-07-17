@@ -1,23 +1,22 @@
 package iped.app.graph;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
+import javax.swing.*;
 
 public class CloseDialogAction extends AbstractAction {
 
-    private static final long serialVersionUID = 2152169482166949002L;
+  private static final long serialVersionUID = 2152169482166949002L;
 
-    private JDialog dialog;
+  private JDialog dialog;
 
-    public CloseDialogAction(JDialog dialog) {
-        super();
-        this.dialog = dialog;
-    }
+  public CloseDialogAction(JDialog dialog) {
+    super();
+    this.dialog = dialog;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        dialog.setVisible(false);
-        dialog.dispose();
-    }
-
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    dialog.setVisible(false);
+    dialog.dispose();
+  }
 }

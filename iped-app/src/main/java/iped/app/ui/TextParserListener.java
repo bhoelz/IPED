@@ -19,55 +19,61 @@
 package iped.app.ui;
 
 import iped.utils.LocalizedFormat;
-
-import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.*;
 
 public class TextParserListener implements PropertyChangeListener {
 
-    TextParser fileParser;
+  TextParser fileParser;
 
-    public TextParserListener(TextParser parser) {
-        fileParser = parser;
+  public TextParserListener(TextParser parser) {
+    fileParser = parser;
+  }
+
+  @Override
+  public void propertyChange(final PropertyChangeEvent evt) {
+    // if(progressMonitor.isCanceled())
+    // this.cancel(false);
+
+    if ("progress" == evt.getPropertyName()) { // $NON-NLS-1$
+      SwingUtilities.invokeLater(
+          new Runnable() {
+            public void run() {
+              fileParser.getProgressMonitor().setProgress((Long) evt.getNewValue());
+            }
+          });
     }
 
-    @Override
-    public void propertyChange(final PropertyChangeEvent evt) {
-        // if(progressMonitor.isCanceled())
-        // this.cancel(false);
+    if ("hits".equals(evt.getPropertyName())) { // $NON-NLS-1$
+      SwingUtilities.invokeLater(
+          new Runnable() {
+            public void run() {
+              fileParser
+                  .getProgressMonitor()
+                  .setNote(
+                      Messages.getString("TextParserListener.Found") // $NON-NLS-1$
+                          + evt.getNewValue()
+                          + Messages.getString("TextParserListener.hits")); // $NON-NLS-1$
+            }
+          });
 
-        if ("progress" == evt.getPropertyName()) { //$NON-NLS-1$
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    fileParser.getProgressMonitor().setProgress((Long) evt.getNewValue());
-                }
-            });
-
+      if ((Integer) evt.getNewValue() == 1)
+        try {
+          App.get().hitsTable.setRowSelectionInterval(0, 0);
+          fileParser.setFirstHitAutoSelected(true);
+        } catch (Exception e) {
         }
 
-        if ("hits".equals(evt.getPropertyName())) { //$NON-NLS-1$
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    fileParser.getProgressMonitor().setNote(Messages.getString("TextParserListener.Found") //$NON-NLS-1$
-                            + evt.getNewValue() + Messages.getString("TextParserListener.hits")); //$NON-NLS-1$
-                }
-            });
-
-            if ((Integer) evt.getNewValue() == 1)
-                try {
-                    App.get().hitsTable.setRowSelectionInterval(0, 0);
-                    fileParser.setFirstHitAutoSelected(true);
-                } catch (Exception e) {
-                }
-
-            App.get().hitsDock.setTitleText(LocalizedFormat.format(fileParser.getHits().size()) + Messages.getString("TextParserListener.hits")); //$NON-NLS-1$
-
-        }
-
-        // if(!App.get().resultsTable.hasFocus() &&
-        // !App.get().topPanel.hasFocus() && !App.get().tabbedHits.hasFocus())
-        // while(!App.get().resultsTable.requestFocusInWindow());
+      App.get()
+          .hitsDock
+          .setTitleText(
+              LocalizedFormat.format(fileParser.getHits().size())
+                  + Messages.getString("TextParserListener.hits")); // $NON-NLS-1$
     }
 
+    // if(!App.get().resultsTable.hasFocus() &&
+    // !App.get().topPanel.hasFocus() && !App.get().tabbedHits.hasFocus())
+    // while(!App.get().resultsTable.requestFocusInWindow());
+  }
 }

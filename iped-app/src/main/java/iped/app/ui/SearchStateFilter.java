@@ -19,33 +19,29 @@
 package iped.app.ui;
 
 import iped.engine.data.Bookmarks;
-
-import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.Serializable;
+import javax.swing.filechooser.FileFilter;
 
 public class SearchStateFilter extends FileFilter implements Serializable {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    @Override
-    public boolean accept(File f) {
-        if (f.isDirectory()) {
-            return true;
-        }
-        if (f.getName().endsWith(Bookmarks.EXT)) {
-            return true;
-        }
-
-        return false;
+  @Override
+  public boolean accept(File f) {
+    if (f.isDirectory()) {
+      return true;
+    }
+    if (f.getName().endsWith(Bookmarks.EXT)) {
+      return true;
     }
 
-    @Override
-    public String getDescription() {
-        return Messages.getString("SearchStateFilter.BookmarksFile"); //$NON-NLS-1$
-    }
+    return false;
+  }
 
+  @Override
+  public String getDescription() {
+    return Messages.getString("SearchStateFilter.BookmarksFile"); // $NON-NLS-1$
+  }
 }

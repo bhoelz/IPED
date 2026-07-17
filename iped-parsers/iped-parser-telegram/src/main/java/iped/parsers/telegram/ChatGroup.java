@@ -1,6 +1,6 @@
 /*
  * Copyright 2020-2020, João Vitor de Sá Hauck
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -23,51 +23,51 @@ import java.util.Set;
 
 public class ChatGroup extends Chat {
 
-    private final Set<Long> members = new HashSet<Long>();
-    private final Set<Long> admins = new HashSet<Long>();
-    private int participantsCount;
+  private final Set<Long> members = new HashSet<Long>();
+  private final Set<Long> admins = new HashSet<Long>();
+  private int participantsCount;
 
-    public ChatGroup(long id, Contact c, String name) {
-        super(id, c, name);
-        setGroup(true);
-    }
+  public ChatGroup(long id, Contact c, String name) {
+    super(id, c, name);
+    setGroup(true);
+  }
 
-    public Set<Long> getMembers() {
-        return members;
-    }
+  public Set<Long> getMembers() {
+    return members;
+  }
 
-    public void addMember(long id) {
-        members.add(id);
-    }
+  public void addMember(long id) {
+    members.add(id);
+  }
 
-    public Set<Long> getAdmins() {
-        return admins;
-    }
+  public Set<Long> getAdmins() {
+    return admins;
+  }
 
-    public void addAdmin(long id) {
-        admins.add(id);
-    }
+  public void addAdmin(long id) {
+    admins.add(id);
+  }
 
-    public int getParticipantsCount() {
-        return participantsCount;
-    }
+  public int getParticipantsCount() {
+    return participantsCount;
+  }
 
-    public void setParticipantsCount(int participantsCount) {
-        this.participantsCount = participantsCount;
-    }
+  public void setParticipantsCount(int participantsCount) {
+    this.participantsCount = participantsCount;
+  }
 
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        if (getName() != null) {
-            sb.append(getName());
-        } else if (getC() != null && getC().getName() != null) {
-            sb.append(getC().getName());
-        }
-        if (sb.length() > 0) {
-            sb.append(" (ID: ").append(getId()).append(")");
-        } else {
-            sb.append("ID: ").append(getId());
-        }
-        return sb.toString();
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    if (getName() != null) {
+      sb.append(getName());
+    } else if (getC() != null && getC().getName() != null) {
+      sb.append(getC().getName());
     }
+    if (sb.length() > 0) {
+      sb.append(" (ID: ").append(getId()).append(")");
+    } else {
+      sb.append("ID: ").append(getId());
+    }
+    return sb.toString();
+  }
 }

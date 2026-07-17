@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import iped.engine.config.LocaleConfig;
-
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -18,327 +17,324 @@ import java.util.regex.Pattern;
 
 public class GraphConfiguration implements Serializable {
 
-    /**
-     *
-     */
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  public static final String PERSON_LABEL = "PERSON";
+  public static final String ORGANIZATION_LABEL = "ORGANIZATION";
+  public static final String PHONE_LABEL = "PHONE";
+  public static final String EMAIL_LABEL = "EMAIL";
+  public static final String CAR_LABEL = "CAR";
+  public static final String DOCUMENT_LABEL = "DOCUMENT";
+  public static final String BANK_ACCOUNT_LABEL = "BANK_ACCOUNT";
+  public static final String MONEY_TRANSFER_LABEL = "MONEY_TRANSFER";
+  public static final String DATASOURCE_LABEL = "DATASOURCE";
+  public static final String CONTACT_GROUP_LABEL = "CONTACT_GROUP";
+
+  @JsonAlias("phone-region")
+  private String phoneRegion;
+
+  @JsonAlias("mimes-to-detect-phones")
+  private List<String> mimesToDetectPhones = new ArrayList<>();
+
+  @JsonAlias("mimes-to-dont-detect-phones")
+  private List<String> mimesToDontDetectPhones = new ArrayList<>();
+
+  @JsonAlias("detect-phones-on-other-mimes")
+  private boolean detectPhonesOnOtherMimes = true;
+
+  @JsonAlias("process-proximity-relationships")
+  private boolean processProximityRelationships;
+
+  @JsonAlias("proximity-relationship-name")
+  private String defaultRelationship;
+
+  @JsonAlias("_comment_")
+  private String comment;
+
+  @JsonAlias("max-proximity-distance")
+  private int maxProximityDistance;
+
+  @JsonAlias("default-entity")
+  private String defaultEntity;
+
+  @JsonAlias("default-person-entity")
+  private String defaultPersonEntity;
+
+  @JsonAlias("default-business-entity")
+  private String defaultBusinessEntity;
+
+  @JsonAlias("include-categories")
+  private String includeCategories;
+
+  private Pattern includeCategoriesPattern;
+
+  @JsonAlias("exclude-categories")
+  private String excludeCategories;
+
+  @JsonAlias("post-generation-statements")
+  private List<String> postGenerationStatements;
+
+  @JsonAlias("graph-store-backend")
+  private String graphStoreBackend = "neo4j";
+
+  private Pattern excludeCategoriesPattern;
+
+  private List<GraphEntity> entities;
+
+  @JsonIgnore private Map<String, GraphEntity> entityIndex;
+
+  @JsonIgnore private Map<String, GraphEntity> metadataIndex;
+
+  private void index() {
+
+    entityIndex = new HashMap<>();
+    metadataIndex = new HashMap<>();
+
+    for (GraphEntity entity : entities) {
+      GraphEntity previous = entityIndex.put(entity.label, entity);
+      if (previous != null) {
+        throw new IllegalArgumentException("Duplicated entity " + entity.label);
+      }
+
+      for (GraphEntityMetadata metadata : entity.metadata) {
+        GraphEntity prev = metadataIndex.put(metadata.name, entity);
+        if (prev != null) {
+          throw new IllegalArgumentException(
+              "Duplicated metadata "
+                  + metadata.name
+                  + " at entities "
+                  + prev.label
+                  + " & "
+                  + entity.label);
+        }
+      }
+      entity.index();
+    }
+
+    includeCategoriesPattern = Pattern.compile(includeCategories);
+    excludeCategoriesPattern = Pattern.compile(excludeCategories);
+  }
+
+  public List<String> getMimesToDetectPhones() {
+    return mimesToDetectPhones;
+  }
+
+  public List<String> getMimesToDontDetectPhones() {
+    return mimesToDontDetectPhones;
+  }
+
+  public boolean getDetectPhonesOnOtherMimes() {
+    return detectPhonesOnOtherMimes;
+  }
+
+  public String getDefaultEntity() {
+    return defaultEntity;
+  }
+
+  public void setDefaultEntity(String defaultEntity) {
+    this.defaultEntity = defaultEntity;
+  }
+
+  public String getDefaultPersonEntity() {
+    return defaultPersonEntity;
+  }
+
+  public void setDefaultPersonEntity(String defaultPersonEntity) {
+    this.defaultPersonEntity = defaultPersonEntity;
+  }
+
+  public String getDefaultBusinessEntity() {
+    return defaultBusinessEntity;
+  }
+
+  public void setDefaultBusinessEntity(String defaultBusinessEntity) {
+    this.defaultBusinessEntity = defaultBusinessEntity;
+  }
+
+  public boolean getProcessProximityRelationships() {
+    return processProximityRelationships;
+  }
+
+  public String getDefaultRelationship() {
+    return defaultRelationship;
+  }
+
+  public int getMaxProximityDistance() {
+    return maxProximityDistance;
+  }
+
+  public String getPhoneRegion() {
+    return phoneRegion;
+  }
+
+  private void decodePhoneRegion(File file) {
+    if (phoneRegion.equals("auto")) {
+      String country = LocaleConfig.getHostCountry();
+      if (country.length() == 2) {
+        phoneRegion = country;
+      } else {
+        throw new IllegalArgumentException(
+            "phone-region=\"auto\" did not work in "
+                + file
+                + " config file. Please specify an explicity 2-letter region code.");
+      }
+    }
+  }
+
+  public String getComment() {
+    return comment;
+  }
+
+  public void setDefaultRelationship(String defaultRelationship) {
+    this.defaultRelationship = defaultRelationship;
+  }
+
+  public String getIncludeCategories() {
+    return includeCategories;
+  }
+
+  public void setIncludeCategories(String includeCategories) {
+    this.includeCategories = includeCategories;
+  }
+
+  public String getExcludeCategories() {
+    return excludeCategories;
+  }
+
+  public void setExcludeCategories(String excludeCategories) {
+    this.excludeCategories = excludeCategories;
+  }
+
+  public Pattern getExcludeCategoriesPattern() {
+    return excludeCategoriesPattern;
+  }
+
+  public Pattern getIncludeCategoriesPattern() {
+    return includeCategoriesPattern;
+  }
+
+  public List<String> getPostGenerationStatements() {
+    return postGenerationStatements;
+  }
+
+  public String getGraphStoreBackend() {
+    return graphStoreBackend;
+  }
+
+  public void setGraphStoreBackend(String graphStoreBackend) {
+    if (graphStoreBackend == null || graphStoreBackend.isBlank())
+      throw new IllegalArgumentException("graph-store-backend is required");
+    this.graphStoreBackend = graphStoreBackend;
+  }
+
+  public List<GraphEntity> getEntities() {
+    return entities;
+  }
+
+  public void setEntities(List<GraphEntity> entities) {
+    this.entities = entities;
+  }
+
+  public GraphEntity getEntity(String label) {
+    return entityIndex.get(label);
+  }
+
+  public GraphEntity getEntityWithMetadata(String metadataName) {
+    return metadataIndex.get(metadataName);
+  }
+
+  public static GraphConfiguration loadFrom(File file) throws IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectReader reader = objectMapper.readerFor(GraphConfiguration.class);
+    try (Reader in =
+        new InputStreamReader(
+            new BufferedInputStream(new FileInputStream(file)), Charset.forName("utf-8"))) {
+      GraphConfiguration value = reader.readValue(in);
+      value.decodePhoneRegion(file);
+      value.index();
+      return value;
+    }
+  }
+
+  public String toString() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectWriter writer = objectMapper.writerFor(GraphConfiguration.class);
+    try {
+      return writer.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static class GraphEntity implements Serializable {
+
+    /** */
     private static final long serialVersionUID = 1L;
 
-    public static final String PERSON_LABEL = "PERSON";
-    public static final String ORGANIZATION_LABEL = "ORGANIZATION";
-    public static final String PHONE_LABEL = "PHONE";
-    public static final String EMAIL_LABEL = "EMAIL";
-    public static final String CAR_LABEL = "CAR";
-    public static final String DOCUMENT_LABEL = "DOCUMENT";
-    public static final String BANK_ACCOUNT_LABEL = "BANK_ACCOUNT";
-    public static final String MONEY_TRANSFER_LABEL = "MONEY_TRANSFER";
-    public static final String DATASOURCE_LABEL = "DATASOURCE";
-    public static final String CONTACT_GROUP_LABEL = "CONTACT_GROUP";
+    private String label;
 
-    @JsonAlias("phone-region")
-    private String phoneRegion;
+    private List<GraphEntityMetadata> metadata;
 
-    @JsonAlias("mimes-to-detect-phones")
-    private List<String> mimesToDetectPhones = new ArrayList<>();
-
-    @JsonAlias("mimes-to-dont-detect-phones")
-    private List<String> mimesToDontDetectPhones = new ArrayList<>();
-
-    @JsonAlias("detect-phones-on-other-mimes")
-    private boolean detectPhonesOnOtherMimes = true;
-
-    @JsonAlias("process-proximity-relationships")
-    private boolean processProximityRelationships;
-
-    @JsonAlias("proximity-relationship-name")
-    private String defaultRelationship;
-
-    @JsonAlias("_comment_")
-    private String comment;
-
-    @JsonAlias("max-proximity-distance")
-    private int maxProximityDistance;
-
-    @JsonAlias("default-entity")
-    private String defaultEntity;
-
-    @JsonAlias("default-person-entity")
-    private String defaultPersonEntity;
-
-    @JsonAlias("default-business-entity")
-    private String defaultBusinessEntity;
-
-    @JsonAlias("include-categories")
-    private String includeCategories;
-
-    private Pattern includeCategoriesPattern;
-
-    @JsonAlias("exclude-categories")
-    private String excludeCategories;
-
-    @JsonAlias("post-generation-statements")
-    private List<String> postGenerationStatements;
-
-    @JsonAlias("graph-store-backend")
-    private String graphStoreBackend = "neo4j";
-
-    private Pattern excludeCategoriesPattern;
-
-    private List<GraphEntity> entities;
-
-    @JsonIgnore
-    private Map<String, GraphEntity> entityIndex;
-
-    @JsonIgnore
-    private Map<String, GraphEntity> metadataIndex;
+    private Map<String, GraphEntityMetadata> metadataIndex;
 
     private void index() {
+      metadataIndex = new HashMap<>(metadata.size());
 
-        entityIndex = new HashMap<>();
-        metadataIndex = new HashMap<>();
-
-        for (GraphEntity entity : entities) {
-            GraphEntity previous = entityIndex.put(entity.label, entity);
-            if (previous != null) {
-                throw new IllegalArgumentException("Duplicated entity " + entity.label);
-            }
-
-            for (GraphEntityMetadata metadata : entity.metadata) {
-                GraphEntity prev = metadataIndex.put(metadata.name, entity);
-                if (prev != null) {
-                    throw new IllegalArgumentException("Duplicated metadata " + metadata.name + " at entities "
-                            + prev.label + " & " + entity.label);
-                }
-            }
-            entity.index();
+      for (GraphEntityMetadata meta : metadata) {
+        GraphEntityMetadata previous = metadataIndex.put(meta.name, meta);
+        if (previous != null) {
+          throw new IllegalArgumentException(
+              "Duplicated metadata " + meta.name + " at entity " + label);
         }
-
-        includeCategoriesPattern = Pattern.compile(includeCategories);
-        excludeCategoriesPattern = Pattern.compile(excludeCategories);
-
+      }
     }
 
-    public List<String> getMimesToDetectPhones() {
-        return mimesToDetectPhones;
+    public String getLabel() {
+      return label;
     }
 
-    public List<String> getMimesToDontDetectPhones() {
-        return mimesToDontDetectPhones;
+    public void setLabel(String label) {
+      this.label = label;
     }
 
-    public boolean getDetectPhonesOnOtherMimes() {
-        return detectPhonesOnOtherMimes;
+    public GraphEntityMetadata getMetadata(String metadataName) {
+      return metadataIndex.get(metadataName);
     }
 
-    public String getDefaultEntity() {
-        return defaultEntity;
+    public List<GraphEntityMetadata> getMetadata() {
+      return metadata;
     }
 
-    public void setDefaultEntity(String defaultEntity) {
-        this.defaultEntity = defaultEntity;
+    public void setMetadata(List<GraphEntityMetadata> metadata) {
+      this.metadata = metadata;
+    }
+  }
+
+  public static class GraphEntityMetadata implements Serializable {
+
+    /** */
+    private static final long serialVersionUID = 1L;
+
+    /** equal to regex name by default */
+    private String name;
+
+    private String property;
+
+    public String getName() {
+      return name;
     }
 
-    public String getDefaultPersonEntity() {
-        return defaultPersonEntity;
+    public void setName(String name) {
+      this.name = name;
     }
 
-    public void setDefaultPersonEntity(String defaultPersonEntity) {
-        this.defaultPersonEntity = defaultPersonEntity;
+    public String getProperty() {
+      return property;
     }
 
-    public String getDefaultBusinessEntity() {
-        return defaultBusinessEntity;
+    public void setProperty(String property) {
+      this.property = property;
     }
-
-    public void setDefaultBusinessEntity(String defaultBusinessEntity) {
-        this.defaultBusinessEntity = defaultBusinessEntity;
-    }
-
-    public boolean getProcessProximityRelationships() {
-        return processProximityRelationships;
-    }
-
-    public String getDefaultRelationship() {
-        return defaultRelationship;
-    }
-
-    public int getMaxProximityDistance() {
-        return maxProximityDistance;
-    }
-
-    public String getPhoneRegion() {
-        return phoneRegion;
-    }
-
-    private void decodePhoneRegion(File file) {
-        if (phoneRegion.equals("auto")) {
-            String country = LocaleConfig.getHostCountry();
-            if (country.length() == 2) {
-                phoneRegion = country;
-            } else {
-                throw new IllegalArgumentException("phone-region=\"auto\" did not work in " + file
-                        + " config file. Please specify an explicity 2-letter region code.");
-            }
-        }
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setDefaultRelationship(String defaultRelationship) {
-        this.defaultRelationship = defaultRelationship;
-    }
-
-    public String getIncludeCategories() {
-        return includeCategories;
-    }
-
-    public void setIncludeCategories(String includeCategories) {
-        this.includeCategories = includeCategories;
-    }
-
-    public String getExcludeCategories() {
-        return excludeCategories;
-    }
-
-    public void setExcludeCategories(String excludeCategories) {
-        this.excludeCategories = excludeCategories;
-    }
-
-    public Pattern getExcludeCategoriesPattern() {
-        return excludeCategoriesPattern;
-    }
-
-    public Pattern getIncludeCategoriesPattern() {
-        return includeCategoriesPattern;
-    }
-
-    public List<String> getPostGenerationStatements() {
-        return postGenerationStatements;
-    }
-
-    public String getGraphStoreBackend() { return graphStoreBackend; }
-
-    public void setGraphStoreBackend(String graphStoreBackend) {
-        if (graphStoreBackend == null || graphStoreBackend.isBlank()) throw new IllegalArgumentException("graph-store-backend is required");
-        this.graphStoreBackend = graphStoreBackend;
-    }
-
-    public List<GraphEntity> getEntities() {
-        return entities;
-    }
-
-    public void setEntities(List<GraphEntity> entities) {
-        this.entities = entities;
-    }
-
-    public GraphEntity getEntity(String label) {
-        return entityIndex.get(label);
-    }
-
-    public GraphEntity getEntityWithMetadata(String metadataName) {
-        return metadataIndex.get(metadataName);
-    }
-
-    public static GraphConfiguration loadFrom(File file) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectReader reader = objectMapper.readerFor(GraphConfiguration.class);
-        try (Reader in = new InputStreamReader(new BufferedInputStream(new FileInputStream(file)),
-                Charset.forName("utf-8"))) {
-            GraphConfiguration value = reader.readValue(in);
-            value.decodePhoneRegion(file);
-            value.index();
-            return value;
-        }
-    }
-
-    public String toString() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectWriter writer = objectMapper.writerFor(GraphConfiguration.class);
-        try {
-            return writer.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static class GraphEntity implements Serializable {
-
-        /**
-         *
-         */
-        private static final long serialVersionUID = 1L;
-
-        private String label;
-
-        private List<GraphEntityMetadata> metadata;
-
-        private Map<String, GraphEntityMetadata> metadataIndex;
-
-        private void index() {
-            metadataIndex = new HashMap<>(metadata.size());
-
-            for (GraphEntityMetadata meta : metadata) {
-                GraphEntityMetadata previous = metadataIndex.put(meta.name, meta);
-                if (previous != null) {
-                    throw new IllegalArgumentException("Duplicated metadata " + meta.name + " at entity " + label);
-                }
-            }
-
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
-        }
-
-        public GraphEntityMetadata getMetadata(String metadataName) {
-            return metadataIndex.get(metadataName);
-        }
-
-        public List<GraphEntityMetadata> getMetadata() {
-            return metadata;
-        }
-
-        public void setMetadata(List<GraphEntityMetadata> metadata) {
-            this.metadata = metadata;
-        }
-
-    }
-
-    public static class GraphEntityMetadata implements Serializable {
-
-        /**
-         *
-         */
-        private static final long serialVersionUID = 1L;
-
-        /**
-         * equal to regex name by default
-         */
-        private String name;
-
-        private String property;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getProperty() {
-            return property;
-        }
-
-        public void setProperty(String property) {
-            this.property = property;
-        }
-
-    }
-
+  }
 }

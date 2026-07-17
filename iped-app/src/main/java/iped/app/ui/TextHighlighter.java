@@ -27,60 +27,61 @@ import org.apache.lucene.search.highlight.*;
 
 public class TextHighlighter {
 
-    // Highlight dos fragmentos
-    public static TextFragment[] getHighlightedFrags(boolean breakOnNewLine, String text, String fieldName, int minFragmentSize) throws Exception {
+  // Highlight dos fragmentos
+  public static TextFragment[] getHighlightedFrags(
+      boolean breakOnNewLine, String text, String fieldName, int minFragmentSize) throws Exception {
 
-        Query query = App.get().getQuery();
-        if (text == null || query == null) {
-            return new TextFragment[0];
-        }
-        TokenStream stream = TokenSources.getTokenStream(fieldName, text, App.get().appCase.getAnalyzer());
-        QueryScorer scorer = new QueryScorer(query, fieldName);
-        Fragmenter fragmenter;
-        SimpleHTMLFormatter formatter = new SimpleHTMLFormatter(ATextViewer.HIGHLIGHT_START_TAG, ATextViewer.HIGHLIGHT_END_TAG);
-        int maxFragments = 1;
-        if (minFragmentSize != 0) {
-            fragmenter = new TextFragmenter(minFragmentSize);
-            // fragmenter = new SimpleSpanFragmenter(scorer, fragmentSize);
-            maxFragments += text.length() / minFragmentSize;
-        } else {
-            fragmenter = new NullFragmenter();
-        }
-        Encoder encoder = new LuceneSimpleHTMLEncoder();
-        // Encoder encoder = new DefaultEncoder();
-        Highlighter highlighter = new Highlighter(formatter, encoder, scorer);
-        highlighter.setTextFragmenter(fragmenter);
-        highlighter.setMaxDocCharsToAnalyze(Integer.MAX_VALUE);
-        return highlighter.getBestTextFragments(stream, text, false, maxFragments);
+    Query query = App.get().getQuery();
+    if (text == null || query == null) {
+      return new TextFragment[0];
+    }
+    TokenStream stream =
+        TokenSources.getTokenStream(fieldName, text, App.get().appCase.getAnalyzer());
+    QueryScorer scorer = new QueryScorer(query, fieldName);
+    Fragmenter fragmenter;
+    SimpleHTMLFormatter formatter =
+        new SimpleHTMLFormatter(ATextViewer.HIGHLIGHT_START_TAG, ATextViewer.HIGHLIGHT_END_TAG);
+    int maxFragments = 1;
+    if (minFragmentSize != 0) {
+      fragmenter = new TextFragmenter(minFragmentSize);
+      // fragmenter = new SimpleSpanFragmenter(scorer, fragmentSize);
+      maxFragments += text.length() / minFragmentSize;
+    } else {
+      fragmenter = new NullFragmenter();
+    }
+    Encoder encoder = new LuceneSimpleHTMLEncoder();
+    // Encoder encoder = new DefaultEncoder();
+    Highlighter highlighter = new Highlighter(formatter, encoder, scorer);
+    highlighter.setTextFragmenter(fragmenter);
+    highlighter.setMaxDocCharsToAnalyze(Integer.MAX_VALUE);
+    return highlighter.getBestTextFragments(stream, text, false, maxFragments);
+  }
+
+  private static class TextFragmenter implements Fragmenter {
+
+    private int minFragmentSize;
+    private OffsetAttribute offsetAtt;
+    private int lastFragEnd = 0;
+    private int prevTokenEnd = 0;
+
+    public TextFragmenter(int minFragmentSize) {
+      this.minFragmentSize = minFragmentSize;
     }
 
-    private static class TextFragmenter implements Fragmenter {
-
-        private int minFragmentSize;
-        private OffsetAttribute offsetAtt;
-        private int lastFragEnd = 0;
-        private int prevTokenEnd = 0;
-
-        public TextFragmenter(int minFragmentSize) {
-            this.minFragmentSize = minFragmentSize;
-        }
-
-        @Override
-        public void start(String originalText, TokenStream stream) {
-            offsetAtt = stream.addAttribute(OffsetAttribute.class);
-        }
-
-        @Override
-        public boolean isNewFragment() {
-            int currTokenEnd = offsetAtt.endOffset();
-            boolean isNewFrag = prevTokenEnd - lastFragEnd >= minFragmentSize;
-            if (isNewFrag) {
-                lastFragEnd = prevTokenEnd;
-            }
-            prevTokenEnd = currTokenEnd;
-            return isNewFrag;
-        }
-
+    @Override
+    public void start(String originalText, TokenStream stream) {
+      offsetAtt = stream.addAttribute(OffsetAttribute.class);
     }
 
+    @Override
+    public boolean isNewFragment() {
+      int currTokenEnd = offsetAtt.endOffset();
+      boolean isNewFrag = prevTokenEnd - lastFragEnd >= minFragmentSize;
+      if (isNewFrag) {
+        lastFragEnd = prevTokenEnd;
+      }
+      prevTokenEnd = currTokenEnd;
+      return isNewFrag;
+    }
+  }
 }

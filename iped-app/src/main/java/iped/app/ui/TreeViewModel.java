@@ -22,188 +22,199 @@ import iped.engine.search.IPEDSearcher;
 import iped.engine.search.LuceneSearchResult;
 import iped.engine.search.MultiSearchResult;
 import iped.engine.task.index.IndexItem;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.StoredField;
-
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Vector;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StoredField;
 
 public class TreeViewModel implements TreeModel {
 
-    private Vector<TreeModelListener> treeModelListeners = new Vector<TreeModelListener>();
-    private Node root;
-    private static String FIRST_STRING = "Texto para agilizar primeiro acesso ao método toString, chamado para todos os filhos, inclusive fora da janela de visualização da árvore"; //$NON-NLS-1$
+  private Vector<TreeModelListener> treeModelListeners = new Vector<TreeModelListener>();
+  private Node root;
+  private static String FIRST_STRING =
+      "Texto para agilizar primeiro acesso ao método toString, chamado para todos os filhos, inclusive fora da janela de visualização da árvore"; //$NON-NLS-1$
 
-    /*
-     * private RowComparator getComparator1() { return new
-     * RowComparator(IndexItem.NAME) {
-     *
-     * @Override public int compare(Integer a, Integer b) { return sdv.getOrd(a) -
-     * sdv.getOrd(b); } }; }
-     */
+  /*
+   * private RowComparator getComparator1() { return new
+   * RowComparator(IndexItem.NAME) {
+   *
+   * @Override public int compare(Integer a, Integer b) { return sdv.getOrd(a) -
+   * sdv.getOrd(b); } }; }
+   */
 
-    private Collator collator = Collator.getInstance();
+  private Collator collator = Collator.getInstance();
 
-    private Comparator<Integer> getComparator() {
-        collator.setStrength(Collator.PRIMARY);
-        return new Comparator<Integer>() {
-            @Override
-            public int compare(Integer a, Integer b) {
-                try {
-                    Document doc1 = App.get().appCase.getReader().storedFields().document(a);
-                    Document doc2 = App.get().appCase.getReader().storedFields().document(b);
-                    return collator.compare(doc1.get(IndexItem.NAME), doc2.get(IndexItem.NAME));
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return 0;
-            }
-        };
-    }
-
-    public class Node {
-
-        private Document doc;
-        int docId;
-        private LuceneSearchResult children;
-        boolean first = true;
-
-        public Node(int docId) {
-            this.docId = docId;
-        }
-
-        public Document getDoc() {
-            if (doc == null) {
-                if (docId != -1) {
-                    try {
-                        this.doc = App.get().appCase.getReader().storedFields().document(docId);
-
-                    } catch (IOException e) {
-                        // e.printStackTrace();
-                    }
-                }
-            }
-            return doc;
-        }
-
-        public String toString() {
-            if (first) {
-                first = false;
-                return FIRST_STRING;
-            }
-
-            return getDoc().get(IndexItem.NAME);
-        }
-
-        public LuceneSearchResult getChildren() {
-            if (children == null) {
-                listSubItens(getDoc());
-            }
-
-            return children;
-        }
-
-        private void listSubItens(Document doc) {
-
-            String parentId = doc.get(IndexItem.ID);
-
-            String sourceUUID = doc.get(IndexItem.EVIDENCE_UUID);
-            String textQuery = IndexItem.PARENTID + ":" + parentId + " && " + IndexItem.EVIDENCE_UUID + ":" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    + sourceUUID;
-
-            textQuery = "(" + textQuery + ") && (" + IndexItem.ISDIR + ":true || " + IndexItem.HASCHILD + ":true)"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-
-            try {
-                IPEDSearcher task = new IPEDSearcher(App.get().appCase, textQuery);
-                task.setTreeQuery(true);
-                children = MultiSearchResult.get(task.multiSearch(), App.get().appCase);
-                Integer[] array = ArrayUtils.toObject(children.getLuceneIds());
-                Arrays.sort(array, getComparator());
-                children = LuceneSearchResult.buildSearchResult(ArrayUtils.toPrimitive(array), null);
-
-            } catch (Exception e) {
-                children = new LuceneSearchResult(0);
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-    public TreeViewModel() {
-        root = new Node(-1);
-        root.doc = new Document();
-        root.doc.add(new StoredField(IndexItem.NAME, Messages.getString("TreeViewModel.RootName"))); //$NON-NLS-1$
+  private Comparator<Integer> getComparator() {
+    collator.setStrength(Collator.PRIMARY);
+    return new Comparator<Integer>() {
+      @Override
+      public int compare(Integer a, Integer b) {
         try {
-            IPEDSearcher task = new IPEDSearcher(App.get().appCase, IndexItem.ISROOT + ":true"); //$NON-NLS-1$
-            task.setTreeQuery(true);
-            root.children = MultiSearchResult.get(task.multiSearch(), App.get().appCase);
-            Integer[] array = ArrayUtils.toObject(root.children.getLuceneIds());
-            Arrays.sort(array, getComparator());
-            root.children = LuceneSearchResult.buildSearchResult(ArrayUtils.toPrimitive(array), null);
+          Document doc1 = App.get().appCase.getReader().storedFields().document(a);
+          Document doc2 = App.get().appCase.getReader().storedFields().document(b);
+          return collator.compare(doc1.get(IndexItem.NAME), doc2.get(IndexItem.NAME));
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
         }
+        return 0;
+      }
+    };
+  }
 
+  public class Node {
+
+    private Document doc;
+    int docId;
+    private LuceneSearchResult children;
+    boolean first = true;
+
+    public Node(int docId) {
+      this.docId = docId;
     }
 
-    @Override
-    public void addTreeModelListener(TreeModelListener l) {
-        treeModelListeners.addElement(l);
+    public Document getDoc() {
+      if (doc == null) {
+        if (docId != -1) {
+          try {
+            this.doc = App.get().appCase.getReader().storedFields().document(docId);
 
-    }
-
-    @Override
-    public Object getChild(Object parent, int index) {
-        return new Node(((Node) parent).getChildren().getLuceneIds()[index]);
-    }
-
-    @Override
-    public int getChildCount(Object parent) {
-        return ((Node) parent).getChildren().getLength();
-    }
-
-    @Override
-    public int getIndexOfChild(Object parent, Object child) {
-
-        Node childNode = (Node) child;
-        for (int i = 0; i < ((Node) parent).getChildren().getLength(); i++) {
-            if (childNode.docId == ((Node) parent).getChildren().getLuceneIds()[i]) {
-                return i;
-            }
+          } catch (IOException e) {
+            // e.printStackTrace();
+          }
         }
-
-        return -1;
+      }
+      return doc;
     }
 
-    @Override
-    public Object getRoot() {
-        return root;
+    public String toString() {
+      if (first) {
+        first = false;
+        return FIRST_STRING;
+      }
+
+      return getDoc().get(IndexItem.NAME);
     }
 
-    @Override
-    public boolean isLeaf(Object node) {
-        return false;
+    public LuceneSearchResult getChildren() {
+      if (children == null) {
+        listSubItens(getDoc());
+      }
+
+      return children;
     }
 
-    @Override
-    public void removeTreeModelListener(TreeModelListener l) {
-        treeModelListeners.removeElement(l);
+    private void listSubItens(Document doc) {
 
+      String parentId = doc.get(IndexItem.ID);
+
+      String sourceUUID = doc.get(IndexItem.EVIDENCE_UUID);
+      String textQuery =
+          IndexItem.PARENTID
+              + ":"
+              + parentId
+              + " && "
+              + IndexItem.EVIDENCE_UUID
+              + ":" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+              + sourceUUID;
+
+      textQuery =
+          "("
+              + textQuery
+              + ") && ("
+              + IndexItem.ISDIR
+              + ":true || "
+              + IndexItem.HASCHILD
+              + ":true)"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+
+      try {
+        IPEDSearcher task = new IPEDSearcher(App.get().appCase, textQuery);
+        task.setTreeQuery(true);
+        children = MultiSearchResult.get(task.multiSearch(), App.get().appCase);
+        Integer[] array = ArrayUtils.toObject(children.getLuceneIds());
+        Arrays.sort(array, getComparator());
+        children = LuceneSearchResult.buildSearchResult(ArrayUtils.toPrimitive(array), null);
+
+      } catch (Exception e) {
+        children = new LuceneSearchResult(0);
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public TreeViewModel() {
+    root = new Node(-1);
+    root.doc = new Document();
+    root.doc.add(
+        new StoredField(
+            IndexItem.NAME, Messages.getString("TreeViewModel.RootName"))); // $NON-NLS-1$
+    try {
+      IPEDSearcher task =
+          new IPEDSearcher(App.get().appCase, IndexItem.ISROOT + ":true"); // $NON-NLS-1$
+      task.setTreeQuery(true);
+      root.children = MultiSearchResult.get(task.multiSearch(), App.get().appCase);
+      Integer[] array = ArrayUtils.toObject(root.children.getLuceneIds());
+      Arrays.sort(array, getComparator());
+      root.children = LuceneSearchResult.buildSearchResult(ArrayUtils.toPrimitive(array), null);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override
+  public void addTreeModelListener(TreeModelListener l) {
+    treeModelListeners.addElement(l);
+  }
+
+  @Override
+  public Object getChild(Object parent, int index) {
+    return new Node(((Node) parent).getChildren().getLuceneIds()[index]);
+  }
+
+  @Override
+  public int getChildCount(Object parent) {
+    return ((Node) parent).getChildren().getLength();
+  }
+
+  @Override
+  public int getIndexOfChild(Object parent, Object child) {
+
+    Node childNode = (Node) child;
+    for (int i = 0; i < ((Node) parent).getChildren().getLength(); i++) {
+      if (childNode.docId == ((Node) parent).getChildren().getLuceneIds()[i]) {
+        return i;
+      }
     }
 
-    @Override
-    public void valueForPathChanged(TreePath path, Object newValue) {
-        // TODO Auto-generated method stub
+    return -1;
+  }
 
-    }
+  @Override
+  public Object getRoot() {
+    return root;
+  }
 
+  @Override
+  public boolean isLeaf(Object node) {
+    return false;
+  }
+
+  @Override
+  public void removeTreeModelListener(TreeModelListener l) {
+    treeModelListeners.removeElement(l);
+  }
+
+  @Override
+  public void valueForPathChanged(TreePath path, Object newValue) {
+    // TODO Auto-generated method stub
+
+  }
 }

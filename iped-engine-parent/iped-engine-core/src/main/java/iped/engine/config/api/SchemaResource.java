@@ -25,78 +25,77 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JAX-RS resource for schema operations.
- * Exposes REST endpoints for configuration and CLI schema management.
+ * JAX-RS resource for schema operations. Exposes REST endpoints for configuration and CLI schema
+ * management.
  */
 @Path("/api/v1/schemas")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class SchemaResource {
-    private final SchemaAPIController controller;
+  private final SchemaAPIController controller;
 
-    public SchemaResource() {
-        this.controller = new SchemaAPIController();
-    }
+  public SchemaResource() {
+    this.controller = new SchemaAPIController();
+  }
 
-    @GET
-    public Response listSchemas() {
-        List<Map<String, Object>> schemas = controller.listSchemas();
-        Map<String, Object> response = createListResponse(schemas);
-        return Response.ok(response).build();
-    }
+  @GET
+  public Response listSchemas() {
+    List<Map<String, Object>> schemas = controller.listSchemas();
+    Map<String, Object> response = createListResponse(schemas);
+    return Response.ok(response).build();
+  }
 
-    @GET
-    @Path("/{componentName}")
-    public Response getSchema(@PathParam("componentName") String componentName) {
-        Map<String, Object> result = controller.getSchema(componentName);
-        return Response.ok(result).build();
-    }
+  @GET
+  @Path("/{componentName}")
+  public Response getSchema(@PathParam("componentName") String componentName) {
+    Map<String, Object> result = controller.getSchema(componentName);
+    return Response.ok(result).build();
+  }
 
-    @GET
-    @Path("/{componentName}/ui")
-    public Response getUISchema(@PathParam("componentName") String componentName) {
-        Map<String, Object> result = controller.getSchema(componentName);
-        if ((boolean) result.get("success")) {
-            Map<String, Object> response = new java.util.HashMap<>();
-            response.put("success", true);
-            response.put("uiSchema", result.get("uiSchema"));
-            return Response.ok(response).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).entity(result).build();
+  @GET
+  @Path("/{componentName}/ui")
+  public Response getUISchema(@PathParam("componentName") String componentName) {
+    Map<String, Object> result = controller.getSchema(componentName);
+    if ((boolean) result.get("success")) {
+      Map<String, Object> response = new java.util.HashMap<>();
+      response.put("success", true);
+      response.put("uiSchema", result.get("uiSchema"));
+      return Response.ok(response).build();
     }
+    return Response.status(Response.Status.NOT_FOUND).entity(result).build();
+  }
 
-    @POST
-    @Path("/{componentName}/validate")
-    public Response validateConfiguration(
-            @PathParam("componentName") String componentName,
-            Map<String, Object> request) {
-        String configJson = ((Map<String, String>) request.get("config")).toString();
-        Map<String, Object> result = controller.validateConfiguration(componentName, configJson);
-        return Response.ok(result).build();
-    }
+  @POST
+  @Path("/{componentName}/validate")
+  public Response validateConfiguration(
+      @PathParam("componentName") String componentName, Map<String, Object> request) {
+    String configJson = ((Map<String, String>) request.get("config")).toString();
+    Map<String, Object> result = controller.validateConfiguration(componentName, configJson);
+    return Response.ok(result).build();
+  }
 
-    @GET
-    @Path("/category/{category}")
-    public Response getSchemasByCategory(@PathParam("category") String category) {
-        List<Map<String, Object>> schemas = controller.getSchemasByCategory(category);
-        Map<String, Object> response = createListResponse(schemas);
-        response.put("category", category);
-        return Response.ok(response).build();
-    }
+  @GET
+  @Path("/category/{category}")
+  public Response getSchemasByCategory(@PathParam("category") String category) {
+    List<Map<String, Object>> schemas = controller.getSchemasByCategory(category);
+    Map<String, Object> response = createListResponse(schemas);
+    response.put("category", category);
+    return Response.ok(response).build();
+  }
 
-    @GET
-    @Path("/../cli-schemas")
-    public Response listCLISchemas() {
-        List<Map<String, Object>> schemas = controller.listCLISchemas();
-        Map<String, Object> response = createListResponse(schemas);
-        return Response.ok(response).build();
-    }
+  @GET
+  @Path("/../cli-schemas")
+  public Response listCLISchemas() {
+    List<Map<String, Object>> schemas = controller.listCLISchemas();
+    Map<String, Object> response = createListResponse(schemas);
+    return Response.ok(response).build();
+  }
 
-    private Map<String, Object> createListResponse(List<Map<String, Object>> items) {
-        Map<String, Object> response = new java.util.HashMap<>();
-        response.put("success", true);
-        response.put("schemas", items);
-        response.put("count", items.size());
-        return response;
-    }
+  private Map<String, Object> createListResponse(List<Map<String, Object>> items) {
+    Map<String, Object> response = new java.util.HashMap<>();
+    response.put("success", true);
+    response.put("schemas", items);
+    response.put("count", items.size());
+    return response;
+  }
 }

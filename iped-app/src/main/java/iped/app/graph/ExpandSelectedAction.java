@@ -1,22 +1,21 @@
 package iped.app.graph;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
+import javax.swing.*;
 
 public class ExpandSelectedAction extends AbstractAction {
 
-    private static final long serialVersionUID = 5212774496202831315L;
+  private static final long serialVersionUID = 5212774496202831315L;
 
-    private AppGraphAnalytics app;
+  private AppGraphAnalytics app;
 
-    public ExpandSelectedAction(AppGraphAnalytics app) {
-        super();
-        this.app = app;
-    }
+  public ExpandSelectedAction(AppGraphAnalytics app) {
+    super();
+    this.app = app;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        app.expandSelected();
-    }
-
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    app.expandSelected();
+  }
 }

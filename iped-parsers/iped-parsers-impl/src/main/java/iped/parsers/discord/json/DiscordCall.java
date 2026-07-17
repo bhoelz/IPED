@@ -1,7 +1,6 @@
 package iped.parsers.discord.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,48 +12,46 @@ import java.util.List;
  */
 public class DiscordCall {
 
-    @JsonProperty("participants")
-    private List<String> participants;
+  @JsonProperty("participants")
+  private List<String> participants;
 
-    @JsonProperty("ended_timestamp")
-    private Date endedTimestamp;
+  @JsonProperty("ended_timestamp")
+  private Date endedTimestamp;
 
-    public List<String> getParticipants() {
-        return participants;
-    }
+  public List<String> getParticipants() {
+    return participants;
+  }
 
-    public void setParticipants(List<String> participants) {
-        this.participants = participants;
-    }
+  public void setParticipants(List<String> participants) {
+    this.participants = participants;
+  }
 
-    public String getParticipantsNames(List<DiscordRoot> drl) {
+  public String getParticipantsNames(List<DiscordRoot> drl) {
 
-        List<String> participantsNames = new ArrayList<String>();
+    List<String> participantsNames = new ArrayList<String>();
 
-        for (DiscordRoot dr : drl) {
-            for (String name : participants) {
-                if (name.equals(dr.getAuthor().getId())) {
-                    String participant = dr.getAuthor().getFullUsername();
-                    if (!participantsNames.contains(participant))
-                        participantsNames.add(participant);
-                }
-            }
+    for (DiscordRoot dr : drl) {
+      for (String name : participants) {
+        if (name.equals(dr.getAuthor().getId())) {
+          String participant = dr.getAuthor().getFullUsername();
+          if (!participantsNames.contains(participant)) participantsNames.add(participant);
         }
-
-        return String.join(", ", participantsNames);
+      }
     }
 
-    public Date getEndedTimestamp() {
-        return endedTimestamp;
-    }
+    return String.join(", ", participantsNames);
+  }
 
-    public void setEnded_timestamp(Date endedTimestamp) {
-        this.endedTimestamp = endedTimestamp;
-    }
+  public Date getEndedTimestamp() {
+    return endedTimestamp;
+  }
 
-    @Override
-    public String toString() {
-        return "DiscordCall [participants=" + participants + ", endedTimestamp=" + endedTimestamp + "]";
-    }
+  public void setEnded_timestamp(Date endedTimestamp) {
+    this.endedTimestamp = endedTimestamp;
+  }
 
+  @Override
+  public String toString() {
+    return "DiscordCall [participants=" + participants + ", endedTimestamp=" + endedTimestamp + "]";
+  }
 }

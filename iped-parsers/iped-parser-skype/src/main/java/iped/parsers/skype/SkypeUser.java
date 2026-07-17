@@ -2,8 +2,7 @@ package iped.parsers.skype;
 
 public interface SkypeUser {
 
-    String getBestName();
+  String getBestName();
 
-    String getSkypeName();
-
+  String getSkypeName();
 }

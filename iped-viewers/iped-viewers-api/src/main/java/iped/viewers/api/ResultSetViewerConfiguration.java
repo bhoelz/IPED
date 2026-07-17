@@ -8,6 +8,5 @@ import java.util.List;
 
 public interface ResultSetViewerConfiguration {
 
-    List<ResultSetViewer> getResultSetViewers();
-
+  List<ResultSetViewer> getResultSetViewers();
 }

@@ -1,284 +1,364 @@
 package iped.parsers.ufed.handler;
 
+import static iped.properties.ExtraProperties.*;
+
 import iped.data.IItemReader;
 import iped.parsers.ufed.model.*;
 import iped.parsers.util.ConversationConstants;
 import iped.properties.BasicProps;
 import iped.search.IItemSearcher;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.Geographic;
 import org.apache.tika.metadata.Metadata;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static iped.properties.ExtraProperties.*;
-
-/**
- * Handles all processing logic for an InstantMessage model.
- */
+/** Handles all processing logic for an InstantMessage model. */
 @Slf4j
 public class InstantMessageHandler extends BaseModelHandler<InstantMessage> {
 
+  private Map<String, IItemReader> cache;
 
-    private Map<String, IItemReader> cache;
+  public InstantMessageHandler(
+      InstantMessage model, IItemReader modelItem, Map<String, IItemReader> cache) {
+    super(model, modelItem);
+    this.cache = cache;
+  }
 
-    public InstantMessageHandler(InstantMessage model, IItemReader modelItem, Map<String, IItemReader> cache) {
-        super(model, modelItem);
-        this.cache = cache;
+  public InstantMessageHandler(InstantMessage model, IItemReader modelItem) {
+    this(model, modelItem, new HashMap<>());
+  }
+
+  @Override
+  protected void fillMetadata(String prefix, Metadata metadata) {
+
+    super.fillMetadata(prefix, metadata);
+
+    if (model.getChat() != null) {
+      metadata.set(PARENT_VIEW_POSITION, model.getAnchorId());
     }
 
-    public InstantMessageHandler(InstantMessage model, IItemReader modelItem) {
-        this(model, modelItem, new HashMap<>());
+    if (!model.getAttachments().isEmpty()) {
+      metadata.set(MESSAGE_ATTACHMENT_COUNT, Integer.toString(model.getAttachments().size()));
     }
 
-    @Override
-    protected void fillMetadata(String prefix, Metadata metadata) {
-
-        super.fillMetadata(prefix, metadata);
-
-        if (model.getChat() != null) {
-            metadata.set(PARENT_VIEW_POSITION, model.getAnchorId());
-        }
-
-        if (!model.getAttachments().isEmpty()) {
-            metadata.set(MESSAGE_ATTACHMENT_COUNT, Integer.toString(model.getAttachments().size()));
-        }
-
-        // Message -> Direction
-        model.getFrom().ifPresentOrElse(from -> {
-            if (from.isPhoneOwner()) {
+    // Message -> Direction
+    model
+        .getFrom()
+        .ifPresentOrElse(
+            from -> {
+              if (from.isPhoneOwner()) {
                 metadata.set(COMMUNICATION_DIRECTION, ConversationConstants.DIRECTION_OUTGOING);
-            } else {
+              } else {
                 metadata.set(COMMUNICATION_DIRECTION, ConversationConstants.DIRECTION_INCOMING);
-            }
-        }, () -> {
-            if (model.getTo().stream().filter(Party::isPhoneOwner).findAny().isPresent()) {
+              }
+            },
+            () -> {
+              if (model.getTo().stream().filter(Party::isPhoneOwner).findAny().isPresent()) {
                 metadata.set(COMMUNICATION_DIRECTION, ConversationConstants.DIRECTION_INCOMING);
-            }
-        });
+              }
+            });
 
-        // Message -> From
-        model.getFrom().ifPresent(from ->  {
-            new PartyHandler(from, model.getSource()).fillMetadata(COMMUNICATION_FROM, metadata);
-        });
+    // Message -> From
+    model
+        .getFrom()
+        .ifPresent(
+            from -> {
+              new PartyHandler(from, model.getSource()).fillMetadata(COMMUNICATION_FROM, metadata);
+            });
 
-        // Message -> To
-        if (model.getTo().size() == 1) {
-            new PartyHandler(model.getTo().get(0), model.getSource()).fillMetadata(COMMUNICATION_TO, metadata);
+    // Message -> To
+    if (model.getTo().size() == 1) {
+      new PartyHandler(model.getTo().get(0), model.getSource())
+          .fillMetadata(COMMUNICATION_TO, metadata);
 
-        } else if (model.getChat() != null) {
+    } else if (model.getChat() != null) {
 
-            // in case "To" is NOT set in InstantMessage, try to...
-            List<Party> otherParticipants;
-            if (model.getFrom().isPresent()) {
+      // in case "To" is NOT set in InstantMessage, try to...
+      List<Party> otherParticipants;
+      if (model.getFrom().isPresent()) {
 
-                // ...get other participants (without "from")
-                otherParticipants = model.getChat().getParticipants().stream() //
-                        .filter(p -> !p.equals(model.getFrom().get())) //
-                        .collect(Collectors.toList()); //
-            } else {
-                // ...get other participants
-                otherParticipants = model.getChat().getParticipants();
-            }
+        // ...get other participants (without "from")
+        otherParticipants =
+            model.getChat().getParticipants().stream() //
+                .filter(p -> !p.equals(model.getFrom().get())) //
+                .collect(Collectors.toList()); //
+      } else {
+        // ...get other participants
+        otherParticipants = model.getChat().getParticipants();
+      }
 
-            if (otherParticipants.size() == 1) {
-                new PartyHandler(otherParticipants.get(0), model.getSource()).fillMetadata(COMMUNICATION_TO, metadata);
+      if (otherParticipants.size() == 1) {
+        new PartyHandler(otherParticipants.get(0), model.getSource())
+            .fillMetadata(COMMUNICATION_TO, metadata);
 
-            } else if (otherParticipants.size() > 2) {
+      } else if (otherParticipants.size() > 2) {
 
-                // there is more than one "To", so use chat information
-                metadata.add(COMMUNICATION_TO, new ChatHandler(model.getChat()).getTitle(false, false));
+        // there is more than one "To", so use chat information
+        metadata.add(COMMUNICATION_TO, new ChatHandler(model.getChat()).getTitle(false, false));
 
-                String chatId = model.getChat().getFieldId();
-                if (StringUtils.isNotBlank(chatId)) {
-                    metadata.add(COMMUNICATION_TO  + ":id", chatId);
-                }
-
-                String chatName = model.getChat().getName();
-                if (StringUtils.isNotBlank(chatName)) {
-                    metadata.add(COMMUNICATION_TO + ":name", chatName);
-                }
-            }
+        String chatId = model.getChat().getFieldId();
+        if (StringUtils.isNotBlank(chatId)) {
+          metadata.add(COMMUNICATION_TO + ":id", chatId);
         }
 
-        model.getExtraData().getMessageLabels().forEach(l -> {
-            metadata.add(UFED_META_PREFIX + "Label", l.getLabel());
-        });
+        String chatName = model.getChat().getName();
+        if (StringUtils.isNotBlank(chatName)) {
+          metadata.add(COMMUNICATION_TO + ":name", chatName);
+        }
+      }
+    }
 
-        model.getExtraData().getForwardedMessage().ifPresent(fw -> {
-            if (fw.getOriginalSender() != null) {
+    model
+        .getExtraData()
+        .getMessageLabels()
+        .forEach(
+            l -> {
+              metadata.add(UFED_META_PREFIX + "Label", l.getLabel());
+            });
+
+    model
+        .getExtraData()
+        .getForwardedMessage()
+        .ifPresent(
+            fw -> {
+              if (fw.getOriginalSender() != null) {
                 new PartyHandler(fw.getOriginalSender(), model.getSource())
                     .fillMetadata(UFED_META_PREFIX + "Forwarded:originalSender", metadata);
-            }
-            metadata.add(UFED_META_PREFIX + "Label", fw.getLabel());
+              }
+              metadata.add(UFED_META_PREFIX + "Label", fw.getLabel());
 
-            fw.getFields().forEach((key, value) -> {
-                fillFieldMetadata("Forwarded:" + key, prefix, metadata, Set.of("Label"));
-            });
-        });
-
-        model.getExtraData().getReplyMessage().ifPresent(replied -> {
-            metadata.add(UFED_META_PREFIX + "Label", replied.getLabel());
-
-            replied.getFields().forEach((key, value) -> {
-                fillFieldMetadata("Reply:" + key, prefix, metadata, Set.of("Label"));
+              fw.getFields()
+                  .forEach(
+                      (key, value) -> {
+                        fillFieldMetadata("Forwarded:" + key, prefix, metadata, Set.of("Label"));
+                      });
             });
 
-            if (replied.getInstantMessage() != null) {
-                metadata.add(UFED_META_PREFIX + "Reply:referenceId", replied.getInstantMessage().getId());
-            }
-        });
+    model
+        .getExtraData()
+        .getReplyMessage()
+        .ifPresent(
+            replied -> {
+              metadata.add(UFED_META_PREFIX + "Label", replied.getLabel());
 
-        model.getExtraData().getQuotedMessage().ifPresent(quoted -> {
-            String type = StringUtils.firstNonBlank(quoted.getLabel(), "Quoted");
+              replied
+                  .getFields()
+                  .forEach(
+                      (key, value) -> {
+                        fillFieldMetadata("Reply:" + key, prefix, metadata, Set.of("Label"));
+                      });
 
-            quoted.getFields().forEach((key, value) -> {
-                fillFieldMetadata(type + ":" + key, prefix, metadata, Set.of("Label"));
+              if (replied.getInstantMessage() != null) {
+                metadata.add(
+                    UFED_META_PREFIX + "Reply:referenceId", replied.getInstantMessage().getId());
+              }
             });
-        });
 
-        if (model.isSystemMessage()) {
-            metadata.set(UFED_META_PREFIX + "isSystemMessage", Boolean.toString(true));
-        }
+    model
+        .getExtraData()
+        .getQuotedMessage()
+        .ifPresent(
+            quoted -> {
+              String type = StringUtils.firstNonBlank(quoted.getLabel(), "Quoted");
 
-        if (model.getPosition() != null) {
-            metadata.set(Geographic.LATITUDE, model.getPosition().getLatitude());
-            metadata.set(Geographic.LONGITUDE, model.getPosition().getLongitude());
-        }
+              quoted
+                  .getFields()
+                  .forEach(
+                      (key, value) -> {
+                        fillFieldMetadata(type + ":" + key, prefix, metadata, Set.of("Label"));
+                      });
+            });
+
+    if (model.isSystemMessage()) {
+      metadata.set(UFED_META_PREFIX + "isSystemMessage", Boolean.toString(true));
     }
 
-    @Override
-    public void doLoadReferences(IItemSearcher searcher) {
-
-        model.getFrom().ifPresent(from -> {
-            new PartyHandler(from, model.getSource(), item, cache).loadReferences(searcher);
-        });
-        model.getTo().forEach(to -> {
-            new PartyHandler(to, model.getSource(), item, cache).loadReferences(searcher);
-        });
-        model.getAttachments().stream().forEach(a -> {
-            new AttachmentHandler(a, item).loadReferences(searcher);
-        });
-        model.getSharedContacts().stream().forEach(c -> {
-            new ContactHandler(c).loadReferences(searcher);
-        });
-
-        model.getEmbeddedMessage().ifPresent(em -> {
-            new InstantMessageHandler(em, item, cache).loadReferences(searcher);
-        });
-        model.getExtraData().getReplyMessage().map(ReplyMessageData::getInstantMessage).ifPresent(rm -> {
-            new InstantMessageHandler(rm, item, cache).loadReferences(searcher);
-        });
-
-        loadLocationReference(searcher);
-
-        loadFileReferenceInSourceModels(searcher);
+    if (model.getPosition() != null) {
+      metadata.set(Geographic.LATITUDE, model.getPosition().getLatitude());
+      metadata.set(Geographic.LONGITUDE, model.getPosition().getLongitude());
     }
+  }
 
-    @Override
-    protected void doAddLinkedItemsAndSharedHashes(Set<String> linkedItems, Set<String> sharedHashes, IItemSearcher searcher) {
-        model.getFrom().flatMap(Party::getReferencedContact).ifPresent(ref -> {
-            addLinkedItem(linkedItems, ref.getItem(), searcher);
-        });
-        model.getTo().stream().map(Party::getReferencedContact).filter(Optional::isPresent).map(Optional::get).forEach(ref -> {
-            addLinkedItem(linkedItems, ref.getItem(), searcher);
-        });
+  @Override
+  public void doLoadReferences(IItemSearcher searcher) {
 
-        model.getAttachments().stream().map(Attachment::getReferencedFile).filter(Objects::nonNull).forEach(ref -> {
-            addLinkedItem(linkedItems, ref.getItem(), searcher);
-            if (model.isFromPhoneOwner()) {
+    model
+        .getFrom()
+        .ifPresent(
+            from -> {
+              new PartyHandler(from, model.getSource(), item, cache).loadReferences(searcher);
+            });
+    model
+        .getTo()
+        .forEach(
+            to -> {
+              new PartyHandler(to, model.getSource(), item, cache).loadReferences(searcher);
+            });
+    model.getAttachments().stream()
+        .forEach(
+            a -> {
+              new AttachmentHandler(a, item).loadReferences(searcher);
+            });
+    model.getSharedContacts().stream()
+        .forEach(
+            c -> {
+              new ContactHandler(c).loadReferences(searcher);
+            });
+
+    model
+        .getEmbeddedMessage()
+        .ifPresent(
+            em -> {
+              new InstantMessageHandler(em, item, cache).loadReferences(searcher);
+            });
+    model
+        .getExtraData()
+        .getReplyMessage()
+        .map(ReplyMessageData::getInstantMessage)
+        .ifPresent(
+            rm -> {
+              new InstantMessageHandler(rm, item, cache).loadReferences(searcher);
+            });
+
+    loadLocationReference(searcher);
+
+    loadFileReferenceInSourceModels(searcher);
+  }
+
+  @Override
+  protected void doAddLinkedItemsAndSharedHashes(
+      Set<String> linkedItems, Set<String> sharedHashes, IItemSearcher searcher) {
+    model
+        .getFrom()
+        .flatMap(Party::getReferencedContact)
+        .ifPresent(
+            ref -> {
+              addLinkedItem(linkedItems, ref.getItem(), searcher);
+            });
+    model.getTo().stream()
+        .map(Party::getReferencedContact)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .forEach(
+            ref -> {
+              addLinkedItem(linkedItems, ref.getItem(), searcher);
+            });
+
+    model.getAttachments().stream()
+        .map(Attachment::getReferencedFile)
+        .filter(Objects::nonNull)
+        .forEach(
+            ref -> {
+              addLinkedItem(linkedItems, ref.getItem(), searcher);
+              if (model.isFromPhoneOwner()) {
                 addSharedHash(sharedHashes, ref.getItem());
-            }
-        });
+              }
+            });
 
-        model.getSharedContacts().stream().map(Contact::getReferencedContact).filter(Optional::isPresent).map(Optional::get).forEach(ref -> {
-            addLinkedItem(linkedItems, ref.getItem(), searcher);
-        });
+    model.getSharedContacts().stream()
+        .map(Contact::getReferencedContact)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .forEach(
+            ref -> {
+              addLinkedItem(linkedItems, ref.getItem(), searcher);
+            });
 
-        if (model.getPosition() != null && model.getPosition().getReferencedLocation() != null) {
-            addLinkedItem(linkedItems, model.getPosition().getReferencedLocation().getItem(), searcher);
-        }
+    if (model.getPosition() != null && model.getPosition().getReferencedLocation() != null) {
+      addLinkedItem(linkedItems, model.getPosition().getReferencedLocation().getItem(), searcher);
+    }
+  }
+
+  @Override
+  public String getTitle() {
+
+    return new StringBuilder()
+        .append(StringUtils.firstNonBlank(model.getType(), "InstantMessage"))
+        .append("-[")
+        .append(StringUtils.firstNonBlank(model.getIdentifier(), model.getId()))
+        .append("]")
+        .toString();
+  }
+
+  private void loadLocationReference(IItemSearcher searcher) {
+
+    if (model.getPosition() == null || model.getPosition().getReferencedLocation() != null) {
+      return;
     }
 
-    @Override
-    public String getTitle() {
+    if (model.getPosition().getId() != null) {
 
-        return new StringBuilder()
-                .append(StringUtils.firstNonBlank(model.getType(), "InstantMessage"))
-                .append("-[")
-                .append(StringUtils.firstNonBlank(model.getIdentifier(), model.getId()))
-                .append("]")
-                .toString();
+      // the message and location shares the same "ufed:coordinate_id" that was added when merging
+      // in UfedXmlReader
+      String query =
+          searcher.escapeQuery(UFED_COORDINATE_ID) + ":\"" + model.getPosition().getId() + "\"";
+      List<IItemReader> locationItems = searcher.search(query);
+      if (!locationItems.isEmpty()) {
+        if (locationItems.size() > 1) {
+          log.warn("Found more than 1 location for coordinate: {}", locationItems);
+        }
+        model.getPosition().setReferencedLocation(locationItems.get(0));
+        return;
+      }
     }
 
+    if (model.isLocationSharing()) {
 
-    private void loadLocationReference(IItemSearcher searcher) {
-
-        if (model.getPosition() == null || model.getPosition().getReferencedLocation() != null) {
-            return;
+      // the location item is referenced by jumptargets
+      String[] jumpTargets =
+          model.getJumpTargets().stream().map(JumpTarget::getId).toArray(String[]::new);
+      if (jumpTargets.length > 0) {
+        String query =
+            BasicProps.CONTENTTYPE
+                + ":\"application/x-ufed-location\" && " //
+                + searcher.escapeQuery(UFED_ID)
+                + ":(\""
+                + StringUtils.join(jumpTargets, "\" \"")
+                + "\")";
+        List<IItemReader> locationItems = searcher.search(query);
+        if (!locationItems.isEmpty()) {
+          if (locationItems.size() > 1) {
+            log.warn("Found more than 1 location for jumptargets: {}", locationItems);
+          }
+          model.getPosition().setReferencedLocation(locationItems.get(0));
+          return;
         }
-
-        if (model.getPosition().getId() != null) {
-
-            // the message and location shares the same "ufed:coordinate_id" that was added when merging in UfedXmlReader
-            String query = searcher.escapeQuery(UFED_COORDINATE_ID) + ":\"" + model.getPosition().getId() + "\"";
-            List<IItemReader> locationItems = searcher.search(query);
-            if (!locationItems.isEmpty()) {
-                if (locationItems.size() > 1) {
-                    log.warn("Found more than 1 location for coordinate: {}", locationItems);
-                }
-                model.getPosition().setReferencedLocation(locationItems.get(0));
-                return;
-            }
-        }
-
-        if (model.isLocationSharing()) {
-
-            // the location item is referenced by jumptargets
-            String[] jumpTargets = model.getJumpTargets().stream().map(JumpTarget::getId).toArray(String[]::new);
-            if (jumpTargets.length > 0) {
-                String query = BasicProps.CONTENTTYPE + ":\"application/x-ufed-location\" && " //
-                        + searcher.escapeQuery(UFED_ID) + ":(\"" + StringUtils.join(jumpTargets, "\" \"") + "\")";
-                List<IItemReader> locationItems = searcher.search(query);
-                if (!locationItems.isEmpty()) {
-                    if (locationItems.size() > 1) {
-                        log.warn("Found more than 1 location for jumptargets: {}", locationItems);
-                    }
-                    model.getPosition().setReferencedLocation(locationItems.get(0));
-                    return;
-                }
-            }
-        }
-
-        log.debug("Location reference was not found: {}", model);
+      }
     }
 
-    private void loadFileReferenceInSourceModels(IItemSearcher searcher) {
+    log.debug("Location reference was not found: {}", model);
+  }
 
-        String referenceId;
-        if (model.isForwardedMessage()
-                && model.getAttachments().isEmpty()
-                && (referenceId = model.getExtraData().getQuotedMessage().map(QuotedMessageData::getReferenceId).orElse(null)) != null
-                && StringUtils.isNotBlank(referenceId)
-                && model.findForwardedMessage(model.getChat()) == null) {
+  private void loadFileReferenceInSourceModels(IItemSearcher searcher) {
 
-            String query = searcher.escapeQuery(UFED_SOURCE_MODELS) + ":\"" + referenceId + "\"";
-            for (IItemReader result : searcher.searchIterable(query)) {
+    String referenceId;
+    if (model.isForwardedMessage()
+        && model.getAttachments().isEmpty()
+        && (referenceId =
+                model
+                    .getExtraData()
+                    .getQuotedMessage()
+                    .map(QuotedMessageData::getReferenceId)
+                    .orElse(null))
+            != null
+        && StringUtils.isNotBlank(referenceId)
+        && model.findForwardedMessage(model.getChat()) == null) {
 
-                // add a "fake" attachment related to file with referenceId
-                Attachment attachment = new Attachment();
-                attachment.setAttribute("file_id", result.getMetadataValue(UFED_ID));
-                attachment.setField("comment", "Added by IPED from source models");
-                attachment.setField("sourceModelReferenceId", referenceId);
-                attachment.setField("ContentType", result.getMediaTypeString());
-                attachment.setField("Filename", result.getName());
-                attachment.setReferencedFile(result);
-                model.getAttachments().add(attachment);
-            }
-        }
+      String query = searcher.escapeQuery(UFED_SOURCE_MODELS) + ":\"" + referenceId + "\"";
+      for (IItemReader result : searcher.searchIterable(query)) {
+
+        // add a "fake" attachment related to file with referenceId
+        Attachment attachment = new Attachment();
+        attachment.setAttribute("file_id", result.getMetadataValue(UFED_ID));
+        attachment.setField("comment", "Added by IPED from source models");
+        attachment.setField("sourceModelReferenceId", referenceId);
+        attachment.setField("ContentType", result.getMediaTypeString());
+        attachment.setField("Filename", result.getName());
+        attachment.setReferencedFile(result);
+        model.getAttachments().add(attachment);
+      }
     }
+  }
 }
-
-

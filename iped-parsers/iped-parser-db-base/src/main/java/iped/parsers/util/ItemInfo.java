@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -23,100 +23,107 @@ import java.util.Collection;
 import java.util.HashSet;
 
 /**
- * Contém informações sobre o item sendo processado, sendo configurado no
- * contexto do parsing de forma que os parsers tenham acesso a tais informações.
- * 
- * @author Nassif
+ * Contém informações sobre o item sendo processado, sendo configurado no contexto do parsing de
+ * forma que os parsers tenham acesso a tais informações.
  *
+ * @author Nassif
  */
 public class ItemInfo implements Serializable {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    private int child = -1, id;
-    private Collection<String> bookmarks;
-    private Collection<String> categories;
-    private String path, hash;
-    private boolean carved = false;
-    private boolean known = false;
+  private int child = -1, id;
+  private Collection<String> bookmarks;
+  private Collection<String> categories;
+  private String path, hash;
+  private boolean carved = false;
+  private boolean known = false;
 
-    public ItemInfo(int id, String hash, Collection<String> bookmarks, Collection<String> categories, String path,
-            boolean carved) {
-        this(id, hash, bookmarks, categories, path, carved, false);
-    }
+  public ItemInfo(
+      int id,
+      String hash,
+      Collection<String> bookmarks,
+      Collection<String> categories,
+      String path,
+      boolean carved) {
+    this(id, hash, bookmarks, categories, path, carved, false);
+  }
 
-    public ItemInfo(int id, String hash, Collection<String> bookmarks, Collection<String> categories, String path,
-            boolean carved, boolean known) {
-        this.id = id;
-        this.hash = hash;
-        this.bookmarks = bookmarks;
-        this.categories = categories;
-        this.path = path;
-        this.setCarved(carved);
-        this.known = known;
-    }
+  public ItemInfo(
+      int id,
+      String hash,
+      Collection<String> bookmarks,
+      Collection<String> categories,
+      String path,
+      boolean carved,
+      boolean known) {
+    this.id = id;
+    this.hash = hash;
+    this.bookmarks = bookmarks;
+    this.categories = categories;
+    this.path = path;
+    this.setCarved(carved);
+    this.known = known;
+  }
 
-    public int getId() {
-        return id;
-    }
+  public int getId() {
+    return id;
+  }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+  public void setId(int id) {
+    this.id = id;
+  }
 
-    public String getPath() {
-        return path;
-    }
+  public String getPath() {
+    return path;
+  }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
+  public void setPath(String path) {
+    this.path = path;
+  }
 
-    public void incChild() {
-        this.child++;
-    }
+  public void incChild() {
+    this.child++;
+  }
 
-    public int getChild() {
-        return child;
-    }
+  public int getChild() {
+    return child;
+  }
 
-    public void setBookmarks(HashSet<String> bookmarks) {
-        this.bookmarks = bookmarks;
-    }
+  public void setBookmarks(HashSet<String> bookmarks) {
+    this.bookmarks = bookmarks;
+  }
 
-    public Collection<String> getBookmarks() {
-        return bookmarks;
-    }
+  public Collection<String> getBookmarks() {
+    return bookmarks;
+  }
 
-    public Collection<String> getCategories() {
-        return categories;
-    }
+  public Collection<String> getCategories() {
+    return categories;
+  }
 
-    public boolean isCarved() {
-        return carved;
-    }
+  public boolean isCarved() {
+    return carved;
+  }
 
-    public boolean isKnown() {
-        return known;
-    }
+  public boolean isKnown() {
+    return known;
+  }
 
-    public void setCarved(boolean carved) {
-        this.carved = carved;
-    }
+  public void setCarved(boolean carved) {
+    this.carved = carved;
+  }
 
-    public void setKnown(boolean known) {
-        this.known = known;
-    }
+  public void setKnown(boolean known) {
+    this.known = known;
+  }
 
-    public String getHash() {
-        return hash;
-    }
+  public String getHash() {
+    return hash;
+  }
 
-    public void setHash(String hash) {
-        this.hash = hash;
-    }
-
+  public void setHash(String hash) {
+    this.hash = hash;
+  }
 }

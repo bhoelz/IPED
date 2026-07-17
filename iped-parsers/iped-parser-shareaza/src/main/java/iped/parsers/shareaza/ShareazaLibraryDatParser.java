@@ -23,6 +23,12 @@ import iped.parsers.util.Messages;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.search.IItemSearcher;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -36,13 +42,6 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Parser para arquivo Library{1,2}.dat do Shareaza
  *
@@ -50,207 +49,239 @@ import java.util.Set;
  */
 public class ShareazaLibraryDatParser extends AbstractParser {
 
-    private static final long serialVersionUID = -207806473837042332L;
-    public static final String LIBRARY_DAT_MIME_TYPE = "application/x-shareaza-library-dat"; //$NON-NLS-1$
-    public static final String LIBRARY_DAT_ENTRY_MIME_TYPE = "application/x-shareaza-library-dat-entry"; //$NON-NLS-1$
-    private static final Set<MediaType> SUPPORTED_TYPES = Collections.singleton(MediaType.parse(LIBRARY_DAT_MIME_TYPE));
+  private static final long serialVersionUID = -207806473837042332L;
+  public static final String LIBRARY_DAT_MIME_TYPE =
+      "application/x-shareaza-library-dat"; //$NON-NLS-1$
+  public static final String LIBRARY_DAT_ENTRY_MIME_TYPE =
+      "application/x-shareaza-library-dat-entry"; //$NON-NLS-1$
+  private static final Set<MediaType> SUPPORTED_TYPES =
+      Collections.singleton(MediaType.parse(LIBRARY_DAT_MIME_TYPE));
 
-    private boolean extractEntries = false;
+  private boolean extractEntries = false;
 
-    @Field
-    public void setExtractEntries(boolean value) {
-        this.extractEntries = value;
+  @Field
+  public void setExtractEntries(boolean value) {
+    this.extractEntries = value;
+  }
+
+  @Override
+  public Set<MediaType> getSupportedTypes(ParseContext arg0) {
+    return SUPPORTED_TYPES;
+  }
+
+  @Override
+  public void parse(
+      InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
+      throws IOException, SAXException, TikaException {
+
+    metadata.set(HttpHeaders.CONTENT_TYPE, LIBRARY_DAT_MIME_TYPE);
+    metadata.remove(TikaCoreProperties.RESOURCE_NAME_KEY);
+
+    MFCParser parser = new MFCParser(stream);
+    Library library = new Library();
+    library.read(parser);
+    // ShareazaOutputGenerator out = new ShareazaOutputGenerator();
+    LibraryFolders folders = library.getLibraryFolders();
+    for (LibraryFolder folder : folders.getLibraryFolders()) storeSharedHashes(folder, metadata);
+    storeSharedHashes(folders.getAlbumRoot(), folders.getIndexToFile(), metadata);
+
+    IItemSearcher searcher = context.get(IItemSearcher.class);
+    IItemReader item = context.get(IItemReader.class);
+
+    XHTMLContentHandler xhtml = new XHTMLContentHandler(handler, metadata);
+    xhtml.startDocument();
+
+    xhtml.startElement("head"); // $NON-NLS-1$
+    xhtml.startElement("style"); // $NON-NLS-1$
+    xhtml.characters(
+        "table {border-collapse: collapse; table-layout: fixed;} " //$NON-NLS-1$
+            + "table, td, th {border: 1px solid black; padding: 3px;}" //$NON-NLS-1$
+            + "tr.a {background-color:#AAAAEE;} " //$NON-NLS-1$
+            + "tr.b {background-color:#E7E7F0;} " //$NON-NLS-1$
+            + "tr.r {background-color:#E77770;} " //$NON-NLS-1$
+            + "td.a {word-wrap: break-word; text-align: center;} " //$NON-NLS-1$
+            + "td.b {word-wrap: break-word; text-align: left;} " //$NON-NLS-1$
+            + "td.c {word-wrap: break-word; text-align: right;}"); //$NON-NLS-1$
+
+    xhtml.endElement("style"); // $NON-NLS-1$
+    xhtml.startElement("title"); // $NON-NLS-1$
+    xhtml.characters("Shareaza Library{1,2}.dat"); // $NON-NLS-1$
+    xhtml.endElement("title"); // $NON-NLS-1$
+    xhtml.endElement("head"); // $NON-NLS-1$
+    xhtml.startElement("body"); // $NON-NLS-1$
+    xhtml.newline();
+
+    xhtml.startElement("div");
+    xhtml.characters(Messages.getString("P2P.FoundInPedoHashDB"));
+    xhtml.endElement("div");
+
+    xhtml.startElement("table"); // $NON-NLS-1$
+    xhtml.startElement("tr"); // $NON-NLS-1$
+    printTh(
+        xhtml,
+        "Path",
+        "Name",
+        "Albums",
+        "Index",
+        "Size",
+        "Time",
+        "Shared",
+        "VirtualSize",
+        "VirtualBase",
+        "SHA1",
+        "Tiger", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+        // //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
+        "MD5",
+        "ED2K",
+        "BTH",
+        "Verify",
+        "URI",
+        "MetadataAuto",
+        "MetadataTime",
+        "MetadataModified",
+        "Rating", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        // //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
+        "Comments",
+        "ShareTags",
+        "HitsTotal",
+        "UploadsTotal",
+        "CachedPreview",
+        "Bogus",
+        "Found in Hash Alert Database",
+        "Found in the Case"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+    // //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+    xhtml.endElement("tr"); // $NON-NLS-1$
+
+    library.printTable(xhtml, searcher);
+
+    metadata.set(BasicProps.HASCHILD, "true");
+    metadata.set(ExtraProperties.EMBEDDED_FOLDER, "true");
+
+    // Embedded entry extraction is temporarily disabled in this module split.
+
+    xhtml.endElement("table"); // $NON-NLS-1$
+    /*
+     * xhtml.startElement("h2"); xhtml.characters("Dados completos do arquivo:");
+     * xhtml.endElement("h2"); xhtml.startElement("pre"); library.write(out);
+     * xhtml.characters(new String(out.getBytes(), "UTF-8"));
+     * xhtml.endElement("pre");
+     */
+    xhtml.endElement("body"); // $NON-NLS-1$
+    xhtml.endDocument();
+
+    int numRegistros = 0;
+    for (LibraryFolder folder : library.getLibraryFolders().getLibraryFolders())
+      numRegistros += countLibraryFiles(folder);
+    numRegistros +=
+        countLibraryFiles(
+            library.getLibraryFolders().getAlbumRoot(),
+            library.getLibraryFolders().getIndexToFile());
+    metadata.set(ExtraProperties.P2P_REGISTRY_COUNT, Integer.toString(numRegistros));
+
+    int hashDBHits = countHashDBHits(library.getLibraryFolders());
+
+    if (hashDBHits > 0) metadata.set(ExtraProperties.CSAM_HASH_HITS, Integer.toString(hashDBHits));
+  }
+
+  private void storeSharedHashes(LibraryFolder folder, Metadata metadata) {
+    for (LibraryFolder f : folder.getLibraryFolders()) storeSharedHashes(f, metadata);
+
+    for (LibraryFile file : folder.getLibraryFiles()) {
+      storeSharedHashes(file, metadata);
+    }
+  }
+
+  private void storeSharedHashes(LibraryFile file, Metadata metadata) {
+    if (BooleanUtils.isTrue(file.getShared())) {
+      if (file.getMd5() != null && file.getMd5().length() == 32) {
+        metadata.add(ExtraProperties.SHARED_HASHES, file.getMd5());
+      }
+      if (file.getSha1() != null && file.getSha1().length() == 40) {
+        metadata.add(ExtraProperties.SHARED_HASHES, file.getSha1());
+      }
+      if (file.getEd2k() != null && file.getEd2k().length() == 32) {
+        metadata.add(ExtraProperties.SHARED_HASHES, file.getEd2k());
+      }
+    }
+  }
+
+  private void storeSharedHashes(
+      AlbumFolder folder, Map<Integer, LibraryFile> indexToFile, Metadata metadata) {
+    for (AlbumFolder f : folder.getAlbumFolders()) {
+      storeSharedHashes(f, indexToFile, metadata);
     }
 
-    @Override
-    public Set<MediaType> getSupportedTypes(ParseContext arg0) {
-        return SUPPORTED_TYPES;
+    for (int idx : folder.getAlbumFileIndexes()) {
+      LibraryFile file = indexToFile.get(idx);
+      if (file != null) {
+        storeSharedHashes(file, metadata);
+      }
     }
+  }
 
-    @Override
-    public void parse(InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
-            throws IOException, SAXException, TikaException {
+  private int countHashDBHits(LibraryFolders folders) {
+    Map<Integer, LibraryFile> indexToFile = folders.getIndexToFile();
+    int result = 0;
+    Set<Integer> indexesCounted = new HashSet<>();
+    for (LibraryFolder f : folders.getLibraryFolders())
+      result += countHashDBHits(f, indexesCounted);
+    result += countHashDBHits(folders.getAlbumRoot(), indexToFile, indexesCounted);
 
-        metadata.set(HttpHeaders.CONTENT_TYPE, LIBRARY_DAT_MIME_TYPE);
-        metadata.remove(TikaCoreProperties.RESOURCE_NAME_KEY);
+    return result;
+  }
 
-        MFCParser parser = new MFCParser(stream);
-        Library library = new Library();
-        library.read(parser);
-        // ShareazaOutputGenerator out = new ShareazaOutputGenerator();
-        LibraryFolders folders = library.getLibraryFolders();
-        for (LibraryFolder folder : folders.getLibraryFolders())
-            storeSharedHashes(folder, metadata);
-        storeSharedHashes(folders.getAlbumRoot(), folders.getIndexToFile(), metadata);
+  private int countHashDBHits(LibraryFolder folder, Set<Integer> indexesCounted) {
+    int result = 0;
+    for (LibraryFolder f : folder.getLibraryFolders()) result += countHashDBHits(f, indexesCounted);
 
-        IItemSearcher searcher = context.get(IItemSearcher.class);
-        IItemReader item = context.get(IItemReader.class);
+    for (LibraryFile file : folder.getLibraryFiles())
+      if (file.isHashDBHit() && !indexesCounted.contains(file.getIndex())) {
+        result++;
+        indexesCounted.add(file.getIndex());
+      }
 
-        XHTMLContentHandler xhtml = new XHTMLContentHandler(handler, metadata);
-        xhtml.startDocument();
+    return result;
+  }
 
-        xhtml.startElement("head"); //$NON-NLS-1$
-        xhtml.startElement("style"); //$NON-NLS-1$
-        xhtml.characters("table {border-collapse: collapse; table-layout: fixed;} " //$NON-NLS-1$
-                + "table, td, th {border: 1px solid black; padding: 3px;}" //$NON-NLS-1$
-                + "tr.a {background-color:#AAAAEE;} " //$NON-NLS-1$
-                + "tr.b {background-color:#E7E7F0;} " //$NON-NLS-1$
-                + "tr.r {background-color:#E77770;} " //$NON-NLS-1$
-                + "td.a {word-wrap: break-word; text-align: center;} " //$NON-NLS-1$
-                + "td.b {word-wrap: break-word; text-align: left;} " //$NON-NLS-1$
-                + "td.c {word-wrap: break-word; text-align: right;}"); //$NON-NLS-1$
+  private int countHashDBHits(
+      AlbumFolder folder, Map<Integer, LibraryFile> indexToFile, Set<Integer> indexesCounted) {
+    int result = 0;
+    for (AlbumFolder f : folder.getAlbumFolders())
+      result += countHashDBHits(f, indexToFile, indexesCounted);
 
-        xhtml.endElement("style"); //$NON-NLS-1$
-        xhtml.startElement("title"); //$NON-NLS-1$
-        xhtml.characters("Shareaza Library{1,2}.dat"); //$NON-NLS-1$
-        xhtml.endElement("title"); //$NON-NLS-1$
-        xhtml.endElement("head"); //$NON-NLS-1$
-        xhtml.startElement("body"); //$NON-NLS-1$
-        xhtml.newline();
-
-        xhtml.startElement("div");
-        xhtml.characters(Messages.getString("P2P.FoundInPedoHashDB"));
-        xhtml.endElement("div");
-
-        xhtml.startElement("table"); //$NON-NLS-1$
-        xhtml.startElement("tr"); //$NON-NLS-1$
-        printTh(xhtml, "Path", "Name", "Albums", "Index", "Size", "Time", "Shared", "VirtualSize", "VirtualBase", "SHA1", "Tiger", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
-                "MD5", "ED2K", "BTH", "Verify", "URI", "MetadataAuto", "MetadataTime", "MetadataModified", "Rating", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
-                "Comments", "ShareTags", "HitsTotal", "UploadsTotal", "CachedPreview", "Bogus", "Found in Hash Alert Database", "Found in the Case"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
-        xhtml.endElement("tr"); //$NON-NLS-1$
-
-        library.printTable(xhtml, searcher);
-
-        metadata.set(BasicProps.HASCHILD, "true");
-        metadata.set(ExtraProperties.EMBEDDED_FOLDER, "true");
-
-        // Embedded entry extraction is temporarily disabled in this module split.
-
-        xhtml.endElement("table"); //$NON-NLS-1$
-        /*
-         * xhtml.startElement("h2"); xhtml.characters("Dados completos do arquivo:");
-         * xhtml.endElement("h2"); xhtml.startElement("pre"); library.write(out);
-         * xhtml.characters(new String(out.getBytes(), "UTF-8"));
-         * xhtml.endElement("pre");
-         */
-        xhtml.endElement("body"); //$NON-NLS-1$
-        xhtml.endDocument();
-
-        int numRegistros = 0;
-        for (LibraryFolder folder : library.getLibraryFolders().getLibraryFolders())
-            numRegistros += countLibraryFiles(folder);
-        numRegistros += countLibraryFiles(library.getLibraryFolders().getAlbumRoot(), library.getLibraryFolders().getIndexToFile());
-        metadata.set(ExtraProperties.P2P_REGISTRY_COUNT, Integer.toString(numRegistros));
-
-        int hashDBHits = countHashDBHits(library.getLibraryFolders());
-
-        if (hashDBHits > 0)
-            metadata.set(ExtraProperties.CSAM_HASH_HITS, Integer.toString(hashDBHits));
-
-    }
-
-    private void storeSharedHashes(LibraryFolder folder, Metadata metadata) {
-        for (LibraryFolder f : folder.getLibraryFolders())
-            storeSharedHashes(f, metadata);
-
-        for (LibraryFile file : folder.getLibraryFiles()) {
-            storeSharedHashes(file, metadata);
+    for (int idx : folder.getAlbumFileIndexes()) {
+      LibraryFile file = indexToFile.get(idx);
+      if (file != null) {
+        if (file.isHashDBHit() && !indexesCounted.contains(idx)) {
+          result++;
+          indexesCounted.add(idx);
         }
+      }
     }
+    return result;
+  }
 
-    private void storeSharedHashes(LibraryFile file, Metadata metadata) {
-        if (BooleanUtils.isTrue(file.getShared())) {
-            if (file.getMd5() != null && file.getMd5().length() == 32) {
-                metadata.add(ExtraProperties.SHARED_HASHES, file.getMd5());
-            }
-            if (file.getSha1() != null && file.getSha1().length() == 40) {
-                metadata.add(ExtraProperties.SHARED_HASHES, file.getSha1());
-            }
-            if (file.getEd2k() != null && file.getEd2k().length() == 32) {
-                metadata.add(ExtraProperties.SHARED_HASHES, file.getEd2k());
-            }
-        }
+  private int countLibraryFiles(LibraryFolder folder) {
+    int result = folder.getLibraryFiles().size();
+    for (LibraryFolder f : folder.getLibraryFolders()) result += countLibraryFiles(f);
+    return result;
+  }
+
+  private int countLibraryFiles(AlbumFolder folder, Map<Integer, LibraryFile> indexToFile) {
+    int result = 0;
+    for (AlbumFolder f : folder.getAlbumFolders()) result += countLibraryFiles(f, indexToFile);
+
+    for (int idx : folder.getAlbumFileIndexes()) {
+      if (indexToFile.containsKey(idx)) result++;
     }
+    return result;
+  }
 
-    private void storeSharedHashes(AlbumFolder folder, Map<Integer, LibraryFile> indexToFile, Metadata metadata) {
-        for (AlbumFolder f : folder.getAlbumFolders()) {
-            storeSharedHashes(f, indexToFile, metadata);
-        }
-
-        for (int idx : folder.getAlbumFileIndexes()) {
-            LibraryFile file = indexToFile.get(idx);
-            if (file != null) {
-                storeSharedHashes(file, metadata);
-            }
-        }
+  private void printTh(XHTMLContentHandler html, Object... thtext) throws SAXException {
+    for (Object o : thtext) {
+      html.startElement("th"); // $NON-NLS-1$
+      html.characters(o.toString());
+      html.endElement("th"); // $NON-NLS-1$
     }
-
-    private int countHashDBHits(LibraryFolders folders) {
-        Map<Integer, LibraryFile> indexToFile = folders.getIndexToFile();
-        int result = 0;
-        Set<Integer> indexesCounted = new HashSet<>();
-        for (LibraryFolder f : folders.getLibraryFolders())
-            result += countHashDBHits(f, indexesCounted);
-        result += countHashDBHits(folders.getAlbumRoot(), indexToFile, indexesCounted);
-
-        return result;
-    }
-
-    private int countHashDBHits(LibraryFolder folder, Set<Integer> indexesCounted) {
-        int result = 0;
-        for (LibraryFolder f : folder.getLibraryFolders())
-            result += countHashDBHits(f, indexesCounted);
-
-        for (LibraryFile file : folder.getLibraryFiles())
-            if (file.isHashDBHit() && !indexesCounted.contains(file.getIndex())) {
-                result++;
-                indexesCounted.add(file.getIndex());
-            }
-
-        return result;
-    }
-
-    private int countHashDBHits(AlbumFolder folder, Map<Integer, LibraryFile> indexToFile, Set<Integer> indexesCounted) {
-        int result = 0;
-        for (AlbumFolder f : folder.getAlbumFolders())
-            result += countHashDBHits(f, indexToFile, indexesCounted);
-
-        for (int idx : folder.getAlbumFileIndexes()) {
-            LibraryFile file = indexToFile.get(idx);
-            if (file != null) {
-                if (file.isHashDBHit() && !indexesCounted.contains(idx)) {
-                    result++;
-                    indexesCounted.add(idx);
-                }
-            }
-        }
-        return result;
-    }
-
-    private int countLibraryFiles(LibraryFolder folder) {
-        int result = folder.getLibraryFiles().size();
-        for (LibraryFolder f : folder.getLibraryFolders())
-            result += countLibraryFiles(f);
-        return result;
-    }
-
-    private int countLibraryFiles(AlbumFolder folder, Map<Integer, LibraryFile> indexToFile) {
-        int result = 0;
-        for (AlbumFolder f : folder.getAlbumFolders())
-            result += countLibraryFiles(f, indexToFile);
-
-        for (int idx : folder.getAlbumFileIndexes()) {
-            if (indexToFile.containsKey(idx))
-                result++;
-        }
-        return result;
-    }
-
-    private void printTh(XHTMLContentHandler html, Object... thtext) throws SAXException {
-        for (Object o : thtext) {
-            html.startElement("th"); //$NON-NLS-1$
-            html.characters(o.toString());
-            html.endElement("th"); //$NON-NLS-1$
-        }
-    }
+  }
 }

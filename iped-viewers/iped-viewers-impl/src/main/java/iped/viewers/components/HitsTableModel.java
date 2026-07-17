@@ -20,67 +20,68 @@ package iped.viewers.components;
 
 import iped.viewers.ATextViewer;
 import iped.viewers.localization.Messages;
-
-import javax.swing.table.AbstractTableModel;
 import java.nio.ByteBuffer;
+import javax.swing.table.AbstractTableModel;
 
 public class HitsTableModel extends AbstractTableModel {
 
-    private static final long serialVersionUID = 1L;
-    private final ATextViewer textViewer;
+  private static final long serialVersionUID = 1L;
+  private final ATextViewer textViewer;
 
-    private String[] columnNames = { "", Messages.getString("HitsTableModel.ContentHits") }; //$NON-NLS-1$ //$NON-NLS-2$
+  private String[] columnNames = {
+    "", Messages.getString("HitsTableModel.ContentHits")
+  }; //$NON-NLS-1$ //$NON-NLS-2$
 
-    // The <p> is used as a workaround to avoid weird line break. As it is a JDK
-    // bug, it may be removed when it is fixed there. See issue #2102.
-    public static final String htmlStartTag = "<html><p style=\"width:4000px;\">";
-    public static final String htmlEndTag = "</p></html>";
+  // The <p> is used as a workaround to avoid weird line break. As it is a JDK
+  // bug, it may be removed when it is fixed there. See issue #2102.
+  public static final String htmlStartTag = "<html><p style=\"width:4000px;\">";
+  public static final String htmlEndTag = "</p></html>";
 
-    public HitsTableModel(ATextViewer textViewer) {
-        this.textViewer = textViewer;
-        textViewer.setHitsModel(this);
+  public HitsTableModel(ATextViewer textViewer) {
+    this.textViewer = textViewer;
+    textViewer.setHitsModel(this);
+  }
+
+  @Override
+  public int getColumnCount() {
+    return columnNames.length;
+  }
+
+  @Override
+  public int getRowCount() {
+
+    if (textViewer != null && textViewer.textParser != null) {
+      return textViewer.textParser.getSortedHits().size();
     }
 
-    @Override
-    public int getColumnCount() {
-        return columnNames.length;
+    return 0;
+  }
+
+  @Override
+  public String getColumnName(int col) {
+    return columnNames[col];
+  }
+
+  @Override
+  public Object getValueAt(int row, int col) {
+    try {
+      if (col == 0) {
+        return row + 1;
+      }
+      long hitOff = textViewer.textParser.getHits().get(row);
+      int hitLen = textViewer.textParser.getSortedHits().get(hitOff)[0];
+
+      ByteBuffer data = ByteBuffer.allocate(hitLen);
+      int nread;
+      do {
+        nread = textViewer.textParser.getParsedFile().read(data, hitOff);
+        hitOff += nread;
+      } while (nread != -1 && data.hasRemaining());
+
+      data.flip();
+      return htmlStartTag + (new String(data.array(), ATextViewer.TEXT_ENCODING)) + htmlEndTag;
+    } catch (Exception e) {
     }
-
-    @Override
-    public int getRowCount() {
-
-        if (textViewer != null && textViewer.textParser != null) {
-            return textViewer.textParser.getSortedHits().size();
-        }
-
-        return 0;
-    }
-
-    @Override
-    public String getColumnName(int col) {
-        return columnNames[col];
-    }
-
-    @Override
-    public Object getValueAt(int row, int col) {
-        try {
-            if (col == 0) {
-                return row + 1;
-            }
-            long hitOff = textViewer.textParser.getHits().get(row);
-            int hitLen = textViewer.textParser.getSortedHits().get(hitOff)[0];
-
-            ByteBuffer data = ByteBuffer.allocate(hitLen);
-            int nread;
-            do {
-                nread = textViewer.textParser.getParsedFile().read(data, hitOff);
-                hitOff += nread;
-            } while (nread != -1 && data.hasRemaining());
-
-            data.flip();
-            return htmlStartTag + (new String(data.array(), ATextViewer.TEXT_ENCODING)) + htmlEndTag;
-        } catch (Exception e) {
-        }
-        return "";
-    }
+    return "";
+  }
 }

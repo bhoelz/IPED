@@ -3,12 +3,6 @@ package iped.engine.graph;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.LocalConfig;
 import iped.engine.graph.GraphImportRunner.ImportListener;
-import lombok.extern.slf4j.Slf4j;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Result;
-import org.neo4j.graphdb.Transaction;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,202 +10,212 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.Transaction;
 
 @Slf4j
 public class GraphGenerator {
 
+  private static final Pattern HASH_LIKE_CONTACT =
+      Pattern.compile(
+          "[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}");
 
-    private static final Pattern HASH_LIKE_CONTACT = Pattern
-            .compile("[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}");
+  public boolean generate(File output, File... input) throws IOException {
+    return this.generate(null, output, input);
+  }
 
-    public boolean generate(File output, File... input) throws IOException {
-        return this.generate(null, output, input);
+  public boolean generate(ImportListener listener, File output, File... input) throws IOException {
+    boolean imported = importDB(listener, output, input);
+
+    if (imported) {
+      runPostImportOps(output);
     }
 
-    public boolean generate(ImportListener listener, File output, File... input) throws IOException {
-        boolean imported = importDB(listener, output, input);
+    return imported;
+  }
 
-        if (imported) {
-            runPostImportOps(output);
+  private void runPostImportOps(File output) throws IOException {
+    GraphService graphService = null;
+    try {
+      File graphDbFolder = new File(output, GraphConstants.DB_HOME_DIR);
+      graphService = GraphServiceFactoryImpl.getInstance().getGraphService(graphDbFolder);
+      graphService.start(graphDbFolder);
+      GraphConfiguration config =
+          (GraphConfiguration)
+              ConfigurationManager.get().findObject(GraphTaskConfig.class).getConfiguration();
+
+      runPostGenerationStatements(graphService, config);
+      groupContacts(graphService, config);
+
+    } finally {
+      if (graphService != null) {
+        graphService.stop();
+      }
+    }
+  }
+
+  private boolean importDB(ImportListener listener, File output, File... input) {
+    try {
+      LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
+      GraphImportRunner runner = new GraphImportRunner(listener, input);
+      runner.run(output, GraphConstants.DB_NAME, localConfig.isOutputOnSSD());
+      return true;
+    } catch (Exception e) {
+      log.error("Error generating database.", e);
+      return false;
+    }
+  }
+
+  public void runPostGenerationStatements(GraphService graphService, GraphConfiguration config) {
+    long start = System.currentTimeMillis();
+    log.info("Running post generation statements.");
+    GraphDatabaseService graphDB = graphService.getGraphDb();
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
+
+      for (String stmt : config.getPostGenerationStatements()) {
+        log.info("Running {}", stmt);
+        tx.execute(stmt);
+      }
+
+      tx.commit();
+    } finally {
+      tx.close();
+    }
+    log.info(
+        "Finished running post generation statements in "
+            + (System.currentTimeMillis() - start)
+            + "ms.");
+  }
+
+  public static void main(String[] args) throws Exception {
+    // String path = args[0];
+    // String configPath = args[1];
+    String path = "/media/positivo/707e68d4-1326-40a5-81b6-65c842c4240d/databases";
+    String configPath = "/home/positivo/projetos/iped/iped/resources/config/conf";
+
+    GraphService graphService = null;
+    try {
+      File graphDbFolder = new File(path, GraphConstants.DB_HOME_DIR);
+      graphService = GraphServiceFactoryImpl.getInstance().getGraphService(graphDbFolder);
+      graphService.start(graphDbFolder);
+      GraphConfiguration config =
+          GraphConfiguration.loadFrom(new File(configPath, GraphTaskConfig.CONFIG_FILE));
+
+      GraphGenerator graphGenerator = new GraphGenerator();
+      graphGenerator.groupContacts(graphService, config);
+    } catch (Exception e) {
+      log.error("Error generating database.", e);
+    } finally {
+      if (graphService != null) {
+        graphService.stop();
+      }
+    }
+  }
+
+  private void groupContacts(GraphService graphService, GraphConfiguration config, String label) {
+    String query =
+        "MATCH (c: "
+            + label
+            + ")--(n:EVIDENCIA {category:'Contatos'})--(in:EVIDENCIA {source:'UfedXmlReader'}) WHERE NOT (n.name ENDS WITH 'sqlite') RETURN in as input, n.name as name, n as evidence, c as con ORDER BY c.nodeId";
+
+    GraphDatabaseService graphDB = graphService.getGraphDb();
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
+
+      Result result = tx.execute(query);
+      Node currentContact = null;
+      String currentName = null;
+      Map<Long, Node> inputs = new HashMap<>();
+      Map<Long, Node> evidences = new HashMap<>();
+
+      int count = 0;
+
+      log.info("Grouping " + label + " contacts.");
+
+      while (result.hasNext()) {
+        Map<String, Object> cols = result.next();
+        Node contact = (Node) cols.get("con");
+
+        if (currentContact != null && contact.getId() != currentContact.getId()) {
+          Node newGroup = tx.createNode(DynLabel.label("CONTACT_GROUP"));
+          newGroup.setProperty("name", currentName);
+          newGroup.setProperty("isGroup", true);
+
+          List<Long> groupedIds =
+              evidences.values().stream().map(e -> e.getId()).collect(Collectors.toList());
+          newGroup.setProperty(
+              "groupedIds", (Long[]) groupedIds.toArray(new Long[groupedIds.size()]));
+
+          for (Node inputNode : inputs.values()) {
+            inputNode.createRelationshipTo(
+                newGroup, DynRelationshipType.withName(config.getDefaultRelationship()));
+          }
+
+          for (Node evidence : evidences.values()) {
+            newGroup.createRelationshipTo(
+                evidence, DynRelationshipType.withName(config.getDefaultRelationship()));
+          }
+
+          newGroup.createRelationshipTo(
+              currentContact, DynRelationshipType.withName(config.getDefaultRelationship()));
+
+          currentName = null;
+          currentContact = null;
+          inputs.clear();
+          evidences.clear();
         }
 
-        return imported;
-    }
+        Node input = (Node) cols.get("input");
+        inputs.put(input.getId(), input);
 
-    private void runPostImportOps(File output) throws IOException {
-        GraphService graphService = null;
-        try {
-            File graphDbFolder = new File(output, GraphConstants.DB_HOME_DIR);
-            graphService = GraphServiceFactoryImpl.getInstance().getGraphService(graphDbFolder);
-            graphService.start(graphDbFolder);
-            GraphConfiguration config = (GraphConfiguration) ConfigurationManager.get()
-                    .findObject(GraphTaskConfig.class)
-                    .getConfiguration();
+        Node evidence = (Node) cols.get("evidence");
+        inputs.put(evidence.getId(), evidence);
 
-            runPostGenerationStatements(graphService, config);
-            groupContacts(graphService, config);
-
-        } finally {
-            if (graphService != null) {
-                graphService.stop();
-            }
-        }
-    }
-
-    private boolean importDB(ImportListener listener, File output, File... input) {
-        try {
-            LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
-            GraphImportRunner runner = new GraphImportRunner(listener, input);
-            runner.run(output, GraphConstants.DB_NAME, localConfig.isOutputOnSSD());
-            return true;
-        } catch (Exception e) {
-            log.error("Error generating database.", e);
-            return false;
-        }
-    }
-
-    public void runPostGenerationStatements(GraphService graphService, GraphConfiguration config) {
-        long start = System.currentTimeMillis();
-        log.info("Running post generation statements.");
-        GraphDatabaseService graphDB = graphService.getGraphDb();
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
-
-            for (String stmt : config.getPostGenerationStatements()) {
-                log.info("Running {}", stmt);
-                tx.execute(stmt);
-            }
-
-            tx.commit();
-        } finally {
-            tx.close();
-        }
-        log.info("Finished running post generation statements in " + (System.currentTimeMillis() - start) + "ms.");
-    }
-
-    public static void main(String[] args) throws Exception {
-        // String path = args[0];
-        // String configPath = args[1];
-        String path = "/media/positivo/707e68d4-1326-40a5-81b6-65c842c4240d/databases";
-        String configPath = "/home/positivo/projetos/iped/iped/resources/config/conf";
-
-        GraphService graphService = null;
-        try {
-            File graphDbFolder = new File(path, GraphConstants.DB_HOME_DIR);
-            graphService = GraphServiceFactoryImpl.getInstance().getGraphService(graphDbFolder);
-            graphService.start(graphDbFolder);
-            GraphConfiguration config = GraphConfiguration.loadFrom(new File(configPath, GraphTaskConfig.CONFIG_FILE));
-
-            GraphGenerator graphGenerator = new GraphGenerator();
-            graphGenerator.groupContacts(graphService, config);
-        } catch (Exception e) {
-            log.error("Error generating database.", e);
-        } finally {
-            if (graphService != null) {
-                graphService.stop();
-            }
+        String name = getName((String) cols.get("name"));
+        if (currentName == null
+            || (name.length() > currentName.length() && !isHashLikeContact(name))) {
+          currentName = name;
         }
 
-    }
+        currentContact = contact;
+        count++;
 
-    private void groupContacts(GraphService graphService, GraphConfiguration config, String label) {
-        String query = "MATCH (c: " + label
-                + ")--(n:EVIDENCIA {category:'Contatos'})--(in:EVIDENCIA {source:'UfedXmlReader'}) WHERE NOT (n.name ENDS WITH 'sqlite') RETURN in as input, n.name as name, n as evidence, c as con ORDER BY c.nodeId";
-
-        GraphDatabaseService graphDB = graphService.getGraphDb();
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
-
-            Result result = tx.execute(query);
-            Node currentContact = null;
-            String currentName = null;
-            Map<Long, Node> inputs = new HashMap<>();
-            Map<Long, Node> evidences = new HashMap<>();
-
-            int count = 0;
-
-            log.info("Grouping " + label + " contacts.");
-
-            while (result.hasNext()) {
-                Map<String, Object> cols = result.next();
-                Node contact = (Node) cols.get("con");
-
-                if (currentContact != null && contact.getId() != currentContact.getId()) {
-                    Node newGroup = tx.createNode(DynLabel.label("CONTACT_GROUP"));
-                    newGroup.setProperty("name", currentName);
-                    newGroup.setProperty("isGroup", true);
-
-                    List<Long> groupedIds = evidences.values().stream().map(e -> e.getId())
-                            .collect(Collectors.toList());
-                    newGroup.setProperty("groupedIds", (Long[]) groupedIds.toArray(new Long[groupedIds.size()]));
-
-                    for (Node inputNode : inputs.values()) {
-                        inputNode.createRelationshipTo(newGroup,
-                                DynRelationshipType.withName(config.getDefaultRelationship()));
-                    }
-
-                    for (Node evidence : evidences.values()) {
-                        newGroup.createRelationshipTo(evidence,
-                                DynRelationshipType.withName(config.getDefaultRelationship()));
-                    }
-
-                    newGroup.createRelationshipTo(currentContact,
-                            DynRelationshipType.withName(config.getDefaultRelationship()));
-
-                    currentName = null;
-                    currentContact = null;
-                    inputs.clear();
-                    evidences.clear();
-                }
-
-                Node input = (Node) cols.get("input");
-                inputs.put(input.getId(), input);
-
-                Node evidence = (Node) cols.get("evidence");
-                inputs.put(evidence.getId(), evidence);
-
-                String name = getName((String) cols.get("name"));
-                if (currentName == null || (name.length() > currentName.length() && !isHashLikeContact(name))) {
-                    currentName = name;
-                }
-
-                currentContact = contact;
-                count++;
-
-                if (count % 1000 == 0) {
-                    log.info("Grouped " + count + " " + label + " contacts.");
-                }
-            }
-
-            tx.commit();
-            log.info("Grouped " + count + " " + label + " contacts.");
-        } finally {
-            tx.close();
+        if (count % 1000 == 0) {
+          log.info("Grouped " + count + " " + label + " contacts.");
         }
+      }
+
+      tx.commit();
+      log.info("Grouped " + count + " " + label + " contacts.");
+    } finally {
+      tx.close();
+    }
+  }
+
+  public void groupContacts(GraphService graphService, GraphConfiguration config) {
+    groupContacts(graphService, config, "TELEFONE");
+    groupContacts(graphService, config, "EMAIL");
+    groupContacts(graphService, config, "FACEBOOK");
+  }
+
+  private boolean isHashLikeContact(String name) {
+    return HASH_LIKE_CONTACT.matcher(name).matches();
+  }
+
+  private String getName(String name) {
+
+    String[] split = name.split("_|:", 2);
+
+    if (split.length > 1) {
+      name = split[1];
     }
 
-    public void groupContacts(GraphService graphService, GraphConfiguration config) {
-        groupContacts(graphService, config, "TELEFONE");
-        groupContacts(graphService, config, "EMAIL");
-        groupContacts(graphService, config, "FACEBOOK");
-    }
-
-    private boolean isHashLikeContact(String name) {
-        return HASH_LIKE_CONTACT.matcher(name).matches();
-    }
-
-    private String getName(String name) {
-
-        String[] split = name.split("_|:", 2);
-
-        if (split.length > 1) {
-            name = split[1];
-        }
-
-        return name.trim();
-    }
-
+    return name.trim();
+  }
 }
-

@@ -4,62 +4,60 @@ import iped.data.IItemReader;
 import iped.engine.hash.HashAlgorithm;
 import iped.properties.ExtraProperties;
 import iped.utils.HashValue;
+import java.nio.ByteBuffer;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 
-import java.nio.ByteBuffer;
-
 /**
- * Primary key for storing/retrieving an item's preview. Prioritizes MD5 hash, falls back to item ID. Uses a 16-byte key
- * (if MD5) or 4-byte key (if ID).
+ * Primary key for storing/retrieving an item's preview. Prioritizes MD5 hash, falls back to item
+ * ID. Uses a 16-byte key (if MD5) or 4-byte key (if ID).
  */
 public class PreviewKey {
 
-    private final ByteBuffer buffer;
+  private final ByteBuffer buffer;
 
-    public PreviewKey(byte[] bytes) {
-        this.buffer = ByteBuffer.wrap(bytes);
+  public PreviewKey(byte[] bytes) {
+    this.buffer = ByteBuffer.wrap(bytes);
+  }
+
+  private PreviewKey(int id) {
+    this.buffer = ByteBuffer.allocate(Integer.BYTES).putInt(id);
+  }
+
+  public static PreviewKey create(IItemReader item) {
+
+    String hashString = (String) item.getExtraAttribute(HashAlgorithm.MD5.toString());
+    if (hashString != null) {
+      return new PreviewKey(new HashValue(hashString).getBytes());
     }
 
-    private PreviewKey(int id) {
-        this.buffer = ByteBuffer.allocate(Integer.BYTES).putInt(id);
+    // use ufed ID if it is a decoded data (without hash)
+    String ufedId = item.getMetadataValue(ExtraProperties.UFED_ID);
+    if (StringUtils.isNotBlank(ufedId)) {
+      try {
+        return new PreviewKey(Hex.decodeHex(ufedId.replace("-", "")));
+      } catch (Exception e) {
+      }
     }
 
-    public static PreviewKey create(IItemReader item) {
+    // Fallback to item ID
+    return new PreviewKey(item.getId());
+  }
 
-        String hashString = (String) item.getExtraAttribute(HashAlgorithm.MD5.toString());
-        if (hashString != null) {
-            return new PreviewKey(new HashValue(hashString).getBytes());
-        }
+  public byte[] getBytes() {
+    return buffer.array();
+  }
 
-        // use ufed ID if it is a decoded data (without hash)
-        String ufedId = item.getMetadataValue(ExtraProperties.UFED_ID);
-        if (StringUtils.isNotBlank(ufedId)) {
-            try {
-                return new PreviewKey(Hex.decodeHex(ufedId.replace("-", "")));
-            } catch (Exception e) {
-            }
-        }
-
-        // Fallback to item ID
-        return new PreviewKey(item.getId());
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof PreviewKey) {
+      return this.buffer.equals(((PreviewKey) obj).buffer);
     }
+    return false;
+  }
 
-    public byte[] getBytes() {
-        return buffer.array();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof PreviewKey) {
-            return this.buffer.equals(((PreviewKey) obj).buffer);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return buffer.hashCode();
-    }
+  @Override
+  public int hashCode() {
+    return buffer.hashCode();
+  }
 }
-

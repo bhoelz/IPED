@@ -6,7 +6,6 @@ import iped.carvers.standard.FromFarthestHeaderCarver;
 import iped.data.IItem;
 import iped.io.SeekableInputStream;
 import iped.utils.IOUtil;
-
 import java.io.IOException;
 import java.util.ArrayDeque;
 
@@ -17,82 +16,79 @@ import java.util.ArrayDeque;
 
 public class ZIPCarver extends FromFarthestHeaderCarver {
 
-    public ZIPCarver() {
-        maxWaitingHeaders = 65535; // maximum number of files in a zip
-    }
+  public ZIPCarver() {
+    maxWaitingHeaders = 65535; // maximum number of files in a zip
+  }
 
-    @Override
-    public IItem carveFromFooter(IItem parentEvidence, Hit footer) throws IOException {
-        Hit firstHeaderOcurrence = null;
+  @Override
+  public IItem carveFromFooter(IItem parentEvidence, Hit footer) throws IOException {
+    Hit firstHeaderOcurrence = null;
 
-        ArrayDeque<Hit> headersWaitingFooters = super.headersWaitingFooters;
+    ArrayDeque<Hit> headersWaitingFooters = super.headersWaitingFooters;
 
-        if (headersWaitingFooters.size() > 0) {
-            int numOfEntries = getNumberOfEntries(parentEvidence, footer);
+    if (headersWaitingFooters.size() > 0) {
+      int numOfEntries = getNumberOfEntries(parentEvidence, footer);
 
-            // if zip64
-            if (numOfEntries == -1) {
-                return super.carveFromFooter(parentEvidence, footer);
-            }
+      // if zip64
+      if (numOfEntries == -1) {
+        return super.carveFromFooter(parentEvidence, footer);
+      }
 
-            for (int i = 0; i < numOfEntries; i++) {
-                Hit prior = headersWaitingFooters.pollLast();
-                if (prior != null) {
-                    firstHeaderOcurrence = prior;
-                } else {
-                    /*
-                     * there is no more headers, the carve will proceed as it may be possible to
-                     * parse the recovered headers
-                     */
-                    break;
-                }
-            }
-
-            if (firstHeaderOcurrence == null)
-                return null;
-
-            Hit header = firstHeaderOcurrence;
-
-            long len = footer.getOffset() + footer.getSignature().getLength() - header.getOffset();
-            CarverType typeCarved = header.getSignature().getCarverType();
-
-            // se menor que o tamanho mínimo
-            if ((typeCarved.getMinLength() != null) && (len < typeCarved.getMinLength())) {
-                return null;// não carveia
-            }
-            // se maior que o tamanho máximo
-            if ((typeCarved.getMaxLength() != null) && (len > typeCarved.getMaxLength())) {
-                return null;// não carveia
-            }
-
-            return carveFromHeader(parentEvidence, header, len);
+      for (int i = 0; i < numOfEntries; i++) {
+        Hit prior = headersWaitingFooters.pollLast();
+        if (prior != null) {
+          firstHeaderOcurrence = prior;
         } else {
-            return null;
+          /*
+           * there is no more headers, the carve will proceed as it may be possible to
+           * parse the recovered headers
+           */
+          break;
         }
+      }
+
+      if (firstHeaderOcurrence == null) return null;
+
+      Hit header = firstHeaderOcurrence;
+
+      long len = footer.getOffset() + footer.getSignature().getLength() - header.getOffset();
+      CarverType typeCarved = header.getSignature().getCarverType();
+
+      // se menor que o tamanho mínimo
+      if ((typeCarved.getMinLength() != null) && (len < typeCarved.getMinLength())) {
+        return null; // não carveia
+      }
+      // se maior que o tamanho máximo
+      if ((typeCarved.getMaxLength() != null) && (len > typeCarved.getMaxLength())) {
+        return null; // não carveia
+      }
+
+      return carveFromHeader(parentEvidence, header, len);
+    } else {
+      return null;
     }
+  }
 
-    /* method to read size from data descriptor if it exists on the zip file */
-    public int getNumberOfEntries(IItem parentEvidence, Hit hit) {
-        int numberOfEntries = 0;
+  /* method to read size from data descriptor if it exists on the zip file */
+  public int getNumberOfEntries(IItem parentEvidence, Hit hit) {
+    int numberOfEntries = 0;
 
-        SeekableInputStream is = null;
-        try {
-            is = parentEvidence.getSeekableInputStream();
-            is.seek(hit.getOffset() + 4 + 2 + 2);
-            byte[] data = new byte[2];
-            /* total number of entries in the central directory on this disk */
-            int i = 0, pos = 0;
-            while (i != -1 && (pos += i) < data.length)
-                i = is.read(data, pos, data.length - pos);
-            numberOfEntries = Integer.valueOf(data[1] & 0xff) << 8 | (data[0] & 0xff);
+    SeekableInputStream is = null;
+    try {
+      is = parentEvidence.getSeekableInputStream();
+      is.seek(hit.getOffset() + 4 + 2 + 2);
+      byte[] data = new byte[2];
+      /* total number of entries in the central directory on this disk */
+      int i = 0, pos = 0;
+      while (i != -1 && (pos += i) < data.length) i = is.read(data, pos, data.length - pos);
+      numberOfEntries = Integer.valueOf(data[1] & 0xff) << 8 | (data[0] & 0xff);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1;
-        } finally {
-            IOUtil.closeQuietly(is);
-        }
-        return numberOfEntries;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return -1;
+    } finally {
+      IOUtil.closeQuietly(is);
     }
-
+    return numberOfEntries;
+  }
 }

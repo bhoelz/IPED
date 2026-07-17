@@ -16,99 +16,97 @@
  */
 package iped.parsers.fork;
 
+import java.io.*;
 import org.apache.tika.fork.ForkProxy;
 import org.apache.tika.io.TikaInputStream;
 
-import java.io.*;
-
 class InputStreamProxy2 extends InputStream implements ForkProxy {
 
-    /** Serial version UID */
-    private static final long serialVersionUID = 4350939227765568438L;
+  /** Serial version UID */
+  private static final long serialVersionUID = 4350939227765568438L;
 
-    private final int resource;
+  private final int resource;
 
-    private transient DataInputStream input;
+  private transient DataInputStream input;
 
-    private transient DataOutputStream output;
+  private transient DataOutputStream output;
 
-    private File file;
+  private File file;
 
-    private transient TikaInputStream tis;
+  private transient TikaInputStream tis;
 
-    public TikaInputStream getTikaInputStream() {
-        if (file != null && tis == null) {
-            try {
-                tis = TikaInputStream.get(file.toPath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return tis;
+  public TikaInputStream getTikaInputStream() {
+    if (file != null && tis == null) {
+      try {
+        tis = TikaInputStream.get(file.toPath());
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    return tis;
+  }
+
+  public InputStreamProxy2(int resource, InputStream is) {
+    this.resource = resource;
+
+    if (is instanceof TikaInputStream)
+      try {
+        file = ((TikaInputStream) is).getFile();
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+  }
+
+  public void init(DataInputStream input, DataOutputStream output) {
+    this.input = input;
+    this.output = output;
+  }
+
+  @Override
+  public int read() throws IOException {
+
+    if (tis != null) {
+      return tis.read();
     }
 
-    public InputStreamProxy2(int resource, InputStream is) {
-        this.resource = resource;
+    output.writeByte(ForkServer.RESOURCE);
+    output.writeByte(resource);
+    output.writeInt(1);
+    output.flush();
+    int n = input.readInt();
+    if (n == 1) {
+      return input.readUnsignedByte();
+    } else if (n == 0) {
+      return this.read();
+    } else {
+      return -1;
+    }
+  }
 
-        if (is instanceof TikaInputStream)
-            try {
-                file = ((TikaInputStream) is).getFile();
+  @Override
+  public int read(byte[] b, int off, int len) throws IOException {
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    if (tis != null) {
+      return tis.read(b, off, len);
     }
 
-    public void init(DataInputStream input, DataOutputStream output) {
-        this.input = input;
-        this.output = output;
+    output.writeByte(ForkServer.RESOURCE);
+    output.writeByte(resource);
+    output.writeInt(len);
+    output.flush();
+    int n = input.readInt();
+    if (n > 0) {
+      input.readFully(b, off, n);
     }
+    return n;
+  }
 
-    @Override
-    public int read() throws IOException {
-
-        if (tis != null) {
-            return tis.read();
-        }
-
-        output.writeByte(ForkServer.RESOURCE);
-        output.writeByte(resource);
-        output.writeInt(1);
-        output.flush();
-        int n = input.readInt();
-        if (n == 1) {
-            return input.readUnsignedByte();
-        } else if (n == 0) {
-            return this.read();
-        } else {
-            return -1;
-        }
+  @Override
+  public void close() throws IOException {
+    super.close();
+    if (tis != null) {
+      tis.close();
     }
-
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-
-        if (tis != null) {
-            return tis.read(b, off, len);
-        }
-
-        output.writeByte(ForkServer.RESOURCE);
-        output.writeByte(resource);
-        output.writeInt(len);
-        output.flush();
-        int n = input.readInt();
-        if (n > 0) {
-            input.readFully(b, off, n);
-        }
-        return n;
-    }
-
-    @Override
-    public void close() throws IOException {
-        super.close();
-        if (tis != null) {
-            tis.close();
-        }
-    }
-
+  }
 }

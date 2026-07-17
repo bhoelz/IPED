@@ -1,5 +1,7 @@
 package iped.parsers.lnk;
 
+import java.io.IOException;
+import java.io.InputStream;
 import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -9,65 +11,58 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 public class LNKShortcutParserTest extends TestCase {
 
-    private static InputStream getStream(String name) {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+  private static InputStream getStream(String name) {
+    return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+  }
+
+  @Test
+  public void testLNKShortcutParserParsingLink() throws IOException, SAXException, TikaException {
+
+    LNKShortcutParser parser = new LNKShortcutParser();
+    Metadata metadata = new Metadata();
+    ContentHandler handler = new BodyContentHandler();
+    ParseContext context = new ParseContext();
+    parser.getSupportedTypes(context);
+    try (InputStream stream = getStream("test-files/test_lnk.lnk")) {
+      parser.parse(stream, handler, metadata, context);
+
+      String hts = handler.toString();
+
+      String actualLocalPath = "C:\\Users\\guilh\\AppData\\Roaming\\Telegram Desktop\\Telegram.exe";
+      assertTrue(hts.contains(actualLocalPath));
+
+      String actualPrimaryName = "Telegram.exe";
+      assertTrue(hts.contains(actualPrimaryName));
+
+      String actualSecundaryName = "Telegram Desktop";
+      assertTrue(hts.contains(actualSecundaryName));
     }
+  }
 
-    @Test
-    public void testLNKShortcutParserParsingLink() throws IOException, SAXException, TikaException {
+  @Test
+  public void testLNKShortcutParserParsingLinkTracker()
+      throws IOException, SAXException, TikaException {
 
-        LNKShortcutParser parser = new LNKShortcutParser();
-        Metadata metadata = new Metadata();
-        ContentHandler handler = new BodyContentHandler();
-        ParseContext context = new ParseContext();
-        parser.getSupportedTypes(context);
-        try (InputStream stream = getStream("test-files/test_lnk.lnk")) {
-            parser.parse(stream, handler, metadata, context);
+    LNKShortcutParser parser = new LNKShortcutParser();
+    Metadata metadata = new Metadata();
+    ContentHandler handler = new BodyContentHandler();
+    ParseContext context = new ParseContext();
+    parser.getSupportedTypes(context);
+    try (InputStream stream = getStream("test-files/test_lnkLinkTracker.lnk")) {
+      parser.parse(stream, handler, metadata, context);
 
-            String hts = handler.toString();
+      String hts = handler.toString();
 
-            String actualLocalPath = "C:\\Users\\guilh\\AppData\\Roaming\\Telegram Desktop\\Telegram.exe";
-            assertTrue(hts.contains(actualLocalPath));
+      String actualLocalPath = "C:\\Program Files (x86)\\PokerStars\\PokerStarsUpdate.exe";
+      assertTrue(hts.contains(actualLocalPath));
 
-            String actualPrimaryName = "Telegram.exe";
-            assertTrue(hts.contains(actualPrimaryName));
+      String actualPrimaryName = "PokerStarsUpdate.exe";
+      assertTrue(hts.contains(actualPrimaryName));
 
-            String actualSecundaryName = "Telegram Desktop";
-            assertTrue(hts.contains(actualSecundaryName));
-
-        }
-
+      String actualSecundaryName = "PokerStars";
+      assertTrue(hts.contains(actualSecundaryName));
     }
-
-    @Test
-    public void testLNKShortcutParserParsingLinkTracker() throws IOException, SAXException, TikaException {
-
-        LNKShortcutParser parser = new LNKShortcutParser();
-        Metadata metadata = new Metadata();
-        ContentHandler handler = new BodyContentHandler();
-        ParseContext context = new ParseContext();
-        parser.getSupportedTypes(context);
-        try (InputStream stream = getStream("test-files/test_lnkLinkTracker.lnk")) {
-            parser.parse(stream, handler, metadata, context);
-
-            String hts = handler.toString();
-
-            String actualLocalPath = "C:\\Program Files (x86)\\PokerStars\\PokerStarsUpdate.exe";
-            assertTrue(hts.contains(actualLocalPath));
-
-            String actualPrimaryName = "PokerStarsUpdate.exe";
-            assertTrue(hts.contains(actualPrimaryName));
-
-            String actualSecundaryName = "PokerStars";
-            assertTrue(hts.contains(actualSecundaryName));
-
-        }
-
-    }
-
+  }
 }

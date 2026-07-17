@@ -5,26 +5,26 @@ import iped.properties.ExtraProperties;
 
 public class PhoneParsingConfig {
 
-    public static final String PHONE_PARSERS_KEY = "iped.phoneParsersKey";
-    public static final String PHONE_PARSERS_VAL_EXTERNAL = "iped.PhoneParsers.external";
+  public static final String PHONE_PARSERS_KEY = "iped.phoneParsersKey";
+  public static final String PHONE_PARSERS_VAL_EXTERNAL = "iped.PhoneParsers.external";
 
-    private static String ufdrSourceReaderName = null;
+  private static String ufdrSourceReaderName = null;
 
-    public static final void enableExternalPhoneParsersOnly() {
-        System.setProperty(PHONE_PARSERS_KEY, PHONE_PARSERS_VAL_EXTERNAL);
-    }
+  public static final void enableExternalPhoneParsersOnly() {
+    System.setProperty(PHONE_PARSERS_KEY, PHONE_PARSERS_VAL_EXTERNAL);
+  }
 
-    public static final boolean isExternalPhoneParsersOnly() {
-        return PHONE_PARSERS_VAL_EXTERNAL.equals(System.getProperty(PHONE_PARSERS_KEY));
-    }
+  public static final boolean isExternalPhoneParsersOnly() {
+    return PHONE_PARSERS_VAL_EXTERNAL.equals(System.getProperty(PHONE_PARSERS_KEY));
+  }
 
-    public static final void setUfdrReaderName(String ufdrReaderName) {
-        ufdrSourceReaderName = ufdrReaderName;
-    }
+  public static final void setUfdrReaderName(String ufdrReaderName) {
+    ufdrSourceReaderName = ufdrReaderName;
+  }
 
-    public static final boolean isFromUfdrDatasourceReader(IItemReader item) {
-        return item != null && ufdrSourceReaderName != null
-                && ufdrSourceReaderName.equals(item.getExtraAttribute(ExtraProperties.DATASOURCE_READER));
-    }
-
+  public static final boolean isFromUfdrDatasourceReader(IItemReader item) {
+    return item != null
+        && ufdrSourceReaderName != null
+        && ufdrSourceReaderName.equals(item.getExtraAttribute(ExtraProperties.DATASOURCE_READER));
+  }
 }

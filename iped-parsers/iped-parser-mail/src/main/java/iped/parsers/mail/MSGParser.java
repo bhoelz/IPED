@@ -1,6 +1,10 @@
 package iped.parsers.mail;
 
 import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Set;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.metadata.Metadata;
@@ -10,67 +14,59 @@ import org.apache.tika.parser.microsoft.OfficeParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Set;
-
 public class MSGParser extends OfficeParser {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    public Set<MediaType> getSupportedTypes(ParseContext context) {
-        return Collections.singleton(POIFSDocumentType.OUTLOOK.getType());
+  public Set<MediaType> getSupportedTypes(ParseContext context) {
+    return Collections.singleton(POIFSDocumentType.OUTLOOK.getType());
+  }
+
+  public void parse(
+      InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
+      throws IOException, SAXException, TikaException {
+
+    DelegatingExtractor delegate = null;
+    EmbeddedDocumentExtractor extractor = context.get(EmbeddedDocumentExtractor.class);
+    if (extractor != null) {
+      delegate = new DelegatingExtractor(extractor);
+      context.set(EmbeddedDocumentExtractor.class, delegate);
     }
 
-    public void parse(InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
-            throws IOException, SAXException, TikaException {
+    try {
+      super.parse(stream, handler, metadata, context);
 
-        DelegatingExtractor delegate = null;
-        EmbeddedDocumentExtractor extractor = context.get(EmbeddedDocumentExtractor.class);
-        if (extractor != null) {
-            delegate = new DelegatingExtractor(extractor);
-            context.set(EmbeddedDocumentExtractor.class, delegate);
-        }
+    } finally {
+      if (delegate != null) {
+        metadata.set(ExtraProperties.MESSAGE_ATTACHMENT_COUNT, delegate.attachCount);
+        context.set(EmbeddedDocumentExtractor.class, extractor);
+      }
+    }
+  }
 
-        try {
-            super.parse(stream, handler, metadata, context);
+  private class DelegatingExtractor implements EmbeddedDocumentExtractor {
 
-        } finally {
-            if (delegate != null) {
-                metadata.set(ExtraProperties.MESSAGE_ATTACHMENT_COUNT, delegate.attachCount);
-                context.set(EmbeddedDocumentExtractor.class, extractor);
-            }
-        }
+    private EmbeddedDocumentExtractor delegate;
+    private int attachCount = 0;
 
+    private DelegatingExtractor(EmbeddedDocumentExtractor delegate) {
+      this.delegate = delegate;
     }
 
-    private class DelegatingExtractor implements EmbeddedDocumentExtractor {
-
-        private EmbeddedDocumentExtractor delegate;
-        private int attachCount = 0;
-
-        private DelegatingExtractor(EmbeddedDocumentExtractor delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean shouldParseEmbedded(Metadata metadata) {
-            return delegate.shouldParseEmbedded(metadata);
-        }
-
-        @Override
-        public void parseEmbedded(InputStream stream, ContentHandler handler, Metadata metadata, boolean outputHtml)
-                throws SAXException, IOException {
-
-            metadata.set(ExtraProperties.MESSAGE_IS_ATTACHMENT, Boolean.TRUE.toString());
-            delegate.parseEmbedded(stream, handler, metadata, outputHtml);
-            attachCount++;
-        }
-
+    @Override
+    public boolean shouldParseEmbedded(Metadata metadata) {
+      return delegate.shouldParseEmbedded(metadata);
     }
 
+    @Override
+    public void parseEmbedded(
+        InputStream stream, ContentHandler handler, Metadata metadata, boolean outputHtml)
+        throws SAXException, IOException {
+
+      metadata.set(ExtraProperties.MESSAGE_IS_ATTACHMENT, Boolean.TRUE.toString());
+      delegate.parseEmbedded(stream, handler, metadata, outputHtml);
+      attachCount++;
+    }
+  }
 }

@@ -5,8 +5,7 @@ import iped.data.IItemId;
 
 public interface IItemRef {
 
-    IItem getItemRef();
+  IItem getItemRef();
 
-    IItemId getItemRefId();
-
+  IItemId getItemRefId();
 }

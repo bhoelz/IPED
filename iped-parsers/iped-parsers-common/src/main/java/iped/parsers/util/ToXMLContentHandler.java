@@ -16,292 +16,270 @@
  */
 package iped.parsers.util;
 
-import org.apache.tika.sax.ToTextContentHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.tika.sax.ToTextContentHandler;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 /**
- * SAX event handler that serializes the XML document to a character stream. The
- * incoming SAX events are expected to be well-formed (properly nested, etc.)
- * and to explicitly include namespace declaration attributes and corresponding
- * namespace prefixes in element and attribute names.
+ * SAX event handler that serializes the XML document to a character stream. The incoming SAX events
+ * are expected to be well-formed (properly nested, etc.) and to explicitly include namespace
+ * declaration attributes and corresponding namespace prefixes in element and attribute names.
  *
  * @since Apache Tika 0.10
  */
 public class ToXMLContentHandler extends ToTextContentHandler {
 
-    private static class ElementInfo {
+  private static class ElementInfo {
 
-        private final ElementInfo parent;
+    private final ElementInfo parent;
 
-        private final Map<String, String> namespaces;
+    private final Map<String, String> namespaces;
 
-        public ElementInfo(ElementInfo parent, Map<String, String> namespaces) {
-            this.parent = parent;
-            if (namespaces.isEmpty()) {
-                this.namespaces = Collections.emptyMap();
-            } else {
-                this.namespaces = new HashMap<String, String>(namespaces);
-            }
-        }
-
-        public String getPrefix(String uri) throws SAXException {
-            String prefix = namespaces.get(uri);
-            if (prefix != null) {
-                return prefix;
-            } else if (parent != null) {
-                return parent.getPrefix(uri);
-            } else if (uri == null || uri.length() == 0) {
-                return ""; //$NON-NLS-1$
-            } else {
-                return ""; //$NON-NLS-1$
-                // throw new SAXException("Namespace " + uri + " not declared");
-            }
-        }
-
-        public String getQName(String uri, String localName) throws SAXException {
-            String prefix = getPrefix(uri);
-            if (prefix.length() > 0) {
-                return prefix + ":" + localName; //$NON-NLS-1$
-            } else {
-                return localName;
-            }
-        }
-
+    public ElementInfo(ElementInfo parent, Map<String, String> namespaces) {
+      this.parent = parent;
+      if (namespaces.isEmpty()) {
+        this.namespaces = Collections.emptyMap();
+      } else {
+        this.namespaces = new HashMap<String, String>(namespaces);
+      }
     }
 
-    private final String encoding;
-
-    protected boolean inStartElement = false;
-    protected boolean inStyle = false;
-    protected boolean inScript = false;
-
-    protected final Map<String, String> namespaces = new HashMap<String, String>();
-
-    private ElementInfo currentElement;
-
-    /**
-     * Creates an XML serializer that writes to the given byte stream using the
-     * given character encoding.
-     *
-     * @param stream
-     *            output stream
-     * @param encoding
-     *            output encoding
-     * @throws UnsupportedEncodingException
-     *             if the encoding is unsupported
-     */
-    public ToXMLContentHandler(OutputStream stream, String encoding) throws UnsupportedEncodingException {
-        super(stream, encoding);
-        this.encoding = encoding;
+    public String getPrefix(String uri) throws SAXException {
+      String prefix = namespaces.get(uri);
+      if (prefix != null) {
+        return prefix;
+      } else if (parent != null) {
+        return parent.getPrefix(uri);
+      } else if (uri == null || uri.length() == 0) {
+        return ""; //$NON-NLS-1$
+      } else {
+        return ""; //$NON-NLS-1$
+        // throw new SAXException("Namespace " + uri + " not declared");
+      }
     }
 
-    public ToXMLContentHandler(String encoding) {
-        super();
-        this.encoding = encoding;
+    public String getQName(String uri, String localName) throws SAXException {
+      String prefix = getPrefix(uri);
+      if (prefix.length() > 0) {
+        return prefix + ":" + localName; // $NON-NLS-1$
+      } else {
+        return localName;
+      }
+    }
+  }
+
+  private final String encoding;
+
+  protected boolean inStartElement = false;
+  protected boolean inStyle = false;
+  protected boolean inScript = false;
+
+  protected final Map<String, String> namespaces = new HashMap<String, String>();
+
+  private ElementInfo currentElement;
+
+  /**
+   * Creates an XML serializer that writes to the given byte stream using the given character
+   * encoding.
+   *
+   * @param stream output stream
+   * @param encoding output encoding
+   * @throws UnsupportedEncodingException if the encoding is unsupported
+   */
+  public ToXMLContentHandler(OutputStream stream, String encoding)
+      throws UnsupportedEncodingException {
+    super(stream, encoding);
+    this.encoding = encoding;
+  }
+
+  public ToXMLContentHandler(String encoding) {
+    super();
+    this.encoding = encoding;
+  }
+
+  public ToXMLContentHandler() {
+    super();
+    this.encoding = null;
+  }
+
+  /** Writes the XML prefix. */
+  @Override
+  public void startDocument() throws SAXException {
+    if (encoding != null) {
+      write("<?xml version=\"1.0\" encoding=\""); // $NON-NLS-1$
+      write(encoding);
+      write("\"?>\n"); // $NON-NLS-1$
     }
 
-    public ToXMLContentHandler() {
-        super();
-        this.encoding = null;
+    currentElement = null;
+    namespaces.clear();
+  }
+
+  @Override
+  public void startPrefixMapping(String prefix, String uri) throws SAXException {
+    try {
+      if (currentElement != null && prefix.equals(currentElement.getPrefix(uri))) {
+        return;
+      }
+    } catch (SAXException ignore) {
+    }
+    namespaces.put(uri, prefix);
+  }
+
+  @Override
+  public void startElement(String uri, String localName, String qName, Attributes atts)
+      throws SAXException {
+    lazyCloseStartElement();
+
+    currentElement = new ElementInfo(currentElement, namespaces);
+
+    if (localName.toLowerCase().equals("style")) {
+      inStyle = true;
+    } else {
+      inStyle = false;
     }
 
-    /**
-     * Writes the XML prefix.
-     */
-    @Override
-    public void startDocument() throws SAXException {
-        if (encoding != null) {
-            write("<?xml version=\"1.0\" encoding=\""); //$NON-NLS-1$
-            write(encoding);
-            write("\"?>\n"); //$NON-NLS-1$
-        }
-
-        currentElement = null;
-        namespaces.clear();
+    if (localName.toLowerCase().equals("script")) {
+      inScript = true;
+    } else {
+      inScript = false;
     }
 
-    @Override
-    public void startPrefixMapping(String prefix, String uri) throws SAXException {
-        try {
-            if (currentElement != null && prefix.equals(currentElement.getPrefix(uri))) {
-                return;
-            }
-        } catch (SAXException ignore) {
-        }
-        namespaces.put(uri, prefix);
+    write('<');
+    write(currentElement.getQName(uri, localName));
+
+    for (int i = 0; i < atts.getLength(); i++) {
+      write(' ');
+      write(currentElement.getQName(atts.getURI(i), atts.getLocalName(i)));
+      write('=');
+      write('"');
+      char[] ch = atts.getValue(i).toCharArray();
+      writeEscaped(ch, 0, ch.length, true);
+      write('"');
     }
 
-    @Override
-    public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-        lazyCloseStartElement();
+    for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+      write(' ');
+      write("xmlns"); // $NON-NLS-1$
+      String prefix = entry.getValue();
+      if (prefix.length() > 0) {
+        write(':');
+        write(prefix);
+      }
+      write('=');
+      write('"');
+      char[] ch = entry.getKey().toCharArray();
+      writeEscaped(ch, 0, ch.length, true);
+      write('"');
+    }
+    namespaces.clear();
 
-        currentElement = new ElementInfo(currentElement, namespaces);
+    inStartElement = true;
+  }
 
-        if (localName.toLowerCase().equals("style")) {
-            inStyle = true;
-        } else {
-            inStyle = false;
-        }
-
-        if (localName.toLowerCase().equals("script")) {
-            inScript = true;
-        } else {
-            inScript = false;
-        }
-
-        write('<');
-        write(currentElement.getQName(uri, localName));
-
-        for (int i = 0; i < atts.getLength(); i++) {
-            write(' ');
-            write(currentElement.getQName(atts.getURI(i), atts.getLocalName(i)));
-            write('=');
-            write('"');
-            char[] ch = atts.getValue(i).toCharArray();
-            writeEscaped(ch, 0, ch.length, true);
-            write('"');
-        }
-
-        for (Map.Entry<String, String> entry : namespaces.entrySet()) {
-            write(' ');
-            write("xmlns"); //$NON-NLS-1$
-            String prefix = entry.getValue();
-            if (prefix.length() > 0) {
-                write(':');
-                write(prefix);
-            }
-            write('=');
-            write('"');
-            char[] ch = entry.getKey().toCharArray();
-            writeEscaped(ch, 0, ch.length, true);
-            write('"');
-        }
-        namespaces.clear();
-
-        inStartElement = true;
+  @Override
+  public void endElement(String uri, String localName, String qName) throws SAXException {
+    if (inStartElement) {
+      write(" />"); // $NON-NLS-1$
+      inStartElement = false;
+    } else {
+      write("</"); // $NON-NLS-1$
+      write(qName);
+      write('>');
     }
 
-    @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (inStartElement) {
-            write(" />"); //$NON-NLS-1$
-            inStartElement = false;
-        } else {
-            write("</"); //$NON-NLS-1$
-            write(qName);
-            write('>');
-        }
+    namespaces.clear();
 
-        namespaces.clear();
+    // Reset the position in the tree, to avoid endless stack overflow
+    // chains (see TIKA-1070)
+    if (currentElement != null) currentElement = currentElement.parent;
+  }
 
-        // Reset the position in the tree, to avoid endless stack overflow
-        // chains (see TIKA-1070)
-        if (currentElement != null)
-            currentElement = currentElement.parent;
+  @Override
+  public void characters(char[] ch, int start, int length) throws SAXException {
+    lazyCloseStartElement();
+    if (inStyle || inScript) {
+      super.characters(ch, start, length);
+    } else {
+      writeEscaped(ch, start, start + length, false);
     }
+  }
 
-    @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        lazyCloseStartElement();
-        if (inStyle || inScript) {
-            super.characters(ch, start, length);
-        } else {
-            writeEscaped(ch, start, start + length, false);
-        }
+  private void lazyCloseStartElement() throws SAXException {
+    if (inStartElement) {
+      write('>');
+      inStartElement = false;
     }
+  }
 
-    private void lazyCloseStartElement() throws SAXException {
-        if (inStartElement) {
-            write('>');
-            inStartElement = false;
-        }
+  /**
+   * Writes the given character as-is.
+   *
+   * @param ch character to be written
+   * @throws SAXException if the character could not be written
+   */
+  protected void write(char ch) throws SAXException {
+    super.characters(new char[] {ch}, 0, 1);
+  }
+
+  /**
+   * Writes the given string of character as-is.
+   *
+   * @param string string of character to be written
+   * @throws SAXException if the character string could not be written
+   */
+  protected void write(String string) throws SAXException {
+    super.characters(string.toCharArray(), 0, string.length());
+  }
+
+  /**
+   * Writes the given characters as-is followed by the given entity.
+   *
+   * @param ch character array
+   * @param from start position in the array
+   * @param to end position in the array
+   * @param entity entity code
+   * @return next position in the array, after the characters plus one entity
+   * @throws SAXException if the characters could not be written
+   */
+  private int writeCharsAndEntity(char[] ch, int from, int to, String entity) throws SAXException {
+    super.characters(ch, from, to - from);
+    write('&');
+    write(entity);
+    write(';');
+    return to + 1;
+  }
+
+  /**
+   * Writes the given characters with XML meta characters escaped.
+   *
+   * @param ch character array
+   * @param from start position in the array
+   * @param to end position in the array
+   * @param attribute whether the characters should be escaped as an attribute value or normal
+   *     character content
+   * @throws SAXException if the characters could not be written
+   */
+  private void writeEscaped(char[] ch, int from, int to, boolean attribute) throws SAXException {
+    int pos = from;
+    while (pos < to) {
+      if (ch[pos] == '<') {
+        from = pos = writeCharsAndEntity(ch, from, pos, "lt"); // $NON-NLS-1$
+      } else if (ch[pos] == '>') {
+        from = pos = writeCharsAndEntity(ch, from, pos, "gt"); // $NON-NLS-1$
+      } else if (ch[pos] == '&') {
+        from = pos = writeCharsAndEntity(ch, from, pos, "amp"); // $NON-NLS-1$
+      } else if (attribute && ch[pos] == '"') {
+        from = pos = writeCharsAndEntity(ch, from, pos, "quot"); // $NON-NLS-1$
+      } else {
+        pos++;
+      }
     }
-
-    /**
-     * Writes the given character as-is.
-     *
-     * @param ch
-     *            character to be written
-     * @throws SAXException
-     *             if the character could not be written
-     */
-    protected void write(char ch) throws SAXException {
-        super.characters(new char[] { ch }, 0, 1);
-    }
-
-    /**
-     * Writes the given string of character as-is.
-     *
-     * @param string
-     *            string of character to be written
-     * @throws SAXException
-     *             if the character string could not be written
-     */
-    protected void write(String string) throws SAXException {
-        super.characters(string.toCharArray(), 0, string.length());
-    }
-
-    /**
-     * Writes the given characters as-is followed by the given entity.
-     *
-     * @param ch
-     *            character array
-     * @param from
-     *            start position in the array
-     * @param to
-     *            end position in the array
-     * @param entity
-     *            entity code
-     * @return next position in the array, after the characters plus one entity
-     * @throws SAXException
-     *             if the characters could not be written
-     */
-    private int writeCharsAndEntity(char[] ch, int from, int to, String entity) throws SAXException {
-        super.characters(ch, from, to - from);
-        write('&');
-        write(entity);
-        write(';');
-        return to + 1;
-    }
-
-    /**
-     * Writes the given characters with XML meta characters escaped.
-     *
-     * @param ch
-     *            character array
-     * @param from
-     *            start position in the array
-     * @param to
-     *            end position in the array
-     * @param attribute
-     *            whether the characters should be escaped as an attribute value or
-     *            normal character content
-     * @throws SAXException
-     *             if the characters could not be written
-     */
-    private void writeEscaped(char[] ch, int from, int to, boolean attribute) throws SAXException {
-        int pos = from;
-        while (pos < to) {
-            if (ch[pos] == '<') {
-                from = pos = writeCharsAndEntity(ch, from, pos, "lt"); //$NON-NLS-1$
-            } else if (ch[pos] == '>') {
-                from = pos = writeCharsAndEntity(ch, from, pos, "gt"); //$NON-NLS-1$
-            } else if (ch[pos] == '&') {
-                from = pos = writeCharsAndEntity(ch, from, pos, "amp"); //$NON-NLS-1$
-            } else if (attribute && ch[pos] == '"') {
-                from = pos = writeCharsAndEntity(ch, from, pos, "quot"); //$NON-NLS-1$
-            } else {
-                pos++;
-            }
-        }
-        super.characters(ch, from, to - from);
-    }
-
+    super.characters(ch, from, to - from);
+  }
 }

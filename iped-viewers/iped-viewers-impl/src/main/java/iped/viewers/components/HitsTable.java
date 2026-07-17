@@ -18,26 +18,25 @@
  */
 package iped.viewers.components;
 
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.awt.*;
 
 public class HitsTable extends JTable {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    public HitsTable(AbstractTableModel tableModel) {
-        super(tableModel);
-        setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        setFillsViewportHeight(true);
-        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        getTableHeader().setPreferredSize(new Dimension(0, 0));
-        setShowGrid(false);
-    }
+  public HitsTable(AbstractTableModel tableModel) {
+    super(tableModel);
+    setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    setFillsViewportHeight(true);
+    setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+    getTableHeader().setPreferredSize(new Dimension(0, 0));
+    setShowGrid(false);
+  }
 
-    @Override
-    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        super.changeSelection(rowIndex, 0, toggle, extend);
-    }
-
+  @Override
+  public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+    super.changeSelection(rowIndex, 0, toggle, extend);
+  }
 }

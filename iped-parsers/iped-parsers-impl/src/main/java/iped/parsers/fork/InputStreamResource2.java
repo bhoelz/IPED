@@ -16,42 +16,40 @@
  */
 package iped.parsers.fork;
 
-import org.apache.tika.fork.ForkResource;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.apache.tika.fork.ForkResource;
 
 class InputStreamResource2 implements ForkResource {
 
-    private final InputStream stream;
+  private final InputStream stream;
 
-    public InputStreamResource2(InputStream stream) {
-        this.stream = stream;
+  public InputStreamResource2(InputStream stream) {
+    this.stream = stream;
+  }
+
+  public Throwable process(DataInputStream input, DataOutputStream output) throws IOException {
+
+    int n = input.readInt();
+    byte[] buffer = new byte[n];
+    int m;
+    try {
+      m = stream.read(buffer);
+
+      // Runtime exceptions are possible, eg: OLEParser
+    } catch (Exception e) {
+      // returning causes deadlock
+      // return e;
+      e.printStackTrace();
+      m = -1;
     }
-
-    public Throwable process(DataInputStream input, DataOutputStream output) throws IOException {
-
-        int n = input.readInt();
-        byte[] buffer = new byte[n];
-        int m;
-        try {
-            m = stream.read(buffer);
-
-            // Runtime exceptions are possible, eg: OLEParser
-        } catch (Exception e) {
-            // returning causes deadlock
-            // return e;
-            e.printStackTrace();
-            m = -1;
-        }
-        output.writeInt(m);
-        if (m > 0) {
-            output.write(buffer, 0, m);
-        }
-        output.flush();
-        return null;
+    output.writeInt(m);
+    if (m > 0) {
+      output.write(buffer, 0, m);
     }
-
+    output.flush();
+    return null;
+  }
 }

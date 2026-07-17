@@ -9,11 +9,6 @@ import iped.engine.task.similarity.ImageSimilarityTask;
 import iped.utils.ExternalImageConverter;
 import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.RowSorter.SortKey;
-import javax.swing.filechooser.FileFilter;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,124 +16,139 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.filechooser.FileFilter;
 
 public class SimilarImagesFilterActions {
-    private static final int sampleFactor = 3;
+  private static final int sampleFactor = 3;
 
-    // do not instantiate here, makes external command adjustment fail, see #740
-    private static ExternalImageConverter externalImageConverter;
+  // do not instantiate here, makes external command adjustment fail, see #740
+  private static ExternalImageConverter externalImageConverter;
 
-    public static void clear() {
-        clear(true);
+  public static void clear() {
+    clear(true);
+  }
+
+  public static void clear(boolean updateResults) {
+    App app = App.get();
+    if (app.getSimilarImagesQueryRefItem() != null) {
+      app.setSimilarImagesQueryRefItem(null, null);
+      app.similarImageFilterPanel.setVisible(false);
+      List<? extends SortKey> sortKeys = app.resultsTable.getRowSorter().getSortKeys();
+      if (sortKeys != null
+          && !sortKeys.isEmpty()
+          && sortKeys.get(0).getColumn() == 2
+          && app.similarImagesPrevSortKeys != null)
+        ((ResultTableRowSorter) app.resultsTable.getRowSorter())
+            .setSortKeysSuper(app.similarImagesPrevSortKeys);
+      app.similarImagesPrevSortKeys = null;
+      if (updateResults) app.appletListener.updateFileListing();
     }
+  }
 
-    public static void clear(boolean updateResults) {
-        App app = App.get();
-        if (app.getSimilarImagesQueryRefItem() != null) {
-            app.setSimilarImagesQueryRefItem(null, null);
-            app.similarImageFilterPanel.setVisible(false);
-            List<? extends SortKey> sortKeys = app.resultsTable.getRowSorter().getSortKeys();
-            if (sortKeys != null && !sortKeys.isEmpty() && sortKeys.get(0).getColumn() == 2 && app.similarImagesPrevSortKeys != null)
-                ((ResultTableRowSorter) app.resultsTable.getRowSorter()).setSortKeysSuper(app.similarImagesPrevSortKeys);
-            app.similarImagesPrevSortKeys = null;
-            if (updateResults)
-                app.appletListener.updateFileListing();
+  public static void searchSimilarImages(boolean external) {
+    App app = App.get();
+    if (external) {
+      JFileChooser fileChooser = new JFileChooser();
+      fileChooser.setDialogTitle(Messages.getString("ImageSimilarity.ExternalTitle"));
+      fileChooser.setAcceptAllFileFilterUsed(false);
+      fileChooser.setFileFilter(
+          new FileFilter() {
+            public String getDescription() {
+              return Messages.getString("ImageSimilarity.Image");
+            }
+
+            public boolean accept(File f) {
+              return true;
+            }
+          });
+      fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+      if (fileChooser.showOpenDialog(App.get()) != JFileChooser.APPROVE_OPTION) {
+        return;
+      }
+      app.setSimilarImagesQueryRefItem(null, null);
+      File file = fileChooser.getSelectedFile();
+      if (file != null) {
+        BufferedImage img = null;
+        BufferedInputStream is = null;
+        try {
+          is = new BufferedInputStream(new FileInputStream(file));
+          img = ImageUtil.getSubSampledImage(is, ImageSimilarity.maxDim * sampleFactor);
+        } catch (Exception e) {
+          e.printStackTrace();
+        } finally {
+          IOUtil.closeQuietly(is);
         }
-    }
-
-    public static void searchSimilarImages(boolean external) {
-        App app = App.get();
-        if (external) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle(Messages.getString("ImageSimilarity.ExternalTitle"));
-            fileChooser.setAcceptAllFileFilterUsed(false);
-            fileChooser.setFileFilter(new FileFilter() {
-                public String getDescription() {
-                    return Messages.getString("ImageSimilarity.Image");
-                }
-
-                public boolean accept(File f) {
-                    return true;
-                }
-            });
-            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            if (fileChooser.showOpenDialog(App.get()) != JFileChooser.APPROVE_OPTION) {
-                return;
+        if (img == null) {
+          try {
+            is = new BufferedInputStream(new FileInputStream(file));
+            if (externalImageConverter == null) {
+              externalImageConverter = new ExternalImageConverter();
             }
-            app.setSimilarImagesQueryRefItem(null, null);
-            File file = fileChooser.getSelectedFile();
-            if (file != null) {
-                BufferedImage img = null;
-                BufferedInputStream is = null;
-                try {
-                    is = new BufferedInputStream(new FileInputStream(file));
-                    img = ImageUtil.getSubSampledImage(is, ImageSimilarity.maxDim * sampleFactor);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    IOUtil.closeQuietly(is);
-                }
-                if (img == null) {
-                    try {
-                        is = new BufferedInputStream(new FileInputStream(file));
-                        if (externalImageConverter == null) {
-                            externalImageConverter = new ExternalImageConverter();
-                        }
-                        img = externalImageConverter.getImage(is, ImageSimilarity.maxDim, false, file.length());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        IOUtil.closeQuietly(is);
-                    }
-                }
-                if (img != null) {
-                    img = ImageUtil.resizeImage(img, ImageSimilarity.maxDim, ImageSimilarity.maxDim, BufferedImage.TYPE_INT_RGB);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    try {
-                        ImageIO.write(img, "jpg", baos);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    Item item = new Item();
-                    item.setName(file.getName());
-                    item.setThumb(baos.toByteArray());
-                    item.setExtraAttribute(ImageSimilarityTask.IMAGE_FEATURES, new ImageSimilarity().extractFeatures(img));
-                    app.setSimilarImagesQueryRefItem(null, item);
-                } else {
-                    JOptionPane.showMessageDialog(App.get(), Messages.getString("ImageSimilarity.ExternalError"), Messages.getString("ImageSimilarity.ExternalTitle"), JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-            }
+            img = externalImageConverter.getImage(is, ImageSimilarity.maxDim, false, file.length());
+          } catch (Exception e) {
+            e.printStackTrace();
+          } finally {
+            IOUtil.closeQuietly(is);
+          }
+        }
+        if (img != null) {
+          img =
+              ImageUtil.resizeImage(
+                  img, ImageSimilarity.maxDim, ImageSimilarity.maxDim, BufferedImage.TYPE_INT_RGB);
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          try {
+            ImageIO.write(img, "jpg", baos);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+          Item item = new Item();
+          item.setName(file.getName());
+          item.setThumb(baos.toByteArray());
+          item.setExtraAttribute(
+              ImageSimilarityTask.IMAGE_FEATURES, new ImageSimilarity().extractFeatures(img));
+          app.setSimilarImagesQueryRefItem(null, item);
         } else {
+          JOptionPane.showMessageDialog(
+              App.get(),
+              Messages.getString("ImageSimilarity.ExternalError"),
+              Messages.getString("ImageSimilarity.ExternalTitle"),
+              JOptionPane.ERROR_MESSAGE);
+          return;
+        }
+      }
+    } else {
+      app.setSimilarImagesQueryRefItem(null, null);
+      int selIdx = app.resultsTable.getSelectedRow();
+      if (selIdx != -1) {
+        IItemId itemId = app.ipedResult.getItem(app.resultsTable.convertRowIndexToModel(selIdx));
+        if (itemId != null) {
+          IItem item = app.appCase.getItemByItemId(itemId);
+          app.setSimilarImagesQueryRefItem(itemId, item);
+          if (item.getExtraAttribute(ImageSimilarityTask.IMAGE_FEATURES) == null) {
             app.setSimilarImagesQueryRefItem(null, null);
-            int selIdx = app.resultsTable.getSelectedRow();
-            if (selIdx != -1) {
-                IItemId itemId = app.ipedResult.getItem(app.resultsTable.convertRowIndexToModel(selIdx));
-                if (itemId != null) {
-                    IItem item = app.appCase.getItemByItemId(itemId);
-                    app.setSimilarImagesQueryRefItem(itemId, item);
-                    if (item.getExtraAttribute(ImageSimilarityTask.IMAGE_FEATURES) == null) {
-                        app.setSimilarImagesQueryRefItem(null, null);
-                    }
-                }
-            }
+          }
         }
-
-        if (app.getSimilarImagesQueryRefItem() != null) {
-            List<? extends SortKey> sortKeys = app.resultsTable.getRowSorter().getSortKeys();
-            if (sortKeys == null || sortKeys.isEmpty() || sortKeys.get(0).getColumn() != 2) {
-                app.similarImagesPrevSortKeys = sortKeys;
-                ArrayList<RowSorter.SortKey> sortScore = new ArrayList<RowSorter.SortKey>();
-                sortScore.add(new RowSorter.SortKey(2, SortOrder.DESCENDING));
-                ((ResultTableRowSorter) app.resultsTable.getRowSorter()).setSortKeysSuper(sortScore);
-            }
-            app.appletListener.updateFileListing();
-        }
-        app.similarImageFilterPanel.setCurrentItem(app.getSimilarImagesQueryRefItem(), external);
-        app.similarImageFilterPanel.setVisible(app.getSimilarImagesQueryRefItem() != null);
+      }
     }
 
-    public static boolean isFeatureEnabled() {
-        return ConfigurationManager.get().getEnableTaskProperty(ImageSimilarityTask.enableParam);
+    if (app.getSimilarImagesQueryRefItem() != null) {
+      List<? extends SortKey> sortKeys = app.resultsTable.getRowSorter().getSortKeys();
+      if (sortKeys == null || sortKeys.isEmpty() || sortKeys.get(0).getColumn() != 2) {
+        app.similarImagesPrevSortKeys = sortKeys;
+        ArrayList<RowSorter.SortKey> sortScore = new ArrayList<RowSorter.SortKey>();
+        sortScore.add(new RowSorter.SortKey(2, SortOrder.DESCENDING));
+        ((ResultTableRowSorter) app.resultsTable.getRowSorter()).setSortKeysSuper(sortScore);
+      }
+      app.appletListener.updateFileListing();
     }
+    app.similarImageFilterPanel.setCurrentItem(app.getSimilarImagesQueryRefItem(), external);
+    app.similarImageFilterPanel.setVisible(app.getSimilarImagesQueryRefItem() != null);
+  }
+
+  public static boolean isFeatureEnabled() {
+    return ConfigurationManager.get().getEnableTaskProperty(ImageSimilarityTask.enableParam);
+  }
 }

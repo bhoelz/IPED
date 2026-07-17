@@ -27,201 +27,200 @@ import iped.exception.QueryNodeException;
 import iped.search.IIPEDSearcher;
 import iped.search.SearchQueryDefinition;
 import iped.search.SearchResult;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.*;
-
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanClause.Occur;
 
 public class IPEDSearcher implements IIPEDSearcher {
 
-    public static final int MAX_SIZE_TO_SCORE = 1000000;
+  public static final int MAX_SIZE_TO_SCORE = 1000000;
 
-    IPEDSource ipedCase;
-    Query query;
-    boolean treeQuery, noScore, rewriteQuery = true;
-    NoScoringCollector collector;
-    Sort sort;
+  IPEDSource ipedCase;
+  Query query;
+  boolean treeQuery, noScore, rewriteQuery = true;
+  NoScoringCollector collector;
+  Sort sort;
 
-    private volatile boolean canceled;
+  private volatile boolean canceled;
 
-    public IPEDSearcher(IPEDSource ipedCase) {
-        this.ipedCase = ipedCase;
+  public IPEDSearcher(IPEDSource ipedCase) {
+    this.ipedCase = ipedCase;
+  }
+
+  public IPEDSearcher(IPEDSource ipedCase, Query query) {
+    this.ipedCase = ipedCase;
+    this.query = query;
+  }
+
+  public IPEDSearcher(IPEDSource ipedCase, String query) {
+    this.ipedCase = ipedCase;
+    setQuery(query);
+  }
+
+  public IPEDSearcher(IPEDSource ipedCase, Query query, String... sort) {
+    this.ipedCase = ipedCase;
+    this.query = query;
+    setSorting(sort);
+  }
+
+  public IPEDSearcher(IPEDSource ipedCase, String query, String... sort) {
+    this.ipedCase = ipedCase;
+    setQuery(query);
+    setSorting(sort);
+  }
+
+  // TODO improve this to handle other field types
+  private void setSorting(String... sort) {
+    SortField[] fields = new SortField[sort.length];
+    for (int i = 0; i < fields.length; i++) {
+      fields[i] = new SortField(sort[i], SortField.Type.STRING);
+    }
+    this.sort = new Sort(fields);
+  }
+
+  public void setTreeQuery(boolean treeQuery) {
+    this.treeQuery = treeQuery;
+  }
+
+  public void setNoScoring(boolean noScore) {
+    this.noScore = noScore;
+  }
+
+  public void setQuery(Query query) {
+    this.query = query;
+  }
+
+  @Override
+  public void setQueryObject(Object queryObject) {
+    this.query = (Query) queryObject;
+  }
+
+  public void setQuery(String queryText) {
+    try {
+      query = new QueryBuilder(ipedCase).getQuery(queryText);
+
+    } catch (ParseException | QueryNodeException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void setRewritequery(boolean rewriteQuery) {
+    this.rewriteQuery = rewriteQuery;
+  }
+
+  public Query getQuery() {
+    return query;
+  }
+
+  @Override
+  public Object getQueryObject() {
+    return query;
+  }
+
+  @Override
+  public SearchQueryDefinition getQueryDefinition() {
+    return query == null ? null : SearchQueryDefinition.of(query.toString());
+  }
+
+  @Override
+  public void setQueryDefinition(SearchQueryDefinition queryDefinition) {
+    if (queryDefinition == null) {
+      query = null;
+      return;
+    }
+    setQuery(queryDefinition.expression());
+  }
+
+  public void cancel() {
+    canceled = true;
+    if (collector != null) collector.cancel();
+  }
+
+  public SearchResult search() throws IOException {
+    if (ipedCase instanceof IPEDMultiSource)
+      throw new UnsupportedOperationException(
+          "Use multiSearch() method for IPEDMultiSource!"); //$NON-NLS-1$
+
+    return luceneSearch().getSearchResult(ipedCase);
+  }
+
+  public MultiSearchResult multiSearch() throws IOException {
+    if (!(ipedCase instanceof IPEDMultiSource))
+      throw new UnsupportedOperationException(
+          "Use search() method for only one IPEDSource!"); //$NON-NLS-1$
+
+    return MultiSearchResult.get((IPEDMultiSource) ipedCase, luceneSearch());
+  }
+
+  public LuceneSearchResult luceneSearch() throws IOException {
+    return searchAll();
+  }
+
+  private LuceneSearchResult searchAll() throws IOException {
+
+    // System.out.println("searching");
+
+    Query query = this.query;
+    if (query instanceof MatchAllDocsQuery) {
+      query = QueryBuilder.getMatchAllItemsQuery();
+    } else if (rewriteQuery) {
+      query = new QueryBuilder(ipedCase, true).rewriteQuery(query);
+    }
+    if (!treeQuery) {
+      query = getNonTreeQuery(query);
     }
 
-    public IPEDSearcher(IPEDSource ipedCase, Query query) {
-        this.ipedCase = ipedCase;
-        this.query = query;
+    collector = new NoScoringCollector(ipedCase.getReader().maxDoc());
+    try {
+      ipedCase.getSearcher().search(query, collector);
+
+    } catch (InterruptedIOException e) {
+      // e.printStackTrace();
+    }
+    // do not compute scores (slow) when result set is large
+    if (noScore || collector.getTotalHits() > MAX_SIZE_TO_SCORE || canceled)
+      return collector.getSearchResults();
+
+    // otherwise get results computing score
+    LuceneSearchResult searchResult = new LuceneSearchResult(0);
+
+    // sort by index doc order: needed by features using docValues that iterate over results
+    Sort sort = null;
+    if (this.sort != null) {
+      sort = this.sort;
+    } else {
+      sort = new Sort(SortField.FIELD_DOC);
     }
 
-    public IPEDSearcher(IPEDSource ipedCase, String query) {
-        this.ipedCase = ipedCase;
-        setQuery(query);
+    int maxResults = MAX_SIZE_TO_SCORE;
+    ScoreDoc[] scoreDocs = null;
+    do {
+      ScoreDoc lastScoreDoc = null;
+      if (scoreDocs != null) lastScoreDoc = scoreDocs[scoreDocs.length - 1];
+
+      scoreDocs =
+          ipedCase.getSearcher().searchAfter(lastScoreDoc, query, maxResults, sort, true).scoreDocs;
+
+      searchResult = searchResult.addResults(scoreDocs);
+
+    } while (scoreDocs.length > 0 && !canceled);
+
+    return searchResult;
+  }
+
+  public boolean hasDocId(int docId) {
+    if (collector != null) {
+      return collector.bits.get(docId);
     }
+    return true;
+  }
 
-    public IPEDSearcher(IPEDSource ipedCase, Query query, String... sort) {
-        this.ipedCase = ipedCase;
-        this.query = query;
-        setSorting(sort);
-    }
-
-    public IPEDSearcher(IPEDSource ipedCase, String query, String... sort) {
-        this.ipedCase = ipedCase;
-        setQuery(query);
-        setSorting(sort);
-    }
-
-    // TODO improve this to handle other field types
-    private void setSorting(String... sort) {
-        SortField[] fields = new SortField[sort.length];
-        for (int i = 0; i < fields.length; i++) {
-            fields[i] = new SortField(sort[i], SortField.Type.STRING);
-        }
-        this.sort = new Sort(fields);
-    }
-
-    public void setTreeQuery(boolean treeQuery) {
-        this.treeQuery = treeQuery;
-    }
-
-    public void setNoScoring(boolean noScore) {
-        this.noScore = noScore;
-    }
-
-    public void setQuery(Query query) {
-        this.query = query;
-    }
-
-    @Override
-    public void setQueryObject(Object queryObject) {
-        this.query = (Query) queryObject;
-    }
-
-    public void setQuery(String queryText) {
-        try {
-            query = new QueryBuilder(ipedCase).getQuery(queryText);
-
-        } catch (ParseException | QueryNodeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setRewritequery(boolean rewriteQuery) {
-        this.rewriteQuery = rewriteQuery;
-    }
-
-    public Query getQuery() {
-        return query;
-    }
-
-    @Override
-    public Object getQueryObject() {
-        return query;
-    }
-
-    @Override
-    public SearchQueryDefinition getQueryDefinition() {
-        return query == null ? null : SearchQueryDefinition.of(query.toString());
-    }
-
-    @Override
-    public void setQueryDefinition(SearchQueryDefinition queryDefinition) {
-        if (queryDefinition == null) {
-            query = null;
-            return;
-        }
-        setQuery(queryDefinition.expression());
-    }
-
-    public void cancel() {
-        canceled = true;
-        if (collector != null)
-            collector.cancel();
-    }
-
-    public SearchResult search() throws IOException {
-        if (ipedCase instanceof IPEDMultiSource)
-            throw new UnsupportedOperationException("Use multiSearch() method for IPEDMultiSource!"); //$NON-NLS-1$
-
-        return luceneSearch().getSearchResult(ipedCase);
-    }
-
-    public MultiSearchResult multiSearch() throws IOException {
-        if (!(ipedCase instanceof IPEDMultiSource))
-            throw new UnsupportedOperationException("Use search() method for only one IPEDSource!"); //$NON-NLS-1$
-
-        return MultiSearchResult.get((IPEDMultiSource) ipedCase, luceneSearch());
-    }
-
-    public LuceneSearchResult luceneSearch() throws IOException {
-        return searchAll();
-    }
-
-    private LuceneSearchResult searchAll() throws IOException {
-
-        // System.out.println("searching");
-
-        Query query = this.query;
-        if (query instanceof MatchAllDocsQuery) {
-            query = QueryBuilder.getMatchAllItemsQuery();
-        } else if (rewriteQuery) {
-            query = new QueryBuilder(ipedCase, true).rewriteQuery(query);
-        }
-        if (!treeQuery) {
-            query = getNonTreeQuery(query);
-        }
-
-        collector = new NoScoringCollector(ipedCase.getReader().maxDoc());
-        try {
-            ipedCase.getSearcher().search(query, collector);
-
-        } catch (InterruptedIOException e) {
-            // e.printStackTrace();
-        }
-        // do not compute scores (slow) when result set is large
-        if (noScore || collector.getTotalHits() > MAX_SIZE_TO_SCORE || canceled)
-            return collector.getSearchResults();
-
-        // otherwise get results computing score
-        LuceneSearchResult searchResult = new LuceneSearchResult(0);
-
-        // sort by index doc order: needed by features using docValues that iterate over results
-        Sort sort = null;
-        if (this.sort != null) {
-            sort = this.sort;
-        } else {
-            sort = new Sort(SortField.FIELD_DOC);
-        }
-
-        int maxResults = MAX_SIZE_TO_SCORE;
-        ScoreDoc[] scoreDocs = null;
-        do {
-            ScoreDoc lastScoreDoc = null;
-            if (scoreDocs != null)
-                lastScoreDoc = scoreDocs[scoreDocs.length - 1];
-
-            scoreDocs = ipedCase.getSearcher().searchAfter(lastScoreDoc, query, maxResults, sort, true).scoreDocs;
-
-            searchResult = searchResult.addResults(scoreDocs);
-
-        } while (scoreDocs.length > 0 && !canceled);
-
-        return searchResult;
-    }
-
-    public boolean hasDocId(int docId) {
-        if (collector != null) {
-            return collector.bits.get(docId);
-        }
-        return true;
-    }
-
-    private Query getNonTreeQuery(Query query) {
-        BooleanQuery.Builder result = new BooleanQuery.Builder();
-        result.add(query, Occur.MUST);
-        result.add(new TermQuery(new Term(IndexItem.TREENODE, "true")), Occur.MUST_NOT); //$NON-NLS-1$
-        return result.build();
-    }
-
+  private Query getNonTreeQuery(Query query) {
+    BooleanQuery.Builder result = new BooleanQuery.Builder();
+    result.add(query, Occur.MUST);
+    result.add(new TermQuery(new Term(IndexItem.TREENODE, "true")), Occur.MUST_NOT); // $NON-NLS-1$
+    return result.build();
+  }
 }

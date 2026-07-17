@@ -2,87 +2,91 @@ package iped.engine.task.regex;
 
 import iped.engine.task.regex.RegexTask.Regex;
 import iped.io.URLUtil;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.File;
 import java.net.URL;
 import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RegexValidator {
 
+  private Map<String, RegexValidatorService> services = new HashMap<>();
 
-    private Map<String, RegexValidatorService> services = new HashMap<>();
+  public RegexValidator() {
+    super();
+  }
 
-    public RegexValidator() {
-        super();
-    }
+  public void init(File confDir) {
+    ClassLoader cl = this.getClass().getClassLoader();
+    init(cl, confDir);
+  }
 
-    public void init(File confDir) {
-        ClassLoader cl = this.getClass().getClassLoader();
-        init(cl, confDir);
-    }
+  private void init(ClassLoader classLoader, File confDir) {
+    ServiceLoader<RegexValidatorService> loader =
+        ServiceLoader.load(RegexValidatorService.class, classLoader);
+    Iterator<RegexValidatorService> iterator = loader.iterator();
+    while (iterator.hasNext()) {
+      RegexValidatorService validatorService = iterator.next();
 
-    private void init(ClassLoader classLoader, File confDir) {
-        ServiceLoader<RegexValidatorService> loader = ServiceLoader.load(RegexValidatorService.class, classLoader);
-        Iterator<RegexValidatorService> iterator = loader.iterator();
-        while (iterator.hasNext()) {
-            RegexValidatorService validatorService = iterator.next();
+      validatorService.init(confDir);
+      List<String> names = validatorService.getRegexNames();
 
-            validatorService.init(confDir);
-            List<String> names = validatorService.getRegexNames();
+      for (String regexName : names) {
+        RegexValidatorService previous = services.put(regexName, validatorService);
+        if (previous != null) {
 
-            for (String regexName : names) {
-                RegexValidatorService previous = services.put(regexName, validatorService);
-                if (previous != null) {
+          String first = getLocation(previous);
+          String second = getLocation(validatorService);
 
-                    String first = getLocation(previous);
-                    String second = getLocation(validatorService);
-
-                    throw new IllegalStateException("Multiple validation services registered for " + regexName + " ("
-                            + first + " and " + second + ")");
-                }
-
-                log.info("Validator " + validatorService.getClass().getName() + " found for " + regexName);
-            }
+          throw new IllegalStateException(
+              "Multiple validation services registered for "
+                  + regexName
+                  + " ("
+                  + first
+                  + " and "
+                  + second
+                  + ")");
         }
-    }
 
-    public boolean validate(Regex regex, String hit) {
-        String name = regex.name;
-        return validate(name, hit);
+        log.info("Validator " + validatorService.getClass().getName() + " found for " + regexName);
+      }
     }
+  }
 
-    public boolean validate(String name, String hit) {
-        RegexValidatorService service = services.get(name);
-        if (service != null) {
-            return service.validate(name, hit);
-        } else {
-            return true;
-        }
+  public boolean validate(Regex regex, String hit) {
+    String name = regex.name;
+    return validate(name, hit);
+  }
+
+  public boolean validate(String name, String hit) {
+    RegexValidatorService service = services.get(name);
+    if (service != null) {
+      return service.validate(name, hit);
+    } else {
+      return true;
     }
+  }
 
-    public String format(Regex regex, String hit) {
-        String name = regex.name;
-        return format(name, hit);
+  public String format(Regex regex, String hit) {
+    String name = regex.name;
+    return format(name, hit);
+  }
+
+  private String format(String name, String hit) {
+    RegexValidatorService service = services.get(name);
+    if (service != null) {
+      return service.format(name, hit);
+    } else {
+      return hit;
     }
+  }
 
-    private String format(String name, String hit) {
-        RegexValidatorService service = services.get(name);
-        if (service != null) {
-            return service.format(name, hit);
-        } else {
-            return hit;
-        }
+  private String getLocation(RegexValidatorService service) {
+    try {
+      URL location = URLUtil.getURL(service.getClass());
+      return location.toString();
+    } catch (SecurityException e) {
+      return null;
     }
-
-    private String getLocation(RegexValidatorService service) {
-        try {
-            URL location = URLUtil.getURL(service.getClass());
-            return location.toString();
-        } catch (SecurityException e) {
-            return null;
-        }
-    }
-
+  }
 }

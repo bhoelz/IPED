@@ -30,64 +30,58 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.arabidopsis.ahocorasick;
 
 /**
- * Represents an EdgeList by using a single array. Very fast lookup (just an
- * array access), but expensive in terms of memory.
+ * Represents an EdgeList by using a single array. Very fast lookup (just an array access), but
+ * expensive in terms of memory.
  */
-
 class DenseEdgeList implements EdgeList {
-    public State[] array;
-    private boolean wild = false;
+  public State[] array;
+  private boolean wild = false;
 
-    public DenseEdgeList() {
-        this.array = new State[256];
+  public DenseEdgeList() {
+    this.array = new State[256];
 
-        for (int i = 0; i < array.length; i++)
-            this.array[i] = null;
+    for (int i = 0; i < array.length; i++) this.array[i] = null;
+  }
+
+  /** Helps in converting to dense representation. */
+  public static DenseEdgeList fromSparse(SparseEdgeList list) {
+    byte[] keys = list.keys();
+
+    DenseEdgeList newInstance = new DenseEdgeList();
+    for (int i = 0; i < keys.length; i++) {
+      newInstance.put(keys[i], list.get(keys[i]));
     }
 
-    /**
-     * Helps in converting to dense representation.
-     */
-    public static DenseEdgeList fromSparse(SparseEdgeList list) {
-        byte[] keys = list.keys();
+    return newInstance;
+  }
 
-        DenseEdgeList newInstance = new DenseEdgeList();
-        for (int i = 0; i < keys.length; i++) {
-            newInstance.put(keys[i], list.get(keys[i]));
-        }
+  public State get(byte b) {
+    return this.array[(int) b & 0xFF];
+  }
 
-        return newInstance;
+  public void put(byte b, State s) {
+    this.array[(int) b & 0xFF] = s;
+    if (b == '?') wild = true;
+  }
+
+  public byte[] keys() {
+    int length = 0;
+    for (int i = 0; i < array.length; i++) {
+      if (array[i] != null) length++;
+    }
+    byte[] result = new byte[length];
+    int j = 0;
+    for (int i = 0; i < array.length; i++) {
+      if (array[i] != null) {
+        result[j] = (byte) i;
+        j++;
+      }
     }
 
-    public State get(byte b) {
-        return this.array[(int) b & 0xFF];
-    }
+    return result;
+  }
 
-    public void put(byte b, State s) {
-        this.array[(int) b & 0xFF] = s;
-        if (b == '?')
-            wild = true;
-    }
-
-    public byte[] keys() {
-        int length = 0;
-        for (int i = 0; i < array.length; i++) {
-            if (array[i] != null)
-                length++;
-        }
-        byte[] result = new byte[length];
-        int j = 0;
-        for (int i = 0; i < array.length; i++) {
-            if (array[i] != null) {
-                result[j] = (byte) i;
-                j++;
-            }
-        }
-
-        return result;
-    }
-
-    public boolean isWild() {
-        return wild;
-    }
+  public boolean isWild() {
+    return wild;
+  }
 }

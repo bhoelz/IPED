@@ -18,25 +18,25 @@ package iped.parsers.fork;
 
 class TimeoutLimits {
 
-    private final long pulseMS;
-    private final long parseTimeoutMS;
-    private final long waitTimeoutMS;
+  private final long pulseMS;
+  private final long parseTimeoutMS;
+  private final long waitTimeoutMS;
 
-    TimeoutLimits(long pulseMS, long parseTimeoutMS, long waitTimeoutMS) {
-        this.pulseMS = pulseMS;
-        this.parseTimeoutMS = parseTimeoutMS;
-        this.waitTimeoutMS = waitTimeoutMS;
-    }
+  TimeoutLimits(long pulseMS, long parseTimeoutMS, long waitTimeoutMS) {
+    this.pulseMS = pulseMS;
+    this.parseTimeoutMS = parseTimeoutMS;
+    this.waitTimeoutMS = waitTimeoutMS;
+  }
 
-    public long getPulseMS() {
-        return pulseMS;
-    }
+  public long getPulseMS() {
+    return pulseMS;
+  }
 
-    public long getParseTimeoutMS() {
-        return parseTimeoutMS;
-    }
+  public long getParseTimeoutMS() {
+    return parseTimeoutMS;
+  }
 
-    public long getWaitTimeoutMS() {
-        return waitTimeoutMS;
-    }
+  public long getWaitTimeoutMS() {
+    return waitTimeoutMS;
+  }
 }

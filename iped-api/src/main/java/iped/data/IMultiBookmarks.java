@@ -6,7 +6,6 @@
 package iped.data;
 
 import iped.search.IMultiSearchResult;
-
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -17,98 +16,97 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
  * @author WERNECK
  * @author Nassif
  */
 public interface IMultiBookmarks extends Serializable {
 
-    @Deprecated
-    void addBookmark(List<IItemId> ids, String bookmarkName);
+  @Deprecated
+  void addBookmark(List<IItemId> ids, String bookmarkName);
 
-    void addBookmark(Set<IItemId> uniqueSelectedIds, String bookmarkName);
+  void addBookmark(Set<IItemId> uniqueSelectedIds, String bookmarkName);
 
-    void addToTypedWords(String texto);
+  void addToTypedWords(String texto);
 
-    void renameBookmark(String oldBookmark, String newBookmark);
+  void renameBookmark(String oldBookmark, String newBookmark);
 
-    void clearChecked();
+  void clearChecked();
 
-    void clearTypedWords();
+  void clearTypedWords();
 
-    void delBookmark(String bookmarkName);
+  void delBookmark(String bookmarkName);
 
-    IMultiSearchResult filterBookmarks(IMultiSearchResult result, Set<String> bookmarkNames);
+  IMultiSearchResult filterBookmarks(IMultiSearchResult result, Set<String> bookmarkNames);
 
-    IMultiSearchResult filterChecked(IMultiSearchResult result);
+  IMultiSearchResult filterChecked(IMultiSearchResult result);
 
-    IMultiSearchResult filterBookmarksOrNoBookmarks(IMultiSearchResult result, Set<String> bookmarkNames);
+  IMultiSearchResult filterBookmarksOrNoBookmarks(
+      IMultiSearchResult result, Set<String> bookmarkNames);
 
-    IMultiSearchResult filterNoBookmarks(IMultiSearchResult result);
+  IMultiSearchResult filterNoBookmarks(IMultiSearchResult result);
 
-    Set<String> getBookmarkSet();
+  Set<String> getBookmarkSet();
 
-    List<String> getBookmarkList(IItemId item);
+  List<String> getBookmarkList(IItemId item);
 
-    Collection<IBookmarks> getSingleBookmarks();
+  Collection<IBookmarks> getSingleBookmarks();
 
-    int getTotalChecked();
+  int getTotalChecked();
 
-    LinkedHashSet<String> getTypedWords();
+  LinkedHashSet<String> getTypedWords();
 
-    boolean hasBookmark(IItemId item);
+  boolean hasBookmark(IItemId item);
 
-    boolean hasBookmark(IItemId item, Set<String> bookmarkNames);
+  boolean hasBookmark(IItemId item, Set<String> bookmarkNames);
 
-    boolean hasBookmark(IItemId item, String bookmarkName);
+  boolean hasBookmark(IItemId item, String bookmarkName);
 
-    boolean isChecked(IItemId item);
+  boolean isChecked(IItemId item);
 
-    void loadState();
+  void loadState();
 
-    void loadState(File file) throws ClassNotFoundException, IOException;
+  void loadState(File file) throws ClassNotFoundException, IOException;
 
-    void newBookmark(String bookmarkName);
+  void newBookmark(String bookmarkName);
 
-    @Deprecated
-    void removeBookmark(List<IItemId> ids, String bookmarkName);
+  @Deprecated
+  void removeBookmark(List<IItemId> ids, String bookmarkName);
 
-    void removeBookmark(Set<IItemId> uniqueSelectedIds, String bookmarkName);
+  void removeBookmark(Set<IItemId> uniqueSelectedIds, String bookmarkName);
 
-    void saveState();
+  void saveState();
 
-    void saveState(boolean sync);
+  void saveState(boolean sync);
 
-    void saveState(File file) throws IOException;
+  void saveState(File file) throws IOException;
 
-    void setBookmarkBookmarkShortcut(String bookmarkName, BookmarkShortcut key);
+  void setBookmarkBookmarkShortcut(String bookmarkName, BookmarkShortcut key);
 
-    BookmarkShortcut getBookmarkBookmarkShortcut(String bookmarkName);
+  BookmarkShortcut getBookmarkBookmarkShortcut(String bookmarkName);
 
-    void removeBookmarkBookmarkShortcut(String bookmarkName);
+  void removeBookmarkBookmarkShortcut(String bookmarkName);
 
-    void checkAll();
+  void checkAll();
 
-    void setChecked(boolean value, IItemId item);
+  void setChecked(boolean value, IItemId item);
 
-    String getBookmarkComment(String bookmarkName);
+  String getBookmarkComment(String bookmarkName);
 
-    int getBookmarkCount(String bookmarkName);
+  int getBookmarkCount(String bookmarkName);
 
-    void setBookmarkComment(String texto, String comment);
+  void setBookmarkComment(String texto, String comment);
 
-    Color getBookmarkColor(String bookmarkName);
+  Color getBookmarkColor(String bookmarkName);
 
-    void setBookmarkColor(String bookmarkName, Color color);
+  void setBookmarkColor(String bookmarkName, Color color);
 
-    Set<Color> getUsedColors();
+  Set<Color> getUsedColors();
 
-    boolean isInReport(String bookmark);
+  boolean isInReport(String bookmark);
 
-    void setInReport(String bookmark, boolean checked);
+  void setInReport(String bookmark, boolean checked);
 
-    void addSelectionListener(SelectionListener listener);
+  void addSelectionListener(SelectionListener listener);
 
-    void removeSelectionListener(SelectionListener listener);
-
+  void removeSelectionListener(SelectionListener listener);
 }

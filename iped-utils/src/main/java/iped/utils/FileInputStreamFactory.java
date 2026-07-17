@@ -1,7 +1,6 @@
 package iped.utils;
 
 import iped.io.SeekableInputStream;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,53 +9,51 @@ import java.nio.file.*;
 
 public class FileInputStreamFactory extends SeekableInputStreamFactory {
 
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
+  private static final boolean IS_WINDOWS =
+      System.getProperty("os.name").toLowerCase().startsWith("windows");
 
-    public FileInputStreamFactory(Path dataSource) {
-        super(dataSource.toUri());
-    }
+  public FileInputStreamFactory(Path dataSource) {
+    super(dataSource.toUri());
+  }
 
-    public Path getPath(String subPath) {
-        Path source = Paths.get(this.dataSource);
-        try {
-            return source.resolve(subPath);
+  public Path getPath(String subPath) {
+    Path source = Paths.get(this.dataSource);
+    try {
+      return source.resolve(subPath);
 
-        } catch (InvalidPathException e) {
-            File file = new File(subPath);
-            if (!file.isAbsolute()) {
-                file = new File(source.toFile(), subPath);
-            }
-            if (IS_WINDOWS) {
-                // workaround for https://github.com/sepinf-inc/IPED/issues/1861
-                if (file.isDirectory()) {
-                    try {
-                        file = Files.createTempDirectory("iped").toFile();
-                        file.deleteOnExit();
-                    } catch (IOException e1) {
-                        throw new RuntimeException(e1);
-                    }
-                } else {
-                    File f = new File("\\\\?\\" + file.getAbsolutePath());
-                    try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(f))) {
-                        file = File.createTempFile("iped", ".tmp");
-                        file.deleteOnExit();
-                        Files.copy(bis, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e1) {
-                        throw new RuntimeException(e1);
-                    }
-                }
-            }
-            return file.toPath();
+    } catch (InvalidPathException e) {
+      File file = new File(subPath);
+      if (!file.isAbsolute()) {
+        file = new File(source.toFile(), subPath);
+      }
+      if (IS_WINDOWS) {
+        // workaround for https://github.com/sepinf-inc/IPED/issues/1861
+        if (file.isDirectory()) {
+          try {
+            file = Files.createTempDirectory("iped").toFile();
+            file.deleteOnExit();
+          } catch (IOException e1) {
+            throw new RuntimeException(e1);
+          }
+        } else {
+          File f = new File("\\\\?\\" + file.getAbsolutePath());
+          try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(f))) {
+            file = File.createTempFile("iped", ".tmp");
+            file.deleteOnExit();
+            Files.copy(bis, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          } catch (IOException e1) {
+            throw new RuntimeException(e1);
+          }
         }
+      }
+      return file.toPath();
     }
+  }
 
-    @Override
-    public SeekableInputStream getSeekableInputStream(String subPath) throws IOException {
-        File file = getPath(subPath).toFile();
-        if (file.isFile())
-            return new SeekableFileInputStream(file);
-        else
-            return null;
-    }
-
+  @Override
+  public SeekableInputStream getSeekableInputStream(String subPath) throws IOException {
+    File file = getPath(subPath).toFile();
+    if (file.isFile()) return new SeekableFileInputStream(file);
+    else return null;
+  }
 }

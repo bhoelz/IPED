@@ -6,17 +6,16 @@ import java.io.Reader;
 
 public class CloseFilterReader extends FilterReader {
 
-    public CloseFilterReader(Reader in) {
-        super(in);
-    }
+  public CloseFilterReader(Reader in) {
+    super(in);
+  }
 
-    @Override
-    public void close() throws IOException {
-        // ignore
-    }
+  @Override
+  public void close() throws IOException {
+    // ignore
+  }
 
-    public void reallyClose() throws IOException {
-        super.close();
-    }
-
+  public void reallyClose() throws IOException {
+    super.close();
+  }
 }

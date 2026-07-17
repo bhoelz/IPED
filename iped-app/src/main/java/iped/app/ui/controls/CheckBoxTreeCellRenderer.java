@@ -5,129 +5,140 @@ import iped.app.ui.IconManager;
 import iped.engine.data.Category;
 import iped.viewers.api.IFilterer;
 import iped.viewers.api.IMiniaturizable;
-import org.apache.tika.mime.MediaType;
-
-import javax.swing.*;
-import javax.swing.event.CellEditorListener;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EventObject;
 import java.util.function.Predicate;
+import javax.swing.*;
+import javax.swing.event.CellEditorListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellEditor;
+import org.apache.tika.mime.MediaType;
 
 public class CheckBoxTreeCellRenderer extends DefaultTreeCellRenderer implements TreeCellEditor {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    public static final Color ENABLED_BK_COLOR = new Color(255, 150, 150);
+  public static final Color ENABLED_BK_COLOR = new Color(255, 150, 150);
 
-    Predicate<Object> checkedPredicate;
-    Predicate<Object> visiblePredicate;
+  Predicate<Object> checkedPredicate;
+  Predicate<Object> visiblePredicate;
 
-    public CheckBoxTreeCellRenderer(JTree tree, Predicate<Object> checkedPredicate) {
-        this.checkedPredicate = checkedPredicate;
+  public CheckBoxTreeCellRenderer(JTree tree, Predicate<Object> checkedPredicate) {
+    this.checkedPredicate = checkedPredicate;
+  }
+
+  public CheckBoxTreeCellRenderer(
+      JTree tree, Predicate<Object> checkedPredicate, Predicate<Object> visiblePredicate) {
+    this(tree, checkedPredicate);
+    this.visiblePredicate = visiblePredicate;
+  }
+
+  public String getValueString(Object value) {
+    if (value instanceof IFilterer) {
+      IFilterer filterer = ((IFilterer) value);
+      return filterer.getFilterName();
+    }
+    return value.toString();
+  }
+
+  @Override
+  public Component getTreeCellRendererComponent(
+      JTree tree,
+      Object value,
+      boolean selected,
+      boolean expanded,
+      boolean leaf,
+      int row,
+      boolean hasFocus) {
+
+    JLabel label = new JLabel();
+    if (row == -1) {
+      label.setText("");
+      return label;
     }
 
-    public CheckBoxTreeCellRenderer(JTree tree, Predicate<Object> checkedPredicate, Predicate<Object> visiblePredicate) {
-        this(tree, checkedPredicate);
-        this.visiblePredicate = visiblePredicate;
+    Icon icon = null;
+    if (value instanceof MediaType) {
+      icon = IconManager.getFileIcon(value.toString().split("/")[0], "");
+    }
+    if (value instanceof Category) {
+      icon = IconManager.getCategoryIcon(((Category) value).getName().toLowerCase());
+    }
+    if (value instanceof IMiniaturizable) {
+      icon =
+          new ImageIcon(
+              ((IMiniaturizable) value)
+                  .getThumb()
+                  .getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
     }
 
-    public String getValueString(Object value) {
-        if (value instanceof IFilterer) {
-            IFilterer filterer = ((IFilterer) value);
-            return filterer.getFilterName();
-        }
-        return value.toString();
+    label.setText(getValueString(value));
+    label.setIcon(icon);
+
+    if (visiblePredicate == null || visiblePredicate.test(value)) {
+      JCheckBox checkbox = new JCheckBox();
+      checkbox.setSelected(checkedPredicate.test(value));
+      checkbox.addActionListener(
+          new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+              ((IFilterer) value).clearFilter();
+              App.get().filtersPanel.updateUI();
+              App.get().getAppListener().updateFileListing();
+            }
+          });
+      JPanel ckPanel = new JPanel(new BorderLayout());
+      ckPanel.setBackground(checkbox.isSelected() ? ENABLED_BK_COLOR : Color.white);
+      ckPanel.add(checkbox, BorderLayout.WEST);
+      ckPanel.add(label, BorderLayout.CENTER);
+      return ckPanel;
+    } else {
+      return label;
     }
+  }
 
-    @Override
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+  @Override
+  public Object getCellEditorValue() {
+    return null;
+  }
 
-        JLabel label = new JLabel();
-        if (row == -1) {
-            label.setText("");
-            return label;
-        }
+  @Override
+  public boolean isCellEditable(EventObject anEvent) {
+    return true;
+  }
 
-        Icon icon = null;
-        if (value instanceof MediaType) {
-            icon = IconManager.getFileIcon(value.toString().split("/")[0], "");
-        }
-        if (value instanceof Category) {
-            icon = IconManager.getCategoryIcon(((Category) value).getName().toLowerCase());
-        }
-        if (value instanceof IMiniaturizable) {
-            icon = new ImageIcon(((IMiniaturizable) value).getThumb().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
-        }
+  @Override
+  public boolean shouldSelectCell(EventObject anEvent) {
+    return false;
+  }
 
-        label.setText(getValueString(value));
-        label.setIcon(icon);
+  @Override
+  public boolean stopCellEditing() {
+    return true;
+  }
 
-        if (visiblePredicate == null || visiblePredicate.test(value)) {
-            JCheckBox checkbox = new JCheckBox();
-            checkbox.setSelected(checkedPredicate.test(value));
-            checkbox.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ((IFilterer) value).clearFilter();
-                    App.get().filtersPanel.updateUI();
-                    App.get().getAppListener().updateFileListing();
-                }
-            });
-            JPanel ckPanel = new JPanel(new BorderLayout());
-            ckPanel.setBackground(checkbox.isSelected() ? ENABLED_BK_COLOR : Color.white);
-            ckPanel.add(checkbox, BorderLayout.WEST);
-            ckPanel.add(label, BorderLayout.CENTER);
-            return ckPanel;
-        } else {
-            return label;
-        }
-    }
+  @Override
+  public void cancelCellEditing() {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    public Object getCellEditorValue() {
-        return null;
-    }
+  @Override
+  public void addCellEditorListener(CellEditorListener l) {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    public boolean isCellEditable(EventObject anEvent) {
-        return true;
-    }
+  @Override
+  public void removeCellEditorListener(CellEditorListener l) {
+    // TODO Auto-generated method stub
 
-    @Override
-    public boolean shouldSelectCell(EventObject anEvent) {
-        return false;
-    }
+  }
 
-    @Override
-    public boolean stopCellEditing() {
-        return true;
-    }
-
-    @Override
-    public void cancelCellEditing() {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void addCellEditorListener(CellEditorListener l) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void removeCellEditorListener(CellEditorListener l) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row) {
-        return getTreeCellRendererComponent(tree, value, isSelected, expanded, leaf, row, true);
-    }
+  @Override
+  public Component getTreeCellEditorComponent(
+      JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row) {
+    return getTreeCellRendererComponent(tree, value, isSelected, expanded, leaf, row, true);
+  }
 }

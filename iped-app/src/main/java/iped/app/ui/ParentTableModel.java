@@ -22,6 +22,7 @@ import iped.data.IItem;
 import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
+import javax.swing.*;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.index.Term;
@@ -30,55 +31,53 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
-import javax.swing.*;
-
-
 public class ParentTableModel extends BaseTableModel {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    public ParentTableModel() {
-    }
+  public ParentTableModel() {}
 
-    @Override
-    public void valueChanged(ListSelectionModel lsm) {
+  @Override
+  public void valueChanged(ListSelectionModel lsm) {
 
-        if (refDoc != null) {
-            IItem item = IndexItem.getItem(refDoc, App.get().appCase, false);
-            if (item != null) {
-                String parentViewPosition = item.getMetadataValue(ExtraProperties.PARENT_VIEW_POSITION);
-                if (parentViewPosition != null) {
-                    App.get().getViewerController().getHtmlLinkViewer().setElementIDToScroll(parentViewPosition);
-                }
-            }
+    if (refDoc != null) {
+      IItem item = IndexItem.getItem(refDoc, App.get().appCase, false);
+      if (item != null) {
+        String parentViewPosition = item.getMetadataValue(ExtraProperties.PARENT_VIEW_POSITION);
+        if (parentViewPosition != null) {
+          App.get()
+              .getViewerController()
+              .getHtmlLinkViewer()
+              .setElementIDToScroll(parentViewPosition);
         }
-
-        FileProcessor parsingTask = new FileProcessor(results.getLuceneIds()[selectedIndex], false);
-        parsingTask.execute();
-
-        App.get().subItemModel.fireTableDataChanged();
+      }
     }
 
-    @Override
-    public Query createQuery(Document doc) {
+    FileProcessor parsingTask = new FileProcessor(results.getLuceneIds()[selectedIndex], false);
+    parsingTask.execute();
 
-        String parentId = doc.get(BasicProps.PARENTID);
-        if (parentId == null) {
-            return null;
-        }
+    App.get().subItemModel.fireTableDataChanged();
+  }
 
-        String sourceUUID = doc.get(BasicProps.EVIDENCE_UUID);
+  @Override
+  public Query createQuery(Document doc) {
 
-        BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
-        queryBuilder.add(IntPoint.newExactQuery(BasicProps.ID, Integer.parseInt(parentId)), Occur.MUST);
-        queryBuilder.add(new TermQuery(new Term(BasicProps.EVIDENCE_UUID, sourceUUID)), Occur.MUST);
-
-        return queryBuilder.build();
+    String parentId = doc.get(BasicProps.PARENTID);
+    if (parentId == null) {
+      return null;
     }
 
-    @Override
-    public void onListItemsResultsComplete() {
-        App.get().parentDock.setTitleText(Messages.getString("ParentTableModel.ParentCount"));
-    }
+    String sourceUUID = doc.get(BasicProps.EVIDENCE_UUID);
+
+    BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
+    queryBuilder.add(IntPoint.newExactQuery(BasicProps.ID, Integer.parseInt(parentId)), Occur.MUST);
+    queryBuilder.add(new TermQuery(new Term(BasicProps.EVIDENCE_UUID, sourceUUID)), Occur.MUST);
+
+    return queryBuilder.build();
+  }
+
+  @Override
+  public void onListItemsResultsComplete() {
+    App.get().parentDock.setTitleText(Messages.getString("ParentTableModel.ParentCount"));
+  }
 }
-

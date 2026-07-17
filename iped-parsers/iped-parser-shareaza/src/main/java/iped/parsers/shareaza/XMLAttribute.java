@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -25,29 +25,27 @@ import java.io.IOException;
  */
 class XMLAttribute extends ShareazaEntity {
 
-    private String name;
-    private String value;
+  private String name;
+  private String value;
 
-    public XMLAttribute() {
-        super("XMLAttribute"); //$NON-NLS-1$
-    }
+  public XMLAttribute() {
+    super("XMLAttribute"); // $NON-NLS-1$
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getValue() {
-        return value;
-    }
+  public String getValue() {
+    return value;
+  }
 
-    @Override
-    public void read(MFCParser ar) throws IOException {
-        name = ar.readString();
-        value = ar.readString();
-    }
+  @Override
+  public void read(MFCParser ar) throws IOException {
+    name = ar.readString();
+    value = ar.readString();
+  }
 
-    @Override
-    protected void writeImpl(ShareazaOutputGenerator f) {
-    }
-
+  @Override
+  protected void writeImpl(ShareazaOutputGenerator f) {}
 }

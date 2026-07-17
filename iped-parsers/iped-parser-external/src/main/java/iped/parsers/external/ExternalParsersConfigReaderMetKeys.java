@@ -16,38 +16,36 @@
  */
 package iped.parsers.external;
 
-/**
- * Met Keys used by the {@link ExternalParsersConfigReader}.
- */
+/** Met Keys used by the {@link ExternalParsersConfigReader}. */
 public interface ExternalParsersConfigReaderMetKeys {
 
-    String EXTERNAL_PARSERS_TAG = "external-parsers";
+  String EXTERNAL_PARSERS_TAG = "external-parsers";
 
-    String PARSER_TAG = "parser";
+  String PARSER_TAG = "parser";
 
-    String COMMAND_TAG = "command";
+  String COMMAND_TAG = "command";
 
-    String CHECK_TAG = "check";
+  String CHECK_TAG = "check";
 
-    String ERROR_CODES_TAG = "error-codes";
+  String ERROR_CODES_TAG = "error-codes";
 
-    String MIMETYPES_TAG = "mime-types";
+  String MIMETYPES_TAG = "mime-types";
 
-    String MIMETYPE_TAG = "mime-type";
+  String MIMETYPE_TAG = "mime-type";
 
-    String METADATA_TAG = "metadata";
+  String METADATA_TAG = "metadata";
 
-    String METADATA_MATCH_TAG = "match";
+  String METADATA_MATCH_TAG = "match";
 
-    String METADATA_KEY_ATTR = "key";
+  String METADATA_KEY_ATTR = "key";
 
-    String PARSER_NAME_TAG = "name";
+  String PARSER_NAME_TAG = "name";
 
-    String WIN_TOOL_PATH = "win-tool-path";
+  String WIN_TOOL_PATH = "win-tool-path";
 
-    String OUTPUT_CHARSET = "output-charset";
+  String OUTPUT_CHARSET = "output-charset";
 
-    String OUTPUT_IS_HTML = "outputIsHtml";
+  String OUTPUT_IS_HTML = "outputIsHtml";
 
-    String LINES_TO_IGNORE = "firstLinesToIgnore";
+  String LINES_TO_IGNORE = "firstLinesToIgnore";
 }

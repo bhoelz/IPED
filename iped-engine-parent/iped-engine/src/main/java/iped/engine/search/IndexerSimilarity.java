@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -23,20 +23,18 @@ import org.apache.lucene.search.similarities.SimilarityBase;
 
 /**
  * Simple similarity that just return term frequency in docs when scoring.
- * 
- * @author Nassif
  *
+ * @author Nassif
  */
 public class IndexerSimilarity extends SimilarityBase {
 
-    @Override
-    protected double score(BasicStats stats, double freq, double docLen) {
-        return freq;
-    }
+  @Override
+  protected double score(BasicStats stats, double freq, double docLen) {
+    return freq;
+  }
 
-    @Override
-    public String toString() {
-        return "IpedDefaultSimilarity";
-    }
-
+  @Override
+  public String toString() {
+    return "IpedDefaultSimilarity";
+  }
 }

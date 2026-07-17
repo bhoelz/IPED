@@ -2,7 +2,7 @@ package iped.viewers.api;
 
 public interface IQuantifiableFilter {
 
-    int getQuantityValue();
+  int getQuantityValue();
 
-    void setQuantityValue(int value);
+  void setQuantityValue(int value);
 }

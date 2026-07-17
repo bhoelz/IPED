@@ -5,138 +5,136 @@ import iped.engine.graph.ExportLinksQuery;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
 import iped.engine.graph.LinkQueryListener;
-import lombok.extern.slf4j.Slf4j;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
-
-import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Iterator;
+import javax.swing.*;
+import lombok.extern.slf4j.Slf4j;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.NotFoundException;
 
 @Slf4j
 public class ExportLinksWorker extends SwingWorker<Void, Void> implements LinkQueryListener {
 
+  private GraphModel model;
+  private ExportLinksDialog dialog;
+  private File output;
+  private ExportLinksQuery query;
 
-    private GraphModel model;
-    private ExportLinksDialog dialog;
-    private File output;
-    private ExportLinksQuery query;
+  private Writer out;
 
-    private Writer out;
+  public ExportLinksWorker(
+      GraphModel model, ExportLinksDialog dialog, File output, ExportLinksQuery query) {
+    super();
+    this.model = model;
+    this.dialog = dialog;
+    this.output = output;
+    this.query = query;
+  }
 
-    public ExportLinksWorker(GraphModel model, ExportLinksDialog dialog, File output, ExportLinksQuery query) {
-        super();
-        this.model = model;
-        this.dialog = dialog;
-        this.output = output;
-        this.query = query;
+  @Override
+  public void linkFound(Node node1, Node node2) {
+    try {
+
+      writeNode(node1);
+      out.write(",");
+      writeNode(node2);
+
+      out.write("\r\n");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    @Override
-    public void linkFound(Node node1, Node node2) {
-        try {
+  private void writeNode(Node node) throws IOException {
+    String[] fieldNames = model.getDefaultFieldNames(node);
 
-            writeNode(node1);
-            out.write(",");
-            writeNode(node2);
-
-            out.write("\r\n");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    String type = model.getType(node);
+    String field = null;
+    String value = null;
+    for (String fieldName : fieldNames) {
+      try {
+        if (value == null || value.isEmpty()) {
+          Object property = node.getProperty(fieldName);
+          if (property != null) {
+            value = property.toString();
+            field = fieldName;
+          }
         }
+      } catch (NotFoundException e) {
+        // Nothing to do.
+      }
+    }
+    if (value == null) {
+      Iterator<String> keys = node.getPropertyKeys().iterator();
+      if (keys.hasNext()) {
+        field = keys.next();
+        value = node.getProperty(field).toString();
+      } else {
+        field = "";
+        value = "";
+      }
+    }
+    out.write("\"");
+    out.write(type);
+    out.write("\"");
+    out.write(",");
+    out.write("\"");
+    out.write(field);
+    out.write("\"");
+    out.write(",");
+    out.write("\"");
+    out.write(value);
+    out.write("\"");
+  }
+
+  @Override
+  protected Void doInBackground() throws Exception {
+    out =
+        new BufferedWriter(
+            new OutputStreamWriter(new FileOutputStream(output), Charset.forName("utf-8")));
+
+    writeHeader();
+
+    GraphService graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
+    try {
+      graphService.findLinks(query, this);
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
     }
 
-    private void writeNode(Node node) throws IOException {
-        String[] fieldNames = model.getDefaultFieldNames(node);
+    dialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    dialog.setEnabled(false);
 
-        String type = model.getType(node);
-        String field = null;
-        String value = null;
-        for (String fieldName : fieldNames) {
-            try {
-                if (value == null || value.isEmpty()) {
-                    Object property = node.getProperty(fieldName);
-                    if (property != null) {
-                        value = property.toString();
-                        field = fieldName;
-                    }
-                }
-            } catch (NotFoundException e) {
-                // Nothing to do.
-            }
-        }
-        if (value == null) {
-            Iterator<String> keys = node.getPropertyKeys().iterator();
-            if (keys.hasNext()) {
-                field = keys.next();
-                value = node.getProperty(field).toString();
-            } else {
-                field = "";
-                value = "";
-            }
-        }
-        out.write("\"");
-        out.write(type);
-        out.write("\"");
-        out.write(",");
-        out.write("\"");
-        out.write(field);
-        out.write("\"");
-        out.write(",");
-        out.write("\"");
-        out.write(value);
-        out.write("\"");
+    return null;
+  }
 
+  private void writeHeader() throws IOException {
+
+    out.write(Messages.get("GraphAnalysis.Type"));
+    out.write(",");
+    out.write(Messages.get("GraphAnalysis.Property"));
+    out.write(",");
+    out.write(Messages.get("GraphAnalysis.Value"));
+    out.write(",");
+    out.write(Messages.get("GraphAnalysis.Type"));
+    out.write(",");
+    out.write(Messages.get("GraphAnalysis.Property"));
+    out.write(",");
+    out.write(Messages.get("GraphAnalysis.Value"));
+    out.write("\r\n");
+  }
+
+  @Override
+  protected void done() {
+    if (out != null) {
+      try {
+        out.close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
-
-    @Override
-    protected Void doInBackground() throws Exception {
-        out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output), Charset.forName("utf-8")));
-
-        writeHeader();
-
-        GraphService graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
-        try {
-            graphService.findLinks(query, this);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-
-        dialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        dialog.setEnabled(false);
-
-        return null;
-    }
-
-    private void writeHeader() throws IOException {
-
-        out.write(Messages.get("GraphAnalysis.Type"));
-        out.write(",");
-        out.write(Messages.get("GraphAnalysis.Property"));
-        out.write(",");
-        out.write(Messages.get("GraphAnalysis.Value"));
-        out.write(",");
-        out.write(Messages.get("GraphAnalysis.Type"));
-        out.write(",");
-        out.write(Messages.get("GraphAnalysis.Property"));
-        out.write(",");
-        out.write(Messages.get("GraphAnalysis.Value"));
-        out.write("\r\n");
-
-    }
-
-    @Override
-    protected void done() {
-        if (out != null) {
-            try {
-                out.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        dialog.showSucessMessage(output);
-    }
-
+    dialog.showSucessMessage(output);
+  }
 }

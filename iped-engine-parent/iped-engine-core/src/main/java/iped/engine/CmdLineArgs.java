@@ -6,60 +6,59 @@ import java.util.Map;
 
 public interface CmdLineArgs {
 
-    List<File> getDatasources();
+  List<File> getDatasources();
 
-    List<String> getDname();
+  List<String> getDname();
 
-    File getOutputDir();
+  File getOutputDir();
 
-    File getKeywords();
+  File getKeywords();
 
-    List<String> getOcr();
+  List<String> getOcr();
 
-    File getLogFile();
+  File getLogFile();
 
-    File getAsap();
+  File getAsap();
 
-    List<String> getNocontent();
+  List<String> getNocontent();
 
-    String getTimezone();
+  String getTimezone();
 
-    int getBlocksize();
+  int getBlocksize();
 
-    List<String> getPasswords();
+  List<String> getPasswords();
 
-    String getProfile();
+  String getProfile();
 
-    boolean isAddowner();
+  boolean isAddowner();
 
-    boolean isAppendIndex();
+  boolean isAppendIndex();
 
-    boolean isContinue();
+  boolean isContinue();
 
-    boolean isRestart();
+  boolean isRestart();
 
-    boolean isNogui();
+  boolean isNogui();
 
-    boolean isNologfile();
+  boolean isNologfile();
 
-    boolean isNopstattachs();
+  boolean isNopstattachs();
 
-    boolean isNoLinkedItems();
+  boolean isNoLinkedItems();
 
-    boolean isPortable();
-    
-    String getSplashMessage();
+  boolean isPortable();
 
-    boolean isHelp();
+  String getSplashMessage();
 
-    Map<String, String> getExtraParams();
+  boolean isHelp();
 
-    String getDataSourceName(File datasource);
+  Map<String, String> getExtraParams();
 
-    String getDataSourcePassword(File datasource);
+  String getDataSourceName(File datasource);
 
-    public String getEvidenceToRemove();
+  String getDataSourcePassword(File datasource);
 
-    boolean isDownloadInternetData();
+  public String getEvidenceToRemove();
 
+  boolean isDownloadInternetData();
 }

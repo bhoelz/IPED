@@ -4,160 +4,153 @@ import iped.utils.UTF8Properties;
 
 public class RemoteImageClassifierConfig extends AbstractTaskPropertiesConfig {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * Config file name and enable/disable property.
-     */
-    private static final String CONFIG_FILE = "RemoteImageClassifierConfig.toml";
-    private static final String ENABLE_PROP = "enableRemoteImageClassifier";
+  /** Config file name and enable/disable property. */
+  private static final String CONFIG_FILE = "RemoteImageClassifierConfig.toml";
 
-    /**
-     * Constants mapping to properties name in config file.
-     */
-    private static final String URL = "url";
-    private static final String BATCH_SIZE = "batchSize";
-    private static final String LABELING_THRESHOLD = "labelingThreshold";
-    private static final String SKIP_SIZE = "skipSize";
-    private static final String SKIP_DIMENSION = "skipDimension";
-    private static final String SKIP_HASH_DB_FILES = "skipHashDBFiles";
-    private static final String VALIDATE_SSL = "validateSSL";
-    private static final String CONNECT_TIMEOUT = "connectTimeout";
-    private static final String SOCKET_TIMEOUT = "socketTimeout";
+  private static final String ENABLE_PROP = "enableRemoteImageClassifier";
 
-    // URL of the service/central node used by the RemoteImageClassifier implementation
-    private String url;
+  /** Constants mapping to properties name in config file. */
+  private static final String URL = "url";
 
-    // Maximum number of thumbs to be included in the zip file to send to the server
-    private int batchSize = 50;
+  private static final String BATCH_SIZE = "batchSize";
+  private static final String LABELING_THRESHOLD = "labelingThreshold";
+  private static final String SKIP_SIZE = "skipSize";
+  private static final String SKIP_DIMENSION = "skipDimension";
+  private static final String SKIP_HASH_DB_FILES = "skipHashDBFiles";
+  private static final String VALIDATE_SSL = "validateSSL";
+  private static final String CONNECT_TIMEOUT = "connectTimeout";
+  private static final String SOCKET_TIMEOUT = "socketTimeout";
 
-    // Threshold used to decide if an image is labeled with one class
-    private double labelingThreshold = 60;
+  // URL of the service/central node used by the RemoteImageClassifier implementation
+  private String url;
 
-    // Skip classification of images/videos smaller than a given file size (in bytes; '0' = do not skip)
-    private int skipSize = 0;
+  // Maximum number of thumbs to be included in the zip file to send to the server
+  private int batchSize = 50;
 
-    // Skip classification of images/videos smaller than a given dimension, i.e. height or width (in pixels; '0' = do not skip)
-    private int skipDimension = 0;
+  // Threshold used to decide if an image is labeled with one class
+  private double labelingThreshold = 60;
 
-    // Skip classification of images/videos with hits on IPED hashesDB database (if 'hashesDB' is not configured in 'LocalConfig.toml' or 'false', do not skip)
-    private boolean skipHashDBFiles = true;
+  // Skip classification of images/videos smaller than a given file size (in bytes; '0' = do not
+  // skip)
+  private int skipSize = 0;
 
-    // Validate server SSL certificate
-    private boolean validateSSL = false;
+  // Skip classification of images/videos smaller than a given dimension, i.e. height or width (in
+  // pixels; '0' = do not skip)
+  private int skipDimension = 0;
 
-    // Connect timeout in milliseconds
-    private int connectTimeout = 30 * 1000;
+  // Skip classification of images/videos with hits on IPED hashesDB database (if 'hashesDB' is not
+  // configured in 'LocalConfig.toml' or 'false', do not skip)
+  private boolean skipHashDBFiles = true;
 
-    // Socket timeout in milliseconds
-    private int socketTimeout = 3 * 60 * 1000;
+  // Validate server SSL certificate
+  private boolean validateSSL = false;
 
-    @Override
-    public String getTaskEnableProperty() {
-        return ENABLE_PROP;
+  // Connect timeout in milliseconds
+  private int connectTimeout = 30 * 1000;
+
+  // Socket timeout in milliseconds
+  private int socketTimeout = 3 * 60 * 1000;
+
+  @Override
+  public String getTaskEnableProperty() {
+    return ENABLE_PROP;
+  }
+
+  @Override
+  public String getTaskConfigFileName() {
+    return CONFIG_FILE;
+  }
+
+  public String getUrl() {
+    return url;
+  }
+
+  public int getBatchSize() {
+    return batchSize;
+  }
+
+  public double getLabelingThreshold() {
+    return labelingThreshold;
+  }
+
+  public int getSkipSize() {
+    return skipSize;
+  }
+
+  public int getSkipDimension() {
+    return skipDimension;
+  }
+
+  public boolean isSkipHashDBFiles() {
+    return skipHashDBFiles;
+  }
+
+  public boolean isValidateSSL() {
+    return validateSSL;
+  }
+
+  public int getConnectTimeout() {
+    return connectTimeout;
+  }
+
+  public int getSocketTimeout() {
+    return socketTimeout;
+  }
+
+  @Override
+  void processProperties(UTF8Properties properties) {
+
+    String value = properties.getProperty(URL);
+    if (value != null && !value.trim().isEmpty()) url = value.trim();
+
+    value = properties.getProperty(BATCH_SIZE);
+    if (value != null && !value.trim().isEmpty()) {
+      batchSize = Integer.valueOf(value.trim());
+      // enforce minimum value
+      if (batchSize < 1) batchSize = 1;
     }
 
-    @Override
-    public String getTaskConfigFileName() {
-        return CONFIG_FILE;
+    value = properties.getProperty(LABELING_THRESHOLD);
+    if (value != null && !value.trim().isEmpty()) {
+      labelingThreshold = Double.parseDouble(value.trim());
+      // enforce range [0, 100]
+      if (labelingThreshold < 0) {
+        labelingThreshold = 0;
+      } else if (labelingThreshold > 100) {
+        labelingThreshold = 100;
+      }
     }
 
-    public String getUrl() {
-        return url;
+    value = properties.getProperty(SKIP_SIZE);
+    if (value != null && !value.trim().isEmpty()) {
+      skipSize = Integer.valueOf(value.trim());
+      // enforce minimum value
+      if (skipSize < 0) skipSize = 0;
     }
 
-    public int getBatchSize() {
-        return batchSize;
+    value = properties.getProperty(SKIP_DIMENSION);
+    if (value != null && !value.trim().isEmpty()) {
+      skipDimension = Integer.valueOf(value.trim());
+      // enforce minimum value
+      if (skipDimension < 0) skipDimension = 0;
     }
 
-    public double getLabelingThreshold() {
-        return labelingThreshold;
+    value = properties.getProperty(SKIP_HASH_DB_FILES);
+    if (value != null && !value.trim().isEmpty()) skipHashDBFiles = Boolean.valueOf(value.trim());
+
+    value = properties.getProperty(VALIDATE_SSL);
+    if (value != null && !value.trim().isEmpty()) validateSSL = Boolean.valueOf(value.trim());
+
+    value = properties.getProperty(CONNECT_TIMEOUT);
+    if (value != null && !value.trim().isEmpty()) {
+      connectTimeout = Integer.valueOf(value.trim());
     }
 
-    public int getSkipSize() {
-        return skipSize;
+    value = properties.getProperty(SOCKET_TIMEOUT);
+    if (value != null && !value.trim().isEmpty()) {
+      socketTimeout = Integer.valueOf(value.trim());
     }
-
-    public int getSkipDimension() {
-        return skipDimension;
-    }
-
-    public boolean isSkipHashDBFiles() {
-        return skipHashDBFiles;
-    }
-
-    public boolean isValidateSSL() {
-        return validateSSL;
-    }
-
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public int getSocketTimeout() {
-        return socketTimeout;
-    }
-
-    @Override
-    void processProperties(UTF8Properties properties) {
-
-        String value = properties.getProperty(URL);
-        if (value != null && !value.trim().isEmpty())
-            url = value.trim();
-
-        value = properties.getProperty(BATCH_SIZE);
-        if (value != null && !value.trim().isEmpty()) {
-            batchSize = Integer.valueOf(value.trim());
-            // enforce minimum value
-            if (batchSize < 1)
-                batchSize = 1;
-        }
-
-        value = properties.getProperty(LABELING_THRESHOLD);
-        if (value != null && !value.trim().isEmpty()) {
-            labelingThreshold = Double.parseDouble(value.trim());
-            // enforce range [0, 100]
-            if (labelingThreshold < 0) {
-                labelingThreshold = 0;
-            } else if (labelingThreshold > 100) {
-                labelingThreshold = 100;
-            }
-        }
-
-        value = properties.getProperty(SKIP_SIZE);
-        if (value != null && !value.trim().isEmpty()) {
-            skipSize = Integer.valueOf(value.trim());
-            // enforce minimum value
-            if (skipSize < 0)
-                skipSize = 0;
-        }
-
-        value = properties.getProperty(SKIP_DIMENSION);
-        if (value != null && !value.trim().isEmpty()) {
-            skipDimension = Integer.valueOf(value.trim());
-            // enforce minimum value
-            if (skipDimension < 0)
-                skipDimension = 0;
-        }
-
-        value = properties.getProperty(SKIP_HASH_DB_FILES);
-        if (value != null && !value.trim().isEmpty())
-            skipHashDBFiles = Boolean.valueOf(value.trim());
-
-        value = properties.getProperty(VALIDATE_SSL);
-        if (value != null && !value.trim().isEmpty())
-            validateSSL = Boolean.valueOf(value.trim());
-
-        value = properties.getProperty(CONNECT_TIMEOUT);
-        if (value != null && !value.trim().isEmpty()) {
-            connectTimeout = Integer.valueOf(value.trim());
-        }
-
-        value = properties.getProperty(SOCKET_TIMEOUT);
-        if (value != null && !value.trim().isEmpty()) {
-            socketTimeout = Integer.valueOf(value.trim());
-        }
-
-    }
-
+  }
 }

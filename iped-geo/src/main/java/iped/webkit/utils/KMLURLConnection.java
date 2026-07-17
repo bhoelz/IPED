@@ -6,13 +6,12 @@ import java.net.URLConnection;
 
 public class KMLURLConnection extends URLConnection {
 
-    protected KMLURLConnection(URL url) {
-        super(url);
-    }
+  protected KMLURLConnection(URL url) {
+    super(url);
+  }
 
-    @Override
-    public void connect() throws IOException {
-        System.out.println("Connected:" + this.url);
-    }
-
+  @Override
+  public void connect() throws IOException {
+    System.out.println("Connected:" + this.url);
+  }
 }

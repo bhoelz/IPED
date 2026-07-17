@@ -21,101 +21,98 @@ package iped.app.ui;
 import iped.app.ui.bookmarks.BookmarkIcon;
 import iped.data.IMultiBookmarks;
 import iped.engine.util.Util;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.table.TableCellEditor;
 
-public class GalleryCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+public class GalleryCellEditor extends AbstractCellEditor
+    implements TableCellEditor, ActionListener {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    private int row, col;
-    private final JPanel top = new JPanel(), panel = new JPanel();
-    private final GalleryThumbLabel label = new GalleryThumbLabel();
-    private final JLabel cLabel = new JLabel();
-    private final JCheckBox check = new JCheckBox();
-    private Border selBorder;
-    private Color selColor;
-    private Color background;
+  private int row, col;
+  private final JPanel top = new JPanel(), panel = new JPanel();
+  private final GalleryThumbLabel label = new GalleryThumbLabel();
+  private final JLabel cLabel = new JLabel();
+  private final JCheckBox check = new JCheckBox();
+  private Border selBorder;
+  private Color selColor;
+  private Color background;
 
-    public GalleryCellEditor() {
-        super();
-        panel.setLayout(new BorderLayout());
-        top.setLayout(new BorderLayout());
-        top.add(check, BorderLayout.LINE_START);
-        top.add(cLabel, BorderLayout.CENTER);
-        panel.add(top, BorderLayout.NORTH);
-        panel.add(label, BorderLayout.CENTER);
+  public GalleryCellEditor() {
+    super();
+    panel.setLayout(new BorderLayout());
+    top.setLayout(new BorderLayout());
+    top.add(check, BorderLayout.LINE_START);
+    top.add(cLabel, BorderLayout.CENTER);
+    panel.add(top, BorderLayout.NORTH);
+    panel.add(label, BorderLayout.CENTER);
 
-        label.setHorizontalAlignment(JLabel.CENTER);
-        check.addActionListener(this);
+    label.setHorizontalAlignment(JLabel.CENTER);
+    check.addActionListener(this);
 
-        updateUI();
+    updateUI();
+  }
+
+  public void updateUI() {
+    selColor = UIManager.getColor("Gallery.cellSelected");
+    if (selColor == null) selColor = new Color(180, 200, 230);
+
+    background = UIManager.getColor("Gallery.background");
+    if (background == null) background = new Color(240, 240, 242);
+
+    Color selBorderColor = UIManager.getColor("Gallery.cellSelectBorder");
+    if (selBorderColor == null) selBorderColor = new Color(20, 50, 80);
+    selBorder = BorderFactory.createLineBorder(selBorderColor, 1);
+  }
+
+  @Override
+  public Object getCellEditorValue() {
+    return new JPanel();
+  }
+
+  @Override
+  public Component getTableCellEditorComponent(
+      JTable table, Object value, boolean isSelected, int row, int col) {
+
+    table.putClientProperty("terminateEditOnFocusLost", true); // $NON-NLS-1$
+
+    GalleryValue cellValue = (GalleryValue) value;
+    if (cellValue.id == null) {
+      JPanel panel = new JPanel();
+      panel.setBackground(background);
+      return panel;
     }
 
-    public void updateUI() {
-        selColor = UIManager.getColor("Gallery.cellSelected");
-        if (selColor == null)
-            selColor = new Color(180, 200, 230);
+    IMultiBookmarks bookmarks = App.get().appCase.getMultiBookmarks();
+    check.setSelected(bookmarks.isChecked(cellValue.id));
+    cLabel.setText(cellValue.name);
+    String itemBookmarksStr = Util.concatStrings(bookmarks.getBookmarkList(cellValue.id), true);
+    cLabel.setToolTipText(itemBookmarksStr.isEmpty() ? null : itemBookmarksStr);
+    cLabel.setIcon(BookmarkIcon.getIcon(bookmarks, itemBookmarksStr));
 
-        background = UIManager.getColor("Gallery.background");
-        if (background == null)
-            background = new Color(240, 240, 242);
+    label.setValue(cellValue);
 
-        Color selBorderColor = UIManager.getColor("Gallery.cellSelectBorder");
-        if (selBorderColor == null)
-            selBorderColor = new Color(20, 50, 80);
-        selBorder = BorderFactory.createLineBorder(selBorderColor, 1);
+    panel.setBackground(selColor);
+    top.setBackground(selColor);
+    panel.setBorder(selBorder);
+    this.row = row;
+    this.col = col;
+
+    return panel;
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent evt) {
+
+    if (evt.getSource() == check) {
+      int idx = row * App.get().getGalleryColCount() + col;
+      App.get().resultsTable.setValueAt(check.isSelected(), idx, 1);
     }
 
-    @Override
-    public Object getCellEditorValue() {
-        return new JPanel();
-    }
-
-    @Override
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int col) {
-
-        table.putClientProperty("terminateEditOnFocusLost", true); //$NON-NLS-1$
-
-        GalleryValue cellValue = (GalleryValue) value;
-        if (cellValue.id == null) {
-            JPanel panel = new JPanel();
-            panel.setBackground(background);
-            return panel;
-        }
-
-        IMultiBookmarks bookmarks = App.get().appCase.getMultiBookmarks();
-        check.setSelected(bookmarks.isChecked(cellValue.id));
-        cLabel.setText(cellValue.name);
-        String itemBookmarksStr = Util.concatStrings(bookmarks.getBookmarkList(cellValue.id), true);
-        cLabel.setToolTipText(itemBookmarksStr.isEmpty() ? null : itemBookmarksStr);
-        cLabel.setIcon(BookmarkIcon.getIcon(bookmarks, itemBookmarksStr));
-
-        label.setValue(cellValue);
-
-        panel.setBackground(selColor);
-        top.setBackground(selColor);
-        panel.setBorder(selBorder);
-        this.row = row;
-        this.col = col;
-
-        return panel;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent evt) {
-
-        if (evt.getSource() == check) {
-            int idx = row * App.get().getGalleryColCount() + col;
-            App.get().resultsTable.setValueAt(check.isSelected(), idx, 1);
-        }
-
-        this.stopCellEditing();
-
-    }
+    this.stopCellEditing();
+  }
 }

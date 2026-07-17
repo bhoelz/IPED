@@ -28,78 +28,74 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 class MemoryURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
-    public URLStreamHandler createURLStreamHandler(String protocol) {
-        if ("tika-in-memory".equals(protocol)) {
-            return new MemoryURLStreamHandler();
-        } else {
-            return null;
-        }
+  public URLStreamHandler createURLStreamHandler(String protocol) {
+    if ("tika-in-memory".equals(protocol)) {
+      return new MemoryURLStreamHandler();
+    } else {
+      return null;
+    }
+  }
+
+  public static class MemoryURLStreamHandler extends URLStreamHandler {
+
+    private static final AtomicInteger counter = new AtomicInteger();
+
+    private static final List<MemoryURLStreamRecord> records =
+        new LinkedList<MemoryURLStreamRecord>();
+
+    public static URL createURL(byte[] data) {
+      try {
+        int i = counter.incrementAndGet();
+        URL url = new URL("tika-in-memory", "localhost", "/" + i);
+
+        MemoryURLStreamRecord record = new MemoryURLStreamRecord();
+        record.url = new WeakReference<URL>(url);
+        record.data = data;
+        records.add(record);
+
+        return url;
+      } catch (MalformedURLException e) {
+        throw new RuntimeException(e);
+      }
     }
 
-    public static class MemoryURLStreamHandler extends URLStreamHandler {
-
-        private static final AtomicInteger counter = new AtomicInteger();
-
-        private static final List<MemoryURLStreamRecord> records = new LinkedList<MemoryURLStreamRecord>();
-
-        public static URL createURL(byte[] data) {
-            try {
-                int i = counter.incrementAndGet();
-                URL url = new URL("tika-in-memory", "localhost", "/" + i);
-
-                MemoryURLStreamRecord record = new MemoryURLStreamRecord();
-                record.url = new WeakReference<URL>(url);
-                record.data = data;
-                records.add(record);
-
-                return url;
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
+    @Override
+    protected URLConnection openConnection(URL u) throws IOException {
+      Iterator<MemoryURLStreamRecord> iterator = records.iterator();
+      while (iterator.hasNext()) {
+        MemoryURLStreamRecord record = iterator.next();
+        URL url = record.url.get();
+        if (url == null) {
+          iterator.remove();
+        } else if (url == u) {
+          return new MemoryURLConnection(u, record.data);
         }
-
-        @Override
-        protected URLConnection openConnection(URL u) throws IOException {
-            Iterator<MemoryURLStreamRecord> iterator = records.iterator();
-            while (iterator.hasNext()) {
-                MemoryURLStreamRecord record = iterator.next();
-                URL url = record.url.get();
-                if (url == null) {
-                    iterator.remove();
-                } else if (url == u) {
-                    return new MemoryURLConnection(u, record.data);
-                }
-            }
-            throw new IOException("Unknown URL: " + u);
-        }
-
-        public static class MemoryURLStreamRecord {
-
-            public WeakReference<URL> url;
-            public byte[] data;
-
-        }
-
-        public static class MemoryURLConnection extends URLConnection {
-
-            private final byte[] data;
-
-            MemoryURLConnection(URL url, byte[] data) {
-                super(url);
-                this.data = data;
-            }
-
-            @Override
-            public void connect() {
-            }
-
-            @Override
-            public InputStream getInputStream() {
-                return new ByteArrayInputStream(data);
-            }
-
-        }
-
+      }
+      throw new IOException("Unknown URL: " + u);
     }
 
+    public static class MemoryURLStreamRecord {
+
+      public WeakReference<URL> url;
+      public byte[] data;
+    }
+
+    public static class MemoryURLConnection extends URLConnection {
+
+      private final byte[] data;
+
+      MemoryURLConnection(URL url, byte[] data) {
+        super(url);
+        this.data = data;
+      }
+
+      @Override
+      public void connect() {}
+
+      @Override
+      public InputStream getInputStream() {
+        return new ByteArrayInputStream(data);
+      }
+    }
+  }
 }

@@ -6,32 +6,31 @@ import java.util.TreeMap;
 
 public interface ITextParser {
 
-    public FileChannel getParsedFile();
+  public FileChannel getParsedFile();
 
-    public void setParsedFile(FileChannel file);
+  public void setParsedFile(FileChannel file);
 
-    public boolean cancel(boolean value);
+  public boolean cancel(boolean value);
 
-    public void execute();
+  public void execute();
 
-    public TreeMap<Long, int[]> getSortedHits();
+  public TreeMap<Long, int[]> getSortedHits();
 
-    public void setSortedHits(TreeMap<Long, int[]> hits);
+  public void setSortedHits(TreeMap<Long, int[]> hits);
 
-    public ArrayList<Long> getHits();
+  public ArrayList<Long> getHits();
 
-    public void setHits(ArrayList<Long> hits);
+  public void setHits(ArrayList<Long> hits);
 
-    public ArrayList<Long> getViewRows();
+  public ArrayList<Long> getViewRows();
 
-    public void setViewRows(ArrayList<Long> viewRows);
+  public void setViewRows(ArrayList<Long> viewRows);
 
-    public IProgressMonitor getProgressMonitor();
+  public IProgressMonitor getProgressMonitor();
 
-    public void setProgressMonitor(IProgressMonitor monitor);
+  public void setProgressMonitor(IProgressMonitor monitor);
 
-    public boolean getFirstHitAutoSelected();
+  public boolean getFirstHitAutoSelected();
 
-    public void setFirstHitAutoSelected(boolean val);
-
+  public void setFirstHitAutoSelected(boolean val);
 }

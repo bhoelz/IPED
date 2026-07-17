@@ -8,15 +8,10 @@ package iped.exception;
 import java.io.Serial;
 
 /**
- *
  * @author WERNECK
  */
 public class ParseException extends Exception {
 
-    /**
-     *
-     */
-    @Serial
-    private static final long serialVersionUID = 1L;
-
+  /** */
+  @Serial private static final long serialVersionUID = 1L;
 }

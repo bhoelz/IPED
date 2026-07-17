@@ -16,6 +16,12 @@
  */
 package iped.parsers.external;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+import javax.xml.parsers.DocumentBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.mime.MediaType;
@@ -29,18 +35,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
-
 /**
- * Builds up ExternalParser instances based on XML file(s) which define what to
- * run, for what, and how to process any output metadata. Typically used to
- * configure up a series of external programs (like catdoc or pdf2txt) to
- * extract text content from documents.
+ * Builds up ExternalParser instances based on XML file(s) which define what to run, for what, and
+ * how to process any output metadata. Typically used to configure up a series of external programs
+ * (like catdoc or pdf2txt) to extract text content from documents.
  *
  * <pre>
  *  TODO XML DTD Here
@@ -49,197 +47,199 @@ import java.util.regex.Pattern;
 @Slf4j
 public final class ExternalParsersConfigReader implements ExternalParsersConfigReaderMetKeys {
 
+  private static Map<String, Boolean> cmdCheckResultCache = new ConcurrentHashMap<>();
 
-    private static Map<String, Boolean> cmdCheckResultCache = new ConcurrentHashMap<>();
+  private static final Object lock = new Object();
 
-    private static final Object lock = new Object();
+  public static List<ExternalParser> read(InputStream stream) throws TikaException, IOException {
+    try {
+      DocumentBuilder builder = XMLReaderUtils.getDocumentBuilder();
+      Document document = builder.parse(new InputSource(stream));
+      return read(document);
+    } catch (SAXException e) {
+      throw new TikaException("Invalid parser configuration", e);
+    }
+  }
 
-    public static List<ExternalParser> read(InputStream stream) throws TikaException, IOException {
-        try {
-            DocumentBuilder builder = XMLReaderUtils.getDocumentBuilder();
-            Document document = builder.parse(new InputSource(stream));
-            return read(document);
-        } catch (SAXException e) {
-            throw new TikaException("Invalid parser configuration", e);
+  public static List<ExternalParser> read(Document document) throws TikaException, IOException {
+    return read(document.getDocumentElement());
+  }
+
+  public static List<ExternalParser> read(Element element) throws TikaException, IOException {
+    List<ExternalParser> parsers = new ArrayList<ExternalParser>();
+
+    if (element != null && element.getTagName().equals(EXTERNAL_PARSERS_TAG)) {
+      NodeList nodes = element.getChildNodes();
+      for (int i = 0; i < nodes.getLength(); i++) {
+        Node node = nodes.item(i);
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+          Element child = (Element) node;
+          if (child.getTagName().equals(PARSER_TAG)) {
+            ExternalParser p = readParser(child);
+            if (p != null) {
+              parsers.add(p);
+            }
+          }
         }
+      }
+    } else {
+      throw new MimeTypeException(
+          "Not a <" + EXTERNAL_PARSERS_TAG + "/> configuration document: " + element.getTagName());
     }
 
-    public static List<ExternalParser> read(Document document) throws TikaException, IOException {
-        return read(document.getDocumentElement());
+    return parsers;
+  }
+
+  /**
+   * Builds and Returns an ExternalParser, or null if a check command was given that didn't match.
+   */
+  private static ExternalParser readParser(Element parserDef) throws TikaException {
+    ExternalParser parser = new ExternalParser();
+
+    NodeList children = parserDef.getChildNodes();
+    Element checkElement = null;
+    for (int i = 0; i < children.getLength(); i++) {
+      Node node = children.item(i);
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+        Element child = (Element) node;
+        if (child.getTagName().equals(CHECK_TAG)) {
+          checkElement = child;
+        } else if (child.getTagName().equals(COMMAND_TAG)) {
+          parser.setCommand(getString(child));
+        } else if (child.getTagName().equals(MIMETYPES_TAG)) {
+          parser.setSupportedTypes(readMimeTypes(child));
+        } else if (child.getTagName().equals(METADATA_TAG)) {
+          parser.setMetadataExtractionPatterns(readMetadataPatterns(child));
+        } else if (child.getTagName().equals(PARSER_NAME_TAG)) {
+          parser.setParserName(getString(child));
+        } else if (child.getTagName().equals(WIN_TOOL_PATH)) {
+          parser.setToolPath(getString(child));
+        } else if (child.getTagName().equals(OUTPUT_CHARSET)) {
+          parser.setCharset(getString(child));
+        } else if (child.getTagName().equals(OUTPUT_IS_HTML)) {
+          parser.setOutputHtml(Boolean.valueOf(getString(child)));
+        } else if (child.getTagName().equals(LINES_TO_IGNORE)) {
+          parser.setLinesToIgnore(Integer.valueOf(getString(child)));
+        }
+      }
+    }
+    if (checkElement != null) {
+      String tool = parser.getCommand()[0].split(" ")[0];
+      synchronized (lock) {
+        boolean firstCheck = (cmdCheckResultCache.get(tool) == null);
+        boolean present = readCheckTagAndCheck(checkElement, parser.getToolPath());
+        if (!present) {
+          if (firstCheck)
+            log.error(
+                "Error testing "
+                    + parser.getParserName()
+                    + ". Disable it in conf/ExternalParsers.xml or install '"
+                    + tool
+                    + "'");
+          return null;
+        }
+      }
     }
 
-    public static List<ExternalParser> read(Element element) throws TikaException, IOException {
-        List<ExternalParser> parsers = new ArrayList<ExternalParser>();
+    return parser;
+  }
 
-        if (element != null && element.getTagName().equals(EXTERNAL_PARSERS_TAG)) {
-            NodeList nodes = element.getChildNodes();
-            for (int i = 0; i < nodes.getLength(); i++) {
-                Node node = nodes.item(i);
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    Element child = (Element) node;
-                    if (child.getTagName().equals(PARSER_TAG)) {
-                        ExternalParser p = readParser(child);
-                        if (p != null) {
-                            parsers.add(p);
-                        }
-                    }
-                }
-            }
-        } else {
-            throw new MimeTypeException(
-                    "Not a <" + EXTERNAL_PARSERS_TAG + "/> configuration document: " + element.getTagName());
+  private static Set<MediaType> readMimeTypes(Element mimeTypes) {
+    Set<MediaType> types = new HashSet<MediaType>();
+
+    NodeList children = mimeTypes.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node node = children.item(i);
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+        Element child = (Element) node;
+        if (child.getTagName().equals(MIMETYPE_TAG)) {
+          types.add(MediaType.parse(getString(child)));
         }
-
-        return parsers;
+      }
     }
 
-    /**
-     * Builds and Returns an ExternalParser, or null if a check command was given
-     * that didn't match.
-     */
-    private static ExternalParser readParser(Element parserDef) throws TikaException {
-        ExternalParser parser = new ExternalParser();
+    return types;
+  }
 
-        NodeList children = parserDef.getChildNodes();
-        Element checkElement = null;
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element child = (Element) node;
-                if (child.getTagName().equals(CHECK_TAG)) {
-                    checkElement = child;
-                } else if (child.getTagName().equals(COMMAND_TAG)) {
-                    parser.setCommand(getString(child));
-                } else if (child.getTagName().equals(MIMETYPES_TAG)) {
-                    parser.setSupportedTypes(readMimeTypes(child));
-                } else if (child.getTagName().equals(METADATA_TAG)) {
-                    parser.setMetadataExtractionPatterns(readMetadataPatterns(child));
-                } else if (child.getTagName().equals(PARSER_NAME_TAG)) {
-                    parser.setParserName(getString(child));
-                } else if (child.getTagName().equals(WIN_TOOL_PATH)) {
-                    parser.setToolPath(getString(child));
-                } else if (child.getTagName().equals(OUTPUT_CHARSET)) {
-                    parser.setCharset(getString(child));
-                } else if (child.getTagName().equals(OUTPUT_IS_HTML)) {
-                    parser.setOutputHtml(Boolean.valueOf(getString(child)));
-                } else if (child.getTagName().equals(LINES_TO_IGNORE)) {
-                    parser.setLinesToIgnore(Integer.valueOf(getString(child)));
-                }
-            }
-        }
-        if (checkElement != null) {
-            String tool = parser.getCommand()[0].split(" ")[0];
-            synchronized (lock) {
-                boolean firstCheck = (cmdCheckResultCache.get(tool) == null);
-                boolean present = readCheckTagAndCheck(checkElement, parser.getToolPath());
-                if (!present) {
-                    if (firstCheck)
-                        log.error("Error testing " + parser.getParserName()
-                                + ". Disable it in conf/ExternalParsers.xml or install '" + tool + "'");
-                    return null;
-                }
-            }
-        }
+  private static Map<Pattern, String> readMetadataPatterns(Element metadataDef) {
+    Map<Pattern, String> metadata = new HashMap<Pattern, String>();
 
-        return parser;
+    NodeList children = metadataDef.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node node = children.item(i);
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+        Element child = (Element) node;
+        if (child.getTagName().equals(METADATA_MATCH_TAG)) {
+          String metadataKey = child.getAttribute(METADATA_KEY_ATTR);
+          Pattern pattern = Pattern.compile(getString(child));
+          metadata.put(pattern, metadataKey);
+        }
+      }
     }
 
-    private static Set<MediaType> readMimeTypes(Element mimeTypes) {
-        Set<MediaType> types = new HashSet<MediaType>();
+    return metadata;
+  }
 
-        NodeList children = mimeTypes.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element child = (Element) node;
-                if (child.getTagName().equals(MIMETYPE_TAG)) {
-                    types.add(MediaType.parse(getString(child)));
-                }
-            }
+  private static boolean readCheckTagAndCheck(Element checkDef, String toolPath) {
+    String command = null;
+    List<Integer> errorVals = new ArrayList<Integer>();
+
+    NodeList children = checkDef.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node node = children.item(i);
+      if (node.getNodeType() == Node.ELEMENT_NODE) {
+        Element child = (Element) node;
+        if (child.getTagName().equals(COMMAND_TAG)) {
+          command = getString(child);
         }
-
-        return types;
+        if (child.getTagName().equals(ERROR_CODES_TAG)) {
+          String errs = getString(child);
+          StringTokenizer st = new StringTokenizer(errs, ",");
+          while (st.hasMoreElements()) {
+            try {
+              String s = st.nextToken();
+              errorVals.add(Integer.parseInt(s));
+            } catch (NumberFormatException e) {
+            }
+          }
+        }
+      }
     }
 
-    private static Map<Pattern, String> readMetadataPatterns(Element metadataDef) {
-        Map<Pattern, String> metadata = new HashMap<Pattern, String>();
+    if (command != null) {
+      String[] theCommand = command.split(" ");
+      String tool = theCommand[0];
+      if (SystemUtils.IS_OS_WINDOWS && toolPath != null) {
+        theCommand[0] = ExternalParser.getRootFolder() + "/" + toolPath + theCommand[0];
+      }
+      int[] errVals = new int[errorVals.size()];
+      for (int i = 0; i < errVals.length; i++) {
+        errVals[i] = errorVals.get(i);
+      }
 
-        NodeList children = metadataDef.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element child = (Element) node;
-                if (child.getTagName().equals(METADATA_MATCH_TAG)) {
-                    String metadataKey = child.getAttribute(METADATA_KEY_ATTR);
-                    Pattern pattern = Pattern.compile(getString(child));
-                    metadata.put(pattern, metadataKey);
-                }
-            }
-        }
-
-        return metadata;
+      Boolean result = cmdCheckResultCache.get(tool);
+      if (result == null) {
+        result = ExternalParser.check(theCommand, errVals);
+        cmdCheckResultCache.put(tool, result);
+      }
+      return result;
     }
 
-    private static boolean readCheckTagAndCheck(Element checkDef, String toolPath) {
-        String command = null;
-        List<Integer> errorVals = new ArrayList<Integer>();
+    // No check command, so assume it's there
+    return true;
+  }
 
-        NodeList children = checkDef.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element child = (Element) node;
-                if (child.getTagName().equals(COMMAND_TAG)) {
-                    command = getString(child);
-                }
-                if (child.getTagName().equals(ERROR_CODES_TAG)) {
-                    String errs = getString(child);
-                    StringTokenizer st = new StringTokenizer(errs, ",");
-                    while (st.hasMoreElements()) {
-                        try {
-                            String s = st.nextToken();
-                            errorVals.add(Integer.parseInt(s));
-                        } catch (NumberFormatException e) {
-                        }
-                    }
-                }
-            }
-        }
+  private static String getString(Element element) {
+    StringBuffer s = new StringBuffer();
 
-        if (command != null) {
-            String[] theCommand = command.split(" ");
-            String tool = theCommand[0];
-            if (SystemUtils.IS_OS_WINDOWS && toolPath != null) {
-                theCommand[0] = ExternalParser.getRootFolder() + "/" + toolPath + theCommand[0];
-            }
-            int[] errVals = new int[errorVals.size()];
-            for (int i = 0; i < errVals.length; i++) {
-                errVals[i] = errorVals.get(i);
-            }
-
-            Boolean result = cmdCheckResultCache.get(tool);
-            if (result == null) {
-                result = ExternalParser.check(theCommand, errVals);
-                cmdCheckResultCache.put(tool, result);
-            }
-            return result;
-        }
-
-        // No check command, so assume it's there
-        return true;
+    NodeList children = element.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node node = children.item(i);
+      if (node.getNodeType() == Node.TEXT_NODE) {
+        s.append(node.getNodeValue());
+      }
     }
 
-    private static String getString(Element element) {
-        StringBuffer s = new StringBuffer();
-
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.TEXT_NODE) {
-                s.append(node.getNodeValue());
-            }
-        }
-
-        return s.toString();
-    }
+    return s.toString();
+  }
 }

@@ -1,45 +1,41 @@
 package iped.engine.config;
 
 import iped.utils.UTF8Properties;
-
 import java.util.ArrayList;
 
 public class HashTaskConfig extends AbstractTaskPropertiesConfig {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-    public static final String ENABLE_PARAM = "enableHash";
-    public static final String CONFIG_FILE = "HashTaskConfig.toml";
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    private ArrayList<String> algorithms = new ArrayList<>();
+  public static final String ENABLE_PARAM = "enableHash";
+  public static final String CONFIG_FILE = "HashTaskConfig.toml";
 
-    public ArrayList<String> getAlgorithms() {
-        return algorithms;
+  private ArrayList<String> algorithms = new ArrayList<>();
+
+  public ArrayList<String> getAlgorithms() {
+    return algorithms;
+  }
+
+  @Override
+  public String getTaskEnableProperty() {
+    return ENABLE_PARAM;
+  }
+
+  @Override
+  public String getTaskConfigFileName() {
+    return CONFIG_FILE;
+  }
+
+  @Override
+  public void processProperties(UTF8Properties properties) {
+
+    String hashes = properties.getProperty("hashes");
+    if (hashes != null) {
+      hashes = hashes.trim();
+      for (String algorithm : hashes.split(";")) {
+        algorithms.add(algorithm.trim());
+      }
     }
-
-    @Override
-    public String getTaskEnableProperty() {
-        return ENABLE_PARAM;
-    }
-
-    @Override
-    public String getTaskConfigFileName() {
-        return CONFIG_FILE;
-    }
-
-    @Override
-    public void processProperties(UTF8Properties properties) {
-
-        String hashes = properties.getProperty("hashes");
-        if (hashes != null) {
-            hashes = hashes.trim();
-            for (String algorithm : hashes.split(";")) {
-                algorithms.add(algorithm.trim());
-            }
-        }
-
-    }
-
+  }
 }

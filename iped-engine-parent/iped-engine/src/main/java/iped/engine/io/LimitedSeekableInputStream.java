@@ -19,119 +19,106 @@
 package iped.engine.io;
 
 import iped.io.SeekableInputStream;
-
 import java.io.IOException;
 
 public class LimitedSeekableInputStream extends SeekableInputStream {
 
-    private SeekableInputStream sis;
-    private long start, limit, total = 0;
-    private long totalMarked;
+  private SeekableInputStream sis;
+  private long start, limit, total = 0;
+  private long totalMarked;
 
-    public LimitedSeekableInputStream(SeekableInputStream in, long start, long limit) throws IOException {
-        this.sis = in;
-        this.limit = limit;
-        this.start = start;
+  public LimitedSeekableInputStream(SeekableInputStream in, long start, long limit)
+      throws IOException {
+    this.sis = in;
+    this.limit = limit;
+    this.start = start;
 
-        sis.seek(start);
-    }
+    sis.seek(start);
+  }
 
-    @Override
-    public int read(byte b[]) throws IOException {
-        return read(b, 0, b.length);
-    }
+  @Override
+  public int read(byte b[]) throws IOException {
+    return read(b, 0, b.length);
+  }
 
-    @Override
-    public int read(byte b[], int off, int len) throws IOException {
+  @Override
+  public int read(byte b[], int off, int len) throws IOException {
 
-        if (total == limit)
-            return -1;
+    if (total == limit) return -1;
 
-        if (total + len > limit)
-            len = (int) (limit - total);
+    if (total + len > limit) len = (int) (limit - total);
 
-        int result = sis.read(b, off, len);
+    int result = sis.read(b, off, len);
 
-        if (result > 0)
-            total += result;
+    if (result > 0) total += result;
 
-        return result;
-    }
+    return result;
+  }
 
-    @Override
-    public int read() throws IOException {
+  @Override
+  public int read() throws IOException {
 
-        if (total == limit)
-            return -1;
+    if (total == limit) return -1;
 
-        int result = sis.read();
+    int result = sis.read();
 
-        if (result > -1)
-            total++;
+    if (result > -1) total++;
 
-        return result;
+    return result;
+  }
 
-    }
+  @Override
+  public int available() throws IOException {
+    int a = sis.available();
+    long diff = limit - total;
 
-    @Override
-    public int available() throws IOException {
-        int a = sis.available();
-        long diff = limit - total;
+    if (a > diff) return (int) diff;
+    else return a;
+  }
 
-        if (a > diff)
-            return (int) diff;
-        else
-            return a;
+  @Override
+  public long skip(long n) throws IOException {
 
-    }
+    if (n > limit - total) n = limit - total;
 
-    @Override
-    public long skip(long n) throws IOException {
+    long skiped = sis.skip(n);
 
-        if (n > limit - total)
-            n = limit - total;
+    total += skiped;
 
-        long skiped = sis.skip(n);
+    return skiped;
+  }
 
-        total += skiped;
+  @Override
+  public void mark(int mark) {
+    sis.mark(mark);
+    totalMarked = total;
+  }
 
-        return skiped;
+  @Override
+  public void reset() throws IOException {
+    sis.reset();
+    total = totalMarked;
+  }
 
-    }
+  @Override
+  public void seek(long pos) throws IOException {
+    if (pos > size()) throw new IOException("Seek beyond end is not possible"); // $NON-NLS-1$
 
-    @Override
-    public void mark(int mark) {
-        sis.mark(mark);
-        totalMarked = total;
-    }
+    sis.seek(pos + start);
+  }
 
-    @Override
-    public void reset() throws IOException {
-        sis.reset();
-        total = totalMarked;
-    }
+  @Override
+  public long position() throws IOException {
+    return sis.position() - start;
+  }
 
-    @Override
-    public void seek(long pos) throws IOException {
-        if (pos > size())
-            throw new IOException("Seek beyond end is not possible"); //$NON-NLS-1$
+  @Override
+  public long size() throws IOException {
+    return Math.min(limit, sis.size() - start);
+  }
 
-        sis.seek(pos + start);
-    }
-
-    @Override
-    public long position() throws IOException {
-        return sis.position() - start;
-    }
-
-    @Override
-    public long size() throws IOException {
-        return Math.min(limit, sis.size() - start);
-    }
-
-    @Override
-    public void close() throws IOException {
-        sis.close();
-    }
-
+  @Override
+  public void close() throws IOException {
+    sis.close();
+  }
 }

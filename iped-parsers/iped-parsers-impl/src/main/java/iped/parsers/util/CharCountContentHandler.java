@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -24,26 +24,24 @@ import org.xml.sax.SAXException;
 
 /**
  * ContentHandler usado para contar o número de caracteres recebidos.
- * 
- * @author Nassif
  *
+ * @author Nassif
  */
 public class CharCountContentHandler extends EmbeddedContentHandler {
 
-    private int charCount = 0;
+  private int charCount = 0;
 
-    public CharCountContentHandler(ContentHandler handler) {
-        super(handler);
-    }
+  public CharCountContentHandler(ContentHandler handler) {
+    super(handler);
+  }
 
-    @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        charCount += length;
-        super.characters(ch, start, length);
-    }
+  @Override
+  public void characters(char[] ch, int start, int length) throws SAXException {
+    charCount += length;
+    super.characters(ch, start, length);
+  }
 
-    public int getCharCount() {
-        return charCount;
-    }
-
+  public int getCharCount() {
+    return charCount;
+  }
 }

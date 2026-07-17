@@ -5,25 +5,24 @@ import iped.engine.task.HTMLReportTask;
 import iped.tasks.spi.TaskDependency;
 import iped.tasks.spi.TaskDescriptor;
 import iped.tasks.spi.TaskProvider;
-
 import java.util.List;
 
 public class HTMLReportTaskProvider implements TaskProvider<AbstractTask> {
 
-    private static final String TASK_ID = "iped.engine.task.HTMLReportTask";
+  private static final String TASK_ID = "iped.engine.task.HTMLReportTask";
 
-    @Override
-    public TaskDescriptor descriptor() {
-        return TaskDescriptor.of(TASK_ID, dependencies());
-    }
+  @Override
+  public TaskDescriptor descriptor() {
+    return TaskDescriptor.of(TASK_ID, dependencies());
+  }
 
-    @Override
-    public AbstractTask createTask() {
-        return new HTMLReportTask();
-    }
+  @Override
+  public AbstractTask createTask() {
+    return new HTMLReportTask();
+  }
 
-    @Override
-    public List<TaskDependency> dependencies() {
-        return List.of(TaskDependency.after("iped.engine.task.ExportCSVTask"));
-    }
+  @Override
+  public List<TaskDependency> dependencies() {
+    return List.of(TaskDependency.after("iped.engine.task.ExportCSVTask"));
+  }
 }

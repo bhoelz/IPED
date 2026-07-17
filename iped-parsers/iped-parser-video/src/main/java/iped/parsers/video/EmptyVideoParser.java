@@ -18,6 +18,10 @@
  */
 package iped.parsers.video;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
+import java.util.TreeSet;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -29,68 +33,62 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Set;
-import java.util.TreeSet;
-
 /**
- * Extrai conteúdo vazio para vídeos sem parser específico, enquanto nao é
- * implementada extração de metadados para eles.
+ * Extrai conteúdo vazio para vídeos sem parser específico, enquanto nao é implementada extração de
+ * metadados para eles.
  */
 public class EmptyVideoParser extends AbstractParser {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    private static final Set<MediaType> SUPPORTED_TYPES = getTypes();
+  private static final Set<MediaType> SUPPORTED_TYPES = getTypes();
 
-    private static Set<MediaType> getTypes() {
-        Set<MediaType> supportedTypes = new TreeSet<MediaType>();
+  private static Set<MediaType> getTypes() {
+    Set<MediaType> supportedTypes = new TreeSet<MediaType>();
 
-        Set<MediaType> videosWithParser = new TreeSet<>();
-        videosWithParser.addAll(new MP4Parser().getSupportedTypes(null));
-        videosWithParser.add(MediaType.video("x-flv"));
+    Set<MediaType> videosWithParser = new TreeSet<>();
+    videosWithParser.addAll(new MP4Parser().getSupportedTypes(null));
+    videosWithParser.add(MediaType.video("x-flv"));
 
-        for (MediaType type : MediaTypeRegistry.getDefaultRegistry().getTypes()) {
-            type = type.getBaseType();
-            if (isVideoType(type) && !videosWithParser.contains(type)) {
-                supportedTypes.add(type);
-            }
-        }
-        return supportedTypes;
+    for (MediaType type : MediaTypeRegistry.getDefaultRegistry().getTypes()) {
+      type = type.getBaseType();
+      if (isVideoType(type) && !videosWithParser.contains(type)) {
+        supportedTypes.add(type);
+      }
     }
+    return supportedTypes;
+  }
 
-    private static boolean isVideoType(MediaType mediaType) {
-        if (mediaType == null) {
-            return false;
-        }
-        String type = mediaType.toString();
-        return type.startsWith("video/") || type.startsWith("application/vnd.rn-realmedia");
+  private static boolean isVideoType(MediaType mediaType) {
+    if (mediaType == null) {
+      return false;
     }
+    String type = mediaType.toString();
+    return type.startsWith("video/") || type.startsWith("application/vnd.rn-realmedia");
+  }
 
-    @Override
-    public Set<MediaType> getSupportedTypes(ParseContext arg0) {
+  @Override
+  public Set<MediaType> getSupportedTypes(ParseContext arg0) {
 
-        return SUPPORTED_TYPES;
-    }
+    return SUPPORTED_TYPES;
+  }
 
-// commenting this section. Tests are made using JUnit now.
-// Teste
-//    public static void main(String[] args) {
-//        EmptyVideoParser parser = new EmptyVideoParser();
-//        Set<MediaType> types = parser.getSupportedTypes(null);
-//        for (MediaType type : types)
-//            System.out.println(type.getBaseType());
-//    }
+  // commenting this section. Tests are made using JUnit now.
+  // Teste
+  //    public static void main(String[] args) {
+  //        EmptyVideoParser parser = new EmptyVideoParser();
+  //        Set<MediaType> types = parser.getSupportedTypes(null);
+  //        for (MediaType type : types)
+  //            System.out.println(type.getBaseType());
+  //    }
 
-    @Override
-    public void parse(InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
-            throws IOException, SAXException, TikaException {
+  @Override
+  public void parse(
+      InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
+      throws IOException, SAXException, TikaException {
 
-        XHTMLContentHandler xhtml = new XHTMLContentHandler(handler, metadata);
-        xhtml.startDocument();
-        xhtml.endDocument();
-
-    }
-
+    XHTMLContentHandler xhtml = new XHTMLContentHandler(handler, metadata);
+    xhtml.startDocument();
+    xhtml.endDocument();
+  }
 }

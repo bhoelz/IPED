@@ -4,68 +4,67 @@ import iped.data.IItemReader;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.HashUtils;
 import iped.properties.ExtraProperties;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.XMPDM;
 
-import java.util.Collections;
-import java.util.List;
-
 public class ReferencedFile extends AbstractReferencedItem {
 
-    private List<String> childPornSets = Collections.emptyList();
+  private List<String> childPornSets = Collections.emptyList();
 
-    public ReferencedFile(IItemReader item) {
-        super(item);
+  public ReferencedFile(IItemReader item) {
+    super(item);
 
-        String hash = getHash();
-        if (hash != null) {
-            childPornSets = ChildPornHashLookup.lookupHashAndMerge(hash, childPornSets);
-        }
+    String hash = getHash();
+    if (hash != null) {
+      childPornSets = ChildPornHashLookup.lookupHashAndMerge(hash, childPornSets);
     }
+  }
 
-    public List<String> getChildPornSets() {
-        return childPornSets;
-    }
+  public List<String> getChildPornSets() {
+    return childPornSets;
+  }
 
-    public String getHash() {
-        String hash = item.getHash();
-        if (HashUtils.isValidHash(hash)) {
-            return hash;
-        }
-        return null;
+  public String getHash() {
+    String hash = item.getHash();
+    if (HashUtils.isValidHash(hash)) {
+      return hash;
     }
+    return null;
+  }
 
-    public Long getLength() {
-        return item.getLength();
-    }
+  public Long getLength() {
+    return item.getLength();
+  }
 
-    public String getTrueExt() {
-        return item.getType();
-    }
+  public String getTrueExt() {
+    return item.getType();
+  }
 
-    public byte[] getThumb() {
-        return item.getThumb();
-    }
+  public byte[] getThumb() {
+    return item.getThumb();
+  }
 
-    public String getTranscription() {
-        return item.getMetadataValue(ExtraProperties.TRANSCRIPT_ATTR);
-    }
+  public String getTranscription() {
+    return item.getMetadataValue(ExtraProperties.TRANSCRIPT_ATTR);
+  }
 
-    public String getTranscriptConfidence() {
-        return item.getMetadataValue(ExtraProperties.CONFIDENCE_ATTR);
-    }
+  public String getTranscriptConfidence() {
+    return item.getMetadataValue(ExtraProperties.CONFIDENCE_ATTR);
+  }
 
-    public Float getDuration() {
-        String duration = StringUtils.firstNonBlank(
-                item.getMetadataValue(ExtraProperties.AUDIO_META_PREFIX + XMPDM.DURATION.getName()),
-                item.getMetadataValue(ExtraProperties.VIDEO_META_PREFIX + XMPDM.DURATION.getName()));
-        if (duration != null) {
-            try {
-                return Float.parseFloat(duration);
-            } catch (NumberFormatException e) {
-            }
-        }
-        return null;
+  public Float getDuration() {
+    String duration =
+        StringUtils.firstNonBlank(
+            item.getMetadataValue(ExtraProperties.AUDIO_META_PREFIX + XMPDM.DURATION.getName()),
+            item.getMetadataValue(ExtraProperties.VIDEO_META_PREFIX + XMPDM.DURATION.getName()));
+    if (duration != null) {
+      try {
+        return Float.parseFloat(duration);
+      } catch (NumberFormatException e) {
+      }
     }
+    return null;
+  }
 }
-

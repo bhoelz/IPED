@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -28,158 +28,158 @@ import java.nio.ByteOrder;
  */
 class MFCParser {
 
-    private final InputStream is;
+  private final InputStream is;
 
-    public MFCParser(InputStream is) {
-        this.is = is;
+  public MFCParser(InputStream is) {
+    this.is = is;
+  }
+
+  public byte[] readBytes(int n) throws IOException {
+    byte[] buff = new byte[n];
+    int off = 0;
+    while (off < n) {
+      int r = is.read(buff, off, n - off);
+      if (r < 0) {
+        throw new IOException("Unexpected EOF");
+      }
+      off += r;
+    }
+    return buff;
+  }
+
+  public int readInt() throws IOException {
+    return ByteBuffer.wrap(readBytes(4)).order(ByteOrder.LITTLE_ENDIAN).getInt();
+  }
+
+  public long readUInt() throws IOException {
+    return Integer.toUnsignedLong(readInt());
+  }
+
+  public long readLong() throws IOException {
+    return ByteBuffer.wrap(readBytes(8)).order(ByteOrder.LITTLE_ENDIAN).getLong();
+  }
+
+  public short readShort() throws IOException {
+    return ByteBuffer.wrap(readBytes(2)).order(ByteOrder.LITTLE_ENDIAN).getShort();
+  }
+
+  public int readUShort() throws IOException {
+    return Short.toUnsignedInt(readShort());
+  }
+
+  public boolean readBool() throws IOException {
+    int n = readInt();
+    return n != 0;
+  }
+
+  public byte readByte() throws IOException {
+    int v = is.read();
+    if (v < 0) {
+      throw new IOException("Unexpected EOF");
+    }
+    return (byte) v;
+  }
+
+  public int readUByte() throws IOException {
+    return Byte.toUnsignedInt(readByte());
+  }
+
+  public long readFileTime() throws IOException {
+    return readLong();
+  }
+
+  public String readHash(int n) throws IOException {
+    return readHash(n, "hex"); // $NON-NLS-1$
+  }
+
+  public String readEpochDateTime() throws IOException {
+    return Util.formatDatetime(Util.convertToEpoch(readLong()));
+  }
+
+  public String readHash(int n, String encoder) throws IOException {
+    return readHash(n, encoder, true);
+  }
+
+  public String readHash(int n, String encoder, boolean readValid) throws IOException {
+    String ret = "0"; // $NON-NLS-1$
+    boolean valid = readValid ? readBool() : true;
+    if (valid) {
+      byte[] bytes = readBytes(n);
+      switch (encoder) {
+        case "base32": //$NON-NLS-1$
+          ret = Util.encodeBase32(bytes);
+          break;
+
+        case "base64": //$NON-NLS-1$
+          ret = Util.encodeBase64(bytes);
+          break;
+
+        case "guid": //$NON-NLS-1$
+          ret = Util.encodeGUID(bytes);
+          break;
+
+        case "hex": //$NON-NLS-1$
+        default:
+          ret = Util.encodeHex(bytes);
+          break;
+      }
     }
 
-    public byte[] readBytes(int n) throws IOException {
-        byte[] buff = new byte[n];
-        int off = 0;
-        while (off < n) {
-            int r = is.read(buff, off, n - off);
-            if (r < 0) {
-                throw new IOException("Unexpected EOF");
-            }
-            off += r;
-        }
-        return buff;
+    return ret;
+  }
+
+  // Returns int[] {stringLen, isUnicode (0 or 1)}
+  private int[] readStringLen() throws IOException {
+    int blen = readUByte();
+    int isUnicode = 0;
+    if (blen < 0xff) {
+      return new int[] {blen, isUnicode};
     }
 
-    public int readInt() throws IOException {
-        return ByteBuffer.wrap(readBytes(4)).order(ByteOrder.LITTLE_ENDIAN).getInt();
+    int wlen = readUShort();
+    if (wlen == 0xfffe) {
+      isUnicode = 1;
+      blen = readUByte();
+      if (blen < 0xff) {
+        return new int[] {blen, isUnicode};
+      }
+      wlen = readUShort();
     }
 
-    public long readUInt() throws IOException {
-        return Integer.toUnsignedLong(readInt());
+    if (wlen < 0xffff) {
+      return new int[] {wlen, isUnicode};
     }
 
-    public long readLong() throws IOException {
-        return ByteBuffer.wrap(readBytes(8)).order(ByteOrder.LITTLE_ENDIAN).getLong();
+    long dLen = readUInt();
+    if (dLen < 0xFFFFFFFF) {
+      return new int[] {(int) dLen, isUnicode};
     }
 
-    public short readShort() throws IOException {
-        return ByteBuffer.wrap(readBytes(2)).order(ByteOrder.LITTLE_ENDIAN).getShort();
+    long qLen = readUInt();
+    return new int[] {(int) qLen, isUnicode};
+  }
+
+  public int readCount() throws IOException {
+    int ret = readUShort();
+    if (ret == 0xffff) {
+      return readInt();
     }
+    return ret;
+  }
 
-    public int readUShort() throws IOException {
-        return Short.toUnsignedInt(readShort());
+  public String readString() throws IOException {
+    int[] r = readStringLen();
+    int len = r[0];
+    boolean isUnicode = r[1] == 1;
+
+    String ret = ""; // $NON-NLS-1$
+    if (len > 0) {
+      if (isUnicode) {
+        ret = new String(readBytes(len * 2), "UTF-16LE"); // $NON-NLS-1$
+      } else {
+        ret = new String(readBytes(len), "UTF-8"); // $NON-NLS-1$
+      }
     }
-
-    public boolean readBool() throws IOException {
-        int n = readInt();
-        return n != 0;
-    }
-
-    public byte readByte() throws IOException {
-        int v = is.read();
-        if (v < 0) {
-            throw new IOException("Unexpected EOF");
-        }
-        return (byte) v;
-    }
-
-    public int readUByte() throws IOException {
-        return Byte.toUnsignedInt(readByte());
-    }
-
-    public long readFileTime() throws IOException {
-        return readLong();
-    }
-
-    public String readHash(int n) throws IOException {
-        return readHash(n, "hex"); //$NON-NLS-1$
-    }
-
-    public String readEpochDateTime() throws IOException {
-        return Util.formatDatetime(Util.convertToEpoch(readLong()));
-    }
-
-    public String readHash(int n, String encoder) throws IOException {
-        return readHash(n, encoder, true);
-    }
-    
-    public String readHash(int n, String encoder, boolean readValid) throws IOException {
-        String ret = "0"; //$NON-NLS-1$
-        boolean valid = readValid ? readBool() : true;
-        if (valid) {
-            byte[] bytes = readBytes(n);
-            switch (encoder) {
-                case "base32": //$NON-NLS-1$
-                    ret = Util.encodeBase32(bytes);
-                    break;
-
-                case "base64": //$NON-NLS-1$
-                    ret = Util.encodeBase64(bytes);
-                    break;
-
-                case "guid": //$NON-NLS-1$
-                    ret = Util.encodeGUID(bytes);
-                    break;
-
-                case "hex": //$NON-NLS-1$
-                default:
-                    ret = Util.encodeHex(bytes);
-                    break;
-            }
-        }
-
-        return ret;
-    }
-
-    // Returns int[] {stringLen, isUnicode (0 or 1)}
-    private int[] readStringLen() throws IOException {
-        int blen = readUByte();
-        int isUnicode = 0;
-        if (blen < 0xff) {
-            return new int[] { blen, isUnicode };
-        }
-
-        int wlen = readUShort();
-        if (wlen == 0xfffe) {
-            isUnicode = 1;
-            blen = readUByte();
-            if (blen < 0xff) {
-                return new int[] { blen, isUnicode };
-            }
-            wlen = readUShort();
-        }
-
-        if (wlen < 0xffff) {
-            return new int[] { wlen, isUnicode };
-        }
-
-        long dLen = readUInt();
-        if (dLen < 0xFFFFFFFF) {
-            return new int[] { (int) dLen, isUnicode };
-        }
-
-        long qLen = readUInt();
-        return new int[] { (int) qLen, isUnicode };
-    }
-
-    public int readCount() throws IOException {
-        int ret = readUShort();
-        if (ret == 0xffff) {
-            return readInt();
-        }
-        return ret;
-    }
-
-    public String readString() throws IOException {
-        int[] r = readStringLen();
-        int len = r[0];
-        boolean isUnicode = r[1] == 1;
-
-        String ret = ""; //$NON-NLS-1$
-        if (len > 0) {
-            if (isUnicode) {
-                ret = new String(readBytes(len * 2), "UTF-16LE"); //$NON-NLS-1$
-            } else {
-                ret = new String(readBytes(len), "UTF-8"); //$NON-NLS-1$
-            }
-        }
-        return ret;
-    }
+    return ret;
+  }
 }

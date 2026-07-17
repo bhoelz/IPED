@@ -2,8 +2,7 @@ package iped.engine.task;
 
 public final class HashDBConstants {
 
-    private HashDBConstants() {
-    }
+  private HashDBConstants() {}
 
-    public static final String KNOWN_VALUE = "known";
+  public static final String KNOWN_VALUE = "known";
 }

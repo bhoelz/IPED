@@ -24,8 +24,6 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.HashTaskConfig;
 import iped.engine.hash.HashAlgorithm;
 import iped.parsers.whatsapp.WhatsAppParser;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,209 +36,210 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * Classe para calcular e manipular hashes.
- */
+/** Classe para calcular e manipular hashes. */
 @Slf4j
 public class HashTask extends AbstractTask {
 
+  private static final int HASH_BUFFER_LEN = 1024 * 1024;
 
-    private static final int HASH_BUFFER_LEN = 1024 * 1024;
+  private static final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    private static final ExecutorService executorService = Executors.newCachedThreadPool();
+  private HashMap<String, MessageDigest> digestMap = new LinkedHashMap<String, MessageDigest>();
 
-    private HashMap<String, MessageDigest> digestMap = new LinkedHashMap<String, MessageDigest>();
+  private HashTaskConfig hashConfig;
 
-    private HashTaskConfig hashConfig;
+  @Override
+  public boolean isEnabled() {
+    return hashConfig.isEnabled();
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return hashConfig.isEnabled();
+  @Override
+  public List<Configurable<?>> getConfigurables() {
+    return Arrays.asList(new HashTaskConfig());
+  }
+
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
+    hashConfig = configurationManager.findObject(HashTaskConfig.class);
+
+    for (String algorithm : hashConfig.getAlgorithms()) {
+      MessageDigest digest = null;
+      if (!algorithm.equalsIgnoreCase(HashAlgorithm.EDONKEY.toString())) {
+        digest = MessageDigest.getInstance(algorithm.toUpperCase());
+      } else {
+        digest = MessageDigest.getInstance("MD4"); // $NON-NLS-1$
+      }
+      digestMap.put(algorithm, digest);
+      if (HashAlgorithm.SHA256.toString().equals(algorithm)) {
+        System.setProperty(WhatsAppParser.SHA256_ENABLED_SYSPROP, Boolean.TRUE.toString());
+      }
+    }
+    if (isEnabled()) {
+      System.setProperty(WhatsAppParser.HASH_TASK_ENABLED_SYSPROP, Boolean.TRUE.toString());
+    }
+  }
+
+  @Override
+  public void finish() throws Exception {
+    if (!executorService.isShutdown()) {
+      executorService.shutdown();
+    }
+  }
+
+  public void process(IItem evidence) {
+
+    if (evidence.isQueueEnd()) {
+      return;
     }
 
-    @Override
-    public List<Configurable<?>> getConfigurables() {
-        return Arrays.asList(new HashTaskConfig());
+    if (evidence.getHash() != null
+        || digestMap.isEmpty()
+        || evidence.getExtraAttribute(IgnoreHardLinkTask.IGNORE_HARDLINK_ATTR) != null) {
+      return;
     }
 
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
-        hashConfig = configurationManager.findObject(HashTaskConfig.class);
-
-        for (String algorithm : hashConfig.getAlgorithms()) {
-            MessageDigest digest = null;
-            if (!algorithm.equalsIgnoreCase(HashAlgorithm.EDONKEY.toString())) {
-                digest = MessageDigest.getInstance(algorithm.toUpperCase());
-            } else {
-                digest = MessageDigest.getInstance("MD4"); //$NON-NLS-1$
-            }
-            digestMap.put(algorithm, digest);
-            if (HashAlgorithm.SHA256.toString().equals(algorithm)) {
-                System.setProperty(WhatsAppParser.SHA256_ENABLED_SYSPROP, Boolean.TRUE.toString());
-            }
-        }
-        if (isEnabled()) {
-            System.setProperty(WhatsAppParser.HASH_TASK_ENABLED_SYSPROP, Boolean.TRUE.toString());
-        }
+    if (evidence.getLength() == null) {
+      evidence.setHash("");
+      return;
     }
 
-    @Override
-    public void finish() throws Exception {
-        if (!executorService.isShutdown()) {
-            executorService.shutdown();
-        }
-    }
+    try (InputStream in = evidence.getBufferedInputStream()) {
 
-    public void process(IItem evidence) {
+      byte[] readBuf = new byte[HASH_BUFFER_LEN];
+      byte[] hashBuf = new byte[HASH_BUFFER_LEN];
+      byte[] tempBuf = null;
+      int len;
 
-        if (evidence.isQueueEnd()) {
-            return;
-        }
+      AtomicReference<CountDownLatch> countDown = new AtomicReference<>(null);
+      AtomicReference<Exception> ex = new AtomicReference<Exception>(null);
 
-        if (evidence.getHash() != null || digestMap.isEmpty()
-                || evidence.getExtraAttribute(IgnoreHardLinkTask.IGNORE_HARDLINK_ATTR) != null) {
-            return;
+      while ((len = in.read(readBuf)) >= 0 && !Thread.currentThread().isInterrupted()) {
+
+        if (countDown.get() != null) {
+          countDown.get().await();
         }
 
-        if (evidence.getLength() == null) {
-            evidence.setHash("");
-            return;
+        countDown.set(new CountDownLatch(digestMap.size()));
+
+        // swap hashBuf <-> readBuf
+        tempBuf = hashBuf;
+        hashBuf = readBuf;
+        readBuf = tempBuf;
+
+        final int currLen = len;
+        final byte[] currHashBuf = hashBuf;
+        for (String algo : digestMap.keySet()) {
+          executorService.execute(
+              () -> {
+                try {
+                  if (!algo.equals(HashAlgorithm.EDONKEY.toString())) {
+                    digestMap.get(algo).update(currHashBuf, 0, currLen);
+                  } else {
+                    updateEd2k(currHashBuf, currLen);
+                  }
+                } catch (Exception e) {
+                  ex.set(e);
+                } finally {
+                  countDown.get().countDown();
+                }
+              });
         }
 
-        try (InputStream in = evidence.getBufferedInputStream()) {
-
-            byte[] readBuf = new byte[HASH_BUFFER_LEN];
-            byte[] hashBuf = new byte[HASH_BUFFER_LEN];
-            byte[] tempBuf = null;
-            int len;
-
-            AtomicReference<CountDownLatch> countDown = new AtomicReference<>(null);
-            AtomicReference<Exception> ex = new AtomicReference<Exception>(null);
-
-            while ((len = in.read(readBuf)) >= 0 && !Thread.currentThread().isInterrupted()) {
-
-                if (countDown.get() != null) {
-                    countDown.get().await();
-                }
-
-                countDown.set(new CountDownLatch(digestMap.size()));
-
-                // swap hashBuf <-> readBuf
-                tempBuf = hashBuf;
-                hashBuf = readBuf;
-                readBuf = tempBuf;
-
-                final int currLen = len;
-                final byte[] currHashBuf = hashBuf;
-                for (String algo : digestMap.keySet()) {
-                    executorService.execute(() -> {
-                        try {
-                            if (!algo.equals(HashAlgorithm.EDONKEY.toString())) {
-                                digestMap.get(algo).update(currHashBuf, 0, currLen);
-                            } else {
-                                updateEd2k(currHashBuf, currLen);
-                            }
-                        } catch (Exception e) {
-                            ex.set(e);
-                        } finally {
-                            countDown.get().countDown();
-                        }
-                    });
-                }
-
-                if (ex.get() != null) {
-                    throw ex.get();
-                }
-            }
-
-            if (countDown.get() != null) {
-                countDown.get().await();
-            }
-
-            boolean defaultHash = true;
-            for (String algo : digestMap.keySet()) {
-                byte[] hash;
-                if (!algo.equals(HashAlgorithm.EDONKEY.toString())) {
-                    hash = digestMap.get(algo).digest();
-                } else {
-                    hash = digestEd2k();
-                }
-
-                String hashString = getHashString(hash);
-                evidence.setExtraAttribute(algo, hashString);
-
-                if (defaultHash) {
-                    evidence.setHash(hashString);
-                }
-                defaultHash = false;
-            }
-
-        } catch (Exception e) {
-            if (e instanceof IOException) {
-                evidence.setExtraAttribute("ioError", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-                // stats is null when running standalone (no case)
-                if (stats != null) {
-                    stats.incIoErrors();
-                }
-            }
-            log.warn("{} Error computing hash {}\t{}", Thread.currentThread().getName(), evidence.getPath(), //$NON-NLS-1$
-                    e.toString());
-            // e.printStackTrace();
-
+        if (ex.get() != null) {
+          throw ex.get();
         }
+      }
 
-    }
+      if (countDown.get() != null) {
+        countDown.get().await();
+      }
 
-    private static int CHUNK_SIZE = 9500 * 1024;
-    private int chunk = 0, total = 0;
-    private ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-    private void updateEd2k(byte[] buffer, int len) throws IOException {
-
-        MessageDigest md4 = digestMap.get(HashAlgorithm.EDONKEY.toString());
-        if (chunk + len >= CHUNK_SIZE) {
-            int offset = CHUNK_SIZE - chunk;
-            md4.update(buffer, 0, offset);
-            out.write(md4.digest());
-            chunk = len - offset;
-            md4.update(buffer, offset, chunk);
+      boolean defaultHash = true;
+      for (String algo : digestMap.keySet()) {
+        byte[] hash;
+        if (!algo.equals(HashAlgorithm.EDONKEY.toString())) {
+          hash = digestMap.get(algo).digest();
         } else {
-            md4.update(buffer, 0, len);
-            chunk += len;
+          hash = digestEd2k();
         }
-        total += len;
+
+        String hashString = getHashString(hash);
+        evidence.setExtraAttribute(algo, hashString);
+
+        if (defaultHash) {
+          evidence.setHash(hashString);
+        }
+        defaultHash = false;
+      }
+
+    } catch (Exception e) {
+      if (e instanceof IOException) {
+        evidence.setExtraAttribute("ioError", "true"); // $NON-NLS-1$ //$NON-NLS-2$
+        // stats is null when running standalone (no case)
+        if (stats != null) {
+          stats.incIoErrors();
+        }
+      }
+      log.warn(
+          "{} Error computing hash {}\t{}",
+          Thread.currentThread().getName(),
+          evidence.getPath(), // $NON-NLS-1$
+          e.toString());
+      // e.printStackTrace();
+
+    }
+  }
+
+  private static int CHUNK_SIZE = 9500 * 1024;
+  private int chunk = 0, total = 0;
+  private ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+  private void updateEd2k(byte[] buffer, int len) throws IOException {
+
+    MessageDigest md4 = digestMap.get(HashAlgorithm.EDONKEY.toString());
+    if (chunk + len >= CHUNK_SIZE) {
+      int offset = CHUNK_SIZE - chunk;
+      md4.update(buffer, 0, offset);
+      out.write(md4.digest());
+      chunk = len - offset;
+      md4.update(buffer, offset, chunk);
+    } else {
+      md4.update(buffer, 0, len);
+      chunk += len;
+    }
+    total += len;
+  }
+
+  private byte[] digestEd2k() throws IOException {
+
+    MessageDigest md4 = digestMap.get(HashAlgorithm.EDONKEY.toString());
+    if (total == 0 || total % CHUNK_SIZE != 0) {
+      out.write(md4.digest());
     }
 
-    private byte[] digestEd2k() throws IOException {
-
-        MessageDigest md4 = digestMap.get(HashAlgorithm.EDONKEY.toString());
-        if (total == 0 || total % CHUNK_SIZE != 0) {
-            out.write(md4.digest());
-        }
-
-        if (out.size() > md4.getDigestLength()) {
-            md4.update(out.toByteArray());
-            out.reset();
-            out.write(md4.digest());
-        }
-
-        byte[] ed2k = out.toByteArray();
-
-        chunk = 0;
-        total = 0;
-        out = new ByteArrayOutputStream();
-
-        return ed2k;
+    if (out.size() > md4.getDigestLength()) {
+      md4.update(out.toByteArray());
+      out.reset();
+      out.write(md4.digest());
     }
 
-    public static String getHashString(byte[] hash) {
-        StringBuilder result = new StringBuilder();
-        for (byte b : hash) {
-            result.append(String.format("%1$02X", b)); //$NON-NLS-1$
-        }
+    byte[] ed2k = out.toByteArray();
 
-        return result.toString();
+    chunk = 0;
+    total = 0;
+    out = new ByteArrayOutputStream();
+
+    return ed2k;
+  }
+
+  public static String getHashString(byte[] hash) {
+    StringBuilder result = new StringBuilder();
+    for (byte b : hash) {
+      result.append(String.format("%1$02X", b)); // $NON-NLS-1$
     }
 
+    return result.toString();
+  }
 }

@@ -16,185 +16,184 @@
  */
 package iped.parsers.fork;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import org.apache.tika.fork.ForkProxy;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 class ContentHandlerProxy2 implements ContentHandler, ForkProxy {
 
-    public static final int START_DOCUMENT = 1;
-    public static final int END_DOCUMENT = 2;
-    public static final int START_PREFIX_MAPPING = 3;
-    public static final int END_PREFIX_MAPPING = 4;
-    public static final int START_ELEMENT = 5;
-    public static final int END_ELEMENT = 6;
-    public static final int CHARACTERS = 7;
-    public static final int IGNORABLE_WHITESPACE = 8;
-    public static final int PROCESSING_INSTRUCTION = 9;
-    public static final int SKIPPED_ENTITY = 10;
+  public static final int START_DOCUMENT = 1;
+  public static final int END_DOCUMENT = 2;
+  public static final int START_PREFIX_MAPPING = 3;
+  public static final int END_PREFIX_MAPPING = 4;
+  public static final int START_ELEMENT = 5;
+  public static final int END_ELEMENT = 6;
+  public static final int CHARACTERS = 7;
+  public static final int IGNORABLE_WHITESPACE = 8;
+  public static final int PROCESSING_INSTRUCTION = 9;
+  public static final int SKIPPED_ENTITY = 10;
 
-    /** Serial version UID */
-    private static final long serialVersionUID = 737511106054617524L;
+  /** Serial version UID */
+  private static final long serialVersionUID = 737511106054617524L;
 
-    private final int resource;
+  private final int resource;
 
-    private transient DataOutputStream output;
+  private transient DataOutputStream output;
 
-    public ContentHandlerProxy2(int resource) {
-        this.resource = resource;
+  public ContentHandlerProxy2(int resource) {
+    this.resource = resource;
+  }
+
+  public void init(DataInputStream input, DataOutputStream output) {
+    this.output = output;
+  }
+
+  private void sendRequest(int type) throws SAXException {
+    try {
+      output.writeByte(ForkServer.RESOURCE);
+      output.writeByte(resource);
+      output.writeByte(type);
+    } catch (IOException e) {
+      throw new SAXException("Unexpected fork proxy problem", e);
     }
+  }
 
-    public void init(DataInputStream input, DataOutputStream output) {
-        this.output = output;
+  private void sendString(String string) throws SAXException {
+    try {
+      if (string != null) {
+        output.writeBoolean(true);
+        // output.writeUTF(string);
+        writeString(string);
+      } else {
+        output.writeBoolean(false);
+      }
+    } catch (IOException e) {
+      throw new SAXException("Unexpected fork proxy problem", e);
     }
+  }
 
-    private void sendRequest(int type) throws SAXException {
-        try {
-            output.writeByte(ForkServer.RESOURCE);
-            output.writeByte(resource);
-            output.writeByte(type);
-        } catch (IOException e) {
-            throw new SAXException("Unexpected fork proxy problem", e);
-        }
+  // protection against UTFDataFormatException when large strings are written
+  private void writeString(String string) throws IOException {
+    int max = 65535 / 3;
+    int frags = (int) Math.ceil((double) string.length() / max);
+    output.writeInt(frags);
+    int i = 0;
+    while (i < frags) {
+      int end = (i < frags - 1) ? (i + 1) * max : string.length();
+      output.writeUTF(string.substring(i * max, end));
+      i++;
     }
+  }
 
-    private void sendString(String string) throws SAXException {
-        try {
-            if (string != null) {
-                output.writeBoolean(true);
-                // output.writeUTF(string);
-                writeString(string);
-            } else {
-                output.writeBoolean(false);
-            }
-        } catch (IOException e) {
-            throw new SAXException("Unexpected fork proxy problem", e);
-        }
+  private void sendCharacters(char[] ch, int start, int length) throws SAXException {
+    try {
+      /*
+       * output.writeInt(length); for (int i = 0; i < length; i++) {
+       * output.writeChar(ch[start + i]); }
+       */
+
+      writeString(new String(ch, start, length));
+
+    } catch (IOException e) {
+      throw new SAXException("Unexpected fork proxy problem", e);
     }
+  }
 
-    // protection against UTFDataFormatException when large strings are written
-    private void writeString(String string) throws IOException {
-        int max = 65535 / 3;
-        int frags = (int) Math.ceil((double) string.length() / max);
-        output.writeInt(frags);
-        int i = 0;
-        while (i < frags) {
-            int end = (i < frags - 1) ? (i + 1) * max : string.length();
-            output.writeUTF(string.substring(i * max, end));
-            i++;
-        }
+  private void doneSending() throws SAXException {
+    try {
+      output.flush();
+    } catch (IOException e) {
+      throw new SAXException("Unexpected fork proxy problem", e);
     }
+  }
 
-    private void sendCharacters(char[] ch, int start, int length) throws SAXException {
-        try {
-            /*
-             * output.writeInt(length); for (int i = 0; i < length; i++) {
-             * output.writeChar(ch[start + i]); }
-             */
+  public void setDocumentLocator(Locator locator) {
+    // skip
+  }
 
-            writeString(new String(ch, start, length));
+  public void startDocument() throws SAXException {
+    sendRequest(START_DOCUMENT);
+    doneSending();
+  }
 
-        } catch (IOException e) {
-            throw new SAXException("Unexpected fork proxy problem", e);
-        }
+  public void endDocument() throws SAXException {
+    sendRequest(END_DOCUMENT);
+    doneSending();
+  }
+
+  public void startPrefixMapping(String prefix, String uri) throws SAXException {
+    sendRequest(START_PREFIX_MAPPING);
+    sendString(prefix);
+    sendString(uri);
+    doneSending();
+  }
+
+  public void endPrefixMapping(String prefix) throws SAXException {
+    sendRequest(END_PREFIX_MAPPING);
+    sendString(prefix);
+    doneSending();
+  }
+
+  public void startElement(String uri, String localName, String qName, Attributes atts)
+      throws SAXException {
+    sendRequest(START_ELEMENT);
+    sendString(uri);
+    sendString(localName);
+    sendString(qName);
+    int n = -1;
+    if (atts != null) {
+      n = atts.getLength();
     }
-
-    private void doneSending() throws SAXException {
-        try {
-            output.flush();
-        } catch (IOException e) {
-            throw new SAXException("Unexpected fork proxy problem", e);
-        }
+    try {
+      output.writeInt(n);
+    } catch (IOException e) {
+      throw new SAXException("Unexpected fork proxy problem", e);
     }
-
-    public void setDocumentLocator(Locator locator) {
-        // skip
+    for (int i = 0; i < n; i++) {
+      sendString(atts.getURI(i));
+      sendString(atts.getLocalName(i));
+      sendString(atts.getQName(i));
+      sendString(atts.getType(i));
+      sendString(atts.getValue(i));
     }
+    doneSending();
+  }
 
-    public void startDocument() throws SAXException {
-        sendRequest(START_DOCUMENT);
-        doneSending();
-    }
+  public void endElement(String uri, String localName, String qName) throws SAXException {
+    sendRequest(END_ELEMENT);
+    sendString(uri);
+    sendString(localName);
+    sendString(qName);
+    doneSending();
+  }
 
-    public void endDocument() throws SAXException {
-        sendRequest(END_DOCUMENT);
-        doneSending();
-    }
+  public void characters(char[] ch, int start, int length) throws SAXException {
+    sendRequest(CHARACTERS);
+    sendCharacters(ch, start, length);
+    doneSending();
+  }
 
-    public void startPrefixMapping(String prefix, String uri) throws SAXException {
-        sendRequest(START_PREFIX_MAPPING);
-        sendString(prefix);
-        sendString(uri);
-        doneSending();
-    }
+  public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+    sendRequest(IGNORABLE_WHITESPACE);
+    sendCharacters(ch, start, length);
+    doneSending();
+  }
 
-    public void endPrefixMapping(String prefix) throws SAXException {
-        sendRequest(END_PREFIX_MAPPING);
-        sendString(prefix);
-        doneSending();
-    }
+  public void processingInstruction(String target, String data) throws SAXException {
+    sendRequest(PROCESSING_INSTRUCTION);
+    sendString(target);
+    sendString(data);
+    doneSending();
+  }
 
-    public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-        sendRequest(START_ELEMENT);
-        sendString(uri);
-        sendString(localName);
-        sendString(qName);
-        int n = -1;
-        if (atts != null) {
-            n = atts.getLength();
-        }
-        try {
-            output.writeInt(n);
-        } catch (IOException e) {
-            throw new SAXException("Unexpected fork proxy problem", e);
-        }
-        for (int i = 0; i < n; i++) {
-            sendString(atts.getURI(i));
-            sendString(atts.getLocalName(i));
-            sendString(atts.getQName(i));
-            sendString(atts.getType(i));
-            sendString(atts.getValue(i));
-        }
-        doneSending();
-    }
-
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        sendRequest(END_ELEMENT);
-        sendString(uri);
-        sendString(localName);
-        sendString(qName);
-        doneSending();
-    }
-
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        sendRequest(CHARACTERS);
-        sendCharacters(ch, start, length);
-        doneSending();
-    }
-
-    public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-        sendRequest(IGNORABLE_WHITESPACE);
-        sendCharacters(ch, start, length);
-        doneSending();
-    }
-
-    public void processingInstruction(String target, String data) throws SAXException {
-        sendRequest(PROCESSING_INSTRUCTION);
-        sendString(target);
-        sendString(data);
-        doneSending();
-    }
-
-    public void skippedEntity(String name) throws SAXException {
-        sendRequest(SKIPPED_ENTITY);
-        sendString(name);
-        doneSending();
-    }
-
+  public void skippedEntity(String name) throws SAXException {
+    sendRequest(SKIPPED_ENTITY);
+    sendString(name);
+    doneSending();
+  }
 }

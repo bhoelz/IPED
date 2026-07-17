@@ -1,6 +1,8 @@
 package iped.parsers.security;
 
 import iped.parsers.standard.StandardParser;
+import java.io.IOException;
+import java.io.InputStream;
 import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -10,31 +12,26 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 public class CryptoAPIBlobParserTest extends TestCase {
 
-    private static InputStream getStream(String name) {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+  private static InputStream getStream(String name) {
+    return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+  }
+
+  @Test
+  public void testCertificateParsingCAPI() throws IOException, SAXException, TikaException {
+
+    CryptoAPIBlobParser parser = new CryptoAPIBlobParser();
+    Metadata metadata = new Metadata();
+    metadata.add(StandardParser.INDEXER_CONTENT_TYPE, CryptoAPIBlobParser.CAPI_MIME.toString());
+    ContentHandler handler = new BodyContentHandler();
+    ParseContext context = new ParseContext();
+    parser.getSupportedTypes(context);
+    try (InputStream stream = getStream("test-files/test_server.pfx")) {
+      parser.parse(stream, handler, metadata, context);
+      assertEquals("false", metadata.get(CryptoAPIBlobParser.HASPUBLICKEY));
+      assertEquals("", metadata.get(CryptoAPIBlobParser.ALIAS));
+      assertEquals("false", metadata.get(CryptoAPIBlobParser.HASPRIVATEKEY));
     }
-
-    @Test
-    public void testCertificateParsingCAPI() throws IOException, SAXException, TikaException {
-
-        CryptoAPIBlobParser parser = new CryptoAPIBlobParser();
-        Metadata metadata = new Metadata();
-        metadata.add(StandardParser.INDEXER_CONTENT_TYPE, CryptoAPIBlobParser.CAPI_MIME.toString());
-        ContentHandler handler = new BodyContentHandler();
-        ParseContext context = new ParseContext();
-        parser.getSupportedTypes(context);
-        try (InputStream stream = getStream("test-files/test_server.pfx")) {
-            parser.parse(stream, handler, metadata, context);
-            assertEquals("false", metadata.get(CryptoAPIBlobParser.HASPUBLICKEY));
-            assertEquals("", metadata.get(CryptoAPIBlobParser.ALIAS));
-            assertEquals("false", metadata.get(CryptoAPIBlobParser.HASPRIVATEKEY));
-
-        }
-    }
-
+  }
 }

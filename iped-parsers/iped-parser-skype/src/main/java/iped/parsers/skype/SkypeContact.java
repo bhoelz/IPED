@@ -7,152 +7,148 @@ import java.util.Date;
  *
  * @author Patrick Dalla Bernardina patrick.pdb@pf.gov.br
  */
-
 public class SkypeContact implements SkypeUser {
 
-    String Id;
-    String skypeName;
-    String pstnNumber;
-    String fullName;
-    String city;
-    String about;
-    String displayName;
-    String assignedPhone;
-    private byte[] avatar;
-    Date birthday;
-    String email;
-    Date profileDate;
-    Date avatarDate;
-    Date lastOnlineDate;
-    Date lastUsed;
+  String Id;
+  String skypeName;
+  String pstnNumber;
+  String fullName;
+  String city;
+  String about;
+  String displayName;
+  String assignedPhone;
+  private byte[] avatar;
+  Date birthday;
+  String email;
+  Date profileDate;
+  Date avatarDate;
+  Date lastOnlineDate;
+  Date lastUsed;
 
-    public String getId() {
-        return Id;
-    }
+  public String getId() {
+    return Id;
+  }
 
-    public void setId(String id) {
-        Id = id;
-    }
+  public void setId(String id) {
+    Id = id;
+  }
 
-    public String getSkypeName() {
-        return skypeName;
-    }
+  public String getSkypeName() {
+    return skypeName;
+  }
 
-    public void setSkypeName(String skypeName) {
-        this.skypeName = skypeName;
-    }
+  public void setSkypeName(String skypeName) {
+    this.skypeName = skypeName;
+  }
 
-    public String getPstnNumber() {
-        return pstnNumber;
-    }
+  public String getPstnNumber() {
+    return pstnNumber;
+  }
 
-    public void setPstnNumber(String pstnNumber) {
-        this.pstnNumber = pstnNumber;
-    }
+  public void setPstnNumber(String pstnNumber) {
+    this.pstnNumber = pstnNumber;
+  }
 
-    public String getFullName() {
-        return fullName;
-    }
+  public String getFullName() {
+    return fullName;
+  }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+  public void setFullName(String fullName) {
+    this.fullName = fullName;
+  }
 
-    public String getBestName() {
-        String name = getFullName();
-        if (name == null || name.trim().isEmpty())
-            name = getDisplayName();
-        if (name == null || name.trim().isEmpty())
-            name = getSkypeName();
-        return name;
-    }
+  public String getBestName() {
+    String name = getFullName();
+    if (name == null || name.trim().isEmpty()) name = getDisplayName();
+    if (name == null || name.trim().isEmpty()) name = getSkypeName();
+    return name;
+  }
 
-    public String getCity() {
-        return city;
-    }
+  public String getCity() {
+    return city;
+  }
 
-    public void setCity(String city) {
-        this.city = city;
-    }
+  public void setCity(String city) {
+    this.city = city;
+  }
 
-    public String getAbout() {
-        return about;
-    }
+  public String getAbout() {
+    return about;
+  }
 
-    public void setAbout(String sobre) {
-        this.about = sobre;
-    }
+  public void setAbout(String sobre) {
+    this.about = sobre;
+  }
 
-    public String getDisplayName() {
-        return displayName;
-    }
+  public String getDisplayName() {
+    return displayName;
+  }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
 
-    public String getAssignedPhone() {
-        return assignedPhone;
-    }
+  public String getAssignedPhone() {
+    return assignedPhone;
+  }
 
-    public void setAssignedPhone(String assignedPhone) {
-        this.assignedPhone = assignedPhone;
-    }
+  public void setAssignedPhone(String assignedPhone) {
+    this.assignedPhone = assignedPhone;
+  }
 
-    public byte[] getAvatar() {
-        return avatar;
-    }
+  public byte[] getAvatar() {
+    return avatar;
+  }
 
-    public void setAvatar(byte[] avatar) {
-        this.avatar = avatar;
-    }
+  public void setAvatar(byte[] avatar) {
+    this.avatar = avatar;
+  }
 
-    public Date getBirthday() {
-        return birthday;
-    }
+  public Date getBirthday() {
+    return birthday;
+  }
 
-    public void setBirthday(Date birthday) {
-        this.birthday = birthday;
-    }
+  public void setBirthday(Date birthday) {
+    this.birthday = birthday;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public Date getProfileDate() {
-        return profileDate;
-    }
+  public Date getProfileDate() {
+    return profileDate;
+  }
 
-    public void setProfileDate(Date profileDate) {
-        this.profileDate = profileDate;
-    }
+  public void setProfileDate(Date profileDate) {
+    this.profileDate = profileDate;
+  }
 
-    public Date getAvatarDate() {
-        return avatarDate;
-    }
+  public Date getAvatarDate() {
+    return avatarDate;
+  }
 
-    public void setAvatarDate(Date avatarDate) {
-        this.avatarDate = avatarDate;
-    }
+  public void setAvatarDate(Date avatarDate) {
+    this.avatarDate = avatarDate;
+  }
 
-    public Date getLastOnlineDate() {
-        return lastOnlineDate;
-    }
+  public Date getLastOnlineDate() {
+    return lastOnlineDate;
+  }
 
-    public void setLastOnlineDate(Date lastOnlineDate) {
-        this.lastOnlineDate = lastOnlineDate;
-    }
+  public void setLastOnlineDate(Date lastOnlineDate) {
+    this.lastOnlineDate = lastOnlineDate;
+  }
 
-    public Date getLastUsed() {
-        return lastUsed;
-    }
+  public Date getLastUsed() {
+    return lastUsed;
+  }
 
-    public void setLastUsed(Date lastUsed) {
-        this.lastUsed = lastUsed;
-    }
-
+  public void setLastUsed(Date lastUsed) {
+    this.lastUsed = lastUsed;
+  }
 }

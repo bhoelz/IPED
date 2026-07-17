@@ -1,28 +1,26 @@
 package iped.app.graph;
 
 import iped.app.ui.App;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
+import javax.swing.*;
 
 public class ExportImageAction extends AbstractAction {
 
-    private static final long serialVersionUID = 7077031453212253610L;
+  private static final long serialVersionUID = 7077031453212253610L;
 
-    private AppGraphAnalytics app;
+  private AppGraphAnalytics app;
 
-    public ExportImageAction(AppGraphAnalytics app) {
-        super();
-        this.app = app;
+  public ExportImageAction(AppGraphAnalytics app) {
+    super();
+    this.app = app;
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    JFileChooser fileChooser = new JFileChooser();
+    int option = fileChooser.showSaveDialog(App.get());
+    if (option == JFileChooser.APPROVE_OPTION) {
+      app.exportImage(fileChooser.getSelectedFile());
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        JFileChooser fileChooser = new JFileChooser();
-        int option = fileChooser.showSaveDialog(App.get());
-        if (option == JFileChooser.APPROVE_OPTION) {
-            app.exportImage(fileChooser.getSelectedFile());
-        }
-    }
-
+  }
 }

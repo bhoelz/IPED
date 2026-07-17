@@ -1,7 +1,6 @@
 package iped.engine.core;
 
 import iped.engine.CmdLineArgs;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -12,63 +11,63 @@ import java.util.Map.Entry;
 
 public class EvidenceStatus {
 
-    private static final String OLD_STATUS_FILE = "iped/data/processing_finished";
-    private static final String STATUS_FILE = "iped/data/evidences_processing_status";
+  private static final String OLD_STATUS_FILE = "iped/data/processing_finished";
+  private static final String STATUS_FILE = "iped/data/evidences_processing_status";
 
-    private HashMap<String, Boolean> statusMap = new HashMap<>();
-    private File caseDir;
+  private HashMap<String, Boolean> statusMap = new HashMap<>();
+  private File caseDir;
 
-    @SuppressWarnings("unchecked")
-    public EvidenceStatus(File caseDir) {
-        this.caseDir = caseDir;
-        File file = new File(caseDir, STATUS_FILE);
-        if (!file.exists()) {
-            return;
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(file.toPath())))) {
-            this.statusMap = (HashMap<String, Boolean>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+  @SuppressWarnings("unchecked")
+  public EvidenceStatus(File caseDir) {
+    this.caseDir = caseDir;
+    File file = new File(caseDir, STATUS_FILE);
+    if (!file.exists()) {
+      return;
     }
-
-    public void save() throws IOException {
-        File file = new File(caseDir, STATUS_FILE);
-        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
-            oos.writeObject(statusMap);
-        }
+    try (ObjectInputStream ois =
+        new ObjectInputStream(new BufferedInputStream(Files.newInputStream(file.toPath())))) {
+      this.statusMap = (HashMap<String, Boolean>) ois.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public List<String> getFailedEvidences() {
-        if (!new File(caseDir, STATUS_FILE).exists()) {
-            if (new File(caseDir, OLD_STATUS_FILE).exists()) {
-                return Collections.emptyList();
-            }
-            return null;
-        }
-        ArrayList<String> failed = new ArrayList<>();
-        for (Entry<String, Boolean> entry : statusMap.entrySet()) {
-            if (!entry.getValue()) {
-                failed.add(entry.getKey());
-            }
-        }
-        return failed;
+  public void save() throws IOException {
+    File file = new File(caseDir, STATUS_FILE);
+    try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
+      oos.writeObject(statusMap);
     }
+  }
 
-    public void addProcessingEvidences(CmdLineArgs args) {
-        for (File evidence : args.getDatasources()) {
-            statusMap.putIfAbsent(args.getDataSourceName(evidence), false);
-        }
+  public List<String> getFailedEvidences() {
+    if (!new File(caseDir, STATUS_FILE).exists()) {
+      if (new File(caseDir, OLD_STATUS_FILE).exists()) {
+        return Collections.emptyList();
+      }
+      return null;
     }
-
-    public boolean removeEvidence(String evidence) {
-        return statusMap.remove(evidence) != null;
+    ArrayList<String> failed = new ArrayList<>();
+    for (Entry<String, Boolean> entry : statusMap.entrySet()) {
+      if (!entry.getValue()) {
+        failed.add(entry.getKey());
+      }
     }
+    return failed;
+  }
 
-    public void addSuccessfulEvidences(CmdLineArgs args) {
-        for (File evidence : args.getDatasources()) {
-            statusMap.put(args.getDataSourceName(evidence), true);
-        }
+  public void addProcessingEvidences(CmdLineArgs args) {
+    for (File evidence : args.getDatasources()) {
+      statusMap.putIfAbsent(args.getDataSourceName(evidence), false);
     }
+  }
 
+  public boolean removeEvidence(String evidence) {
+    return statusMap.remove(evidence) != null;
+  }
+
+  public void addSuccessfulEvidences(CmdLineArgs args) {
+    for (File evidence : args.getDatasources()) {
+      statusMap.put(args.getDataSourceName(evidence), true);
+    }
+  }
 }

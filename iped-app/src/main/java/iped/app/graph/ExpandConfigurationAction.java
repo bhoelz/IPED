@@ -1,26 +1,24 @@
 package iped.app.graph;
 
 import iped.app.ui.App;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
+import javax.swing.*;
 
 public class ExpandConfigurationAction extends AbstractAction {
 
-    private static final long serialVersionUID = 6277963012519118927L;
+  private static final long serialVersionUID = 6277963012519118927L;
 
-    private AppGraphAnalytics app;
+  private AppGraphAnalytics app;
 
-    public ExpandConfigurationAction(AppGraphAnalytics app) {
-        super();
-        this.app = app;
-    }
+  public ExpandConfigurationAction(AppGraphAnalytics app) {
+    super();
+    this.app = app;
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        ExpandConfigurationDialog dialog = new ExpandConfigurationDialog(App.get(), app);
-        dialog.loadData();
-        dialog.setVisible(true);
-    }
-
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    ExpandConfigurationDialog dialog = new ExpandConfigurationDialog(App.get(), app);
+    dialog.loadData();
+    dialog.setVisible(true);
+  }
 }

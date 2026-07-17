@@ -23,9 +23,6 @@ import iped.engine.lucene.analysis.CategoryTokenizer;
 import iped.engine.task.index.IndexItem;
 import iped.engine.util.Util;
 import iped.utils.DateUtil;
-import org.apache.lucene.document.Document;
-
-import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -34,108 +31,132 @@ import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.TimeZone;
+import javax.swing.*;
+import org.apache.lucene.document.Document;
 
-public class CopyProperties extends SwingWorker<Boolean, Integer> implements PropertyChangeListener {
+public class CopyProperties extends SwingWorker<Boolean, Integer>
+    implements PropertyChangeListener {
 
-    ArrayList<Integer> uniqueIds;
-    ArrayList<String> fields;
-    ProgressMonitor progressMonitor;
-    File file;
-    int total;
+  ArrayList<Integer> uniqueIds;
+  ArrayList<String> fields;
+  ProgressMonitor progressMonitor;
+  File file;
+  int total;
 
-    public CopyProperties(File file, ArrayList<Integer> uniqueIds, ArrayList<String> fields) {
-        this.file = file;
-        this.uniqueIds = uniqueIds;
-        this.fields = fields;
-        this.total = uniqueIds.size();
+  public CopyProperties(File file, ArrayList<Integer> uniqueIds, ArrayList<String> fields) {
+    this.file = file;
+    this.uniqueIds = uniqueIds;
+    this.fields = fields;
+    this.total = uniqueIds.size();
 
-        progressMonitor = new ProgressMonitor(App.get(), "", "", 0, total); //$NON-NLS-1$ //$NON-NLS-2$
-        this.addPropertyChangeListener(this);
+    progressMonitor = new ProgressMonitor(App.get(), "", "", 0, total); // $NON-NLS-1$ //$NON-NLS-2$
+    this.addPropertyChangeListener(this);
+  }
+
+  @Override
+  protected Boolean doInBackground() throws Exception {
+
+    FileOutputStream fos = new FileOutputStream(file);
+    OutputStreamWriter writer = new OutputStreamWriter(fos, "UTF-8"); // $NON-NLS-1$
+    byte[] utf8bom = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
+    fos.write(utf8bom);
+
+    if (fields == null || fields.isEmpty()) {
+      fields = new ArrayList<String>();
+      for (String field : ResultTableModel.fields) {
+        fields.add(field);
+      }
     }
 
-    @Override
-    protected Boolean doInBackground() throws Exception {
+    for (int col = 0; col < fields.size(); col++) {
+      writer.write(
+          "\""
+              + fields.get(col).toUpperCase()
+              + "\""
+              + Messages.getString(
+                  "CopyProperties.CSVDelimiter")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
+    writer.write("\r\n"); // $NON-NLS-1$
 
-        FileOutputStream fos = new FileOutputStream(file);
-        OutputStreamWriter writer = new OutputStreamWriter(fos, "UTF-8"); //$NON-NLS-1$
-        byte[] utf8bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
-        fos.write(utf8bom);
-
-        if (fields == null || fields.isEmpty()) {
-            fields = new ArrayList<String>();
-            for (String field : ResultTableModel.fields) {
-                fields.add(field);
-            }
-        }
-
+    int progress = 0;
+    App app = App.get();
+    SimpleDateFormat df =
+        new SimpleDateFormat(Messages.getString("CopyProperties.CSVDateFormat")); // $NON-NLS-1$
+    df.setTimeZone(TimeZone.getTimeZone("GMT")); // $NON-NLS-1$
+    for (Integer docId : uniqueIds) {
+      this.firePropertyChange("progress", progress, ++progress); // $NON-NLS-1$
+      try {
+        Document doc = App.get().appCase.getSearcher().storedFields().document(docId);
         for (int col = 0; col < fields.size(); col++) {
-            writer.write("\"" + fields.get(col).toUpperCase() + "\"" + Messages.getString("CopyProperties.CSVDelimiter")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+          String[] values = new String[1];
+          String field = fields.get(col);
+          if (!field.equals(ResultTableModel.BOOKMARK_COL)) {
+            values = doc.getValues(fields.get(col));
+          } else {
+            IItemId item = App.get().appCase.getItemId(docId);
+            values[0] =
+                Util.concatStrings(App.get().appCase.getMultiBookmarks().getBookmarkList(item));
+          }
+          if (values.length > 0 && values[0] == null) values[0] = ""; // $NON-NLS-1$
+
+          if (field.equals(IndexItem.CATEGORY))
+            for (String val : values)
+              val =
+                  val.replace("" + CategoryTokenizer.SEPARATOR, " | "); // $NON-NLS-1$ //$NON-NLS-2$
+
+          if (values.length > 0
+              && !values[0].isEmpty()
+              && (field.equals(IndexItem.ACCESSED)
+                  || field.equals(IndexItem.CREATED)
+                  || field.equals(IndexItem.MODIFIED)
+                  || field.equals(IndexItem.CHANGED))) {
+            values[0] = df.format(DateUtil.stringToDate(values[0]));
+          }
+          String value = ""; // $NON-NLS-1$
+          for (int i = 0; i < values.length; i++) {
+            if (i != 0) value += " | "; // $NON-NLS-1$
+            value += values[i];
+          }
+
+          String escapedVal =
+              value
+                  .replace("\"", "\"\"")
+                  .replaceAll(
+                      "\r|\n", " "); // $NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+          writer.write(
+              "\""
+                  + escapedVal
+                  + "\""
+                  + Messages.getString(
+                      "CopyProperties.CSVDelimiter")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
-        writer.write("\r\n"); //$NON-NLS-1$
+        writer.write("\r\n"); // $NON-NLS-1$
 
-        int progress = 0;
-        App app = App.get();
-        SimpleDateFormat df = new SimpleDateFormat(Messages.getString("CopyProperties.CSVDateFormat")); //$NON-NLS-1$
-        df.setTimeZone(TimeZone.getTimeZone("GMT")); //$NON-NLS-1$
-        for (Integer docId : uniqueIds) {
-            this.firePropertyChange("progress", progress, ++progress); //$NON-NLS-1$
-            try {
-                Document doc = App.get().appCase.getSearcher().storedFields().document(docId);
-                for (int col = 0; col < fields.size(); col++) {
-                    String[] values = new String[1];
-                    String field = fields.get(col);
-                    if (!field.equals(ResultTableModel.BOOKMARK_COL)) {
-                        values = doc.getValues(fields.get(col));
-                    } else {
-                        IItemId item = App.get().appCase.getItemId(docId);
-                        values[0] = Util.concatStrings(App.get().appCase.getMultiBookmarks().getBookmarkList(item));
-                    }
-                    if (values.length > 0 && values[0] == null)
-                        values[0] = ""; //$NON-NLS-1$
+      } catch (Exception e1) {
+        e1.printStackTrace();
+      }
 
-                    if (field.equals(IndexItem.CATEGORY))
-                        for (String val : values)
-                            val = val.replace("" + CategoryTokenizer.SEPARATOR, " | "); //$NON-NLS-1$ //$NON-NLS-2$
-
-                    if (values.length > 0 && !values[0].isEmpty() && (field.equals(IndexItem.ACCESSED) || field.equals(IndexItem.CREATED) || field.equals(IndexItem.MODIFIED) || field.equals(IndexItem.CHANGED))) {
-                        values[0] = df.format(DateUtil.stringToDate(values[0]));
-                    }
-                    String value = ""; //$NON-NLS-1$
-                    for (int i = 0; i < values.length; i++) {
-                        if (i != 0)
-                            value += " | "; //$NON-NLS-1$
-                        value += values[i];
-                    }
-
-                    String escapedVal = value.replace("\"", "\"\"").replaceAll("\r|\n", " "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                    writer.write("\"" + escapedVal + "\"" + Messages.getString("CopyProperties.CSVDelimiter")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                }
-                writer.write("\r\n"); //$NON-NLS-1$
-
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
-
-            if (this.isCancelled()) {
-                break;
-            }
-        }
-        writer.close();
-        return null;
+      if (this.isCancelled()) {
+        break;
+      }
     }
+    writer.close();
+    return null;
+  }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+  @Override
+  public void propertyChange(PropertyChangeEvent evt) {
 
-        if (progressMonitor.isCanceled()) {
-            this.cancel(true);
-        } else if ("progress" == evt.getPropertyName()) { //$NON-NLS-1$
-            int progress = (Integer) evt.getNewValue();
-            progressMonitor.setProgress(progress);
-            progressMonitor.setNote(Messages.getString("CopyProperties.Copying") + progress //$NON-NLS-1$
-                    + Messages.getString("CopyProperties.from") + total); //$NON-NLS-1$
-        }
-
+    if (progressMonitor.isCanceled()) {
+      this.cancel(true);
+    } else if ("progress" == evt.getPropertyName()) { // $NON-NLS-1$
+      int progress = (Integer) evt.getNewValue();
+      progressMonitor.setProgress(progress);
+      progressMonitor.setNote(
+          Messages.getString("CopyProperties.Copying")
+              + progress //$NON-NLS-1$
+              + Messages.getString("CopyProperties.from")
+              + total); //$NON-NLS-1$
     }
-
+  }
 }

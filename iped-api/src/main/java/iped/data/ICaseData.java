@@ -12,66 +12,65 @@ import java.io.Serializable;
  */
 public interface ICaseData extends Serializable {
 
-    String TIMEZONE_INFO_KEY = "TimeZones";
+  String TIMEZONE_INFO_KEY = "TimeZones";
 
-    /**
-     * Returns an object stored in the case.
-     *
-     * @param key object name
-     * @return the object stored in the case
-     */
-    Object getCaseObject(String key);
+  /**
+   * Returns an object stored in the case.
+   *
+   * @param key object name
+   * @return the object stored in the case
+   */
+  Object getCaseObject(String key);
 
-    /**
-     * Adds an object to the case.
-     *
-     * @param key object name
-     * @param data object stored in the case
-     */
-    Object addCaseObject(String key, Object data);
+  /**
+   * Adds an object to the case.
+   *
+   * @param key object name
+   * @param data object stored in the case
+   */
+  Object addCaseObject(String key, Object data);
 
-    int getDiscoveredEvidences();
+  int getDiscoveredEvidences();
 
-    /**
-     * @return discovered data volume so far
-     */
-    long getDiscoveredVolume();
+  /**
+   * @return discovered data volume so far
+   */
+  long getDiscoveredVolume();
 
-    void incDiscoveredEvidences(int inc);
+  void incDiscoveredEvidences(int inc);
 
-    /**
-     * @param volume size of the newly discovered item
-     */
-    void incDiscoveredVolume(Long volume);
+  /**
+   * @param volume size of the newly discovered item
+   */
+  void incDiscoveredVolume(Long volume);
 
-    /**
-     * Stores a generic object in the case.
-     *
-     * @param key object name to store
-     * @param value object to store
-     */
-    void putCaseObject(String key, Object value);
+  /**
+   * Stores a generic object in the case.
+   *
+   * @param key object name to store
+   * @param value object to store
+   */
+  void putCaseObject(String key, Object value);
 
-    /**
-     * Saves the current object to a file using direct serialization and GZIP compression.
-     *
-     * @param file file to save
-     * @throws IOException file access error
-     */
-    void save(File file) throws IOException;
+  /**
+   * Saves the current object to a file using direct serialization and GZIP compression.
+   *
+   * @param file file to save
+   * @throws IOException file access error
+   */
+  void save(File file) throws IOException;
 
-    /**
-     * @param containsReport whether the case contains a report
-     */
-    void setContainsReport(boolean containsReport);
+  /**
+   * @param containsReport whether the case contains a report
+   */
+  void setContainsReport(boolean containsReport);
 
-    /**
-     * @return true if the case contains a report
-     */
-    boolean containsReport();
+  /**
+   * @return true if the case contains a report
+   */
+  boolean containsReport();
 
-    boolean isIpedReport();
+  boolean isIpedReport();
 
-    void setIpedReport(boolean ipedReport);
-
+  void setIpedReport(boolean ipedReport);
 }

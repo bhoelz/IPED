@@ -2,10 +2,7 @@ package iped.engine.task.transcript;
 
 /**
  * Used just for backwards compatibility with old config files.
- * 
- * @author Nassif
  *
+ * @author Nassif
  */
-public class RemoteWav2Vec2TranscriptTask extends RemoteTranscriptionTask {
-
-}
+public class RemoteWav2Vec2TranscriptTask extends RemoteTranscriptionTask {}

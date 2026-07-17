@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -25,23 +25,22 @@ import java.io.IOException;
  */
 class LibraryRecent extends ShareazaEntity {
 
-    private String time;
-    private long index;
+  private String time;
+  private long index;
 
-    public LibraryRecent() {
-        super("LIBRARY RECENT"); //$NON-NLS-1$
-    }
+  public LibraryRecent() {
+    super("LIBRARY RECENT"); // $NON-NLS-1$
+  }
 
-    @Override
-    public void read(MFCParser ar, int version) throws IOException {
-        time = ar.readEpochDateTime();
-        index = ar.readUInt();
-    }
+  @Override
+  public void read(MFCParser ar, int version) throws IOException {
+    time = ar.readEpochDateTime();
+    index = ar.readUInt();
+  }
 
-    @Override
-    protected void writeImpl(ShareazaOutputGenerator f) {
-        f.out("Time: " + time); //$NON-NLS-1$
-        f.out("Index: " + index); //$NON-NLS-1$
-    }
-
+  @Override
+  protected void writeImpl(ShareazaOutputGenerator f) {
+    f.out("Time: " + time); // $NON-NLS-1$
+    f.out("Index: " + index); // $NON-NLS-1$
+  }
 }

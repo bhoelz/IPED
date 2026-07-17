@@ -20,6 +20,9 @@ package iped.parsers.mail;
 
 import iped.parsers.util.IgnoreContentHandler;
 import iped.parsers.util.Messages;
+import java.io.*;
+import java.util.Collections;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -33,199 +36,198 @@ import org.apache.tika.sax.XHTMLContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.*;
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * Parser para arquivos do IncrediMail.
  *
  * @author Gabriel
- *
  */
 @Slf4j
 public class IncrediMailParser extends AbstractParser {
 
-    /** Serial version UID */
-    private static final long serialVersionUID = -1762689436731160661L;
+  /** Serial version UID */
+  private static final long serialVersionUID = -1762689436731160661L;
 
-    private static final Set<MediaType> SUPPORTED_TYPES = Collections.singleton(MediaType.application("x-incredimail")); //$NON-NLS-1$
+  private static final Set<MediaType> SUPPORTED_TYPES =
+      Collections.singleton(MediaType.application("x-incredimail")); // $NON-NLS-1$
 
-    public static final String IMM_MIME_TYPE = "application/x-incredimail"; //$NON-NLS-1$
-    private static int MAIL_MAX_SIZE = 50000000;
+  public static final String IMM_MIME_TYPE = "application/x-incredimail"; // $NON-NLS-1$
+  private static int MAIL_MAX_SIZE = 50000000;
 
-    @Override
-    public Set<MediaType> getSupportedTypes(ParseContext context) {
-        return SUPPORTED_TYPES;
-    }
+  @Override
+  public Set<MediaType> getSupportedTypes(ParseContext context) {
+    return SUPPORTED_TYPES;
+  }
 
-    @Override
-    public void parse(InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
-            throws IOException, SAXException, TikaException {
+  @Override
+  public void parse(
+      InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
+      throws IOException, SAXException, TikaException {
 
-        EmbeddedDocumentExtractor extractor = context.get(EmbeddedDocumentExtractor.class,
-                new ParsingEmbeddedDocumentExtractor(context));
+    EmbeddedDocumentExtractor extractor =
+        context.get(EmbeddedDocumentExtractor.class, new ParsingEmbeddedDocumentExtractor(context));
 
-        XHTMLContentHandler xhtml = new XHTMLContentHandler(handler, metadata);
-        xhtml.startDocument();
+    XHTMLContentHandler xhtml = new XHTMLContentHandler(handler, metadata);
+    xhtml.startDocument();
 
-        String name = metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY);
+    String name = metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY);
 
-        String charsetName = "windows-1252"; //$NON-NLS-1$
-        InputStreamReader isr = new InputStreamReader(stream, charsetName);
-        BufferedReader reader = new BufferedReader(isr, 100000);
+    String charsetName = "windows-1252"; // $NON-NLS-1$
+    InputStreamReader isr = new InputStreamReader(stream, charsetName);
+    BufferedReader reader = new BufferedReader(isr, 100000);
 
-        int count = 0;
+    int count = 0;
 
-        try {
+    try {
 
-            // System.out.println(new Date() + "\t[AVISO]\t" +"IMM Parser - " +
-            // parentPath);
-            if (extractor.shouldParseEmbedded(metadata)) {
-                String line;
-                String strBuf1 = null;
-                String strBuf2 = null;
+      // System.out.println(new Date() + "\t[AVISO]\t" +"IMM Parser - " +
+      // parentPath);
+      if (extractor.shouldParseEmbedded(metadata)) {
+        String line;
+        String strBuf1 = null;
+        String strBuf2 = null;
 
-                // enquanto tivermos entrada e a execucao nao for interrompida
-                while (((line = reader.readLine()) != null) && !Thread.currentThread().isInterrupted()) {
-                    count++;
+        // enquanto tivermos entrada e a execucao nao for interrompida
+        while (((line = reader.readLine()) != null) && !Thread.currentThread().isInterrupted()) {
+          count++;
 
-                    try {
-                        // identificando a mensagem e colocando em um ByteArray
-                        ByteArrayOutputStream message = new ByteArrayOutputStream(100000);
+          try {
+            // identificando a mensagem e colocando em um ByteArray
+            ByteArrayOutputStream message = new ByteArrayOutputStream(100000);
 
-                        if (strBuf1 != null) {
-                            // escrevendo o inicio da mensagem lido
-                            // anteriormente
-                            message.write(strBuf1.getBytes(charsetName));
-                            message.write(0x0A);
-                            if (strBuf2 != null) {
-                                message.write(strBuf2.getBytes(charsetName));
-                                message.write(0x0A);
-                            }
-                        }
-
-                        do {
-
-                            String line2 = null;
-                            if (line.startsWith("--") && line.endsWith("--")) { //$NON-NLS-1$ //$NON-NLS-2$
-                                // verificando se e uma quebra de mensagem do
-                                // IncrediMail
-                                // assumindo que as quebras de mensagens sao
-                                // marcadas por um:
-                                // 0D 0A (Enter) seguido por uma linha iniciada
-                                // por --SEQUENCIA-- e depois por uma linha
-                                // contendo um dos sequintes cabecalhos:
-                                // "Return-Path:", "MIME-Version:",
-                                // "Delivered-To:", "Message-Id", "Subject:" ,
-                                // "From:"
-
-                                line2 = reader.readLine();
-                                if (line2 != null) {
-                                    String tmpStr = line2.toLowerCase();
-                                    if (tmpStr.startsWith("return-path:") || tmpStr.startsWith("mime-version:") //$NON-NLS-1$ //$NON-NLS-2$
-                                            || tmpStr.startsWith("delivered-to:") || tmpStr.startsWith("message-Id") //$NON-NLS-1$ //$NON-NLS-2$
-                                            || tmpStr.startsWith("subject:") || tmpStr.startsWith("from:") //$NON-NLS-1$ //$NON-NLS-2$
-                                            || tmpStr.startsWith("x-store-info:")) { //$NON-NLS-1$
-
-                                        // eh uma nova mensagem
-                                        strBuf1 = line;
-                                        strBuf2 = line2;
-                                        line = null; // saindo do loop da
-                                                     // mensagem
-                                    }
-                                }
-
-                            } else if (line.trim().startsWith("</html>")) { //$NON-NLS-1$
-                                // algumas mensagens foram identificadas apenas
-                                // comecando com o Return-Path
-                                // precedido por uma linha contendo apenas o
-                                // fechamento da tag html, separado
-                                // ou nao por uma linha em branco
-
-                                line2 = reader.readLine();
-                                // System.out.println(new Date() + "\t[AVISO]\t"
-                                // +"IMM Parser - Apos html: " + line2);
-                                if (line2 != null && line2.equals("")) //$NON-NLS-1$
-                                    line2 = reader.readLine(); // pulando uma
-                                                               // quebra
-                                                               // adicional
-                                if (line2 != null) {
-                                    String tmpStr = line2.trim().toLowerCase();
-
-                                    if (tmpStr.startsWith("return-path:")) { //$NON-NLS-1$
-                                        // eh uma nova mensagem
-                                        message.write(line.getBytes(charsetName));
-                                        message.write(0x0A);
-                                        strBuf1 = line2;
-                                        strBuf2 = null;
-                                        line = null; // saindo do loop da
-                                                     // mensagem
-                                    }
-                                }
-                            }
-
-                            if (line != null) {
-                                message.write(line.getBytes(charsetName));
-                                message.write(0x0A);
-                                if (line2 != null) {
-                                    message.write(line2.getBytes(charsetName));
-                                    message.write(0x0A);
-                                }
-                                line = reader.readLine();
-                            }
-
-                        } while (line != null && message.size() < MAIL_MAX_SIZE
-                                && !Thread.currentThread().isInterrupted());
-
-                        // chamando o parser para a mensagem lida
-                        // System.out.println(new Date() + "\t[AVISO]\t"
-                        // +"Parser da mensagem " + count + " da caixa " +
-                        // parentPath);
-                        ByteArrayInputStream messageStream = new ByteArrayInputStream(message.toByteArray());
-                        message = null;
-
-                        Metadata mailMetadata = getMailMetadata(messageStream, count);
-                        messageStream.reset();
-
-                        if (extractor.shouldParseEmbedded(mailMetadata))
-                            extractor.parseEmbedded(messageStream, xhtml, mailMetadata, true);
-
-                    } catch (Throwable t) {
-                        if (count == 1)
-                            throw new TikaException("IncrediMailParser Exception", t); //$NON-NLS-1$
-
-                        log.warn("Fail to extract email {} from {}\t{}", count, name, t.toString()); //$NON-NLS-1$
-                    }
-                }
+            if (strBuf1 != null) {
+              // escrevendo o inicio da mensagem lido
+              // anteriormente
+              message.write(strBuf1.getBytes(charsetName));
+              message.write(0x0A);
+              if (strBuf2 != null) {
+                message.write(strBuf2.getBytes(charsetName));
+                message.write(0x0A);
+              }
             }
-        } finally {
-            reader.close();
-        }
-        xhtml.endDocument();
 
-    }
+            do {
 
-    private Metadata getMailMetadata(InputStream stream, int count) throws Exception {
+              String line2 = null;
+              if (line.startsWith("--") && line.endsWith("--")) { // $NON-NLS-1$ //$NON-NLS-2$
+                // verificando se e uma quebra de mensagem do
+                // IncrediMail
+                // assumindo que as quebras de mensagens sao
+                // marcadas por um:
+                // 0D 0A (Enter) seguido por uma linha iniciada
+                // por --SEQUENCIA-- e depois por uma linha
+                // contendo um dos sequintes cabecalhos:
+                // "Return-Path:", "MIME-Version:",
+                // "Delivered-To:", "Message-Id", "Subject:" ,
+                // "From:"
 
-        Metadata mailMetadata = new Metadata();
-        mailMetadata.set(Metadata.CONTENT_TYPE, "message/rfc822"); //$NON-NLS-1$
+                line2 = reader.readLine();
+                if (line2 != null) {
+                  String tmpStr = line2.toLowerCase();
+                  if (tmpStr.startsWith("return-path:")
+                      || tmpStr.startsWith("mime-version:") // $NON-NLS-1$ //$NON-NLS-2$
+                      || tmpStr.startsWith("delivered-to:")
+                      || tmpStr.startsWith("message-Id") // $NON-NLS-1$ //$NON-NLS-2$
+                      || tmpStr.startsWith("subject:")
+                      || tmpStr.startsWith("from:") // $NON-NLS-1$ //$NON-NLS-2$
+                      || tmpStr.startsWith("x-store-info:")) { // $NON-NLS-1$
 
-        try {
-            RFC822Parser parser = new RFC822Parser();
-            parser.parse(stream, new IgnoreContentHandler(), mailMetadata, new ParseContext());
+                    // eh uma nova mensagem
+                    strBuf1 = line;
+                    strBuf2 = line2;
+                    line = null; // saindo do loop da
+                    // mensagem
+                  }
+                }
 
-        } catch (IOException | SAXException | TikaException e) {
+              } else if (line.trim().startsWith("</html>")) { // $NON-NLS-1$
+                // algumas mensagens foram identificadas apenas
+                // comecando com o Return-Path
+                // precedido por uma linha contendo apenas o
+                // fechamento da tag html, separado
+                // ou nao por uma linha em branco
+
+                line2 = reader.readLine();
+                // System.out.println(new Date() + "\t[AVISO]\t"
+                // +"IMM Parser - Apos html: " + line2);
+                if (line2 != null && line2.equals("")) // $NON-NLS-1$
+                line2 = reader.readLine(); // pulando uma
+                // quebra
+                // adicional
+                if (line2 != null) {
+                  String tmpStr = line2.trim().toLowerCase();
+
+                  if (tmpStr.startsWith("return-path:")) { // $NON-NLS-1$
+                    // eh uma nova mensagem
+                    message.write(line.getBytes(charsetName));
+                    message.write(0x0A);
+                    strBuf1 = line2;
+                    strBuf2 = null;
+                    line = null; // saindo do loop da
+                    // mensagem
+                  }
+                }
+              }
+
+              if (line != null) {
+                message.write(line.getBytes(charsetName));
+                message.write(0x0A);
+                if (line2 != null) {
+                  message.write(line2.getBytes(charsetName));
+                  message.write(0x0A);
+                }
+                line = reader.readLine();
+              }
+
+            } while (line != null
+                && message.size() < MAIL_MAX_SIZE
+                && !Thread.currentThread().isInterrupted());
+
+            // chamando o parser para a mensagem lida
+            // System.out.println(new Date() + "\t[AVISO]\t"
+            // +"Parser da mensagem " + count + " da caixa " +
+            // parentPath);
+            ByteArrayInputStream messageStream = new ByteArrayInputStream(message.toByteArray());
+            message = null;
+
+            Metadata mailMetadata = getMailMetadata(messageStream, count);
+            messageStream.reset();
+
+            if (extractor.shouldParseEmbedded(mailMetadata))
+              extractor.parseEmbedded(messageStream, xhtml, mailMetadata, true);
+
+          } catch (Throwable t) {
             if (count == 1)
-                throw e;
+              throw new TikaException("IncrediMailParser Exception", t); // $NON-NLS-1$
+
+            log.warn(
+                "Fail to extract email {} from {}\t{}", count, name, t.toString()); // $NON-NLS-1$
+          }
         }
+      }
+    } finally {
+      reader.close();
+    }
+    xhtml.endDocument();
+  }
 
-        String subject = mailMetadata.get(TikaCoreProperties.TITLE);
-        if (subject == null || subject.trim().isEmpty())
-            subject = Messages.getString("IncrediMailParser.NoSubject"); //$NON-NLS-1$
-        mailMetadata.set(TikaCoreProperties.TITLE, subject);
+  private Metadata getMailMetadata(InputStream stream, int count) throws Exception {
 
-        return mailMetadata;
+    Metadata mailMetadata = new Metadata();
+    mailMetadata.set(Metadata.CONTENT_TYPE, "message/rfc822"); // $NON-NLS-1$
+
+    try {
+      RFC822Parser parser = new RFC822Parser();
+      parser.parse(stream, new IgnoreContentHandler(), mailMetadata, new ParseContext());
+
+    } catch (IOException | SAXException | TikaException e) {
+      if (count == 1) throw e;
     }
 
+    String subject = mailMetadata.get(TikaCoreProperties.TITLE);
+    if (subject == null || subject.trim().isEmpty())
+      subject = Messages.getString("IncrediMailParser.NoSubject"); // $NON-NLS-1$
+    mailMetadata.set(TikaCoreProperties.TITLE, subject);
+
+    return mailMetadata;
+  }
 }

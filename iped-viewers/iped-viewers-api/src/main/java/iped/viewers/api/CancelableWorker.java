@@ -22,8 +22,7 @@ import javax.swing.*;
 
 public abstract class CancelableWorker<T, V> extends SwingWorker<T, V> {
 
-    public boolean doCancel(boolean mayInterrupt) {
-        return cancel(mayInterrupt);
-    }
-
+  public boolean doCancel(boolean mayInterrupt) {
+    return cancel(mayInterrupt);
+  }
 }

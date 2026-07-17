@@ -20,91 +20,86 @@ package iped.parsers.telegram;
 
 import dpf.ap.gpinf.interfacetelegram.ChatInterface;
 import dpf.ap.gpinf.interfacetelegram.ContactInterface;
-
 import java.util.ArrayList;
 
 public class Chat implements ChatInterface {
-    private ArrayList<MessageMultiMedia> messages = new ArrayList<>();
-    private Contact contact;
-    private String name;
-    private boolean isChannel;
-    private boolean isGroup;
-    private boolean isDeleted;
-    private long id;
+  private ArrayList<MessageMultiMedia> messages = new ArrayList<>();
+  private Contact contact;
+  private String name;
+  private boolean isChannel;
+  private boolean isGroup;
+  private boolean isDeleted;
+  private long id;
 
-    public ArrayList<MessageMultiMedia> getMessages() {
-        return messages;
-    }
+  public ArrayList<MessageMultiMedia> getMessages() {
+    return messages;
+  }
 
-    public void setMessages(ArrayList<MessageMultiMedia> messages) {
-        this.messages = messages;
-    }
+  public void setMessages(ArrayList<MessageMultiMedia> messages) {
+    this.messages = messages;
+  }
 
-    public Contact getC() {
-        return contact;
-    }
+  public Contact getC() {
+    return contact;
+  }
 
-    public void setC(Contact c) {
-        this.contact = c;
-    }
+  public void setC(Contact c) {
+    this.contact = c;
+  }
 
-    public void setC(ContactInterface c) {
-        this.contact = (Contact) c;
-    }
+  public void setC(ContactInterface c) {
+    this.contact = (Contact) c;
+  }
 
-    public String getName() {
-        if (name != null && !name.trim().isEmpty())
-            return name;
-        else if (contact != null)
-            return contact.toString();
-        else
-            return null;
-    }
+  public String getName() {
+    if (name != null && !name.trim().isEmpty()) return name;
+    else if (contact != null) return contact.toString();
+    else return null;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public boolean isGroupOrChannel() {
-        return isGroup || isChannel;
-    }
+  public boolean isGroupOrChannel() {
+    return isGroup || isChannel;
+  }
 
-    public boolean isGroup() {
-        return isGroup;
-    }
+  public boolean isGroup() {
+    return isGroup;
+  }
 
-    public void setGroup(boolean isGroup) {
-        this.isGroup = isGroup;
-    }
+  public void setGroup(boolean isGroup) {
+    this.isGroup = isGroup;
+  }
 
-    public boolean isChannel() {
-        return isChannel;
-    }
+  public boolean isChannel() {
+    return isChannel;
+  }
 
-    public void setChannel(boolean isChannel) {
-        this.isChannel = isChannel;
-    }
+  public void setChannel(boolean isChannel) {
+    this.isChannel = isChannel;
+  }
 
-    public long getId() {
-        return id;
-    }
+  public long getId() {
+    return id;
+  }
 
-    public void setId(long id) {
-        this.id = id;
-    }
+  public void setId(long id) {
+    this.id = id;
+  }
 
-    public Chat(long id, Contact c, String name) {
-        this.id = id;
-        this.contact = c;
-        this.name = name;
-    }
+  public Chat(long id, Contact c, String name) {
+    this.id = id;
+    this.contact = c;
+    this.name = name;
+  }
 
-    public boolean isDeleted() {
-        return isDeleted;
-    }
+  public boolean isDeleted() {
+    return isDeleted;
+  }
 
-    public void setDeleted(boolean isDeleted) {
-        this.isDeleted = isDeleted;
-    }
-
+  public void setDeleted(boolean isDeleted) {
+    this.isDeleted = isDeleted;
+  }
 }

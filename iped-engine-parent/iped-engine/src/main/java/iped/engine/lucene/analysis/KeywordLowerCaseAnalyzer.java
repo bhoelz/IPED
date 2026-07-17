@@ -6,10 +6,9 @@ import org.apache.lucene.analysis.core.LowerCaseFilter;
 
 public class KeywordLowerCaseAnalyzer extends Analyzer {
 
-    @Override
-    protected TokenStreamComponents createComponents(String fieldName) {
-        KeywordTokenizer tokenizer = new KeywordTokenizer();
-        return new TokenStreamComponents(tokenizer, new LowerCaseFilter(tokenizer));
-    }
-
+  @Override
+  protected TokenStreamComponents createComponents(String fieldName) {
+    KeywordTokenizer tokenizer = new KeywordTokenizer();
+    return new TokenStreamComponents(tokenizer, new LowerCaseFilter(tokenizer));
+  }
 }

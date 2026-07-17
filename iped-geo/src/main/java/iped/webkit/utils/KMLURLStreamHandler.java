@@ -7,9 +7,8 @@ import java.net.URLStreamHandler;
 
 public class KMLURLStreamHandler extends URLStreamHandler {
 
-    @Override
-    protected URLConnection openConnection(URL u) throws IOException {
-        return new KMLURLConnection(u);
-    }
-
+  @Override
+  protected URLConnection openConnection(URL u) throws IOException {
+    return new KMLURLConnection(u);
+  }
 }

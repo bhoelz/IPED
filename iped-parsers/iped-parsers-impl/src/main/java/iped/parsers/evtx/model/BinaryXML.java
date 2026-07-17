@@ -1,5 +1,3 @@
 package iped.parsers.evtx.model;
 
-public class BinaryXML {
-
-}
+public class BinaryXML {}

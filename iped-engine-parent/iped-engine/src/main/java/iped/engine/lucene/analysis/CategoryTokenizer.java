@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -26,19 +26,18 @@ import org.apache.lucene.analysis.util.CharTokenizer;
  */
 public class CategoryTokenizer extends CharTokenizer {
 
-    public static final char SEPARATOR = 0x00;
+  public static final char SEPARATOR = 0x00;
 
-    public CategoryTokenizer() {
-        super();
+  public CategoryTokenizer() {
+    super();
+  }
+
+  @Override
+  protected boolean isTokenChar(int c) {
+    if (c == SEPARATOR) {
+      return false;
+    } else {
+      return true;
     }
-
-    @Override
-    protected boolean isTokenChar(int c) {
-        if (c == SEPARATOR) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
+  }
 }

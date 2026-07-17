@@ -10,298 +10,307 @@ import iped.engine.hashdb.HashDBDataSource;
 import iped.parsers.util.ChildPornHashLookup;
 import iped.parsers.util.ChildPornHashLookup.LookupProvider;
 import iped.properties.ExtraProperties;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HashDBLookupTask extends AbstractTask {
 
-    public static final String KNOWN_VALUE = "known";
-    private static final String NSRL_PRODUCT_NAME_PROPERTY = "nsrlProductName";
+  public static final String KNOWN_VALUE = "known";
+  private static final String NSRL_PRODUCT_NAME_PROPERTY = "nsrlProductName";
 
+  public static int excluded;
 
-    public static int excluded;
+  private static boolean taskEnabled;
+  private static boolean excludeKnown;
 
-    private static boolean taskEnabled;
-    private static boolean excludeKnown;
+  private static final AtomicBoolean init = new AtomicBoolean(false);
+  private static final AtomicBoolean finish = new AtomicBoolean(false);
 
-    private static final AtomicBoolean init = new AtomicBoolean(false);
-    private static final AtomicBoolean finish = new AtomicBoolean(false);
+  private static final AtomicLong totTime = new AtomicLong();
+  private static final AtomicLong totProcessed = new AtomicLong();
+  private static final AtomicLong totFound = new AtomicLong();
 
-    private static final AtomicLong totTime = new AtomicLong();
-    private static final AtomicLong totProcessed = new AtomicLong();
-    private static final AtomicLong totFound = new AtomicLong();
+  private static File hashDBFile;
+  private static String[] hashesAttributes;
 
-    private static File hashDBFile;
-    private static String[] hashesAttributes;
+  private HashDBDataSource hashDBDataSource;
 
-    private HashDBDataSource hashDBDataSource;
+  private byte[][] hashes;
+  private final Map<String, String> properties = new HashMap<String, String>();
 
-    private byte[][] hashes;
-    private final Map<String, String> properties = new HashMap<String, String>();
+  private static String nsrlDefaultStatus;
+  private static boolean nsrlDefaultMerge;
+  private static final Map<String, String> nsrlStatusByProdName = new HashMap<String, String>();
+  private static final Map<String, Boolean> nsrlMergeByProdName = new HashMap<String, Boolean>();
 
-    private static String nsrlDefaultStatus;
-    private static boolean nsrlDefaultMerge;
-    private static final Map<String, String> nsrlStatusByProdName = new HashMap<String, String>();
-    private static final Map<String, Boolean> nsrlMergeByProdName = new HashMap<String, Boolean>();
+  @Override
+  public List<Configurable<?>> getConfigurables() {
+    return Arrays.asList(new HashDBLookupConfig());
+  }
 
-    @Override
-    public List<Configurable<?>> getConfigurables() {
-        return Arrays.asList(new HashDBLookupConfig());
-    }
-
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
-        synchronized (init) {
-            if (!init.get()) {
-                HashDBLookupConfig hashDBConfig = configurationManager.findObject(HashDBLookupConfig.class);
-                taskEnabled = hashDBConfig.isEnabled();
-                if (taskEnabled) {
-                    HashTaskConfig hashConfig = configurationManager.findObject(HashTaskConfig.class);
-                    if (!hashConfig.isEnabled()) {
-                        log.warn("No hash enabled.");
-                        taskEnabled = false;
-                    } else {
-                        hashesAttributes = new String[HashDB.hashTypes.length];
-                        for (String hashType : hashConfig.getAlgorithms()) {
-                            hashType = hashType.trim();
-                            int idx = HashDB.hashType(hashType);
-                            if (idx >= 0) {
-                                hashesAttributes[idx] = hashType;
-                            }
-                        }
-                        LocalConfig localConfig = configurationManager.findObject(LocalConfig.class);
-                        if (localConfig.getHashDbFile() == null) {
-                            log.error("Hashes database path (hashesDB) must be configured in {}", Configuration.LOCAL_CONFIG);
-                            taskEnabled = false;
-                        } else {
-                            hashDBFile = localConfig.getHashDbFile();
-                            if (!hashDBFile.exists() || !hashDBFile.canRead() || !hashDBFile.isFile()) {
-                                String msg = (!hashDBFile.exists() ? "Missing": "Invalid") + " hashes database file: " + hashDBFile.getAbsolutePath();
-                                if (hasIpedDatasource()) {
-                                    log.warn(msg);
-                                } else {
-                                    log.error(msg);
-                                }
-                                taskEnabled = false;
-                            } else {
-                                excludeKnown = hashDBConfig.isExcludeKnown();
-                                hashDBDataSource = new HashDBDataSource(hashDBFile);
-                                addLookupProvider(hashDBDataSource);
-                                if (hashDBConfig.getNsrlConfig() != null) {
-                                    loadNsrlConfig(hashDBConfig.getNsrlConfig());
-                                    if (!nsrlStatusByProdName.isEmpty()) {
-                                        log.info("NSRL product configurations loaded: {}", nsrlStatusByProdName.size());
-                                    }
-                                }
-                                log.info("HashDB: {}", hashDBFile.getAbsolutePath());
-                                log.info("Exclude Known: {}", excludeKnown);
-                            }
-                        }
-                    }
-                }
-                log.info("Task {}.", taskEnabled ? "enabled" : "disabled");
-                init.set(true);
-            }
-        }
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
+    synchronized (init) {
+      if (!init.get()) {
+        HashDBLookupConfig hashDBConfig = configurationManager.findObject(HashDBLookupConfig.class);
+        taskEnabled = hashDBConfig.isEnabled();
         if (taskEnabled) {
-            hashes = new byte[hashesAttributes.length][];
-            if (hashDBDataSource == null) hashDBDataSource = new HashDBDataSource(hashDBFile);
-        }
-    }
-
-    private void addLookupProvider(HashDBDataSource hashDBDataSource) {
-        ChildPornHashLookup.addLookupProvider(new LookupProvider() {
-            public List<String> lookupHash(String algorithm, String hash) {
-                try {
-                    return hashDBDataSource.lookupSets(algorithm, hash);
-                } catch (Exception e) {
-                    log.warn("Error in lookupHash " + algorithm + " : " + hash, e);
-                }
-                return null;
+          HashTaskConfig hashConfig = configurationManager.findObject(HashTaskConfig.class);
+          if (!hashConfig.isEnabled()) {
+            log.warn("No hash enabled.");
+            taskEnabled = false;
+          } else {
+            hashesAttributes = new String[HashDB.hashTypes.length];
+            for (String hashType : hashConfig.getAlgorithms()) {
+              hashType = hashType.trim();
+              int idx = HashDB.hashType(hashType);
+              if (idx >= 0) {
+                hashesAttributes[idx] = hashType;
+              }
             }
-        });
-    }
-
-    @Override
-    public void finish() throws Exception {
-        synchronized (finish) {
-            if (!finish.get()) {
-                if (hashDBDataSource != null) {
-                    hashDBDataSource.close();
+            LocalConfig localConfig = configurationManager.findObject(LocalConfig.class);
+            if (localConfig.getHashDbFile() == null) {
+              log.error(
+                  "Hashes database path (hashesDB) must be configured in {}",
+                  Configuration.LOCAL_CONFIG);
+              taskEnabled = false;
+            } else {
+              hashDBFile = localConfig.getHashDbFile();
+              if (!hashDBFile.exists() || !hashDBFile.canRead() || !hashDBFile.isFile()) {
+                String msg =
+                    (!hashDBFile.exists() ? "Missing" : "Invalid")
+                        + " hashes database file: "
+                        + hashDBFile.getAbsolutePath();
+                if (hasIpedDatasource()) {
+                  log.warn(msg);
+                } else {
+                  log.error(msg);
                 }
-                if (excluded > 0) {
-                    log.info("Items ignored by hash database lookup: {}", excluded);
+                taskEnabled = false;
+              } else {
+                excludeKnown = hashDBConfig.isExcludeKnown();
+                hashDBDataSource = new HashDBDataSource(hashDBFile);
+                addLookupProvider(hashDBDataSource);
+                if (hashDBConfig.getNsrlConfig() != null) {
+                  loadNsrlConfig(hashDBConfig.getNsrlConfig());
+                  if (!nsrlStatusByProdName.isEmpty()) {
+                    log.info("NSRL product configurations loaded: {}", nsrlStatusByProdName.size());
+                  }
                 }
-                log.info("Total items processed: {}", totProcessed.longValue());
-                if (totProcessed.longValue() > 0) {
-                    log.info("Total items found: {}", totFound.longValue());
-                    log.info("Average processing time (ms/item): {}", String.format("%.2f", totTime.longValue() / 1e6 / totProcessed.longValue()));
-                }
-                finish.set(true);
+                log.info("HashDB: {}", hashDBFile.getAbsolutePath());
+                log.info("Exclude Known: {}", excludeKnown);
+              }
             }
+          }
         }
+        log.info("Task {}.", taskEnabled ? "enabled" : "disabled");
+        init.set(true);
+      }
     }
-
-    @Override
-    public boolean isEnabled() {
-        return taskEnabled;
+    if (taskEnabled) {
+      hashes = new byte[hashesAttributes.length][];
+      if (hashDBDataSource == null) hashDBDataSource = new HashDBDataSource(hashDBFile);
     }
+  }
 
-    public static void setEnabled(boolean enabled) {
-        taskEnabled = enabled;
-    }
-
-    @Override
-    protected void process(IItem evidence) throws Exception {
-        if (!isEnabled()) return;
-        if (evidence.isDir() || evidence.isRoot() || evidence.getLength() == null) {
-            return;
-        }
-        if (evidence.getLength() == 0) {
-            // ignore zero sized files
-            if (excludeKnown) {
-                evidence.setToIgnore(true);
-                synchronized (init) {
-                    excluded++;
-                }
-            }
-            return;
-        }
-        long t = System.nanoTime();
-        Arrays.fill(hashes, null);
-        boolean hasHash = false;
-        boolean found = false;
-        for (int i = 0; i < hashesAttributes.length; i++) {
-            String key = hashesAttributes[i];
-            if (key != null) {
-                Object hashValue = evidence.getExtraAttribute(key);
-                if (hashValue != null && (hashValue instanceof String)) {
-                    String value = (String) hashValue;
-                    if (!value.isEmpty()) {
-                        hashes[i] = HashDB.hashStrToBytes(value, HashDB.hashBytesLen[i]);
-                        hasHash = true;
-                    }
-                }
-            }
-        }
-        if (hasHash) {
-            properties.clear();
+  private void addLookupProvider(HashDBDataSource hashDBDataSource) {
+    ChildPornHashLookup.addLookupProvider(
+        new LookupProvider() {
+          public List<String> lookupHash(String algorithm, String hash) {
             try {
-                hashDBDataSource.lookup(hashes, properties);
+              return hashDBDataSource.lookupSets(algorithm, hash);
             } catch (Exception e) {
-                log.warn("Error looking up evidence " + evidence, e);
-                return;
+              log.warn("Error in lookupHash " + algorithm + " : " + hash, e);
             }
-            if (!properties.isEmpty()) {
-                List<String> status = null;
-                String nsrlProductName = null;
-                found = true;
-                for (String key : properties.keySet()) {
-                    String value = properties.get(key);
-                    List<String> list = new ArrayList<String>();
-                    String[] c = value.split("\\|");
-                    for (String a : c) {
-                        a = a.trim();
-                        if (!a.isEmpty()) {
-                            list.add(a);
-                        }
-                    }
-                    if (!list.isEmpty()) {
-                        evidence.setExtraAttribute(ExtraProperties.HASHDB_PREFIX + key, list);
-                        if (key.equalsIgnoreCase(ExtraProperties.STATUS_PROPERTY)) {
-                            status = list;
-                        } else if (key.equalsIgnoreCase(NSRL_PRODUCT_NAME_PROPERTY)) {
-                            nsrlProductName = value;
-                        }
-                    }
-                }
-                //NSRL specific: set item status based on product name
-                if (nsrlProductName != null) {
-                    boolean modified = false;
-                    boolean productFound = false;
-                    String[] productNames = nsrlProductName.split("\\|");
-                    for (String name : productNames) {
-                        String s = nsrlStatusByProdName.get(name);
-                        if (s != null) {
-                            productFound = true;
-                            Boolean merge = nsrlMergeByProdName.get(name);
-                            if (status == null || status.isEmpty() || Boolean.TRUE.equals(merge)) {
-                                if (status == null) {
-                                    status = new ArrayList<String>();
-                                }
-                                if (!status.contains(s)) {
-                                    status.add(s);
-                                    modified = true;
-                                }
-                            }
-                        }
-                    }
-                    if (!productFound && nsrlDefaultStatus != null) {
-                        if (status == null || status.isEmpty() || nsrlDefaultMerge) {
-                            if (status == null) {
-                                status = new ArrayList<String>();
-                            }
-                            if (!status.contains(nsrlDefaultStatus)) {
-                                status.add(nsrlDefaultStatus);
-                                modified = true;
-                            }
-                        }
-                    }
-                    if (modified) {
-                        Collections.sort(status);
-                        evidence.setExtraAttribute(ExtraProperties.HASHDB_STATUS, status);
-                    }
-                }
-                //Ignore only if there is a single status = "known"
-                if (excludeKnown && status != null && status.size() == 1 && status.get(0).equalsIgnoreCase(KNOWN_VALUE)) {
-                    evidence.setToIgnore(true);
-                    synchronized (init) {
-                        excluded++;
-                    }
-                }
-            }
-        }
-        t = System.nanoTime() - t;
-        totTime.addAndGet(t);
-        totProcessed.incrementAndGet();
-        if (found) totFound.incrementAndGet();
-    }
+            return null;
+          }
+        });
+  }
 
-    private void loadNsrlConfig(String nsrlConfig) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(nsrlConfig);
-            JsonNode node = root.get("defaultStatus");
-            if (node != null) {
-                nsrlDefaultStatus = node.asText();
-            }
-            node = root.get("defaultWhenPresent");
-            if (node != null) {
-                nsrlDefaultMerge = "merge".equalsIgnoreCase(node.asText());
-            }
-            JsonNode arr = root.get("productStatus");
-            if (arr != null) {
-                for (int i = 0; i < arr.size(); i++) {
-                    node = arr.get(i);
-                    JsonNode child = node.get("status");
-                    String status = child.asText();
-                    child = node.get("whenPresent");
-                    boolean merge = "merge".equalsIgnoreCase(child.asText());
-                    child = node.get("productNames");
-                    for (int j = 0; j < child.size(); j++) {
-                        String prodName = child.get(j).asText();
-                        nsrlStatusByProdName.put(prodName, status);
-                        nsrlMergeByProdName.put(prodName, merge);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error reading NSRL configuration file: " + HashDBLookupConfig.NSRL_CONFIG_FILE, e);
+  @Override
+  public void finish() throws Exception {
+    synchronized (finish) {
+      if (!finish.get()) {
+        if (hashDBDataSource != null) {
+          hashDBDataSource.close();
         }
+        if (excluded > 0) {
+          log.info("Items ignored by hash database lookup: {}", excluded);
+        }
+        log.info("Total items processed: {}", totProcessed.longValue());
+        if (totProcessed.longValue() > 0) {
+          log.info("Total items found: {}", totFound.longValue());
+          log.info(
+              "Average processing time (ms/item): {}",
+              String.format("%.2f", totTime.longValue() / 1e6 / totProcessed.longValue()));
+        }
+        finish.set(true);
+      }
     }
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return taskEnabled;
+  }
+
+  public static void setEnabled(boolean enabled) {
+    taskEnabled = enabled;
+  }
+
+  @Override
+  protected void process(IItem evidence) throws Exception {
+    if (!isEnabled()) return;
+    if (evidence.isDir() || evidence.isRoot() || evidence.getLength() == null) {
+      return;
+    }
+    if (evidence.getLength() == 0) {
+      // ignore zero sized files
+      if (excludeKnown) {
+        evidence.setToIgnore(true);
+        synchronized (init) {
+          excluded++;
+        }
+      }
+      return;
+    }
+    long t = System.nanoTime();
+    Arrays.fill(hashes, null);
+    boolean hasHash = false;
+    boolean found = false;
+    for (int i = 0; i < hashesAttributes.length; i++) {
+      String key = hashesAttributes[i];
+      if (key != null) {
+        Object hashValue = evidence.getExtraAttribute(key);
+        if (hashValue != null && (hashValue instanceof String)) {
+          String value = (String) hashValue;
+          if (!value.isEmpty()) {
+            hashes[i] = HashDB.hashStrToBytes(value, HashDB.hashBytesLen[i]);
+            hasHash = true;
+          }
+        }
+      }
+    }
+    if (hasHash) {
+      properties.clear();
+      try {
+        hashDBDataSource.lookup(hashes, properties);
+      } catch (Exception e) {
+        log.warn("Error looking up evidence " + evidence, e);
+        return;
+      }
+      if (!properties.isEmpty()) {
+        List<String> status = null;
+        String nsrlProductName = null;
+        found = true;
+        for (String key : properties.keySet()) {
+          String value = properties.get(key);
+          List<String> list = new ArrayList<String>();
+          String[] c = value.split("\\|");
+          for (String a : c) {
+            a = a.trim();
+            if (!a.isEmpty()) {
+              list.add(a);
+            }
+          }
+          if (!list.isEmpty()) {
+            evidence.setExtraAttribute(ExtraProperties.HASHDB_PREFIX + key, list);
+            if (key.equalsIgnoreCase(ExtraProperties.STATUS_PROPERTY)) {
+              status = list;
+            } else if (key.equalsIgnoreCase(NSRL_PRODUCT_NAME_PROPERTY)) {
+              nsrlProductName = value;
+            }
+          }
+        }
+        // NSRL specific: set item status based on product name
+        if (nsrlProductName != null) {
+          boolean modified = false;
+          boolean productFound = false;
+          String[] productNames = nsrlProductName.split("\\|");
+          for (String name : productNames) {
+            String s = nsrlStatusByProdName.get(name);
+            if (s != null) {
+              productFound = true;
+              Boolean merge = nsrlMergeByProdName.get(name);
+              if (status == null || status.isEmpty() || Boolean.TRUE.equals(merge)) {
+                if (status == null) {
+                  status = new ArrayList<String>();
+                }
+                if (!status.contains(s)) {
+                  status.add(s);
+                  modified = true;
+                }
+              }
+            }
+          }
+          if (!productFound && nsrlDefaultStatus != null) {
+            if (status == null || status.isEmpty() || nsrlDefaultMerge) {
+              if (status == null) {
+                status = new ArrayList<String>();
+              }
+              if (!status.contains(nsrlDefaultStatus)) {
+                status.add(nsrlDefaultStatus);
+                modified = true;
+              }
+            }
+          }
+          if (modified) {
+            Collections.sort(status);
+            evidence.setExtraAttribute(ExtraProperties.HASHDB_STATUS, status);
+          }
+        }
+        // Ignore only if there is a single status = "known"
+        if (excludeKnown
+            && status != null
+            && status.size() == 1
+            && status.get(0).equalsIgnoreCase(KNOWN_VALUE)) {
+          evidence.setToIgnore(true);
+          synchronized (init) {
+            excluded++;
+          }
+        }
+      }
+    }
+    t = System.nanoTime() - t;
+    totTime.addAndGet(t);
+    totProcessed.incrementAndGet();
+    if (found) totFound.incrementAndGet();
+  }
+
+  private void loadNsrlConfig(String nsrlConfig) {
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode root = mapper.readTree(nsrlConfig);
+      JsonNode node = root.get("defaultStatus");
+      if (node != null) {
+        nsrlDefaultStatus = node.asText();
+      }
+      node = root.get("defaultWhenPresent");
+      if (node != null) {
+        nsrlDefaultMerge = "merge".equalsIgnoreCase(node.asText());
+      }
+      JsonNode arr = root.get("productStatus");
+      if (arr != null) {
+        for (int i = 0; i < arr.size(); i++) {
+          node = arr.get(i);
+          JsonNode child = node.get("status");
+          String status = child.asText();
+          child = node.get("whenPresent");
+          boolean merge = "merge".equalsIgnoreCase(child.asText());
+          child = node.get("productNames");
+          for (int j = 0; j < child.size(); j++) {
+            String prodName = child.get(j).asText();
+            nsrlStatusByProdName.put(prodName, status);
+            nsrlMergeByProdName.put(prodName, merge);
+          }
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error reading NSRL configuration file: " + HashDBLookupConfig.NSRL_CONFIG_FILE, e);
+    }
+  }
 }

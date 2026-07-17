@@ -5,29 +5,26 @@ import java.io.Serializable;
 
 public class OCROutputFolder implements Serializable {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    private static File staticPath;
+  private static File staticPath;
 
-    private File path;
+  private File path;
 
-    public OCROutputFolder() {
-        this.path = staticPath;
-    }
+  public OCROutputFolder() {
+    this.path = staticPath;
+  }
 
-    public OCROutputFolder(File path) {
-        this.path = path;
-    }
+  public OCROutputFolder(File path) {
+    this.path = path;
+  }
 
-    public File getPath() {
-        return path;
-    }
+  public File getPath() {
+    return path;
+  }
 
-    public static void setStaticPath(File path) {
-        staticPath = path;
-    }
-
+  public static void setStaticPath(File path) {
+    staticPath = path;
+  }
 }

@@ -1,7 +1,6 @@
 package iped.parsers.discord.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Date;
 import java.util.List;
 
@@ -11,146 +10,146 @@ import java.util.List;
  *
  */
 public class DiscordEmbed {
-    @JsonProperty("type")
-    private String type;
+  @JsonProperty("type")
+  private String type;
 
-    @JsonProperty("description")
-    private String description;
+  @JsonProperty("description")
+  private String description;
 
-    @JsonProperty("fields")
-    private List<DiscordField> fields;
+  @JsonProperty("fields")
+  private List<DiscordField> fields;
 
-    @JsonProperty("author")
-    private DiscordAuthor author;
+  @JsonProperty("author")
+  private DiscordAuthor author;
 
-    @JsonProperty("thumbnail")
-    private DiscordThumbnail thumbnail;
+  @JsonProperty("thumbnail")
+  private DiscordThumbnail thumbnail;
 
-    @JsonProperty("footer")
-    private DiscordFooter footer;
+  @JsonProperty("footer")
+  private DiscordFooter footer;
 
-    @JsonProperty("url")
-    private String url;
+  @JsonProperty("url")
+  private String url;
 
-    @JsonProperty("title")
-    private String title;
+  @JsonProperty("title")
+  private String title;
 
-    @JsonProperty("color")
-    private int color;
+  @JsonProperty("color")
+  private int color;
 
-    @JsonProperty("provider")
-    private DiscordProvider provider;
+  @JsonProperty("provider")
+  private DiscordProvider provider;
 
-    @JsonProperty("video")
-    private DiscordVideo video;
+  @JsonProperty("video")
+  private DiscordVideo video;
 
-    @JsonProperty("image")
-    private DiscordImage image;
+  @JsonProperty("image")
+  private DiscordImage image;
 
-    @JsonProperty("timestamp")
-    private Date timestamp;
+  @JsonProperty("timestamp")
+  private Date timestamp;
 
-    public Date getTimestamp() {
-        return timestamp;
-    }
+  public Date getTimestamp() {
+    return timestamp;
+  }
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
+  }
 
-    public DiscordImage getImage() {
-        return image;
-    }
+  public DiscordImage getImage() {
+    return image;
+  }
 
-    public void setImage(DiscordImage image) {
-        this.image = image;
-    }
+  public void setImage(DiscordImage image) {
+    this.image = image;
+  }
 
-    public String getType() {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public List<DiscordField> getFields() {
-        return fields;
-    }
+  public List<DiscordField> getFields() {
+    return fields;
+  }
 
-    public void setFields(List<DiscordField> fields) {
-        this.fields = fields;
-    }
+  public void setFields(List<DiscordField> fields) {
+    this.fields = fields;
+  }
 
-    public DiscordAuthor getAuthor() {
-        return author;
-    }
+  public DiscordAuthor getAuthor() {
+    return author;
+  }
 
-    public void setAuthor(DiscordAuthor author) {
-        this.author = author;
-    }
+  public void setAuthor(DiscordAuthor author) {
+    this.author = author;
+  }
 
-    public DiscordThumbnail getThumbnail() {
-        return thumbnail;
-    }
+  public DiscordThumbnail getThumbnail() {
+    return thumbnail;
+  }
 
-    public void setThumbnail(DiscordThumbnail thumbnail) {
-        this.thumbnail = thumbnail;
-    }
+  public void setThumbnail(DiscordThumbnail thumbnail) {
+    this.thumbnail = thumbnail;
+  }
 
-    public DiscordFooter getFooter() {
-        return footer;
-    }
+  public DiscordFooter getFooter() {
+    return footer;
+  }
 
-    public void setFooter(DiscordFooter footer) {
-        this.footer = footer;
-    }
+  public void setFooter(DiscordFooter footer) {
+    this.footer = footer;
+  }
 
-    public String getUrl() {
-        return url;
-    }
+  public String getUrl() {
+    return url;
+  }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+  public void setUrl(String url) {
+    this.url = url;
+  }
 
-    public String getTitle() {
-        return title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public int getColor() {
-        return color;
-    }
+  public int getColor() {
+    return color;
+  }
 
-    public void setColor(int color) {
-        this.color = color;
-    }
+  public void setColor(int color) {
+    this.color = color;
+  }
 
-    public DiscordProvider getProvider() {
-        return provider;
-    }
+  public DiscordProvider getProvider() {
+    return provider;
+  }
 
-    public void setProvider(DiscordProvider provider) {
-        this.provider = provider;
-    }
+  public void setProvider(DiscordProvider provider) {
+    this.provider = provider;
+  }
 
-    public DiscordVideo getVideo() {
-        return video;
-    }
+  public DiscordVideo getVideo() {
+    return video;
+  }
 
-    public void setVideo(DiscordVideo video) {
-        this.video = video;
-    }
+  public void setVideo(DiscordVideo video) {
+    this.video = video;
+  }
 }

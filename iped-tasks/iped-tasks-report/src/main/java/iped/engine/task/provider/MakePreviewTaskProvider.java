@@ -5,25 +5,24 @@ import iped.engine.task.MakePreviewTask;
 import iped.tasks.spi.TaskDependency;
 import iped.tasks.spi.TaskDescriptor;
 import iped.tasks.spi.TaskProvider;
-
 import java.util.List;
 
 public class MakePreviewTaskProvider implements TaskProvider<AbstractTask> {
 
-    private static final String TASK_ID = "iped.engine.task.MakePreviewTask";
+  private static final String TASK_ID = "iped.engine.task.MakePreviewTask";
 
-    @Override
-    public TaskDescriptor descriptor() {
-        return TaskDescriptor.of(TASK_ID, dependencies());
-    }
+  @Override
+  public TaskDescriptor descriptor() {
+    return TaskDescriptor.of(TASK_ID, dependencies());
+  }
 
-    @Override
-    public AbstractTask createTask() {
-        return new MakePreviewTask();
-    }
+  @Override
+  public AbstractTask createTask() {
+    return new MakePreviewTask();
+  }
 
-    @Override
-    public List<TaskDependency> dependencies() {
-        return List.of(TaskDependency.after("iped.engine.task.NamedEntityTask"));
-    }
+  @Override
+  public List<TaskDependency> dependencies() {
+    return List.of(TaskDependency.after("iped.engine.task.NamedEntityTask"));
+  }
 }

@@ -5,5 +5,5 @@ import java.io.PrintStream;
 
 public interface ResultWriter {
 
-    void write(RunResult result, PrintStream out) throws IOException;
+  void write(RunResult result, PrintStream out) throws IOException;
 }

@@ -2,14 +2,13 @@ package iped.engine.task.regex.validator.swift;
 
 public class SwiftCode {
 
-    private String code;
+  private String code;
 
-    public SwiftCode(String code) {
-        this.code = code;
-    }
+  public SwiftCode(String code) {
+    this.code = code;
+  }
 
-    public String getCode() {
-        return code;
-    }
-
+  public String getCode() {
+    return code;
+  }
 }

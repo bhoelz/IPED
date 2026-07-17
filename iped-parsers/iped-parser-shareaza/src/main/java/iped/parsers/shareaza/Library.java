@@ -19,60 +19,59 @@
 package iped.parsers.shareaza;
 
 import iped.search.IItemSearcher;
-import org.apache.tika.sax.XHTMLContentHandler;
-import org.xml.sax.SAXException;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.tika.sax.XHTMLContentHandler;
+import org.xml.sax.SAXException;
 
 /**
  * @author Fabio Melo Pfeifer <pfeifer.fmp@dpf.gov.br>
  */
 public class Library extends ShareazaEntity {
 
-    /* private String time; */
-    private int version;
-    private final LibraryDictionary dictionary = new LibraryDictionary();
-    private final LibraryMaps maps;
-    private final Map<Integer, LibraryFile> indexToFile;
-    private final LibraryFolders folders;
-    private final LibraryHistory history;
+  /* private String time; */
+  private int version;
+  private final LibraryDictionary dictionary = new LibraryDictionary();
+  private final LibraryMaps maps;
+  private final Map<Integer, LibraryFile> indexToFile;
+  private final LibraryFolders folders;
+  private final LibraryHistory history;
 
-    public Library() {
-        super("LIBRARY"); //$NON-NLS-1$
-        indexToFile = new HashMap<>();
-        maps = new LibraryMaps();
-        folders = new LibraryFolders(indexToFile);
-        history = new LibraryHistory();
-    }
+  public Library() {
+    super("LIBRARY"); // $NON-NLS-1$
+    indexToFile = new HashMap<>();
+    maps = new LibraryMaps();
+    folders = new LibraryFolders(indexToFile);
+    history = new LibraryHistory();
+  }
 
-    @Override
-    public void read(MFCParser ar) throws IOException {
-        /* time = */ar.readLong();
-        version = ar.readInt();
-        dictionary.read(ar, version);
-        maps.read(ar, version);
-        folders.read(ar, version);
-        history.read(ar, version);
-        maps.readExtra(ar, version, indexToFile);
-    }
+  @Override
+  public void read(MFCParser ar) throws IOException {
+    /* time= */ ar.readLong();
+    version = ar.readInt();
+    dictionary.read(ar, version);
+    maps.read(ar, version);
+    folders.read(ar, version);
+    history.read(ar, version);
+    maps.readExtra(ar, version, indexToFile);
+  }
 
-    @Override
-    protected void writeImpl(ShareazaOutputGenerator f) {
-        f.out("Version: " + version); //$NON-NLS-1$
-        f.out("Time: ##TODO: decode FILETIME struct"); //$NON-NLS-1$
-        folders.write(f);
-        history.write(f);
-        maps.write(f);
-        dictionary.write(f);
-    }
+  @Override
+  protected void writeImpl(ShareazaOutputGenerator f) {
+    f.out("Version: " + version); // $NON-NLS-1$
+    f.out("Time: ##TODO: decode FILETIME struct"); // $NON-NLS-1$
+    folders.write(f);
+    history.write(f);
+    maps.write(f);
+    dictionary.write(f);
+  }
 
-    public void printTable(XHTMLContentHandler html, IItemSearcher searcher) throws SAXException {
-        folders.printTable(html, searcher);
-    }
+  public void printTable(XHTMLContentHandler html, IItemSearcher searcher) throws SAXException {
+    folders.printTable(html, searcher);
+  }
 
-    public LibraryFolders getLibraryFolders() {
-        return folders;
-    }
+  public LibraryFolders getLibraryFolders() {
+    return folders;
+  }
 }

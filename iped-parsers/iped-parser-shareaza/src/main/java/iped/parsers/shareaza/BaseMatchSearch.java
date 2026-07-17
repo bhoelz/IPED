@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -25,23 +25,22 @@ import java.io.IOException;
  */
 class BaseMatchSearch extends ShareazaEntity {
 
-    private String schema;
-    private final MatchList matchList = new MatchList();
+  private String schema;
+  private final MatchList matchList = new MatchList();
 
-    public BaseMatchSearch() {
-        super("BASE MATCH SEARCH"); //$NON-NLS-1$
-    }
+  public BaseMatchSearch() {
+    super("BASE MATCH SEARCH"); // $NON-NLS-1$
+  }
 
-    @Override
-    public void read(MFCParser ar) throws IOException {
-        schema = ar.readString();
-        matchList.read(ar);
-    }
+  @Override
+  public void read(MFCParser ar) throws IOException {
+    schema = ar.readString();
+    matchList.read(ar);
+  }
 
-    @Override
-    protected void writeImpl(ShareazaOutputGenerator f) {
-        f.out("Schema: " + schema); //$NON-NLS-1$
-        matchList.write(f);
-    }
-
+  @Override
+  protected void writeImpl(ShareazaOutputGenerator f) {
+    f.out("Schema: " + schema); // $NON-NLS-1$
+    matchList.write(f);
+  }
 }

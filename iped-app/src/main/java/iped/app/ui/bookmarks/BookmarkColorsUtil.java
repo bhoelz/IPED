@@ -1,7 +1,6 @@
 package iped.app.ui.bookmarks;
 
 import iped.utils.IOUtil;
-
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
@@ -10,93 +9,96 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 public class BookmarkColorsUtil {
-    private static final String colorsMemoFile = System.getProperty("user.home") + "/.iped/bkmclr.dat";
+  private static final String colorsMemoFile =
+      System.getProperty("user.home") + "/.iped/bkmclr.dat";
 
-    private static Map<Integer, Color> colorsMemo = Collections.synchronizedMap(new LinkedHashMap<Integer, Color>());
+  private static Map<Integer, Color> colorsMemo =
+      Collections.synchronizedMap(new LinkedHashMap<Integer, Color>());
 
-    private static final Map<Color, Color> backgroundToForeground = Collections
-            .synchronizedMap(new HashMap<Color, Color>());
+  private static final Map<Color, Color> backgroundToForeground =
+      Collections.synchronizedMap(new HashMap<Color, Color>());
 
-    static {
-        for (int i = 0; i < BookmarkStandardColors.numStandardColors; i++) {
-            Color foreground = i * 2 >= BookmarkStandardColors.numStandardColors ? Color.black : Color.white;
-            backgroundToForeground.put(BookmarkStandardColors.colors[i], foreground);
-        }
-        readColorsMemo();
+  static {
+    for (int i = 0; i < BookmarkStandardColors.numStandardColors; i++) {
+      Color foreground =
+          i * 2 >= BookmarkStandardColors.numStandardColors ? Color.black : Color.white;
+      backgroundToForeground.put(BookmarkStandardColors.colors[i], foreground);
     }
+    readColorsMemo();
+  }
 
-    private static int nameToKey(String name) {
-        return name.toLowerCase().hashCode();
-    }
+  private static int nameToKey(String name) {
+    return name.toLowerCase().hashCode();
+  }
 
-    public static void storeNameToColor(String name, Color color) {
-        colorsMemo.put(nameToKey(name), color);
-        writeColorsMemo();
-    }
+  public static void storeNameToColor(String name, Color color) {
+    colorsMemo.put(nameToKey(name), color);
+    writeColorsMemo();
+  }
 
-    public static Color getInitialColor(Set<Color> usedColors, String name) {
-        int key = nameToKey(name);
-        if (colorsMemo.containsKey(key)) {
-            return colorsMemo.get(key);
-        }
-        int num = BookmarkStandardColors.numStandardColors;
-        int off = (key % num + num) % num;
-        Color ret = BookmarkStandardColors.colors[off];
-        for (int i = 0; i < num; i++) {
-            int idx = (off + i) % num;
-            Color c = BookmarkStandardColors.colors[idx];
-            if (!usedColors.contains(c)) {
-                ret = c;
-                break;
-            }
-        }
-        return ret;
+  public static Color getInitialColor(Set<Color> usedColors, String name) {
+    int key = nameToKey(name);
+    if (colorsMemo.containsKey(key)) {
+      return colorsMemo.get(key);
     }
+    int num = BookmarkStandardColors.numStandardColors;
+    int off = (key % num + num) % num;
+    Color ret = BookmarkStandardColors.colors[off];
+    for (int i = 0; i < num; i++) {
+      int idx = (off + i) % num;
+      Color c = BookmarkStandardColors.colors[idx];
+      if (!usedColors.contains(c)) {
+        ret = c;
+        break;
+      }
+    }
+    return ret;
+  }
 
-    static Color getForeground(Color background) {
-        Color foreground = backgroundToForeground.get(background);
-        if (foreground == null) {
-            int[] c = new int[] { background.getRed(), background.getGreen(), background.getBlue() };
-            Arrays.sort(c);
-            foreground = c[0] >= 100 && c[1] >= 150 && c[2] >= 200 ? Color.black : Color.white;
-            backgroundToForeground.put(background, foreground);
-        }
-        return foreground;
+  static Color getForeground(Color background) {
+    Color foreground = backgroundToForeground.get(background);
+    if (foreground == null) {
+      int[] c = new int[] {background.getRed(), background.getGreen(), background.getBlue()};
+      Arrays.sort(c);
+      foreground = c[0] >= 100 && c[1] >= 150 && c[2] >= 200 ? Color.black : Color.white;
+      backgroundToForeground.put(background, foreground);
     }
+    return foreground;
+  }
 
-    private static synchronized void writeColorsMemo() {
-        ObjectOutputStream oos = null;
-        try {
-            File tmp = new File(colorsMemoFile + ".tmp");
-            tmp.deleteOnExit();
-            if (tmp.exists()) {
-                tmp.delete();
-            }
-            oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tmp)));
-            oos.writeObject(colorsMemo);
-            oos.close();
-            Files.move(tmp.toPath(), Path.of(colorsMemoFile), StandardCopyOption.REPLACE_EXISTING);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            IOUtil.closeQuietly(oos);
-        }
+  private static synchronized void writeColorsMemo() {
+    ObjectOutputStream oos = null;
+    try {
+      File tmp = new File(colorsMemoFile + ".tmp");
+      tmp.deleteOnExit();
+      if (tmp.exists()) {
+        tmp.delete();
+      }
+      oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(tmp)));
+      oos.writeObject(colorsMemo);
+      oos.close();
+      Files.move(tmp.toPath(), Path.of(colorsMemoFile), StandardCopyOption.REPLACE_EXISTING);
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      IOUtil.closeQuietly(oos);
     }
+  }
 
-    @SuppressWarnings("unchecked")
-    private static synchronized void readColorsMemo() {
-        ObjectInputStream ois = null;
-        try {
-            File in = new File(colorsMemoFile);
-            if (in.exists()) {
-                ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(in)));
-                colorsMemo = (Map<Integer, Color>) ois.readObject();
-                ois.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            IOUtil.closeQuietly(ois);
-        }
+  @SuppressWarnings("unchecked")
+  private static synchronized void readColorsMemo() {
+    ObjectInputStream ois = null;
+    try {
+      File in = new File(colorsMemoFile);
+      if (in.exists()) {
+        ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(in)));
+        colorsMemo = (Map<Integer, Color>) ois.readObject();
+        ois.close();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      IOUtil.closeQuietly(ois);
     }
+  }
 }

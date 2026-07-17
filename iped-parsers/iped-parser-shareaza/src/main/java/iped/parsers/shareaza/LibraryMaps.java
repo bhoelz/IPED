@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -28,47 +28,47 @@ import java.util.Map;
  */
 class LibraryMaps extends ShareazaEntity {
 
-    private final List<LibraryFile> libraryFiles = new ArrayList<>();
-    private long nextIndex;
-    private long indexMapCount;
-    private long nameMapCount;
-    private long pathMapCount;
+  private final List<LibraryFile> libraryFiles = new ArrayList<>();
+  private long nextIndex;
+  private long indexMapCount;
+  private long nameMapCount;
+  private long pathMapCount;
 
-    public LibraryMaps() {
-        super("LIBRARY MAPS"); //$NON-NLS-1$
+  public LibraryMaps() {
+    super("LIBRARY MAPS"); // $NON-NLS-1$
+  }
+
+  @Override
+  public void read(MFCParser ar, int version) throws IOException {
+    nextIndex = ar.readUInt();
+    if (version >= 28) {
+      indexMapCount = ar.readUInt();
+      nameMapCount = ar.readUInt();
+      pathMapCount = ar.readUInt();
     }
+  }
 
-    @Override
-    public void read(MFCParser ar, int version) throws IOException {
-        nextIndex = ar.readUInt();
-        if (version >= 28) {
-            indexMapCount = ar.readUInt();
-            nameMapCount = ar.readUInt();
-            pathMapCount = ar.readUInt();
-        }
+  public void readExtra(MFCParser ar, int version, Map<Integer, LibraryFile> indexToFile)
+      throws IOException {
+    if (version >= 18) {
+      int n = ar.readCount();
+      for (int i = 0; i < n; i++) {
+        LibraryFile file = new LibraryFile(null);
+        file.read(ar, version);
+        libraryFiles.add(file);
+        indexToFile.put(file.getIndex(), file);
+      }
     }
+  }
 
-    public void readExtra(MFCParser ar, int version, Map<Integer, LibraryFile> indexToFile) throws IOException {
-        if (version >= 18) {
-            int n = ar.readCount();
-            for (int i = 0; i < n; i++) {
-                LibraryFile file = new LibraryFile(null);
-                file.read(ar, version);
-                libraryFiles.add(file);
-                indexToFile.put(file.getIndex(), file);
-            }
-        }
+  @Override
+  protected void writeImpl(ShareazaOutputGenerator f) {
+    f.out("Next Index: " + nextIndex); // $NON-NLS-1$
+    f.out("Index Map Count: " + indexMapCount); // $NON-NLS-1$
+    f.out("Name Map Count: " + nameMapCount); // $NON-NLS-1$
+    f.out("Path Map Count: " + pathMapCount); // $NON-NLS-1$
+    for (LibraryFile file : libraryFiles) {
+      file.write(f);
     }
-
-    @Override
-    protected void writeImpl(ShareazaOutputGenerator f) {
-        f.out("Next Index: " + nextIndex); //$NON-NLS-1$
-        f.out("Index Map Count: " + indexMapCount); //$NON-NLS-1$
-        f.out("Name Map Count: " + nameMapCount); //$NON-NLS-1$
-        f.out("Path Map Count: " + pathMapCount); //$NON-NLS-1$
-        for (LibraryFile file : libraryFiles) {
-            file.write(f);
-        }
-    }
-
+  }
 }

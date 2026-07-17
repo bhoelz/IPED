@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -25,24 +25,22 @@ import java.io.IOException;
  */
 public abstract class ShareazaEntity {
 
-    private final String entityName;
+  private final String entityName;
 
-    protected ShareazaEntity(String entityName) {
-        this.entityName = entityName;
-    }
+  protected ShareazaEntity(String entityName) {
+    this.entityName = entityName;
+  }
 
-    public void read(MFCParser ar) throws IOException {
-    }
+  public void read(MFCParser ar) throws IOException {}
 
-    public void read(MFCParser ar, int version) throws IOException {
-    }
+  public void read(MFCParser ar, int version) throws IOException {}
 
-    public void write(ShareazaOutputGenerator f) {
-        f.out(entityName);
-        f.incIdent();
-        writeImpl(f);
-        f.decIdent();
-    }
+  public void write(ShareazaOutputGenerator f) {
+    f.out(entityName);
+    f.incIdent();
+    writeImpl(f);
+    f.decIdent();
+  }
 
-    protected abstract void writeImpl(ShareazaOutputGenerator f);
+  protected abstract void writeImpl(ShareazaOutputGenerator f);
 }

@@ -38,10 +38,6 @@ import iped.utils.IOUtil;
 import iped.utils.ImageUtil;
 import iped.utils.LocalizedFormat;
 import iped.viewers.util.ImageMetadataUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.tika.mime.MediaType;
-
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -57,1047 +53,1220 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.mime.MediaType;
 
 /**
- * Tarefa de geração de relatório no formato HTML do itens selecionados, gerado
- * quando a entrada do processamento é um arquivo ".IPED".
+ * Tarefa de geração de relatório no formato HTML do itens selecionados, gerado quando a entrada do
+ * processamento é um arquivo ".IPED".
  *
  * @author Wladimir Leite
  */
 @Slf4j
 public class HTMLReportTask extends AbstractTask {
 
-    private static final String VIDEO_PREVIEW_EXT = "jpg"; //$NON-NLS-1$
+  private static final String VIDEO_PREVIEW_EXT = "jpg"; // $NON-NLS-1$
 
-    private IPEDSource ipedCase;
+  private IPEDSource ipedCase;
 
-    private static final String PROP_NAME_PLACEHOLDER = "%PROPERTY_NAME%";
-    private static final String PROP_VALUE_PLACEHOLDER = "%PROPERTY_VALUE%";
+  private static final String PROP_NAME_PLACEHOLDER = "%PROPERTY_NAME%";
+  private static final String PROP_VALUE_PLACEHOLDER = "%PROPERTY_VALUE%";
 
-    public static final File SELECTED_PROPERTIES_FILE = new File(System.getProperty("user.home"), ".iped/reportProps.dat");
+  public static final File SELECTED_PROPERTIES_FILE =
+      new File(System.getProperty("user.home"), ".iped/reportProps.dat");
 
-    public static final List<String> basicReportProps = Arrays.asList(BasicProps.NAME, BasicProps.PATH, BasicProps.TYPE, BasicProps.LENGTH,
-        BasicProps.CREATED, BasicProps.MODIFIED, BasicProps.ACCESSED, BasicProps.DELETED, BasicProps.CARVED,
-        BasicProps.HASH, IndexItem.ID_IN_SOURCE);
+  public static final List<String> basicReportProps =
+      Arrays.asList(
+          BasicProps.NAME,
+          BasicProps.PATH,
+          BasicProps.TYPE,
+          BasicProps.LENGTH,
+          BasicProps.CREATED,
+          BasicProps.MODIFIED,
+          BasicProps.ACCESSED,
+          BasicProps.DELETED,
+          BasicProps.CARVED,
+          BasicProps.HASH,
+          IndexItem.ID_IN_SOURCE);
 
+  /** Tag para registros sem marcador */
+  private static final String NO_LABEL_NAME =
+      Messages.getString("HTMLReportTask.NoBookmarks"); // $NON-NLS-1$
 
-    /**
-     * Tag para registros sem marcador
-     */
-    private static final String NO_LABEL_NAME = Messages.getString("HTMLReportTask.NoBookmarks"); //$NON-NLS-1$
+  /** Mapa de marcadores para seus comentários */
+  private Map<String, String> labelcomments = new HashMap<>();
 
-    /**
-     * Mapa de marcadores para seus comentários
-     */
-    private Map<String, String> labelcomments = new HashMap<>();
+  /** Nome da subpasta destino dos os arquivos do relatório. */
+  public static String reportSubFolderName =
+      Messages.getString("HTMLReportTask.ReportSubFolder"); // $NON-NLS-1$
 
-    /**
-     * Nome da subpasta destino dos os arquivos do relatório.
-     */
-    public static String reportSubFolderName = Messages.getString("HTMLReportTask.ReportSubFolder"); //$NON-NLS-1$
+  /** Armazena modelo de formatação no nome/mat/classe do(s) perito(s). */
+  private StringBuilder modeloPerito;
 
-    /**
-     * Armazena modelo de formatação no nome/mat/classe do(s) perito(s).
-     */
-    private StringBuilder modeloPerito;
+  /** Objeto com informações que serão incluídas no relatório. */
+  private ReportInfo info;
 
-    /**
-     * Objeto com informações que serão incluídas no relatório.
-     */
-    private ReportInfo info;
+  private HtmlReportTaskConfig htmlReportConfig;
 
-    private HtmlReportTaskConfig htmlReportConfig;
+  private boolean extractThumb;
 
-    private boolean extractThumb;
+  private Set<String> selectedProperties;
 
-    private Set<String> selectedProperties;
+  private static Collator getCollator() {
+    LocaleConfig localeConfig = ConfigurationManager.get().findObject(LocaleConfig.class);
 
-    private static Collator getCollator() {
-        LocaleConfig localeConfig = ConfigurationManager.get().findObject(LocaleConfig.class);
+    Collator c = Collator.getInstance(localeConfig.getLocale());
+    c.setStrength(Collator.TERTIARY);
+    return c;
+  }
 
-        Collator c = Collator.getInstance(localeConfig.getLocale());
-        c.setStrength(Collator.TERTIARY);
-        return c;
+  @Override
+  public boolean isEnabled() {
+    return htmlReportConfig.isEnabled();
+  }
+
+  public List<Configurable<?>> getConfigurables() {
+    return Arrays.asList(new HtmlReportTaskConfig());
+  }
+
+  public File getReportSubFolder() {
+    ReportAccumulator a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
+    return a != null ? a.reportSubFolder : null;
+  }
+
+  /** Static accessor used by callers before a task instance is available (legacy support). */
+  public static File getReportSubFolder(iped.engine.data.CaseData cd) {
+    ReportAccumulator a = (ReportAccumulator) cd.getCaseObject(ReportAccumulator.KEY);
+    return a != null ? a.reportSubFolder : null;
+  }
+
+  protected Set<String> loadReportSelectedProps() throws ClassNotFoundException, IOException {
+    TreeSet<String> selectedFields = new TreeSet<>();
+    if (SELECTED_PROPERTIES_FILE.exists()) {
+      Set<String> columnsReport =
+          (Set<String>) Util.readObject(SELECTED_PROPERTIES_FILE.getAbsolutePath());
+      selectedFields.addAll(columnsReport);
+    } else {
+      selectedFields.addAll(basicReportProps);
     }
+    return selectedFields;
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return htmlReportConfig.isEnabled();
-    }
+  /** Inicializa tarefa, realizando controle de alocação de apenas uma thread principal. */
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
 
-    public List<Configurable<?>> getConfigurables() {
-        return Arrays.asList(new HtmlReportTaskConfig());
-    }
+    htmlReportConfig = configurationManager.findObject(HtmlReportTaskConfig.class);
+    selectedProperties = loadReportSelectedProps();
 
-    public File getReportSubFolder() {
-        ReportAccumulator a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
-        return a != null ? a.reportSubFolder : null;
-    }
+    ReportAccumulator a = accum();
+    if (!a.initialized.get()) {
+      if (htmlReportConfig.isEnabled()) {
+        log.info("Task enabled."); // $NON-NLS-1$
+      } else {
+        log.info("Task disabled."); // $NON-NLS-1$
+        a.initialized.set(true);
+        return;
+      }
 
-    /** Static accessor used by callers before a task instance is available (legacy support). */
-    public static File getReportSubFolder(iped.engine.data.CaseData cd) {
-        ReportAccumulator a = (ReportAccumulator) cd.getCaseObject(ReportAccumulator.KEY);
-        return a != null ? a.reportSubFolder : null;
-    }
+      a.reportSubFolder = new File(this.output.getParentFile(), reportSubFolderName);
 
-    protected Set<String> loadReportSelectedProps() throws ClassNotFoundException, IOException {
-        TreeSet<String> selectedFields = new TreeSet<>();
-        if (SELECTED_PROPERTIES_FILE.exists()) {
-            Set<String> columnsReport = (Set<String>) Util.readObject(SELECTED_PROPERTIES_FILE.getAbsolutePath());
-            selectedFields.addAll(columnsReport);
-        } else {
-            selectedFields.addAll(basicReportProps);
-        }
-        return selectedFields;
-    }
+      info = htmlReportConfig.getReportInfo();
+      a.info = info;
 
-    /**
-     * Inicializa tarefa, realizando controle de alocação de apenas uma thread
-     * principal.
-     */
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
-
-        htmlReportConfig = configurationManager.findObject(HtmlReportTaskConfig.class);
-        selectedProperties = loadReportSelectedProps();
-
-        ReportAccumulator a = accum();
-        if (!a.initialized.get()) {
-            if (htmlReportConfig.isEnabled()) {
-                log.info("Task enabled."); //$NON-NLS-1$
-            } else {
-                log.info("Task disabled."); //$NON-NLS-1$
-                a.initialized.set(true);
-                return;
+      // Obtém parâmetro ASAP, com arquivo contendo informações do caso, se tiver sido
+      // especificado
+      CmdLineArgs args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
+      if (args != null) {
+        File infoFile = args.getAsap();
+        if (infoFile != null) {
+          log.info("Processing case info file: " + infoFile.getAbsolutePath()); // $NON-NLS-1$
+          if (!infoFile.exists()) {
+            throw new RuntimeException(
+                "File not found: " + infoFile.getAbsolutePath()); // $NON-NLS-1$
+          }
+          try {
+            if (infoFile.getName().endsWith(".asap")) // $NON-NLS-1$
+            info.readAsapInfoFile(infoFile);
+            else if (infoFile.getName().endsWith(".json")) // $NON-NLS-1$
+            info.readJsonInfoFile(infoFile);
+            else if (infoFile.getName().endsWith(".report")) { // $NON-NLS-1$
+              ReportInfo ri = ReportInfo.readReportInfoFile(infoFile);
+              ri.reportHeader = info.reportHeader;
+              info = ri;
+              a.info = info;
             }
 
-            a.reportSubFolder = new File(this.output.getParentFile(), reportSubFolderName);
-
-            info = htmlReportConfig.getReportInfo();
-            a.info = info;
-
-            // Obtém parâmetro ASAP, com arquivo contendo informações do caso, se tiver sido
-            // especificado
-            CmdLineArgs args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
-            if (args != null) {
-                File infoFile = args.getAsap();
-                if (infoFile != null) {
-                    log.info("Processing case info file: " + infoFile.getAbsolutePath()); //$NON-NLS-1$
-                    if (!infoFile.exists()) {
-                        throw new RuntimeException("File not found: " + infoFile.getAbsolutePath()); //$NON-NLS-1$
-                    }
-                    try {
-                        if (infoFile.getName().endsWith(".asap")) //$NON-NLS-1$
-                            info.readAsapInfoFile(infoFile);
-                        else if (infoFile.getName().endsWith(".json")) //$NON-NLS-1$
-                            info.readJsonInfoFile(infoFile);
-                        else if (infoFile.getName().endsWith(".report")) { //$NON-NLS-1$
-                            ReportInfo ri = ReportInfo.readReportInfoFile(infoFile);
-                            ri.reportHeader = info.reportHeader;
-                            info = ri;
-                            a.info = info;
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        a.initialized.set(true);
-                        throw new RuntimeException("Error loading case info file: " + infoFile.getAbsolutePath()); //$NON-NLS-1$
-                    }
-                }
-            }
-            a.externalImageConverter = new ExternalImageConverter();
-
+          } catch (Exception e) {
+            e.printStackTrace();
             a.initialized.set(true);
-        } else {
-            // Other worker threads: pick up the info reference set by the first thread
-            info = a.info;
+            throw new RuntimeException(
+                "Error loading case info file: " + infoFile.getAbsolutePath()); // $NON-NLS-1$
+          }
         }
+      }
+      a.externalImageConverter = new ExternalImageConverter();
 
-        ImageThumbTaskConfig imgThumbConfig = configurationManager.findObject(ImageThumbTaskConfig.class);
-        extractThumb = imgThumbConfig.isExtractThumb();
+      a.initialized.set(true);
+    } else {
+      // Other worker threads: pick up the info reference set by the first thread
+      info = a.info;
     }
 
-    /**
-     * Finaliza a tarefa, gerando os arquivos HTML do relatório na instância que
-     * contém o objeto info.
-     */
-    @Override
-    public void finish() throws Exception {
-        ipedCase = new IPEDSource(this.output.getParentFile(), worker.writer);
+    ImageThumbTaskConfig imgThumbConfig =
+        configurationManager.findObject(ImageThumbTaskConfig.class);
+    extractThumb = imgThumbConfig.isExtractThumb();
+  }
 
-        if (isEnabled() && caseData.containsReport() && info != null) {
+  /**
+   * Finaliza a tarefa, gerando os arquivos HTML do relatório na instância que contém o objeto info.
+   */
+  @Override
+  public void finish() throws Exception {
+    ipedCase = new IPEDSource(this.output.getParentFile(), worker.writer);
 
-            ReportAccumulator a = accum();
-            String reportRoot = Messages.getString("HTMLReportTask.ReportFileName"); //$NON-NLS-1$
-            if (new File(a.reportSubFolder.getParentFile(), reportRoot).exists()) {
-                log.error("Html report already exists, report update not implemented yet!"); //$NON-NLS-1$
-                return;
-            }
+    if (isEnabled() && caseData.containsReport() && info != null) {
 
-            UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", //$NON-NLS-1$ //$NON-NLS-2$
-                    Messages.getString("HTMLReportTask.MakingHtmlReport")); //$NON-NLS-1$
+      ReportAccumulator a = accum();
+      String reportRoot = Messages.getString("HTMLReportTask.ReportFileName"); // $NON-NLS-1$
+      if (new File(a.reportSubFolder.getParentFile(), reportRoot).exists()) {
+        log.error("Html report already exists, report update not implemented yet!"); // $NON-NLS-1$
+        return;
+      }
 
-            // Pasta com arquivos HTML formatado que são utilizados como entrada.
-            String codePath = Configuration.getInstance().appRoot;
-            String reportRootModel = "relatorio.htm"; //$NON-NLS-1$
-            File templatesFolder = new File(new File(codePath), "htmlreport"); //$NON-NLS-1$
-            if (!new File(templatesFolder, reportRootModel).exists()) {
-                LocaleConfig localeConf = ConfigurationManager.get().findObject(LocaleConfig.class);
-                templatesFolder = new File(new File(codePath), "htmlreport/" + localeConf.getLocale().toLanguageTag()); //$NON-NLS-1$
-            }
+      UIPropertyListenerProvider.getInstance()
+          .firePropertyChange(
+              "mensagem",
+              "", //$NON-NLS-1$ //$NON-NLS-2$
+              Messages.getString("HTMLReportTask.MakingHtmlReport")); // $NON-NLS-1$
 
-            log.info("Selected report properties: " + selectedProperties.toString());
-            log.info("Report folder: " + a.reportSubFolder.getAbsolutePath()); //$NON-NLS-1$
-            log.info("Template folder: " + templatesFolder.getAbsolutePath()); //$NON-NLS-1$
-            if (!templatesFolder.exists()) {
-                throw new FileNotFoundException("Template folder not found!"); //$NON-NLS-1$
-            }
+      // Pasta com arquivos HTML formatado que são utilizados como entrada.
+      String codePath = Configuration.getInstance().appRoot;
+      String reportRootModel = "relatorio.htm"; // $NON-NLS-1$
+      File templatesFolder = new File(new File(codePath), "htmlreport"); // $NON-NLS-1$
+      if (!new File(templatesFolder, reportRootModel).exists()) {
+        LocaleConfig localeConf = ConfigurationManager.get().findObject(LocaleConfig.class);
+        templatesFolder =
+            new File(
+                new File(codePath),
+                "htmlreport/" + localeConf.getLocale().toLanguageTag()); // $NON-NLS-1$
+      }
 
-            File templateSubFolder = new File(templatesFolder, "modelos"); //$NON-NLS-1$
-            if (!templateSubFolder.exists())
-                templateSubFolder = new File(templatesFolder, "templates"); //$NON-NLS-1$
+      log.info("Selected report properties: " + selectedProperties.toString());
+      log.info("Report folder: " + a.reportSubFolder.getAbsolutePath()); // $NON-NLS-1$
+      log.info("Template folder: " + templatesFolder.getAbsolutePath()); // $NON-NLS-1$
+      if (!templatesFolder.exists()) {
+        throw new FileNotFoundException("Template folder not found!"); // $NON-NLS-1$
+      }
 
-            long t = System.currentTimeMillis();
+      File templateSubFolder = new File(templatesFolder, "modelos"); // $NON-NLS-1$
+      if (!templateSubFolder.exists())
+        templateSubFolder = new File(templatesFolder, "templates"); // $NON-NLS-1$
 
-            for (int labelId : ipedCase.getBookmarks().getBookmarkMap().keySet()) {
-                String labelName = ipedCase.getBookmarks().getBookmarkName(labelId);
-                String comments = ipedCase.getBookmarks().getBookmarkComment(labelId);
-                labelcomments.put(labelName, comments);
-            }
+      long t = System.currentTimeMillis();
 
-            a.reportSubFolder.mkdirs();
+      for (int labelId : ipedCase.getBookmarks().getBookmarkMap().keySet()) {
+        String labelName = ipedCase.getBookmarks().getBookmarkName(labelId);
+        String comments = ipedCase.getBookmarks().getBookmarkComment(labelId);
+        labelcomments.put(labelName, comments);
+      }
 
-            if (!a.entriesByLabel.isEmpty() && !a.entriesNoLabel.isEmpty())
-                a.entriesByLabel.put(NO_LABEL_NAME, a.entriesNoLabel);
+      a.reportSubFolder.mkdirs();
 
-            modeloPerito = EncodedFile.readFile(new File(templateSubFolder, "perito.html"), StandardCharsets.UTF_8).content; //$NON-NLS-1$//$NON-NLS-2$
-            processBookmarks(templateSubFolder);
-            if (htmlReportConfig.isThumbsPageEnabled() && !a.imageThumbsByLabel.isEmpty()) {
-                createThumbsPage();
-            }
-            processCaseInfo(new File(templatesFolder, "caseinformation.htm"), //$NON-NLS-1$
-                    new File(a.reportSubFolder, "caseinformation.htm")); //$NON-NLS-1$
-            processContents(new File(templatesFolder, "contents.htm"), new File(a.reportSubFolder, "contents.htm")); //$NON-NLS-1$ //$NON-NLS-2$
+      if (!a.entriesByLabel.isEmpty() && !a.entriesNoLabel.isEmpty())
+        a.entriesByLabel.put(NO_LABEL_NAME, a.entriesNoLabel);
 
-            File reportRootModelFile = new File(templatesFolder, reportRootModel);
-            if (!reportRootModelFile.exists())
-                reportRootModelFile = new File(templatesFolder, "report.htm"); //$NON-NLS-1$
-            Files.copy(reportRootModelFile.toPath(), new File(a.reportSubFolder.getParentFile(), reportRoot).toPath());
+      modeloPerito =
+          EncodedFile.readFile(new File(templateSubFolder, "perito.html"), StandardCharsets.UTF_8)
+              .content; //$NON-NLS-1$//$NON-NLS-2$
+      processBookmarks(templateSubFolder);
+      if (htmlReportConfig.isThumbsPageEnabled() && !a.imageThumbsByLabel.isEmpty()) {
+        createThumbsPage();
+      }
+      processCaseInfo(
+          new File(templatesFolder, "caseinformation.htm"), // $NON-NLS-1$
+          new File(a.reportSubFolder, "caseinformation.htm")); // $NON-NLS-1$
+      processContents(
+          new File(templatesFolder, "contents.htm"),
+          new File(a.reportSubFolder, "contents.htm")); // $NON-NLS-1$ //$NON-NLS-2$
 
-            File help = new File(templatesFolder, "ajuda.htm"); //$NON-NLS-1$
-            if (help.exists())
-                copyFile(help, a.reportSubFolder);
+      File reportRootModelFile = new File(templatesFolder, reportRootModel);
+      if (!reportRootModelFile.exists())
+        reportRootModelFile = new File(templatesFolder, "report.htm"); // $NON-NLS-1$
+      Files.copy(
+          reportRootModelFile.toPath(),
+          new File(a.reportSubFolder.getParentFile(), reportRoot).toPath());
 
-            copyFiles(new File(templatesFolder, "res"), new File(a.reportSubFolder, "res")); //$NON-NLS-1$ //$NON-NLS-2$
+      File help = new File(templatesFolder, "ajuda.htm"); // $NON-NLS-1$
+      if (help.exists()) copyFile(help, a.reportSubFolder);
 
-            t = (System.currentTimeMillis() - t + 500) / 1000;
-            log.info("Report creation time (seconds): " + t); //$NON-NLS-1$
+      copyFiles(
+          new File(templatesFolder, "res"),
+          new File(a.reportSubFolder, "res")); // $NON-NLS-1$ //$NON-NLS-2$
 
-            a.externalImageConverter.close();
-        }
+      t = (System.currentTimeMillis() - t + 500) / 1000;
+      log.info("Report creation time (seconds): " + t); // $NON-NLS-1$
+
+      a.externalImageConverter.close();
+    }
+  }
+
+  /**
+   * Processa um item, extraindo as informações a serem utilizadas no relatório e incluindo nas
+   * listas adequadas.
+   */
+  @Override
+  protected void process(IItem evidence) throws Exception {
+    if (!isEnabled() || !caseData.containsReport() || !evidence.isToAddToCase()) {
+      return;
     }
 
-    /**
-     * Processa um item, extraindo as informações a serem utilizadas no relatório e
-     * incluindo nas listas adequadas.
-     */
-    @Override
-    protected void process(IItem evidence) throws Exception {
-        if (!isEnabled() || !caseData.containsReport() || !evidence.isToAddToCase()) {
-            return;
+    ReportEntry reg = new ReportEntry();
+    reg.name = evidence.getName();
+    reg.export = evidence.getIdInDataSource();
+    if (reg.export != null && output != null && output.getParentFile() != null) {
+      // Check if the exported file exists to avoid broken links (see issue #2203)
+      File expFile = new File(output.getParentFile(), reg.export);
+      if (!expFile.exists()) {
+        reg.export = null;
+      }
+    }
+    reg.isImage = MetadataUtil.isImageType((MediaType) evidence.getMediaType());
+    reg.isVideo = MetadataUtil.isVideoType((MediaType) evidence.getMediaType());
+    reg.length = evidence.getLength();
+    reg.ext = evidence.getExt();
+    reg.hash = evidence.getHash();
+    if (reg.hash != null && reg.hash.isEmpty()) {
+      reg.hash = null;
+    }
+    reg.deleted = evidence.isDeleted();
+    reg.carved = evidence.isCarved();
+    reg.accessed = evidence.getAccessDate();
+    reg.modified = evidence.getModDate();
+    reg.created = evidence.getCreationDate();
+    reg.path = evidence.getPath();
+
+    reg.evidenceId = evidence.getId();
+
+    Set<String> categories = evidence.getCategorySet();
+    categories =
+        categories.stream()
+            .map(c -> CategoryLocalization.getInstance().getLocalizedCategory(c.trim()))
+            .collect(Collectors.toSet());
+    reg.category = categories.stream().collect(Collectors.joining(" | "));
+
+    String[] labels = new String[] {""}; // $NON-NLS-1$
+    if (!evidence.getLabels().isEmpty()) labels = evidence.getLabels().toArray(new String[0]);
+    ReportAccumulator a = accum();
+    synchronized (a) {
+      for (String label : labels) {
+        label = label.trim();
+        List<ReportEntry> regs =
+            label.length() == 0 ? a.entriesNoLabel : a.entriesByLabel.get(label);
+        if (regs == null) {
+          a.entriesByLabel.put(label, regs = new ArrayList<ReportEntry>());
         }
-
-        ReportEntry reg = new ReportEntry();
-        reg.name = evidence.getName();
-        reg.export = evidence.getIdInDataSource();
-        if (reg.export != null && output != null && output.getParentFile() != null) {
-            // Check if the exported file exists to avoid broken links (see issue #2203)
-            File expFile = new File(output.getParentFile(), reg.export);
-            if (!expFile.exists()) {
-                reg.export = null;
-            }
+        regs.add(reg);
+      }
+      for (String category : categories) {
+        List<ReportEntry> regs = a.entriesByCategory.get(category);
+        if (regs == null) {
+          a.entriesByCategory.put(category, regs = new ArrayList<ReportEntry>());
         }
-        reg.isImage = MetadataUtil.isImageType((MediaType) evidence.getMediaType());
-        reg.isVideo = MetadataUtil.isVideoType((MediaType) evidence.getMediaType());
-        reg.length = evidence.getLength();
-        reg.ext = evidence.getExt();
-        reg.hash = evidence.getHash();
-        if (reg.hash != null && reg.hash.isEmpty()) {
-            reg.hash = null;
-        }
-        reg.deleted = evidence.isDeleted();
-        reg.carved = evidence.isCarved();
-        reg.accessed = evidence.getAccessDate();
-        reg.modified = evidence.getModDate();
-        reg.created = evidence.getCreationDate();
-        reg.path = evidence.getPath();
-
-        reg.evidenceId = evidence.getId();
-
-        Set<String> categories = evidence.getCategorySet();
-        categories = categories.stream().map(c -> CategoryLocalization.getInstance().getLocalizedCategory(c.trim()))
-                .collect(Collectors.toSet());
-        reg.category = categories.stream().collect(Collectors.joining(" | "));
-
-        String[] labels = new String[] { "" }; //$NON-NLS-1$
-        if (!evidence.getLabels().isEmpty())
-            labels = evidence.getLabels().toArray(new String[0]);
-        ReportAccumulator a = accum();
-        synchronized (a) {
-            for (String label : labels) {
-                label = label.trim();
-                List<ReportEntry> regs = label.length() == 0 ? a.entriesNoLabel : a.entriesByLabel.get(label);
-                if (regs == null) {
-                    a.entriesByLabel.put(label, regs = new ArrayList<ReportEntry>());
-                }
-                regs.add(reg);
-            }
-            for (String category : categories) {
-                List<ReportEntry> regs = a.entriesByCategory.get(category);
-                if (regs == null) {
-                    a.entriesByCategory.put(category, regs = new ArrayList<ReportEntry>());
-                }
-                regs.add(reg);
-            }
-        }
-
-        if (((htmlReportConfig.isImageThumbsEnabled() && reg.isImage)
-                || (htmlReportConfig.isVideoThumbsEnabled() && reg.isVideo)) && reg.hash != null) {
-            // Verifica se há outro arquivo igual em processamento, senão inclui
-            synchronized (accum().currentFiles) {
-                if (accum().currentFiles.contains(evidence.getHash())) {
-                    return;
-                }
-                accum().currentFiles.add(evidence.getHash());
-            }
-            File thumbFile;
-            if (reg.isImage) {
-                thumbFile = getImageThumbFile(reg.hash);
-                if (!thumbFile.exists()) {
-                    createImageThumb(evidence, thumbFile);
-                }
-            } else if (reg.isVideo) {
-                thumbFile = getVideoStripeFile(reg.hash);
-                if (!thumbFile.exists()) {
-                    createVideoStripe(reg, thumbFile);
-                }
-            }
-
-            // Retira do Set de arquivos em processamento
-            synchronized (accum().currentFiles) {
-                accum().currentFiles.remove(evidence.getHash());
-            }
-        }
+        regs.add(reg);
+      }
     }
 
-    private void copyFiles(File src, File target) throws IOException {
-        if (!target.exists()) {
-            target.mkdir();
+    if (((htmlReportConfig.isImageThumbsEnabled() && reg.isImage)
+            || (htmlReportConfig.isVideoThumbsEnabled() && reg.isVideo))
+        && reg.hash != null) {
+      // Verifica se há outro arquivo igual em processamento, senão inclui
+      synchronized (accum().currentFiles) {
+        if (accum().currentFiles.contains(evidence.getHash())) {
+          return;
         }
-        File[] arqs = src.listFiles();
-        for (File arq : arqs) {
-            if (!arq.isFile()) {
-                continue;
-            }
-            File tf = new File(target, arq.getName());
-            if (tf.exists()) {
-                continue;
-            }
-            Files.copy(arq.toPath(), tf.toPath());
+        accum().currentFiles.add(evidence.getHash());
+      }
+      File thumbFile;
+      if (reg.isImage) {
+        thumbFile = getImageThumbFile(reg.hash);
+        if (!thumbFile.exists()) {
+          createImageThumb(evidence, thumbFile);
         }
+      } else if (reg.isVideo) {
+        thumbFile = getVideoStripeFile(reg.hash);
+        if (!thumbFile.exists()) {
+          createVideoStripe(reg, thumbFile);
+        }
+      }
+
+      // Retira do Set de arquivos em processamento
+      synchronized (accum().currentFiles) {
+        accum().currentFiles.remove(evidence.getHash());
+      }
+    }
+  }
+
+  private void copyFiles(File src, File target) throws IOException {
+    if (!target.exists()) {
+      target.mkdir();
+    }
+    File[] arqs = src.listFiles();
+    for (File arq : arqs) {
+      if (!arq.isFile()) {
+        continue;
+      }
+      File tf = new File(target, arq.getName());
+      if (tf.exists()) {
+        continue;
+      }
+      Files.copy(arq.toPath(), tf.toPath());
+    }
+  }
+
+  private void copyFile(File src, File targetFolder) throws IOException {
+    Files.copy(src.toPath(), new File(targetFolder, src.getName()).toPath());
+  }
+
+  private void processCaseInfo(File src, File target) throws Exception {
+    EncodedFile arq = EncodedFile.readFile(src, StandardCharsets.UTF_8); // $NON-NLS-1$
+    replace(arq.content, "%REPORT%", info.reportNumber); // $NON-NLS-1$
+    replace(arq.content, "%REPORT_DATE%", info.reportDate); // $NON-NLS-1$
+    replace(arq.content, "%EXAMINERS%", formatPeritos()); // $NON-NLS-1$
+    replace(arq.content, "%HEADER%", info.reportHeader); // $NON-NLS-1$
+    replace(arq.content, "%TITLE%", info.reportTitle); // $NON-NLS-1$
+    replace(arq.content, "%INVESTIGATION%", info.caseNumber); // $NON-NLS-1$
+    replace(arq.content, "%REQUEST_DOC%", info.requestForm); // $NON-NLS-1$
+    replace(arq.content, "%REQUEST_DATE%", info.requestDate); // $NON-NLS-1$
+    replace(arq.content, "%REQUESTER%", info.requester); // $NON-NLS-1$
+    replace(arq.content, "%RECORD%", info.labCaseNumber); // $NON-NLS-1$
+    replace(arq.content, "%RECORD_DATE%", info.labCaseDate); // $NON-NLS-1$
+    replace(arq.content, "%EVIDENCE%", info.getEvidenceDescHtml()); // $NON-NLS-1$
+    arq.file = target;
+    arq.write();
+  }
+
+  private String formatPeritos() {
+    StringBuilder ret = new StringBuilder();
+    for (int i = 0; i < info.examiners.size(); i++) {
+      if (i > 0) {
+        ret.append("<br><br>\n"); // $NON-NLS-1$
+      }
+      StringBuilder s = new StringBuilder();
+      s.append(modeloPerito);
+      replace(s, "%EXAMINER%", info.examiners.get(i)); // $NON-NLS-1$
+      // replace(s, "%CLASSE%", info.classe.size() > i ?
+      // formatClass(info.classe.get(i)) : ""); //$NON-NLS-2$
+      replace(
+          s,
+          "%EXAMINER_ID%",
+          info.examinersID.size() > i ? info.examinersID.get(i) : ""); // $NON-NLS-1$//$NON-NLS-2$
+      ret.append(s);
+    }
+    return ret.toString();
+  }
+
+  private String formatClass(String str) {
+    if (str != null && str.length() == 1) {
+      char c = str.charAt(0);
+      if (c >= '1' && c <= '3') {
+        str = c + "a Classe"; // $NON-NLS-1$
+      } else if (Character.toUpperCase(c) == 'E') {
+        str = "Classe Especial"; // $NON-NLS-1$
+      }
+    }
+    return str;
+  }
+
+  private void processContents(File src, File target) throws Exception {
+    StringBuilder sb = new StringBuilder();
+
+    int idx = 1;
+    if (!accum().entriesByLabel.isEmpty()) {
+      sb.append("<p>\n"); // $NON-NLS-1$
+      sb.append(
+          "\t<span class=\"SmallText1\">"
+              + Messages.getString("HTMLReportTask.Bookmarks")
+              + "</span>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      for (String marcador : accum().entriesByLabel.keySet()) {
+        sb.append("\t\t<br />&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"arq"); // $NON-NLS-1$
+        sb.append(String.format("%06d", idx)); // $NON-NLS-1$
+        sb.append("(1).html\" target=\"ReportPage\" class=\"MenuText\">"); // $NON-NLS-1$
+        sb.append(marcador);
+        sb.append("</a>\n"); // $NON-NLS-1$
+        idx++;
+      }
+      sb.append("</p>\n"); // $NON-NLS-1$
     }
 
-    private void copyFile(File src, File targetFolder) throws IOException {
-        Files.copy(src.toPath(), new File(targetFolder, src.getName()).toPath());
+    if (htmlReportConfig.isCategoriesListEnabled() && !accum().entriesByCategory.isEmpty()) {
+      sb.append("<p>\n"); // $NON-NLS-1$
+      sb.append(
+          "\t<span class=\"SmallText1\">"
+              + Messages.getString("HTMLReportTask.Categories")
+              + "</span>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      for (String categoria : accum().entriesByCategory.keySet()) {
+        sb.append("\t\t<br />&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"arq"); // $NON-NLS-1$
+        sb.append(String.format("%06d", idx)); // $NON-NLS-1$
+        sb.append("(1).html\" target=\"ReportPage\" class=\"MenuText\">"); // $NON-NLS-1$
+        sb.append(categoria);
+        sb.append("</a>\n"); // $NON-NLS-1$
+        idx++;
+      }
+      sb.append("</p>"); // $NON-NLS-1$
     }
 
-    private void processCaseInfo(File src, File target) throws Exception {
-        EncodedFile arq = EncodedFile.readFile(src, StandardCharsets.UTF_8); //$NON-NLS-1$
-        replace(arq.content, "%REPORT%", info.reportNumber); //$NON-NLS-1$
-        replace(arq.content, "%REPORT_DATE%", info.reportDate); //$NON-NLS-1$
-        replace(arq.content, "%EXAMINERS%", formatPeritos()); //$NON-NLS-1$
-        replace(arq.content, "%HEADER%", info.reportHeader); //$NON-NLS-1$
-        replace(arq.content, "%TITLE%", info.reportTitle); //$NON-NLS-1$
-        replace(arq.content, "%INVESTIGATION%", info.caseNumber); //$NON-NLS-1$
-        replace(arq.content, "%REQUEST_DOC%", info.requestForm); //$NON-NLS-1$
-        replace(arq.content, "%REQUEST_DATE%", info.requestDate); //$NON-NLS-1$
-        replace(arq.content, "%REQUESTER%", info.requester); //$NON-NLS-1$
-        replace(arq.content, "%RECORD%", info.labCaseNumber); //$NON-NLS-1$
-        replace(arq.content, "%RECORD_DATE%", info.labCaseDate); //$NON-NLS-1$
-        replace(arq.content, "%EVIDENCE%", info.getEvidenceDescHtml()); //$NON-NLS-1$
-        arq.file = target;
-        arq.write();
+    if (htmlReportConfig.isThumbsPageEnabled() && !accum().imageThumbsByLabel.isEmpty()) {
+      sb.append("<p>\n"); // $NON-NLS-1$
+      sb.append(
+          "<b><a href=\"thumbs_001.htm\" class=\"SmallText2\" target=\"ReportPage\">"); //$NON-NLS-1$
+      sb.append(
+          Messages.getString("HTMLReportTask.GalleryLink")
+              + "</a></b></p>\n"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
-    private String formatPeritos() {
-        StringBuilder ret = new StringBuilder();
-        for (int i = 0; i < info.examiners.size(); i++) {
-            if (i > 0) {
-                ret.append("<br><br>\n"); //$NON-NLS-1$
-            }
-            StringBuilder s = new StringBuilder();
-            s.append(modeloPerito);
-            replace(s, "%EXAMINER%", info.examiners.get(i)); //$NON-NLS-1$
-            // replace(s, "%CLASSE%", info.classe.size() > i ?
-            // formatClass(info.classe.get(i)) : ""); //$NON-NLS-2$
-            replace(s, "%EXAMINER_ID%", info.examinersID.size() > i ? info.examinersID.get(i) : ""); //$NON-NLS-1$//$NON-NLS-2$
-            ret.append(s);
-        }
-        return ret.toString();
+    EncodedFile arq = EncodedFile.readFile(src, StandardCharsets.UTF_8); // $NON-NLS-1$
+    replace(arq.content, "%BOOKMARKS%", sb.toString()); // $NON-NLS-1$
+
+    arq.file = target;
+    arq.write();
+  }
+
+  private void processBookmarks(File templatesFolder) throws Exception {
+    sortRegs();
+    StringBuilder modelo =
+        EncodedFile.readFile(new File(templatesFolder, "arq.html"), StandardCharsets.UTF_8)
+            .content; //$NON-NLS-1$//$NON-NLS-2$
+    replace(modelo, "%THUMBSIZE%", String.valueOf(htmlReportConfig.getThumbSize())); // $NON-NLS-1$
+    StringBuilder item =
+        EncodedFile.readFile(new File(templatesFolder, "item.html"), StandardCharsets.UTF_8)
+            .content; //$NON-NLS-1$//$NON-NLS-2$
+    int idx = 1;
+    for (String marcador : accum().entriesByLabel.keySet()) {
+      String id = String.format("arq%06d", idx); // $NON-NLS-1$
+      List<ReportEntry> regs = accum().entriesByLabel.get(marcador);
+      processaBookmark(marcador, id, modelo, item, true, regs);
+      idx++;
+      List<String> l = new ArrayList<String>();
+      for (ReportEntry e : regs) {
+        if (e.img != null) l.add(e.img);
+      }
+      if (!l.isEmpty()) accum().imageThumbsByLabel.put(marcador, l);
     }
-
-    private String formatClass(String str) {
-        if (str != null && str.length() == 1) {
-            char c = str.charAt(0);
-            if (c >= '1' && c <= '3') {
-                str = c + "a Classe"; //$NON-NLS-1$
-            } else if (Character.toUpperCase(c) == 'E') {
-                str = "Classe Especial"; //$NON-NLS-1$
-            }
+    if (htmlReportConfig.isCategoriesListEnabled()) {
+      for (String categoria : accum().entriesByCategory.keySet()) {
+        String id = String.format("arq%06d", idx); // $NON-NLS-1$
+        List<ReportEntry> regs = accum().entriesByCategory.get(categoria);
+        processaBookmark(categoria, id, modelo, item, false, regs);
+        idx++;
+        if (accum().entriesByLabel.isEmpty()) {
+          List<String> l = new ArrayList<String>();
+          for (ReportEntry e : regs) {
+            if (e.img != null) l.add(e.img);
+          }
+          if (!l.isEmpty()) accum().imageThumbsByLabel.put(categoria, l);
         }
-        return str;
+      }
     }
+  }
 
-    private void processContents(File src, File target) throws Exception {
-        StringBuilder sb = new StringBuilder();
-
-        int idx = 1;
-        if (!accum().entriesByLabel.isEmpty()) {
-            sb.append("<p>\n"); //$NON-NLS-1$
-            sb.append("\t<span class=\"SmallText1\">" + Messages.getString("HTMLReportTask.Bookmarks") + "</span>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            for (String marcador : accum().entriesByLabel.keySet()) {
-                sb.append("\t\t<br />&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"arq"); //$NON-NLS-1$
-                sb.append(String.format("%06d", idx)); //$NON-NLS-1$
-                sb.append("(1).html\" target=\"ReportPage\" class=\"MenuText\">"); //$NON-NLS-1$
-                sb.append(marcador);
-                sb.append("</a>\n"); //$NON-NLS-1$
-                idx++;
-            }
-            sb.append("</p>\n"); //$NON-NLS-1$
-        }
-
-        if (htmlReportConfig.isCategoriesListEnabled() && !accum().entriesByCategory.isEmpty()) {
-            sb.append("<p>\n"); //$NON-NLS-1$
-            sb.append("\t<span class=\"SmallText1\">" + Messages.getString("HTMLReportTask.Categories") + "</span>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            for (String categoria : accum().entriesByCategory.keySet()) {
-                sb.append("\t\t<br />&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"arq"); //$NON-NLS-1$
-                sb.append(String.format("%06d", idx)); //$NON-NLS-1$
-                sb.append("(1).html\" target=\"ReportPage\" class=\"MenuText\">"); //$NON-NLS-1$
-                sb.append(categoria);
-                sb.append("</a>\n"); //$NON-NLS-1$
-                idx++;
-            }
-            sb.append("</p>"); //$NON-NLS-1$
-        }
-
-        if (htmlReportConfig.isThumbsPageEnabled() && !accum().imageThumbsByLabel.isEmpty()) {
-            sb.append("<p>\n"); //$NON-NLS-1$
-            sb.append("<b><a href=\"thumbs_001.htm\" class=\"SmallText2\" target=\"ReportPage\">"); //$NON-NLS-1$
-            sb.append(Messages.getString("HTMLReportTask.GalleryLink") + "</a></b></p>\n"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-
-        EncodedFile arq = EncodedFile.readFile(src, StandardCharsets.UTF_8); //$NON-NLS-1$
-        replace(arq.content, "%BOOKMARKS%", sb.toString()); //$NON-NLS-1$
-
-        arq.file = target;
-        arq.write();
+  private void sortRegs() {
+    final List<List<ReportEntry>> l =
+        new ArrayList<List<ReportEntry>>(accum().entriesByLabel.values());
+    if (htmlReportConfig.isCategoriesListEnabled()) {
+      l.addAll(accum().entriesByCategory.values());
     }
-
-    private void processBookmarks(File templatesFolder) throws Exception {
-        sortRegs();
-        StringBuilder modelo = EncodedFile.readFile(new File(templatesFolder, "arq.html"), StandardCharsets.UTF_8).content; //$NON-NLS-1$//$NON-NLS-2$
-        replace(modelo, "%THUMBSIZE%", String.valueOf(htmlReportConfig.getThumbSize())); //$NON-NLS-1$
-        StringBuilder item = EncodedFile.readFile(new File(templatesFolder, "item.html"), StandardCharsets.UTF_8).content; //$NON-NLS-1$//$NON-NLS-2$
-        int idx = 1;
-        for (String marcador : accum().entriesByLabel.keySet()) {
-            String id = String.format("arq%06d", idx); //$NON-NLS-1$
-            List<ReportEntry> regs = accum().entriesByLabel.get(marcador);
-            processaBookmark(marcador, id, modelo, item, true, regs);
-            idx++;
-            List<String> l = new ArrayList<String>();
-            for (ReportEntry e : regs) {
-                if (e.img != null)
-                    l.add(e.img);
-            }
-            if (!l.isEmpty())
-                accum().imageThumbsByLabel.put(marcador, l);
-        }
-        if (htmlReportConfig.isCategoriesListEnabled()) {
-            for (String categoria : accum().entriesByCategory.keySet()) {
-                String id = String.format("arq%06d", idx); //$NON-NLS-1$
-                List<ReportEntry> regs = accum().entriesByCategory.get(categoria);
-                processaBookmark(categoria, id, modelo, item, false, regs);
-                idx++;
-                if (accum().entriesByLabel.isEmpty()) {
-                    List<String> l = new ArrayList<String>();
-                    for (ReportEntry e : regs) {
-                        if (e.img != null)
-                            l.add(e.img);
-                    }
-                    if (!l.isEmpty())
-                        accum().imageThumbsByLabel.put(categoria, l);
-                }
-            }
-        }
-    }
-
-    private void sortRegs() {
-        final List<List<ReportEntry>> l = new ArrayList<List<ReportEntry>>(accum().entriesByLabel.values());
-        if (htmlReportConfig.isCategoriesListEnabled()) {
-            l.addAll(accum().entriesByCategory.values());
-        }
-        Collections.sort(l, new Comparator<List<ReportEntry>>() {
-            public int compare(List<ReportEntry> a, List<ReportEntry> b) {
-                return Integer.compare(b.size(), a.size());
-            }
+    Collections.sort(
+        l,
+        new Comparator<List<ReportEntry>>() {
+          public int compare(List<ReportEntry> a, List<ReportEntry> b) {
+            return Integer.compare(b.size(), a.size());
+          }
         });
-        final CustomComparator comparator = new CustomComparator();
+    final CustomComparator comparator = new CustomComparator();
 
-        LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
-        final int numThreads = localConfig.getNumThreads();
+    LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
+    final int numThreads = localConfig.getNumThreads();
 
-        Thread[] threads = new Thread[numThreads];
-        for (int i = 0; i < numThreads; i++) {
-            final int idx = i;
-            (threads[i] = new Thread() {
+    Thread[] threads = new Thread[numThreads];
+    for (int i = 0; i < numThreads; i++) {
+      final int idx = i;
+      (threads[i] =
+              new Thread() {
                 public void run() {
-                    for (int j = idx; j < l.size(); j += numThreads) {
-                        Collections.sort(l.get(j), new Comparator<ReportEntry>() {
-                            public int compare(ReportEntry a, ReportEntry b) {
-                                return comparator.compare(a.path, b.path);
-                            }
+                  for (int j = idx; j < l.size(); j += numThreads) {
+                    Collections.sort(
+                        l.get(j),
+                        new Comparator<ReportEntry>() {
+                          public int compare(ReportEntry a, ReportEntry b) {
+                            return comparator.compare(a.path, b.path);
+                          }
                         });
-                    }
+                  }
                 }
-            }).start();
-        }
-        for (int i = 0; i < numThreads; i++) {
-            try {
-                if (threads[i] != null)
-                    threads[i].join();
-            } catch (InterruptedException e) {
-            }
-        }
+              })
+          .start();
     }
+    for (int i = 0; i < numThreads; i++) {
+      try {
+        if (threads[i] != null) threads[i].join();
+      } catch (InterruptedException e) {
+      }
+    }
+  }
 
-    private void processaBookmark(final String name, final String id, final StringBuilder model,
-            final StringBuilder item, final boolean isLabel, final List<ReportEntry> regs) throws Exception {
-        final int tot = regs.size();
-        final int numPages = (tot + htmlReportConfig.getItemsPerPage() - 1) / htmlReportConfig.getItemsPerPage();
+  private void processaBookmark(
+      final String name,
+      final String id,
+      final StringBuilder model,
+      final StringBuilder item,
+      final boolean isLabel,
+      final List<ReportEntry> regs)
+      throws Exception {
+    final int tot = regs.size();
+    final int numPages =
+        (tot + htmlReportConfig.getItemsPerPage() - 1) / htmlReportConfig.getItemsPerPage();
 
-        LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
-        final int numThreads = localConfig.getNumThreads();
+    LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
+    final int numThreads = localConfig.getNumThreads();
 
-        Thread[] threads = new Thread[numThreads];
-        for (int i = 0; i < numThreads; i++) {
-            final int idx = i;
-            (threads[i] = new Thread() {
+    Thread[] threads = new Thread[numThreads];
+    for (int i = 0; i < numThreads; i++) {
+      final int idx = i;
+      (threads[i] =
+              new Thread() {
                 public void run() {
-                    DateFormat dateFormat = new SimpleDateFormat(Messages.getString("HTMLReportTask.Dateformat")); //$NON-NLS-1$
-                    NumberFormat longFormat = LocalizedFormat.getDecimalInstance("#,##0"); //$NON-NLS-1$
-                    for (int page = 1; page <= numPages; page++) {
-                        if (page % numThreads != idx)
-                            continue;
-                        int start = (page - 1) * htmlReportConfig.getItemsPerPage();
-                        int end = Math.min(tot, start + htmlReportConfig.getItemsPerPage());
-                        try {
-                            createBookmarkPage(dateFormat, longFormat, name, id, model, item, page, numPages, tot,
-                                    regs.subList(start, end), isLabel);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }).start();
-        }
-        for (int i = 0; i < numThreads; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private String getPageId(String id, int page) {
-        return id + "(" + page + ").html"; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-
-    private void createBookmarkPage(DateFormat dateFormat, NumberFormat longFormat, String name, String id,
-            StringBuilder model, StringBuilder item, int pag, int totPags, int totRegs, List<ReportEntry> regs,
-            boolean isLabel) throws Exception {
-
-        File arq = new File(accum().reportSubFolder, getPageId(id, pag));
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(model);
-
-        StringBuilder items = new StringBuilder();
-        StringBuilder it = new StringBuilder();
-        for (int i = 0; i < regs.size(); i++) {
-            ReportEntry reg = regs.get(i);
-            it.delete(0, it.length());
-            it.append("<div class='clrBkgrnd bkmkSeparator bkmkValue'></div>");
-
-            // Fill Basic Properties if present
-            if (selectedProperties.contains(BasicProps.NAME))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemName"), "<b>" + reg.name + "</b>");
-            if (selectedProperties.contains(BasicProps.PATH))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemPath"), reg.path);
-            if (selectedProperties.contains(BasicProps.TYPE))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemType"), reg.category);
-            if (selectedProperties.contains(BasicProps.LENGTH))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemSize"), formatNumber(reg.length, longFormat) + " Bytes");
-            if (selectedProperties.contains(BasicProps.CREATED))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemCreated"), formatDate(reg.created, dateFormat));
-            if (selectedProperties.contains(BasicProps.MODIFIED))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemModified"), formatDate(reg.modified, dateFormat));
-            if (selectedProperties.contains(BasicProps.ACCESSED))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemAccessed"), formatDate(reg.accessed, dateFormat));
-            if (selectedProperties.contains(BasicProps.DELETED))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemDeleted"), String.valueOf(reg.deleted));
-            if (selectedProperties.contains(BasicProps.CARVED))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemCarved"), String.valueOf(reg.carved));
-            if (selectedProperties.contains(BasicProps.HASH))
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemHash"), reg.hash);
-
-            // Fill extra properties
-            for (String property : selectedProperties) {
-                if (!basicReportProps.contains(property)) { // filter for additional properties selected by the user
-                    String propertyValue = ipedCase.getItemProperty(reg.evidenceId, property);
-                    fillItemProperty(it, item, property, propertyValue);
-                }
-            }
-            if (selectedProperties.contains(IndexItem.ID_IN_SOURCE)) {
-                String export = reg.export == null ? "-" : "<b><a href=\"../" + reg.export + "\">" + reg.export + "</a></b>";
-                fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemIdInSource"), export);
-            }
-
-            if (reg.isImage && htmlReportConfig.isImageThumbsEnabled() && reg.hash != null) {
-                File thumbFile = getImageThumbFile(reg.hash);
-                if (thumbFile.exists() && thumbFile.length() > 0) {
-                    it.append("<table width=\"100%\"><tr><td>"); //$NON-NLS-1$
-
-                    StringBuilder img = new StringBuilder();
-                    if (reg.export != null) {
-                        img.append("<a href=\""); //$NON-NLS-1$
-                        img.append("../").append(reg.export); //$NON-NLS-1$
-                        img.append("\">"); //$NON-NLS-1$
-                    }
-                    img.append("<img src=\""); //$NON-NLS-1$
-                    img.append(getRelativePath(thumbFile, accum().reportSubFolder));
-                    img.append("\" class=\"thumb\" />"); //$NON-NLS-1$
-                    if (reg.export != null) {
-                        img.append("</a>"); //$NON-NLS-1$
-                    }
-                    it.append(img);
-                    it.append("</td></tr></table>\n"); //$NON-NLS-1$
-                    if (isLabel || accum().entriesByLabel.isEmpty()) {
-                        reg.img = img.toString();
-                    }
-                }
-            } else if (reg.isVideo && htmlReportConfig.isVideoThumbsEnabled() && reg.hash != null) {
-                File videoThumbsFile = getVideoThumbsFile(reg.hash);
-                File stripeFile = getVideoStripeFile(reg.hash);
-                if (stripeFile.exists()) {
-                    Dimension dim = ImageUtil.getImageFileDimension(stripeFile);
-                    it.append(
-                            "<div class=\"row\"><span class=\"bkmkColLeft bkmkValue labelBorderless clrBkgrnd\" width=\"100%\" border=\"1\">" //$NON-NLS-1$
-                                    + Messages.getString("HTMLReportTask.VideoThumbs") //$NON-NLS-1$
-                                    + "</span><span class=\"bkmkColRight bkmkValue\"><a href=\""); //$NON-NLS-1$
-                    it.append(getRelativePath(videoThumbsFile, accum().reportSubFolder));
-                    it.append("\"><img src=\""); //$NON-NLS-1$
-                    it.append(getRelativePath(stripeFile, accum().reportSubFolder)).append("\""); //$NON-NLS-1$
-                    if (dim != null) {
-                        it.append(" width=\"").append(dim.width).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
-                        it.append(" height=\"").append(dim.height).append("\""); //$NON-NLS-1$ //$NON-NLS-2$
-                    }
-                    it.append(">"); //$NON-NLS-1$
-                    it.append("</a></span></div><div class=\"row\">&nbsp;</div>\n"); //$NON-NLS-1$
-                }
-            } else if (!reg.isVideo && reg.hash != null) {
-                File view = Util.findFileFromHash(new File(this.output, PreviewConstants.VIEW_FOLDER_NAME), reg.hash);
-                if (view != null) {
-                    it.append(
-                            "<div class=\"row\"><span class=\"bkmkColLeft bkmkValue labelBorderless clrBkgrnd\" width=\"100%\" border=\"1\">" //$NON-NLS-1$
-                                    + Messages.getString("HTMLReportTask.PreviewReport") //$NON-NLS-1$
-                                    + "</span><span class=\"bkmkColRight bkmkValue\"><a href=\""); //$NON-NLS-1$
-                    it.append(getRelativePath(view, accum().reportSubFolder));
-                    it.append("\">"); //$NON-NLS-1$
-                    it.append(view.getName());
-                    it.append("</a></span></div>\n"); //$NON-NLS-1$
-                }
-            }
-
-            items.append(it);
-        }
-
-        StringBuilder p = new StringBuilder();
-        p.append("<table width=\"100%\">\n"); //$NON-NLS-1$
-        p.append("<tr><td>" + Messages.getString("HTMLReportTask.Page") + " %PAG%" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                + Messages.getString("HTMLReportTask.of") + "%TOTPAG%</td>"); //$NON-NLS-1$ //$NON-NLS-2$
-        replace(p, "%PAG%", String.valueOf(pag)); //$NON-NLS-1$
-        replace(p, "%TOTPAG%", String.valueOf(totPags)); //$NON-NLS-1$
-        if (totPags > 1) {
-            if (pag > 1) {
-                p.append("<td><a href=\"").append(getPageId(id, 1)) //$NON-NLS-1$
-                        .append("\">&lt;&lt;&lt;&lt;" + Messages.getString("HTMLReportTask.FirstPage") + "</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                p.append("<td><a href=\"").append(getPageId(id, pag - 1)) //$NON-NLS-1$
-                        .append("\">&lt;&lt;" + Messages.getString("HTMLReportTask.PrevPage") + "</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            }
-            if (pag < totPags) {
-                p.append("<td><a href=\"").append(getPageId(id, pag + 1)) //$NON-NLS-1$
-                        .append("\">" + Messages.getString("HTMLReportTask.NextPage") + "&gt;&gt;</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                p.append("<td><a href=\"").append(getPageId(id, totPags)) //$NON-NLS-1$
-                        .append("\">" + Messages.getString("HTMLReportTask.LastPage") + "&gt;&gt;&gt;&gt;</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            }
-        }
-        p.append("</tr></table>\n"); //$NON-NLS-1$
-
-        replace(sb, "%CATEGORY%", (isLabel ? Messages.getString("HTMLReportTask.Bookmark") //$NON-NLS-1$ //$NON-NLS-2$
-                : Messages.getString("HTMLReportTask.Category")) + ": " + name); //$NON-NLS-1$ //$NON-NLS-2$
-        replace(sb, "%COMMENTS%", getComments(name)); //$NON-NLS-1$
-        replace(sb, "%TOTALCOUNT%", String.valueOf(totRegs)); //$NON-NLS-1$
-        replace(sb, "%ITEMS%", items.toString()); //$NON-NLS-1$
-        replace(sb, "%PAGS%", p.toString()); //$NON-NLS-1$
-
-        EncodedFile ef = new EncodedFile(sb, Charset.forName("utf-8"), arq); //$NON-NLS-1$
-        ef.write();
-    }
-
-    private void fillItemProperty(StringBuilder it, StringBuilder item, String propertyName, String propertyValue) {
-        if (propertyValue != null && (propertyValue.equals(Boolean.TRUE.toString()) || propertyValue.equals(Boolean.FALSE.toString()))) {
-            boolean boolProperty = Boolean.parseBoolean(propertyValue);
-            propertyValue = boolProperty ? Messages.getString("HTMLReportTask.Yes")
-                : Messages.getString("HTMLReportTask.No");
-        }
-        if (propertyValue != null && !propertyValue.isBlank()) {
-            it.append(item);
-            replaceFirst(it, PROP_NAME_PLACEHOLDER, propertyName);
-            replaceFirst(it, PROP_VALUE_PLACEHOLDER, propertyValue);
-        }
-    }
-
-    private String getComments(String bookmark) {
-        String comments = labelcomments.get(bookmark);
-        if (comments == null || comments.trim().isEmpty())
-            comments = "-"; //$NON-NLS-1$
-        return comments;
-    }
-
-    private File getVideoStripeFile(String hash) {
-        File file = Util.getFileFromHash(new File(accum().reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME), hash, ThumbConstants.THUMB_EXT);
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        return file;
-    }
-
-    private File getImageThumbFile(String hash) {
-        File file = Util.getFileFromHash(new File(accum().reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME), hash, ThumbConstants.THUMB_EXT);
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        return file;
-    }
-
-    private File getVideoThumbsFile(String hash) {
-        File file = Util.getFileFromHash(new File(this.output, PreviewConstants.VIEW_FOLDER_NAME), hash, VIDEO_PREVIEW_EXT);
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        return file;
-    }
-
-    private String getRelativePath(File file, File refFolder) {
-        Path pathAbsolute = file.toPath();
-        Path pathBase = refFolder.toPath();
-        return pathBase.relativize(pathAbsolute).toString().replace('\\', '/');
-    }
-
-    private void createImageThumb(IItem evidence, File thumbFile) {
-        if (!thumbFile.getParentFile().exists()) {
-            thumbFile.getParentFile().mkdirs();
-        }
-        try {
-            if (evidence.getThumb() != null) {
-                Files.write(thumbFile.toPath(), evidence.getThumb());
-                return;
-            }
-            BufferedImage img = null;
-            if (extractThumb && isJpeg(evidence)) { // $NON-NLS-1$
-                BufferedInputStream stream = evidence.getBufferedInputStream();
-                try {
-                    img = ImageMetadataUtil.getThumb(stream);
-                } finally {
-                    IOUtil.closeQuietly(stream);
-                }
-            }
-            int thumbSize = htmlReportConfig.getThumbSize();
-            if (img == null) {
-                final int sampleFactor = 3;
-                img = ImageUtil.getSubSampledImage(evidence, thumbSize * sampleFactor);
-                if (img == null) {
-                    BufferedInputStream stream = evidence.getBufferedInputStream();
+                  DateFormat dateFormat =
+                      new SimpleDateFormat(
+                          Messages.getString("HTMLReportTask.Dateformat")); // $NON-NLS-1$
+                  NumberFormat longFormat =
+                      LocalizedFormat.getDecimalInstance("#,##0"); // $NON-NLS-1$
+                  for (int page = 1; page <= numPages; page++) {
+                    if (page % numThreads != idx) continue;
+                    int start = (page - 1) * htmlReportConfig.getItemsPerPage();
+                    int end = Math.min(tot, start + htmlReportConfig.getItemsPerPage());
                     try {
-                        img = accum().externalImageConverter.getImage(stream, thumbSize, false, evidence.getLength());
-                    } finally {
-                        IOUtil.closeQuietly(stream);
+                      createBookmarkPage(
+                          dateFormat,
+                          longFormat,
+                          name,
+                          id,
+                          model,
+                          item,
+                          page,
+                          numPages,
+                          tot,
+                          regs.subList(start, end),
+                          isLabel);
+                    } catch (Exception e) {
+                      e.printStackTrace();
                     }
+                  }
                 }
-            }
-            if (img != null) {
-                if (img.getWidth() > thumbSize || img.getHeight() > thumbSize) {
-                    img = resizeThumb(img);
-                }
-                img = ImageUtil.getCenteredImage(img, thumbSize, thumbSize);
-                ImageIO.write(img, "jpeg", thumbFile); //$NON-NLS-1$
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+              })
+          .start();
+    }
+    for (int i = 0; i < numThreads; i++) {
+      try {
+        threads[i].join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private String getPageId(String id, int page) {
+    return id + "(" + page + ").html"; // $NON-NLS-1$ //$NON-NLS-2$
+  }
+
+  private void createBookmarkPage(
+      DateFormat dateFormat,
+      NumberFormat longFormat,
+      String name,
+      String id,
+      StringBuilder model,
+      StringBuilder item,
+      int pag,
+      int totPags,
+      int totRegs,
+      List<ReportEntry> regs,
+      boolean isLabel)
+      throws Exception {
+
+    File arq = new File(accum().reportSubFolder, getPageId(id, pag));
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(model);
+
+    StringBuilder items = new StringBuilder();
+    StringBuilder it = new StringBuilder();
+    for (int i = 0; i < regs.size(); i++) {
+      ReportEntry reg = regs.get(i);
+      it.delete(0, it.length());
+      it.append("<div class='clrBkgrnd bkmkSeparator bkmkValue'></div>");
+
+      // Fill Basic Properties if present
+      if (selectedProperties.contains(BasicProps.NAME))
+        fillItemProperty(
+            it, item, Messages.getString("HTMLReportTask.ItemName"), "<b>" + reg.name + "</b>");
+      if (selectedProperties.contains(BasicProps.PATH))
+        fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemPath"), reg.path);
+      if (selectedProperties.contains(BasicProps.TYPE))
+        fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemType"), reg.category);
+      if (selectedProperties.contains(BasicProps.LENGTH))
+        fillItemProperty(
+            it,
+            item,
+            Messages.getString("HTMLReportTask.ItemSize"),
+            formatNumber(reg.length, longFormat) + " Bytes");
+      if (selectedProperties.contains(BasicProps.CREATED))
+        fillItemProperty(
+            it,
+            item,
+            Messages.getString("HTMLReportTask.ItemCreated"),
+            formatDate(reg.created, dateFormat));
+      if (selectedProperties.contains(BasicProps.MODIFIED))
+        fillItemProperty(
+            it,
+            item,
+            Messages.getString("HTMLReportTask.ItemModified"),
+            formatDate(reg.modified, dateFormat));
+      if (selectedProperties.contains(BasicProps.ACCESSED))
+        fillItemProperty(
+            it,
+            item,
+            Messages.getString("HTMLReportTask.ItemAccessed"),
+            formatDate(reg.accessed, dateFormat));
+      if (selectedProperties.contains(BasicProps.DELETED))
+        fillItemProperty(
+            it,
+            item,
+            Messages.getString("HTMLReportTask.ItemDeleted"),
+            String.valueOf(reg.deleted));
+      if (selectedProperties.contains(BasicProps.CARVED))
+        fillItemProperty(
+            it, item, Messages.getString("HTMLReportTask.ItemCarved"), String.valueOf(reg.carved));
+      if (selectedProperties.contains(BasicProps.HASH))
+        fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemHash"), reg.hash);
+
+      // Fill extra properties
+      for (String property : selectedProperties) {
+        if (!basicReportProps.contains(
+            property)) { // filter for additional properties selected by the user
+          String propertyValue = ipedCase.getItemProperty(reg.evidenceId, property);
+          fillItemProperty(it, item, property, propertyValue);
         }
+      }
+      if (selectedProperties.contains(IndexItem.ID_IN_SOURCE)) {
+        String export =
+            reg.export == null
+                ? "-"
+                : "<b><a href=\"../" + reg.export + "\">" + reg.export + "</a></b>";
+        fillItemProperty(it, item, Messages.getString("HTMLReportTask.ItemIdInSource"), export);
+      }
+
+      if (reg.isImage && htmlReportConfig.isImageThumbsEnabled() && reg.hash != null) {
+        File thumbFile = getImageThumbFile(reg.hash);
+        if (thumbFile.exists() && thumbFile.length() > 0) {
+          it.append("<table width=\"100%\"><tr><td>"); // $NON-NLS-1$
+
+          StringBuilder img = new StringBuilder();
+          if (reg.export != null) {
+            img.append("<a href=\""); // $NON-NLS-1$
+            img.append("../").append(reg.export); // $NON-NLS-1$
+            img.append("\">"); // $NON-NLS-1$
+          }
+          img.append("<img src=\""); // $NON-NLS-1$
+          img.append(getRelativePath(thumbFile, accum().reportSubFolder));
+          img.append("\" class=\"thumb\" />"); // $NON-NLS-1$
+          if (reg.export != null) {
+            img.append("</a>"); // $NON-NLS-1$
+          }
+          it.append(img);
+          it.append("</td></tr></table>\n"); // $NON-NLS-1$
+          if (isLabel || accum().entriesByLabel.isEmpty()) {
+            reg.img = img.toString();
+          }
+        }
+      } else if (reg.isVideo && htmlReportConfig.isVideoThumbsEnabled() && reg.hash != null) {
+        File videoThumbsFile = getVideoThumbsFile(reg.hash);
+        File stripeFile = getVideoStripeFile(reg.hash);
+        if (stripeFile.exists()) {
+          Dimension dim = ImageUtil.getImageFileDimension(stripeFile);
+          it.append(
+              "<div class=\"row\"><span class=\"bkmkColLeft bkmkValue labelBorderless clrBkgrnd\" width=\"100%\" border=\"1\">" //$NON-NLS-1$
+                  + Messages.getString("HTMLReportTask.VideoThumbs") // $NON-NLS-1$
+                  + "</span><span class=\"bkmkColRight bkmkValue\"><a href=\""); //$NON-NLS-1$
+          it.append(getRelativePath(videoThumbsFile, accum().reportSubFolder));
+          it.append("\"><img src=\""); // $NON-NLS-1$
+          it.append(getRelativePath(stripeFile, accum().reportSubFolder))
+              .append("\""); // $NON-NLS-1$
+          if (dim != null) {
+            it.append(" width=\"").append(dim.width).append("\""); // $NON-NLS-1$ //$NON-NLS-2$
+            it.append(" height=\"").append(dim.height).append("\""); // $NON-NLS-1$ //$NON-NLS-2$
+          }
+          it.append(">"); // $NON-NLS-1$
+          it.append("</a></span></div><div class=\"row\">&nbsp;</div>\n"); // $NON-NLS-1$
+        }
+      } else if (!reg.isVideo && reg.hash != null) {
+        File view =
+            Util.findFileFromHash(
+                new File(this.output, PreviewConstants.VIEW_FOLDER_NAME), reg.hash);
+        if (view != null) {
+          it.append(
+              "<div class=\"row\"><span class=\"bkmkColLeft bkmkValue labelBorderless clrBkgrnd\" width=\"100%\" border=\"1\">" //$NON-NLS-1$
+                  + Messages.getString("HTMLReportTask.PreviewReport") // $NON-NLS-1$
+                  + "</span><span class=\"bkmkColRight bkmkValue\"><a href=\""); //$NON-NLS-1$
+          it.append(getRelativePath(view, accum().reportSubFolder));
+          it.append("\">"); // $NON-NLS-1$
+          it.append(view.getName());
+          it.append("</a></span></div>\n"); // $NON-NLS-1$
+        }
+      }
+
+      items.append(it);
     }
 
-    private void createVideoStripe(ReportEntry reg, File thumbFile) {
-        if (!thumbFile.getParentFile().exists()) {
-            thumbFile.getParentFile().mkdirs();
-        }
-        createStripeFile(getVideoThumbsFile(reg.hash), thumbFile);
+    StringBuilder p = new StringBuilder();
+    p.append("<table width=\"100%\">\n"); // $NON-NLS-1$
+    p.append(
+        "<tr><td>"
+            + Messages.getString("HTMLReportTask.Page")
+            + " %PAG%" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            + Messages.getString("HTMLReportTask.of")
+            + "%TOTPAG%</td>"); //$NON-NLS-1$ //$NON-NLS-2$
+    replace(p, "%PAG%", String.valueOf(pag)); // $NON-NLS-1$
+    replace(p, "%TOTPAG%", String.valueOf(totPags)); // $NON-NLS-1$
+    if (totPags > 1) {
+      if (pag > 1) {
+        p.append("<td><a href=\"")
+            .append(getPageId(id, 1)) // $NON-NLS-1$
+            .append(
+                "\">&lt;&lt;&lt;&lt;"
+                    + Messages.getString("HTMLReportTask.FirstPage")
+                    + "</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        p.append("<td><a href=\"")
+            .append(getPageId(id, pag - 1)) // $NON-NLS-1$
+            .append(
+                "\">&lt;&lt;"
+                    + Messages.getString("HTMLReportTask.PrevPage")
+                    + "</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      }
+      if (pag < totPags) {
+        p.append("<td><a href=\"")
+            .append(getPageId(id, pag + 1)) // $NON-NLS-1$
+            .append(
+                "\">"
+                    + Messages.getString("HTMLReportTask.NextPage")
+                    + "&gt;&gt;</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        p.append("<td><a href=\"")
+            .append(getPageId(id, totPags)) // $NON-NLS-1$
+            .append(
+                "\">"
+                    + Messages.getString("HTMLReportTask.LastPage")
+                    + "&gt;&gt;&gt;&gt;</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      }
     }
+    p.append("</tr></table>\n"); // $NON-NLS-1$
 
-    private void createStripeFile(File in, File out) {
+    replace(
+        sb,
+        "%CATEGORY%",
+        (isLabel
+                ? Messages.getString("HTMLReportTask.Bookmark") // $NON-NLS-1$ //$NON-NLS-2$
+                : Messages.getString("HTMLReportTask.Category"))
+            + ": "
+            + name); //$NON-NLS-1$ //$NON-NLS-2$
+    replace(sb, "%COMMENTS%", getComments(name)); // $NON-NLS-1$
+    replace(sb, "%TOTALCOUNT%", String.valueOf(totRegs)); // $NON-NLS-1$
+    replace(sb, "%ITEMS%", items.toString()); // $NON-NLS-1$
+    replace(sb, "%PAGS%", p.toString()); // $NON-NLS-1$
+
+    EncodedFile ef = new EncodedFile(sb, Charset.forName("utf-8"), arq); // $NON-NLS-1$
+    ef.write();
+  }
+
+  private void fillItemProperty(
+      StringBuilder it, StringBuilder item, String propertyName, String propertyValue) {
+    if (propertyValue != null
+        && (propertyValue.equals(Boolean.TRUE.toString())
+            || propertyValue.equals(Boolean.FALSE.toString()))) {
+      boolean boolProperty = Boolean.parseBoolean(propertyValue);
+      propertyValue =
+          boolProperty
+              ? Messages.getString("HTMLReportTask.Yes")
+              : Messages.getString("HTMLReportTask.No");
+    }
+    if (propertyValue != null && !propertyValue.isBlank()) {
+      it.append(item);
+      replaceFirst(it, PROP_NAME_PLACEHOLDER, propertyName);
+      replaceFirst(it, PROP_VALUE_PLACEHOLDER, propertyValue);
+    }
+  }
+
+  private String getComments(String bookmark) {
+    String comments = labelcomments.get(bookmark);
+    if (comments == null || comments.trim().isEmpty()) comments = "-"; // $NON-NLS-1$
+    return comments;
+  }
+
+  private File getVideoStripeFile(String hash) {
+    File file =
+        Util.getFileFromHash(
+            new File(accum().reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME),
+            hash,
+            ThumbConstants.THUMB_EXT);
+    if (!file.getParentFile().exists()) {
+      file.getParentFile().mkdirs();
+    }
+    return file;
+  }
+
+  private File getImageThumbFile(String hash) {
+    File file =
+        Util.getFileFromHash(
+            new File(accum().reportSubFolder, ThumbConstants.THUMBS_FOLDER_NAME),
+            hash,
+            ThumbConstants.THUMB_EXT);
+    if (!file.getParentFile().exists()) {
+      file.getParentFile().mkdirs();
+    }
+    return file;
+  }
+
+  private File getVideoThumbsFile(String hash) {
+    File file =
+        Util.getFileFromHash(
+            new File(this.output, PreviewConstants.VIEW_FOLDER_NAME), hash, VIDEO_PREVIEW_EXT);
+    if (!file.getParentFile().exists()) {
+      file.getParentFile().mkdirs();
+    }
+    return file;
+  }
+
+  private String getRelativePath(File file, File refFolder) {
+    Path pathAbsolute = file.toPath();
+    Path pathBase = refFolder.toPath();
+    return pathBase.relativize(pathAbsolute).toString().replace('\\', '/');
+  }
+
+  private void createImageThumb(IItem evidence, File thumbFile) {
+    if (!thumbFile.getParentFile().exists()) {
+      thumbFile.getParentFile().mkdirs();
+    }
+    try {
+      if (evidence.getThumb() != null) {
+        Files.write(thumbFile.toPath(), evidence.getThumb());
+        return;
+      }
+      BufferedImage img = null;
+      if (extractThumb && isJpeg(evidence)) { // $NON-NLS-1$
+        BufferedInputStream stream = evidence.getBufferedInputStream();
         try {
-            if (!in.exists()) {
-                return;
-            }
-            Object[] read = ImageUtil.readJpegWithMetaData(in);
-            BufferedImage img = (BufferedImage) read[0];
-            String comment = (String) read[1];
-            int nRows = 1;
-            int nCols = 1;
-            if (comment != null && comment.startsWith("Frames")) { //$NON-NLS-1$
-                int p1 = comment.indexOf('=');
-                int p2 = comment.indexOf('x');
-                if (p1 > 0 && p2 > 0) {
-                    nRows = Integer.parseInt(comment.substring(p1 + 1, p2));
-                    nCols = Integer.parseInt(comment.substring(p2 + 1));
-                }
-            }
-
-            int imgWidth = img.getWidth();
-            int imgHeight = img.getHeight();
-
-            final int border = 2;
-            int frameWidth = (imgWidth - 2 * border - border * nCols) / nCols;
-            int frameHeight = (imgHeight - 2 * border - border * nRows) / nRows;
-
-            int framesPerStripe = htmlReportConfig.getFramesPerStripe();
-            int w = htmlReportConfig.getVideoStripeWidth() / framesPerStripe;
-            double rate = (nRows * nCols) * 0.999 / framesPerStripe;
-            int h = frameHeight * w / frameWidth;
-
-            BufferedImage stripe = new BufferedImage(framesPerStripe * (w + 1) + 3, h + 4, BufferedImage.TYPE_INT_BGR);
-            Graphics2D g2 = (Graphics2D) stripe.getGraphics();
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-
-            g2.setColor(new Color(222, 222, 222));
-            g2.fillRect(0, 0, stripe.getWidth(), stripe.getHeight());
-            g2.setColor(new Color(22, 22, 22));
-            g2.drawRect(0, 0, stripe.getWidth() - 1, stripe.getHeight() - 1);
-
-            double pos = rate * 0.4;
-            for (int j = 0; j < framesPerStripe; j++) {
-                int x = j * (w + 1) + 2;
-                int idx = Math.min(nCols * nRows - 1, (int) pos);
-                int sx = border + (border + frameWidth) * (idx % nCols);
-                int sy = border + (border + frameHeight) * (idx / nCols);
-                g2.drawImage(img, x, 2, x + w, 2 + h, sx, sy, sx + frameWidth, sy + frameHeight, null);
-                pos += rate;
-            }
-            g2.dispose();
-
-            ImageIO.write(stripe, "jpeg", out); //$NON-NLS-1$
-        } catch (Exception e) {
-            e.printStackTrace();
+          img = ImageMetadataUtil.getThumb(stream);
+        } finally {
+          IOUtil.closeQuietly(stream);
         }
-    }
-
-    private BufferedImage resizeThumb(BufferedImage img) {
-        int width = img.getWidth();
-        int height = img.getHeight();
-        int thumbSize = htmlReportConfig.getThumbSize();
-        if (width > height) {
-            height = height * thumbSize / width;
-            width = thumbSize;
-        } else {
-            width = width * thumbSize / height;
-            height = thumbSize;
+      }
+      int thumbSize = htmlReportConfig.getThumbSize();
+      if (img == null) {
+        final int sampleFactor = 3;
+        img = ImageUtil.getSubSampledImage(evidence, thumbSize * sampleFactor);
+        if (img == null) {
+          BufferedInputStream stream = evidence.getBufferedInputStream();
+          try {
+            img =
+                accum()
+                    .externalImageConverter
+                    .getImage(stream, thumbSize, false, evidence.getLength());
+          } finally {
+            IOUtil.closeQuietly(stream);
+          }
         }
-        return ImageUtil.resizeImage(img, width, height);
-    }
-
-    private static boolean isJpeg(IItem item) {
-        return ((MediaType) item.getMediaType()).getSubtype().startsWith("jpeg");
-    }
-
-    private static void replace(StringBuilder sb, String a, String b) {
-        int pos = 0;
-        while ((pos = sb.indexOf(a, pos)) >= 0) {
-            String rep = b == null ? "-" : b; //$NON-NLS-1$
-            sb.replace(pos, pos + a.length(), rep);
-            pos += rep.length();
+      }
+      if (img != null) {
+        if (img.getWidth() > thumbSize || img.getHeight() > thumbSize) {
+          img = resizeThumb(img);
         }
+        img = ImageUtil.getCenteredImage(img, thumbSize, thumbSize);
+        ImageIO.write(img, "jpeg", thumbFile); // $NON-NLS-1$
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    private static void replaceFirst(StringBuilder sb, String a, String b) {
-        int pos = 0;
-        if ((pos = sb.indexOf(a, pos)) >= 0) {
-            String rep = b == null ? "-" : b;
-            sb.replace(pos, pos + a.length(), rep);
+  private void createVideoStripe(ReportEntry reg, File thumbFile) {
+    if (!thumbFile.getParentFile().exists()) {
+      thumbFile.getParentFile().mkdirs();
+    }
+    createStripeFile(getVideoThumbsFile(reg.hash), thumbFile);
+  }
+
+  private void createStripeFile(File in, File out) {
+    try {
+      if (!in.exists()) {
+        return;
+      }
+      Object[] read = ImageUtil.readJpegWithMetaData(in);
+      BufferedImage img = (BufferedImage) read[0];
+      String comment = (String) read[1];
+      int nRows = 1;
+      int nCols = 1;
+      if (comment != null && comment.startsWith("Frames")) { // $NON-NLS-1$
+        int p1 = comment.indexOf('=');
+        int p2 = comment.indexOf('x');
+        if (p1 > 0 && p2 > 0) {
+          nRows = Integer.parseInt(comment.substring(p1 + 1, p2));
+          nCols = Integer.parseInt(comment.substring(p2 + 1));
         }
+      }
+
+      int imgWidth = img.getWidth();
+      int imgHeight = img.getHeight();
+
+      final int border = 2;
+      int frameWidth = (imgWidth - 2 * border - border * nCols) / nCols;
+      int frameHeight = (imgHeight - 2 * border - border * nRows) / nRows;
+
+      int framesPerStripe = htmlReportConfig.getFramesPerStripe();
+      int w = htmlReportConfig.getVideoStripeWidth() / framesPerStripe;
+      double rate = (nRows * nCols) * 0.999 / framesPerStripe;
+      int h = frameHeight * w / frameWidth;
+
+      BufferedImage stripe =
+          new BufferedImage(framesPerStripe * (w + 1) + 3, h + 4, BufferedImage.TYPE_INT_BGR);
+      Graphics2D g2 = (Graphics2D) stripe.getGraphics();
+      g2.setRenderingHint(
+          RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+      g2.setColor(new Color(222, 222, 222));
+      g2.fillRect(0, 0, stripe.getWidth(), stripe.getHeight());
+      g2.setColor(new Color(22, 22, 22));
+      g2.drawRect(0, 0, stripe.getWidth() - 1, stripe.getHeight() - 1);
+
+      double pos = rate * 0.4;
+      for (int j = 0; j < framesPerStripe; j++) {
+        int x = j * (w + 1) + 2;
+        int idx = Math.min(nCols * nRows - 1, (int) pos);
+        int sx = border + (border + frameWidth) * (idx % nCols);
+        int sy = border + (border + frameHeight) * (idx / nCols);
+        g2.drawImage(img, x, 2, x + w, 2 + h, sx, sy, sx + frameWidth, sy + frameHeight, null);
+        pos += rate;
+      }
+      g2.dispose();
+
+      ImageIO.write(stripe, "jpeg", out); // $NON-NLS-1$
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    private static String formatDate(Date date, DateFormat dateFormat) {
-        return date == null ? "-" : dateFormat.format(date); //$NON-NLS-1$
+  private BufferedImage resizeThumb(BufferedImage img) {
+    int width = img.getWidth();
+    int height = img.getHeight();
+    int thumbSize = htmlReportConfig.getThumbSize();
+    if (width > height) {
+      height = height * thumbSize / width;
+      width = thumbSize;
+    } else {
+      width = width * thumbSize / height;
+      height = thumbSize;
     }
+    return ImageUtil.resizeImage(img, width, height);
+  }
 
-    private static String formatNumber(Long val, NumberFormat longFormat) {
-        return val == null ? "-" : longFormat.format(val); //$NON-NLS-1$
+  private static boolean isJpeg(IItem item) {
+    return ((MediaType) item.getMediaType()).getSubtype().startsWith("jpeg");
+  }
+
+  private static void replace(StringBuilder sb, String a, String b) {
+    int pos = 0;
+    while ((pos = sb.indexOf(a, pos)) >= 0) {
+      String rep = b == null ? "-" : b; // $NON-NLS-1$
+      sb.replace(pos, pos + a.length(), rep);
+      pos += rep.length();
     }
+  }
 
-    /**
-     * Gera páginas com galeria de miniaturas de imagens.
-     */
-    private void createThumbsPage() {
-        int n = 0;
-        int page = 1;
-        StringBuilder sb = new StringBuilder();
+  private static void replaceFirst(StringBuilder sb, String a, String b) {
+    int pos = 0;
+    if ((pos = sb.indexOf(a, pos)) >= 0) {
+      String rep = b == null ? "-" : b;
+      sb.replace(pos, pos + a.length(), rep);
+    }
+  }
 
-        int tot = 0;
-        for (String label : accum().imageThumbsByLabel.keySet()) {
-            List<String> l = accum().imageThumbsByLabel.get(label);
-            tot += l.size();
-        }
-        int thumbsPerPage = htmlReportConfig.getThumbsPerPage();
-        int np = (tot + thumbsPerPage - 1) / thumbsPerPage;
+  private static String formatDate(Date date, DateFormat dateFormat) {
+    return date == null ? "-" : dateFormat.format(date); // $NON-NLS-1$
+  }
 
-        for (String bookmark : accum().imageThumbsByLabel.keySet()) {
-            List<String> l = accum().imageThumbsByLabel.get(bookmark);
+  private static String formatNumber(Long val, NumberFormat longFormat) {
+    return val == null ? "-" : longFormat.format(val); // $NON-NLS-1$
+  }
+
+  /** Gera páginas com galeria de miniaturas de imagens. */
+  private void createThumbsPage() {
+    int n = 0;
+    int page = 1;
+    StringBuilder sb = new StringBuilder();
+
+    int tot = 0;
+    for (String label : accum().imageThumbsByLabel.keySet()) {
+      List<String> l = accum().imageThumbsByLabel.get(label);
+      tot += l.size();
+    }
+    int thumbsPerPage = htmlReportConfig.getThumbsPerPage();
+    int np = (tot + thumbsPerPage - 1) / thumbsPerPage;
+
+    for (String bookmark : accum().imageThumbsByLabel.keySet()) {
+      List<String> l = accum().imageThumbsByLabel.get(bookmark);
+      addBookmarkTitle(sb, bookmark, l.size(), !accum().entriesByLabel.isEmpty());
+      int cnt = 0;
+      for (String s : l) {
+        n++;
+        sb.append(s);
+        sb.append("\n"); // $NON-NLS-1$
+        if (n >= thumbsPerPage) {
+          addPageControl(page, np, sb);
+          writeThumbsPage(sb, new File(accum().reportSubFolder, pageName(page)));
+          page++;
+          n = 0;
+          sb.delete(0, sb.length());
+          if (++cnt < l.size()) {
             addBookmarkTitle(sb, bookmark, l.size(), !accum().entriesByLabel.isEmpty());
-            int cnt = 0;
-            for (String s : l) {
-                n++;
-                sb.append(s);
-                sb.append("\n"); //$NON-NLS-1$
-                if (n >= thumbsPerPage) {
-                    addPageControl(page, np, sb);
-                    writeThumbsPage(sb, new File(accum().reportSubFolder, pageName(page)));
-                    page++;
-                    n = 0;
-                    sb.delete(0, sb.length());
-                    if (++cnt < l.size()) {
-                        addBookmarkTitle(sb, bookmark, l.size(), !accum().entriesByLabel.isEmpty());
-                    }
-                }
-            }
+          }
         }
-        if (n > 0) {
-            addPageControl(page, np, sb);
-            writeThumbsPage(sb, new File(accum().reportSubFolder, pageName(page)));
-        }
+      }
+    }
+    if (n > 0) {
+      addPageControl(page, np, sb);
+      writeThumbsPage(sb, new File(accum().reportSubFolder, pageName(page)));
+    }
+  }
+
+  private void addPageControl(int page, int np, StringBuilder sb) {
+    StringBuilder sp = new StringBuilder();
+    sp.append("<table width=\"100%\"><tr><td>" + Messages.getString("HTMLReportTask.Page") + " ")
+        .append(page) // $NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        .append(Messages.getString("HTMLReportTask.of"))
+        .append(np)
+        .append("</td>"); // $NON-NLS-1$ //$NON-NLS-2$
+
+    if (page > 1) {
+      sp.append("<td><a href=\"")
+          .append(pageName(1)) // $NON-NLS-1$
+          .append(
+              "\">&lt;&lt;&lt;&lt;"
+                  + Messages.getString("HTMLReportTask.FirstPage")
+                  + "</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      sp.append("<td><a href=\"")
+          .append(pageName(page - 1)) // $NON-NLS-1$
+          .append(
+              "\">&lt;&lt;"
+                  + Messages.getString("HTMLReportTask.PrevPage")
+                  + "</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
+    if (page < np) {
+      sp.append("<td><a href=\"")
+          .append(pageName(page + 1)) // $NON-NLS-1$
+          .append(
+              "\">"
+                  + Messages.getString("HTMLReportTask.NextPage")
+                  + "&gt;&gt;</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      sp.append("<td><a href=\"")
+          .append(pageName(np)) // $NON-NLS-1$
+          .append(
+              "\">"
+                  + Messages.getString("HTMLReportTask.LastPage")
+                  + "&gt;&gt;&gt;&gt;</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
-    private void addPageControl(int page, int np, StringBuilder sb) {
-        StringBuilder sp = new StringBuilder();
-        sp.append("<table width=\"100%\"><tr><td>" + Messages.getString("HTMLReportTask.Page") + " ").append(page) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                .append(Messages.getString("HTMLReportTask.of")).append(np).append("</td>"); //$NON-NLS-1$ //$NON-NLS-2$
+    sp.append("</tr></table>\n"); // $NON-NLS-1$
 
-        if (page > 1) {
-            sp.append("<td><a href=\"").append(pageName(1)) //$NON-NLS-1$
-                    .append("\">&lt;&lt;&lt;&lt;" + Messages.getString("HTMLReportTask.FirstPage") + "</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            sp.append("<td><a href=\"").append(pageName(page - 1)) //$NON-NLS-1$
-                    .append("\">&lt;&lt;" + Messages.getString("HTMLReportTask.PrevPage") + "</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        }
-        if (page < np) {
-            sp.append("<td><a href=\"").append(pageName(page + 1)) //$NON-NLS-1$
-                    .append("\">" + Messages.getString("HTMLReportTask.NextPage") + "&gt;&gt;</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            sp.append("<td><a href=\"").append(pageName(np)) //$NON-NLS-1$
-                    .append("\">" + Messages.getString("HTMLReportTask.LastPage") + "&gt;&gt;&gt;&gt;</a></td>\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        }
+    sb.insert(0, sp.toString());
+    sb.append(sp.toString());
+  }
 
-        sp.append("</tr></table>\n"); //$NON-NLS-1$
+  private String pageName(int page) {
+    return "thumbs_"
+        + (page / 100)
+        + ""
+        + (page % 100 / 10)
+        + ""
+        + page % 10
+        + ".htm"; //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+  }
 
-        sb.insert(0, sp.toString());
-        sb.append(sp.toString());
+  private void addBookmarkTitle(StringBuilder sb, String bookmark, int size, boolean isLabel) {
+    sb.append(
+        "<table width=\"100%\"><tr><th class=\"columnHead\" colspan=\"1\" style=\"font-size:16px\">"); //$NON-NLS-1$
+    if (isLabel) {
+      sb.append(Messages.getString("HTMLReportTask.Bookmark") + ": "); // $NON-NLS-1$ //$NON-NLS-2$
+    } else {
+      sb.append(Messages.getString("HTMLReportTask.Category") + ": "); // $NON-NLS-1$ //$NON-NLS-2$
     }
+    sb.append(bookmark);
+    sb.append(
+        "</th></tr><tr><td class=\"clrBkgrnd\"><span style=\"font-weight:bold\">" //$NON-NLS-1$
+            + Messages.getString("HTMLReportTask.FileCount")
+            + ": </span>"); //$NON-NLS-1$ //$NON-NLS-2$
+    sb.append(size);
+    sb.append("</td></tr></table>"); // $NON-NLS-1$
+  }
 
-    private String pageName(int page) {
-        return "thumbs_" + (page / 100) + "" + (page % 100 / 10) + "" + page % 10 + ".htm"; //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+  private void writeThumbsPage(StringBuilder sb, File f) {
+    String header =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><link rel=\"stylesheet\" type=\"text/css\" href=\"res/common.css\"/><link rel=\"stylesheet\" type=\"text/css\" href=\"res/bookmarks.css\"/><title>" //$NON-NLS-1$
+            + Messages.getString("HTMLReportTask.GalleryTitle") // $NON-NLS-1$
+            + "</title><style>\n.thumb {width:auto; height:auto; max-width:112px; max-height:112px;}\n</style></head><body>\n<p><img border=\"0\" src=\"res/header.gif\"/>\n\n"; //$NON-NLS-1$
+    sb.insert(0, header);
+    sb.append("\n<p><img border=\"0\" src=\"res/header.gif\"/></p></body></html>"); // $NON-NLS-1$
+    EncodedFile ef = new EncodedFile(sb, Charset.forName("UTF-8"), f); // $NON-NLS-1$
+    try {
+      ef.write();
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
 
-    private void addBookmarkTitle(StringBuilder sb, String bookmark, int size, boolean isLabel) {
-        sb.append("<table width=\"100%\"><tr><th class=\"columnHead\" colspan=\"1\" style=\"font-size:16px\">"); //$NON-NLS-1$
-        if (isLabel) {
-            sb.append(Messages.getString("HTMLReportTask.Bookmark") + ": "); //$NON-NLS-1$ //$NON-NLS-2$
-        } else {
-            sb.append(Messages.getString("HTMLReportTask.Category") + ": "); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        sb.append(bookmark);
-        sb.append("</th></tr><tr><td class=\"clrBkgrnd\"><span style=\"font-weight:bold\">" //$NON-NLS-1$
-                + Messages.getString("HTMLReportTask.FileCount") + ": </span>"); //$NON-NLS-1$ //$NON-NLS-2$
-        sb.append(size);
-        sb.append("</td></tr></table>"); //$NON-NLS-1$
-    }
+  /**
+   * Holds all mutable state that is scoped to a single case run. Stored in {@code caseData} so each
+   * case gets its own instance; eliminates the per-JVM static collections that leaked across cases.
+   */
+  static final class ReportAccumulator {
+    static final String KEY = ReportAccumulator.class.getName();
 
-    private void writeThumbsPage(StringBuilder sb, File f) {
-        String header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><link rel=\"stylesheet\" type=\"text/css\" href=\"res/common.css\"/><link rel=\"stylesheet\" type=\"text/css\" href=\"res/bookmarks.css\"/><title>" //$NON-NLS-1$
-                + Messages.getString("HTMLReportTask.GalleryTitle") //$NON-NLS-1$
-                + "</title><style>\n.thumb {width:auto; height:auto; max-width:112px; max-height:112px;}\n</style></head><body>\n<p><img border=\"0\" src=\"res/header.gif\"/>\n\n"; //$NON-NLS-1$
-        sb.insert(0, header);
-        sb.append("\n<p><img border=\"0\" src=\"res/header.gif\"/></p></body></html>"); //$NON-NLS-1$
-        EncodedFile ef = new EncodedFile(sb, Charset.forName("UTF-8"), f); //$NON-NLS-1$
-        try {
-            ef.write();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    final AtomicBoolean initialized = new AtomicBoolean(false);
+    volatile File reportSubFolder;
+    volatile ExternalImageConverter externalImageConverter;
+    volatile ReportInfo info;
 
-    /**
-     * Holds all mutable state that is scoped to a single case run.
-     * Stored in {@code caseData} so each case gets its own instance;
-     * eliminates the per-JVM static collections that leaked across cases.
-     */
-    static final class ReportAccumulator {
-        static final String KEY = ReportAccumulator.class.getName();
+    final SortedMap<String, List<ReportEntry>> entriesByLabel =
+        new TreeMap<>(HTMLReportTask.getCollator());
+    final SortedMap<String, List<ReportEntry>> entriesByCategory =
+        new TreeMap<>(HTMLReportTask.getCollator());
+    final List<ReportEntry> entriesNoLabel = new ArrayList<>();
+    final SortedMap<String, List<String>> imageThumbsByLabel =
+        new TreeMap<>(HTMLReportTask.getCollator());
+    final Set<String> currentFiles = new HashSet<>();
+  }
 
-        final AtomicBoolean initialized = new AtomicBoolean(false);
-        volatile File reportSubFolder;
-        volatile ExternalImageConverter externalImageConverter;
-        volatile ReportInfo info;
-
-        final SortedMap<String, List<ReportEntry>> entriesByLabel = new TreeMap<>(HTMLReportTask.getCollator());
-        final SortedMap<String, List<ReportEntry>> entriesByCategory = new TreeMap<>(HTMLReportTask.getCollator());
-        final List<ReportEntry> entriesNoLabel = new ArrayList<>();
-        final SortedMap<String, List<String>> imageThumbsByLabel = new TreeMap<>(HTMLReportTask.getCollator());
-        final Set<String> currentFiles = new HashSet<>();
-    }
-
-    /** Returns the case-scoped accumulator, creating it if this is the first call for this case. */
-    private ReportAccumulator accum() {
-        ReportAccumulator a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
+  /** Returns the case-scoped accumulator, creating it if this is the first call for this case. */
+  private ReportAccumulator accum() {
+    ReportAccumulator a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
+    if (a == null) {
+      synchronized (HTMLReportTask.class) {
+        a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
         if (a == null) {
-            synchronized (HTMLReportTask.class) {
-                a = (ReportAccumulator) caseData.getCaseObject(ReportAccumulator.KEY);
-                if (a == null) {
-                    a = new ReportAccumulator();
-                    caseData.putCaseObject(ReportAccumulator.KEY, a);
-                }
-            }
+          a = new ReportAccumulator();
+          caseData.putCaseObject(ReportAccumulator.KEY, a);
         }
-        return a;
+      }
     }
-
+    return a;
+  }
 }
 
 /**
@@ -1106,99 +1275,107 @@ public class HTMLReportTask extends AbstractTask {
  * @author Wladimir
  */
 class ReportEntry {
-    String name, export, ext, category, hash, path, img;
-    Long length;
-    boolean deleted, carved, isImage, isVideo;
-    Date accessed, modified, created;
-    int evidenceId;
+  String name, export, ext, category, hash, path, img;
+  Long length;
+  boolean deleted, carved, isImage, isVideo;
+  Date accessed, modified, created;
+  int evidenceId;
 }
 
-/**
- * Classe auxiliar para ler/escrever arquivos mantendo sua codificação original.
- */
+/** Classe auxiliar para ler/escrever arquivos mantendo sua codificação original. */
 class EncodedFile {
 
-    public StringBuilder content;
-    public Charset charset;
-    public File file;
+  public StringBuilder content;
+  public Charset charset;
+  public File file;
 
-    public EncodedFile(StringBuilder sb, Charset charset, File file) {
-        super();
-        this.content = sb;
-        this.file = file;
-        this.charset = charset;
-    }
+  public EncodedFile(StringBuilder sb, Charset charset, File file) {
+    super();
+    this.content = sb;
+    this.file = file;
+    this.charset = charset;
+  }
 
-    public static EncodedFile readFile(File f, Charset cs) throws Exception {
-        InputStreamReader in = new InputStreamReader(new FileInputStream(f), cs);
-        char[] buf = new char[(int) f.length()];
-        int size = in.read(buf);
-        in.close();
-        StringBuilder sb = new StringBuilder();
-        sb.append(buf, 0, size);
-        return new EncodedFile(sb, cs, f);
-    }
+  public static EncodedFile readFile(File f, Charset cs) throws Exception {
+    InputStreamReader in = new InputStreamReader(new FileInputStream(f), cs);
+    char[] buf = new char[(int) f.length()];
+    int size = in.read(buf);
+    in.close();
+    StringBuilder sb = new StringBuilder();
+    sb.append(buf, 0, size);
+    return new EncodedFile(sb, cs, f);
+  }
 
-    public void write() throws Exception {
-        FileOutputStream fos = new FileOutputStream(file);
-        BufferedWriter out = new BufferedWriter(
-                charset == null ? new OutputStreamWriter(fos) : new OutputStreamWriter(fos, charset));
-        out.write(content.toString());
-        out.close();
-        fos.close();
-    }
+  public void write() throws Exception {
+    FileOutputStream fos = new FileOutputStream(file);
+    BufferedWriter out =
+        new BufferedWriter(
+            charset == null ? new OutputStreamWriter(fos) : new OutputStreamWriter(fos, charset));
+    out.write(content.toString());
+    out.close();
+    fos.close();
+  }
 }
 
 /**
- * Comparador simples de Strings, que ignora maísculas/minúsculas e trata
- * acentuação básica, mas sem o overhead de performance do Collator do Java.
+ * Comparador simples de Strings, que ignora maísculas/minúsculas e trata acentuação básica, mas sem
+ * o overhead de performance do Collator do Java.
  */
 class CustomComparator implements Comparator<String> {
-    private final char[] map = new char[Character.MAX_VALUE + 1];
-    private static final String[] mappings = new String[] { "A", "ÁÀÂÃÄáàâãä", "E", "ÉÈÊËéèêë", "I", "ÍÌÎÏíìîï", "O", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-            "ÓÒÕÔÖóòõôö", "U", "ÚÙÜÛúùüû", "C", "Çç", "N", "Ññ" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+  private final char[] map = new char[Character.MAX_VALUE + 1];
+  private static final String[] mappings =
+      new String[] {
+        "A",
+        "ÁÀÂÃÄáàâãä",
+        "E",
+        "ÉÈÊËéèêë",
+        "I",
+        "ÍÌÎÏíìîï",
+        "O", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+        // //$NON-NLS-7$
+        "ÓÒÕÔÖóòõôö",
+        "U",
+        "ÚÙÜÛúùüû",
+        "C",
+        "Çç",
+        "N",
+        "Ññ"
+      }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 
-    public CustomComparator() {
-        for (int i = 0; i < mappings.length; i += 2) {
-            char to = mappings[i].charAt(0);
-            char[] froms = mappings[i + 1].toCharArray();
-            for (char from : froms) {
-                map[from] = to;
-            }
-        }
-    }
+  // //$NON-NLS-7$
 
-    public int compare(String a, String b) {
-        int i = 0;
-        int j = 0;
-        for (; i < a.length() && j < b.length(); i++, j++) {
-            char c = a.charAt(i);
-            char d = b.charAt(j);
-            if (c == d)
-                continue;
-            if (c >= 'a' && c <= 'z')
-                c -= 32;
-            else if (c >= 128) {
-                char m = map[c];
-                if (m != 0)
-                    c = m;
-            }
-            if (d >= 'a' && d <= 'z')
-                d -= 32;
-            else if (d >= 128) {
-                char m = map[d];
-                if (m != 0)
-                    d = m;
-            }
-            if (c < d)
-                return -1;
-            if (c > d)
-                return 1;
-        }
-        if (i < a.length() && j == b.length())
-            return 1;
-        if (i == a.length() && j < b.length())
-            return -1;
-        return 0;
+  public CustomComparator() {
+    for (int i = 0; i < mappings.length; i += 2) {
+      char to = mappings[i].charAt(0);
+      char[] froms = mappings[i + 1].toCharArray();
+      for (char from : froms) {
+        map[from] = to;
+      }
     }
+  }
+
+  public int compare(String a, String b) {
+    int i = 0;
+    int j = 0;
+    for (; i < a.length() && j < b.length(); i++, j++) {
+      char c = a.charAt(i);
+      char d = b.charAt(j);
+      if (c == d) continue;
+      if (c >= 'a' && c <= 'z') c -= 32;
+      else if (c >= 128) {
+        char m = map[c];
+        if (m != 0) c = m;
+      }
+      if (d >= 'a' && d <= 'z') d -= 32;
+      else if (d >= 128) {
+        char m = map[d];
+        if (m != 0) d = m;
+      }
+      if (c < d) return -1;
+      if (c > d) return 1;
+    }
+    if (i < a.length() && j == b.length()) return 1;
+    if (i == a.length() && j < b.length()) return -1;
+    return 0;
+  }
 }

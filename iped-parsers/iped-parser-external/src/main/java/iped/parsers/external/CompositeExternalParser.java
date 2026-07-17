@@ -16,29 +16,27 @@
  */
 package iped.parsers.external;
 
+import java.io.IOException;
+import java.util.List;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.mime.MediaTypeRegistry;
 import org.apache.tika.parser.CompositeParser;
 import org.apache.tika.parser.Parser;
 
-import java.io.IOException;
-import java.util.List;
-
 /**
- * A Composite Parser that wraps up all the available External Parsers, and
- * provides an easy way to access them. Parser that uses an external program
- * (like catdoc or pdf2txt) to extract text content and metadata from a given
- * document.
+ * A Composite Parser that wraps up all the available External Parsers, and provides an easy way to
+ * access them. Parser that uses an external program (like catdoc or pdf2txt) to extract text
+ * content and metadata from a given document.
  */
 public class CompositeExternalParser extends CompositeParser {
-    private static final long serialVersionUID = 6962436916649024024L;
+  private static final long serialVersionUID = 6962436916649024024L;
 
-    public CompositeExternalParser() throws IOException, TikaException {
-        this(new MediaTypeRegistry());
-    }
+  public CompositeExternalParser() throws IOException, TikaException {
+    this(new MediaTypeRegistry());
+  }
 
-    @SuppressWarnings("unchecked")
-    public CompositeExternalParser(MediaTypeRegistry registry) throws IOException, TikaException {
-        super(registry, (List<Parser>) (List<? extends Parser>) ExternalParsersFactory.create());
-    }
+  @SuppressWarnings("unchecked")
+  public CompositeExternalParser(MediaTypeRegistry registry) throws IOException, TikaException {
+    super(registry, (List<Parser>) (List<? extends Parser>) ExternalParsersFactory.create());
+  }
 }

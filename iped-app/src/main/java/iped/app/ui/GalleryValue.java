@@ -19,26 +19,25 @@
 package iped.app.ui;
 
 import iped.data.IItemId;
-
-import javax.swing.*;
 import java.awt.image.BufferedImage;
+import javax.swing.*;
 
 public class GalleryValue {
 
-    public String name;
-    public Icon icon;
-    public IItemId id;
-    public BufferedImage image;
-    public boolean unsupportedType;
+  public String name;
+  public Icon icon;
+  public IItemId id;
+  public BufferedImage image;
+  public boolean unsupportedType;
 
-    public GalleryValue(String name, Icon icon, IItemId id) {
-        this.name = name;
-        this.icon = icon;
-        this.id = id;
-    }
+  public GalleryValue(String name, Icon icon, IItemId id) {
+    this.name = name;
+    this.icon = icon;
+    this.id = id;
+  }
 
-    @Override
-    public String toString() {
-        return name;
-    }
+  @Override
+  public String toString() {
+    return name;
+  }
 }

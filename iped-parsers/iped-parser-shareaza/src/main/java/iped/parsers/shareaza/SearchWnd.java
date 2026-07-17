@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -27,32 +27,31 @@ import java.util.List;
  */
 class SearchWnd extends ShareazaEntity {
 
-    private final List<ManagedSearch> managedSearches = new ArrayList<>();
-    private final BaseMatchSearch baseMatchSearch = new BaseMatchSearch();
+  private final List<ManagedSearch> managedSearches = new ArrayList<>();
+  private final BaseMatchSearch baseMatchSearch = new BaseMatchSearch();
 
-    public SearchWnd() {
-        super("SEARCH WINDOW"); //$NON-NLS-1$
+  public SearchWnd() {
+    super("SEARCH WINDOW"); // $NON-NLS-1$
+  }
+
+  @Override
+  public void read(MFCParser ar) throws IOException {
+    /* int version = */ ar.readInt();
+
+    int n = ar.readCount();
+    for (int i = 0; i < n; i++) {
+      ManagedSearch search = new ManagedSearch();
+      search.read(ar);
+      managedSearches.add(search);
     }
+    baseMatchSearch.read(ar);
+  }
 
-    @Override
-    public void read(MFCParser ar) throws IOException {
-        /* int version = */ ar.readInt();
-
-        int n = ar.readCount();
-        for (int i = 0; i < n; i++) {
-            ManagedSearch search = new ManagedSearch();
-            search.read(ar);
-            managedSearches.add(search);
-        }
-        baseMatchSearch.read(ar);
+  @Override
+  protected void writeImpl(ShareazaOutputGenerator f) {
+    for (ManagedSearch search : managedSearches) {
+      search.write(f);
     }
-
-    @Override
-    protected void writeImpl(ShareazaOutputGenerator f) {
-        for (ManagedSearch search : managedSearches) {
-            search.write(f);
-        }
-        baseMatchSearch.write(f);
-    }
-
+    baseMatchSearch.write(f);
+  }
 }

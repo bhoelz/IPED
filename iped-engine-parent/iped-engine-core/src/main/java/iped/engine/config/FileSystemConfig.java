@@ -1,119 +1,114 @@
 package iped.engine.config;
 
 import iped.utils.UTF8Properties;
-
 import java.io.IOException;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 
 public class FileSystemConfig extends AbstractPropertiesConfigurable {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    private static final String CONFIG_FILE = "FileSystemConfig.toml";
+  private static final String CONFIG_FILE = "FileSystemConfig.toml";
 
-    private boolean toAddUnallocated = false;
-    private boolean toAddFileSlacks = false;
-    private boolean robustImageReading;
-    // Adjusted to 1/6 rounded up (see #2480)
-    private int numImageReaders = (Runtime.getRuntime().availableProcessors() + 5) / 6;
-    private long unallocatedFragSize = 1 << 30;
-    private long minOrphanSizeToIgnore = -1;
-    private boolean ignoreHardLinks = true;
-    private String skipFolderRegex = "";
+  private boolean toAddUnallocated = false;
+  private boolean toAddFileSlacks = false;
+  private boolean robustImageReading;
+  // Adjusted to 1/6 rounded up (see #2480)
+  private int numImageReaders = (Runtime.getRuntime().availableProcessors() + 5) / 6;
+  private long unallocatedFragSize = 1 << 30;
+  private long minOrphanSizeToIgnore = -1;
+  private boolean ignoreHardLinks = true;
+  private String skipFolderRegex = "";
 
-    @Override
-    public Filter<Path> getResourceLookupFilter() {
-        return new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.endsWith(CONFIG_FILE);
-            }
-        };
+  @Override
+  public Filter<Path> getResourceLookupFilter() {
+    return new Filter<Path>() {
+      @Override
+      public boolean accept(Path entry) throws IOException {
+        return entry.endsWith(CONFIG_FILE);
+      }
+    };
+  }
+
+  @Override
+  public void processProperties(UTF8Properties properties) {
+
+    String value = properties.getProperty("addUnallocated"); // $NON-NLS-1$
+    if (value != null) {
+      toAddUnallocated = Boolean.valueOf(value.trim());
     }
 
-    @Override
-    public void processProperties(UTF8Properties properties) {
-
-        String value = properties.getProperty("addUnallocated"); // $NON-NLS-1$
-        if (value != null) {
-            toAddUnallocated = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("addFileSlacks"); // $NON-NLS-1$
-        if (value != null) {
-            toAddFileSlacks = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("robustImageReading"); //$NON-NLS-1$
-        if (value != null) {
-            robustImageReading = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("numImageReaders"); //$NON-NLS-1$
-        if (value != null && !(value = value.trim()).equalsIgnoreCase("auto")) {
-            numImageReaders = Integer.valueOf(value);
-        }
-
-        value = properties.getProperty("unallocatedFragSize"); //$NON-NLS-1$
-        if (value != null) {
-            unallocatedFragSize = Long.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("minOrphanSizeToIgnore"); //$NON-NLS-1$
-        if (value != null) {
-            minOrphanSizeToIgnore = Long.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("ignoreHardLinks"); //$NON-NLS-1$
-        if (value != null) {
-            ignoreHardLinks = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("skipFolderRegex"); //$NON-NLS-1$
-        if (value != null) {
-            skipFolderRegex = value.trim();
-        }
-
+    value = properties.getProperty("addFileSlacks"); // $NON-NLS-1$
+    if (value != null) {
+      toAddFileSlacks = Boolean.valueOf(value.trim());
     }
 
-    public String getSkipFolderRegex() {
-        return skipFolderRegex;
+    value = properties.getProperty("robustImageReading"); // $NON-NLS-1$
+    if (value != null) {
+      robustImageReading = Boolean.valueOf(value.trim());
     }
 
-    public boolean isToAddUnallocated() {
-        return toAddUnallocated;
+    value = properties.getProperty("numImageReaders"); // $NON-NLS-1$
+    if (value != null && !(value = value.trim()).equalsIgnoreCase("auto")) {
+      numImageReaders = Integer.valueOf(value);
     }
 
-    public boolean isToAddFileSlacks() {
-        return toAddFileSlacks;
+    value = properties.getProperty("unallocatedFragSize"); // $NON-NLS-1$
+    if (value != null) {
+      unallocatedFragSize = Long.valueOf(value.trim());
     }
 
-    public boolean isRobustImageReading() {
-        return robustImageReading;
+    value = properties.getProperty("minOrphanSizeToIgnore"); // $NON-NLS-1$
+    if (value != null) {
+      minOrphanSizeToIgnore = Long.valueOf(value.trim());
     }
 
-    public void setRobustImageReading(boolean value) {
-        this.robustImageReading = value;
+    value = properties.getProperty("ignoreHardLinks"); // $NON-NLS-1$
+    if (value != null) {
+      ignoreHardLinks = Boolean.valueOf(value.trim());
     }
 
-    public int getNumImageReaders() {
-        return numImageReaders;
+    value = properties.getProperty("skipFolderRegex"); // $NON-NLS-1$
+    if (value != null) {
+      skipFolderRegex = value.trim();
     }
+  }
 
-    public long getUnallocatedFragSize() {
-        return unallocatedFragSize;
-    }
+  public String getSkipFolderRegex() {
+    return skipFolderRegex;
+  }
 
-    public long getMinOrphanSizeToIgnore() {
-        return minOrphanSizeToIgnore;
-    }
+  public boolean isToAddUnallocated() {
+    return toAddUnallocated;
+  }
 
-    public boolean isIgnoreHardLinks() {
-        return ignoreHardLinks;
-    }
+  public boolean isToAddFileSlacks() {
+    return toAddFileSlacks;
+  }
 
+  public boolean isRobustImageReading() {
+    return robustImageReading;
+  }
+
+  public void setRobustImageReading(boolean value) {
+    this.robustImageReading = value;
+  }
+
+  public int getNumImageReaders() {
+    return numImageReaders;
+  }
+
+  public long getUnallocatedFragSize() {
+    return unallocatedFragSize;
+  }
+
+  public long getMinOrphanSizeToIgnore() {
+    return minOrphanSizeToIgnore;
+  }
+
+  public boolean isIgnoreHardLinks() {
+    return ignoreHardLinks;
+  }
 }

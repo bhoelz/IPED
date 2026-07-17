@@ -1,71 +1,69 @@
 package iped.engine.task.regex.validator.crypto;
 
 import iped.engine.task.regex.BasicAbstractRegexValidatorService;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
-
 import java.io.File;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
+import org.bouncycastle.jcajce.provider.digest.Keccak;
 
 /**
  * Validate Ethereum address encoded as in EIP-55
  *
  * @author Fabio Melo Pfeifer <pfeifer.fmp@pf.gov.br>
- *
  */
 public class EthereumAddressValidatorService extends BasicAbstractRegexValidatorService {
 
-    private static final MessageDigest digest;
-    private static final int[] MASKS = { 128, 8 };
+  private static final MessageDigest digest;
+  private static final int[] MASKS = {128, 8};
 
-    static {
-        digest = new Keccak.Digest256();
+  static {
+    digest = new Keccak.Digest256();
+  }
+
+  @Override
+  public void init(File confDir) {
+    // Nothing to do.
+  }
+
+  @Override
+  public List<String> getRegexNames() {
+    return Arrays.asList("CRYPTOCOIN_ETHEREUM");
+  }
+
+  @Override
+  protected boolean validate(String hit) {
+    return validateEthereumAddress(hit);
+  }
+
+  public boolean validateEthereumAddress(String addr) {
+    // remove the 0x prefix
+    addr = addr.substring(2);
+    byte[] keccak = null;
+
+    synchronized (digest) {
+      digest.reset();
+      digest.update(addr.toLowerCase().getBytes());
+      keccak = digest.digest();
     }
 
-    @Override
-    public void init(File confDir) {
-        // Nothing to do.
-    }
+    for (int i = 0; i < addr.length(); i++) {
+      char c = addr.charAt(i);
+      int bit = keccak[i / 2] & MASKS[i % 2];
 
-    @Override
-    public List<String> getRegexNames() {
-        return Arrays.asList("CRYPTOCOIN_ETHEREUM");
-    }
-
-    @Override
-    protected boolean validate(String hit) {
-        return validateEthereumAddress(hit);
-    }
-
-    public boolean validateEthereumAddress(String addr) {
-        // remove the 0x prefix
-        addr = addr.substring(2);
-        byte[] keccak = null;
-
-        synchronized (digest) {
-            digest.reset();
-            digest.update(addr.toLowerCase().getBytes());
-            keccak = digest.digest();
+      if (Character.isLetter(c)) {
+        if (Character.isLowerCase(c)) {
+          if (bit != 0) {
+            return false;
+          }
+        } else {
+          if (bit == 0) {
+            return false;
+          }
         }
-
-        for (int i = 0; i < addr.length(); i++) {
-            char c = addr.charAt(i);
-            int bit = keccak[i / 2] & MASKS[i % 2];
-
-            if (Character.isLetter(c)) {
-                if (Character.isLowerCase(c)) {
-                    if (bit != 0) {
-                        return false;
-                    }
-                } else {
-                    if (bit == 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
+      }
     }
+
+    return true;
+  }
 }

@@ -12,39 +12,41 @@ import java.util.zip.ZipInputStream;
 
 public class RepoToolDownloader {
 
-    private static final String MVN_REPO_URL = "https://gitlab.com/iped-project/iped-maven/raw/master/";
-    private static final String ZIP_FILE_NAME = "tmp.zip";
+  private static final String MVN_REPO_URL =
+      "https://gitlab.com/iped-project/iped-maven/raw/master/";
+  private static final String ZIP_FILE_NAME = "tmp.zip";
 
-    public static void unzipFromUrl(String repoPath, String outputDir) throws IOException {
-        URL url = new URL(MVN_REPO_URL + repoPath.replaceAll("^/+", ""));
-        downloadZipFromUrl(url, outputDir);
+  public static void unzipFromUrl(String repoPath, String outputDir) throws IOException {
+    URL url = new URL(MVN_REPO_URL + repoPath.replaceAll("^/+", ""));
+    downloadZipFromUrl(url, outputDir);
 
-        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(outputDir + ZIP_FILE_NAME))) {
-            ZipEntry entry;
-            while ((entry = zipInputStream.getNextEntry()) != null) {
-                final Path toPath = Paths.get(outputDir).resolve(entry.getName());
-                if (entry.isDirectory()) {
-                    if (!Files.exists(toPath)) {
-                        Files.createDirectory(toPath);
-                    }
-                } else {
-                    if (!Files.exists(toPath.getParent())) {
-                        Files.createDirectories(toPath.getParent());
-                    }
-                    if (!Files.exists(toPath)) {
-                        Files.copy(zipInputStream, toPath);
-                    }
-                }
-            }
+    try (ZipInputStream zipInputStream =
+        new ZipInputStream(new FileInputStream(outputDir + ZIP_FILE_NAME))) {
+      ZipEntry entry;
+      while ((entry = zipInputStream.getNextEntry()) != null) {
+        final Path toPath = Paths.get(outputDir).resolve(entry.getName());
+        if (entry.isDirectory()) {
+          if (!Files.exists(toPath)) {
+            Files.createDirectory(toPath);
+          }
+        } else {
+          if (!Files.exists(toPath.getParent())) {
+            Files.createDirectories(toPath.getParent());
+          }
+          if (!Files.exists(toPath)) {
+            Files.copy(zipInputStream, toPath);
+          }
         }
+      }
     }
+  }
 
-    private static void downloadZipFromUrl(URL url, String outputDir) throws IOException {
-        new File(outputDir).mkdirs();
-        try (InputStream in = url.openStream();
-             FileOutputStream fos = new FileOutputStream(outputDir + ZIP_FILE_NAME)) {
-            ReadableByteChannel rbc = Channels.newChannel(in);
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-        }
+  private static void downloadZipFromUrl(URL url, String outputDir) throws IOException {
+    new File(outputDir).mkdirs();
+    try (InputStream in = url.openStream();
+        FileOutputStream fos = new FileOutputStream(outputDir + ZIP_FILE_NAME)) {
+      ReadableByteChannel rbc = Channels.newChannel(in);
+      fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
     }
+  }
 }

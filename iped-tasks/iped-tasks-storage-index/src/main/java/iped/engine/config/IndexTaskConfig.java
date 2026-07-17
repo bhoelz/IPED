@@ -1,176 +1,171 @@
 package iped.engine.config;
 
 import iped.utils.UTF8Properties;
-
 import java.util.ArrayList;
 
 public class IndexTaskConfig extends AbstractTaskPropertiesConfig implements IndexSettings {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    private static final String ENABLE_PARAM = "indexFileContents";
-    private static final String CONFIG_FILE = "IndexTaskConfig.toml";
+  private static final String ENABLE_PARAM = "indexFileContents";
+  private static final String CONFIG_FILE = "IndexTaskConfig.toml";
 
-    private boolean indexUnallocated = false;
-    private boolean convertCharsToLowerCase = false;
-    private boolean convertCharsToAscii = false;
-    private boolean filterNonLatinChars = false;
-    private boolean useNIOFSDirectory = false;
-    private boolean forceMerge = false;
-    private int textSplitSize = 10485760;
-    private int textOverlapSize = 10000;
-    private boolean storeTermVectors = true;
-    private int maxTokenLength = 255;
-    private int[] extraCharsToIndexArray;
-    private int commitIntervalSeconds = 1800;
+  private boolean indexUnallocated = false;
+  private boolean convertCharsToLowerCase = false;
+  private boolean convertCharsToAscii = false;
+  private boolean filterNonLatinChars = false;
+  private boolean useNIOFSDirectory = false;
+  private boolean forceMerge = false;
+  private int textSplitSize = 10485760;
+  private int textOverlapSize = 10000;
+  private boolean storeTermVectors = true;
+  private int maxTokenLength = 255;
+  private int[] extraCharsToIndexArray;
+  private int commitIntervalSeconds = 1800;
 
-    @Override
-    public String getTaskEnableProperty() {
-        return ENABLE_PARAM;
+  @Override
+  public String getTaskEnableProperty() {
+    return ENABLE_PARAM;
+  }
+
+  @Override
+  public String getTaskConfigFileName() {
+    return CONFIG_FILE;
+  }
+
+  @Override
+  public void processProperties(UTF8Properties properties) {
+
+    String value = properties.getProperty("indexUnallocated"); // $NON-NLS-1$
+    if (value != null) {
+      indexUnallocated = Boolean.valueOf(value.trim());
     }
 
-    @Override
-    public String getTaskConfigFileName() {
-        return CONFIG_FILE;
+    value = properties.getProperty("extraCharsToIndex"); // $NON-NLS-1$
+    if (value != null) {
+      extraCharsToIndexArray = convertExtraCharsToIndex(value.trim());
     }
 
-    @Override
-    public void processProperties(UTF8Properties properties) {
-
-        String value = properties.getProperty("indexUnallocated"); //$NON-NLS-1$
-        if (value != null) {
-            indexUnallocated = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("extraCharsToIndex"); //$NON-NLS-1$
-        if (value != null) {
-            extraCharsToIndexArray = convertExtraCharsToIndex(value.trim());
-        }
-
-        value = properties.getProperty("convertCharsToLowerCase"); //$NON-NLS-1$
-        if (value != null) {
-            convertCharsToLowerCase = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("storeTermVectors"); //$NON-NLS-1$
-        if (value != null && !value.trim().isEmpty()) {
-            storeTermVectors = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("maxTokenLength"); //$NON-NLS-1$
-        if (value != null && !value.trim().isEmpty()) {
-            maxTokenLength = Integer.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("filterNonLatinChars"); //$NON-NLS-1$
-        if (value != null && !value.trim().isEmpty()) {
-            filterNonLatinChars = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("convertCharsToAscii"); //$NON-NLS-1$
-        if (value != null && !value.trim().isEmpty()) {
-            convertCharsToAscii = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("textSplitSize"); //$NON-NLS-1$
-        if (value != null && !value.trim().isEmpty()) {
-            textSplitSize = Integer.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("useNIOFSDirectory"); //$NON-NLS-1$
-        if (value != null && !value.trim().isEmpty()) {
-            useNIOFSDirectory = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("forceMerge"); //$NON-NLS-1$
-        if (value != null) {
-            forceMerge = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("commitIntervalSeconds"); //$NON-NLS-1$
-        if (value != null) {
-            commitIntervalSeconds = Integer.parseInt(value.trim());
-        }
-
+    value = properties.getProperty("convertCharsToLowerCase"); // $NON-NLS-1$
+    if (value != null) {
+      convertCharsToLowerCase = Boolean.valueOf(value.trim());
     }
 
-    private int[] convertExtraCharsToIndex(String chars) {
-
-        ArrayList<Integer> codePoints = new ArrayList<Integer>();
-        for (char c : chars.toCharArray()) {
-            if (c != ' ') {
-                codePoints.add((int) c);
-            }
-        }
-
-        int[] extraCodePoints = null;
-        if (codePoints.size() > 0) {
-            extraCodePoints = new int[codePoints.size()];
-            for (int i = 0; i < extraCodePoints.length; i++) {
-                extraCodePoints[i] = codePoints.get(i);
-            }
-        }
-        return extraCodePoints;
+    value = properties.getProperty("storeTermVectors"); // $NON-NLS-1$
+    if (value != null && !value.trim().isEmpty()) {
+      storeTermVectors = Boolean.valueOf(value.trim());
     }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
+    value = properties.getProperty("maxTokenLength"); // $NON-NLS-1$
+    if (value != null && !value.trim().isEmpty()) {
+      maxTokenLength = Integer.valueOf(value.trim());
     }
 
-    public boolean isIndexFileContents() {
-        return super.enabledProp.isEnabled();
+    value = properties.getProperty("filterNonLatinChars"); // $NON-NLS-1$
+    if (value != null && !value.trim().isEmpty()) {
+      filterNonLatinChars = Boolean.valueOf(value.trim());
     }
 
-    public boolean isIndexUnallocated() {
-        return indexUnallocated;
+    value = properties.getProperty("convertCharsToAscii"); // $NON-NLS-1$
+    if (value != null && !value.trim().isEmpty()) {
+      convertCharsToAscii = Boolean.valueOf(value.trim());
     }
 
-    public boolean isConvertCharsToLowerCase() {
-        return convertCharsToLowerCase;
+    value = properties.getProperty("textSplitSize"); // $NON-NLS-1$
+    if (value != null && !value.trim().isEmpty()) {
+      textSplitSize = Integer.valueOf(value.trim());
     }
 
-    public boolean isConvertCharsToAscii() {
-        return convertCharsToAscii;
+    value = properties.getProperty("useNIOFSDirectory"); // $NON-NLS-1$
+    if (value != null && !value.trim().isEmpty()) {
+      useNIOFSDirectory = Boolean.valueOf(value.trim());
     }
 
-    public boolean isFilterNonLatinChars() {
-        return filterNonLatinChars;
+    value = properties.getProperty("forceMerge"); // $NON-NLS-1$
+    if (value != null) {
+      forceMerge = Boolean.valueOf(value.trim());
     }
 
-    public boolean isUseNIOFSDirectory() {
-        return useNIOFSDirectory;
+    value = properties.getProperty("commitIntervalSeconds"); // $NON-NLS-1$
+    if (value != null) {
+      commitIntervalSeconds = Integer.parseInt(value.trim());
+    }
+  }
+
+  private int[] convertExtraCharsToIndex(String chars) {
+
+    ArrayList<Integer> codePoints = new ArrayList<Integer>();
+    for (char c : chars.toCharArray()) {
+      if (c != ' ') {
+        codePoints.add((int) c);
+      }
     }
 
-    public boolean isForceMerge() {
-        return forceMerge;
+    int[] extraCodePoints = null;
+    if (codePoints.size() > 0) {
+      extraCodePoints = new int[codePoints.size()];
+      for (int i = 0; i < extraCodePoints.length; i++) {
+        extraCodePoints[i] = codePoints.get(i);
+      }
     }
+    return extraCodePoints;
+  }
 
-    public int getTextSplitSize() {
-        return textSplitSize;
-    }
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 
-    public int getTextOverlapSize() {
-        return textOverlapSize;
-    }
+  public boolean isIndexFileContents() {
+    return super.enabledProp.isEnabled();
+  }
 
-    public int[] getExtraCharsToIndex() {
-        return extraCharsToIndexArray;
-    }
+  public boolean isIndexUnallocated() {
+    return indexUnallocated;
+  }
 
-    public boolean isStoreTermVectors() {
-        return storeTermVectors;
-    }
+  public boolean isConvertCharsToLowerCase() {
+    return convertCharsToLowerCase;
+  }
 
-    public int getMaxTokenLength() {
-        return maxTokenLength;
-    }
+  public boolean isConvertCharsToAscii() {
+    return convertCharsToAscii;
+  }
 
-    public int getCommitIntervalSeconds() {
-        return commitIntervalSeconds;
-    }
+  public boolean isFilterNonLatinChars() {
+    return filterNonLatinChars;
+  }
 
+  public boolean isUseNIOFSDirectory() {
+    return useNIOFSDirectory;
+  }
+
+  public boolean isForceMerge() {
+    return forceMerge;
+  }
+
+  public int getTextSplitSize() {
+    return textSplitSize;
+  }
+
+  public int getTextOverlapSize() {
+    return textOverlapSize;
+  }
+
+  public int[] getExtraCharsToIndex() {
+    return extraCharsToIndexArray;
+  }
+
+  public boolean isStoreTermVectors() {
+    return storeTermVectors;
+  }
+
+  public int getMaxTokenLength() {
+    return maxTokenLength;
+  }
+
+  public int getCommitIntervalSeconds() {
+    return commitIntervalSeconds;
+  }
 }

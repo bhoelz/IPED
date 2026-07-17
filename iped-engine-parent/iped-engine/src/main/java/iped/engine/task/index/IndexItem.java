@@ -36,19 +36,6 @@ import iped.parsers.util.MetadataUtil;
 import iped.properties.BasicProps;
 import iped.properties.ExtraProperties;
 import iped.utils.*;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.document.*;
-import org.apache.lucene.index.IndexOptions;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.IOUtils;
-import org.apache.lucene.util.NumericUtils;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.utils.DateUtils;
-import org.sleuthkit.datamodel.SleuthkitCase;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,1024 +50,1045 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.document.*;
+import org.apache.lucene.index.IndexOptions;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.IOUtils;
+import org.apache.lucene.util.NumericUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.utils.DateUtils;
+import org.sleuthkit.datamodel.SleuthkitCase;
 
 /**
- * Cria um org.apache.lucene.document.Document a partir das propriedades do
- * itens que será adicionado ao índice.
+ * Cria um org.apache.lucene.document.Document a partir das propriedades do itens que será
+ * adicionado ao índice.
  */
 public class IndexItem extends BasicProps {
-    private static final String VIDEO_PREVIEW_EXT = "jpg"; //$NON-NLS-1$
+  private static final String VIDEO_PREVIEW_EXT = "jpg"; // $NON-NLS-1$
 
-    private static final String IMAGE_FEATURES = "imageFeatures"; //$NON-NLS-1$
+  private static final String IMAGE_FEATURES = "imageFeatures"; // $NON-NLS-1$
 
-    public static final String GEO_SSDV_PREFIX = "geo_ssdv_";
+  public static final String GEO_SSDV_PREFIX = "geo_ssdv_";
 
-    public static final String IGNORE_CONTENT_REF = "ignoreContentRef"; //$NON-NLS-1$
-    public static final String ID_IN_SOURCE = "idInDataSource"; //$NON-NLS-1$
-    public static final String SOURCE_PATH = "dataSourcePath"; //$NON-NLS-1$
-    public static final String SOURCE_DECODER = "dataSourceDecoder"; //$NON-NLS-1$
+  public static final String IGNORE_CONTENT_REF = "ignoreContentRef"; // $NON-NLS-1$
+  public static final String ID_IN_SOURCE = "idInDataSource"; // $NON-NLS-1$
+  public static final String SOURCE_PATH = "dataSourcePath"; // $NON-NLS-1$
+  public static final String SOURCE_DECODER = "dataSourceDecoder"; // $NON-NLS-1$
 
-    public static final String HAS_PREVIEW = "hasPreview";
-    public static final String PREVIEW_EXT = "previewExt";
+  public static final String HAS_PREVIEW = "hasPreview";
+  public static final String PREVIEW_EXT = "previewExt";
 
-    public static final String attrTypesFilename = "metadataTypes.toml"; //$NON-NLS-1$
+  public static final String attrTypesFilename = "metadataTypes.toml"; // $NON-NLS-1$
 
-    private static final String attrTypesSeedResource = "iped/config/defaults/conf/" + attrTypesFilename; //$NON-NLS-1$
+  private static final String attrTypesSeedResource =
+      "iped/config/defaults/conf/" + attrTypesFilename; // $NON-NLS-1$
 
-    private static final String NEW_DATASOURCE_PATH_FILE = "data/newDataSourceLocations.txt";
+  private static final String NEW_DATASOURCE_PATH_FILE = "data/newDataSourceLocations.txt";
 
-    private static final int MAX_DOCVALUE_SIZE = 4096;
+  private static final int MAX_DOCVALUE_SIZE = 4096;
 
-    public static final char EVENT_IDX_SEPARATOR = ';';
-    public static final char EVENT_IDX_SEPARATOR2 = ',';
-    public static final String EVENT_SEPARATOR = " | ";
+  public static final char EVENT_IDX_SEPARATOR = ';';
+  public static final char EVENT_IDX_SEPARATOR2 = ',';
+  public static final String EVENT_SEPARATOR = " | ";
 
-    static HashSet<String> ignoredMetadata = new HashSet<String>();
+  static HashSet<String> ignoredMetadata = new HashSet<String>();
 
-    private static Map<String, SeekableInputStreamFactory> inputStreamFactories = new HashMap<>();
+  private static Map<String, SeekableInputStreamFactory> inputStreamFactories = new HashMap<>();
 
-    private static Map<String, Class<?>> typesMap = MetadataUtil.getMetadataTypes();
+  private static Map<String, Class<?>> typesMap = MetadataUtil.getMetadataTypes();
 
-    private static FieldType storedTokenizedNoNormsField = new FieldType();
-    private static FieldType dateField = new FieldType();
+  private static FieldType storedTokenizedNoNormsField = new FieldType();
+  private static FieldType dateField = new FieldType();
 
-    static {
-        storedTokenizedNoNormsField.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
-        storedTokenizedNoNormsField.setOmitNorms(true);
-        storedTokenizedNoNormsField.setStored(true);
-        storedTokenizedNoNormsField.freeze();
+  static {
+    storedTokenizedNoNormsField.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
+    storedTokenizedNoNormsField.setOmitNorms(true);
+    storedTokenizedNoNormsField.setStored(true);
+    storedTokenizedNoNormsField.freeze();
 
-        dateField.setIndexOptions(IndexOptions.DOCS);
-        dateField.setStored(true);
-        dateField.setOmitNorms(true);
-        dateField.setTokenized(false);
-        dateField.freeze();
+    dateField.setIndexOptions(IndexOptions.DOCS);
+    dateField.setStored(true);
+    dateField.setOmitNorms(true);
+    dateField.setTokenized(false);
+    dateField.freeze();
 
-        ignoredMetadata.add(Metadata.CONTENT_TYPE);
-        ignoredMetadata.add(Metadata.CONTENT_LENGTH);
-        ignoredMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY);
-        ignoredMetadata.add(StandardParser.INDEXER_CONTENT_TYPE);
-        ignoredMetadata.add(StandardParser.INDEXER_TIMEOUT);
-        ignoredMetadata.add(TikaCoreProperties.CONTENT_TYPE_HINT.getName());
-        ignoredMetadata.add("File Name"); //$NON-NLS-1$
-        ignoredMetadata.add("File Size"); //$NON-NLS-1$
-        // ocrCharCount is already copied to an extra attribute
-        ignoredMetadata.add(OCRParser.OCR_CHAR_COUNT);
+    ignoredMetadata.add(Metadata.CONTENT_TYPE);
+    ignoredMetadata.add(Metadata.CONTENT_LENGTH);
+    ignoredMetadata.add(TikaCoreProperties.RESOURCE_NAME_KEY);
+    ignoredMetadata.add(StandardParser.INDEXER_CONTENT_TYPE);
+    ignoredMetadata.add(StandardParser.INDEXER_TIMEOUT);
+    ignoredMetadata.add(TikaCoreProperties.CONTENT_TYPE_HINT.getName());
+    ignoredMetadata.add("File Name"); // $NON-NLS-1$
+    ignoredMetadata.add("File Size"); // $NON-NLS-1$
+    // ocrCharCount is already copied to an extra attribute
+    ignoredMetadata.add(OCRParser.OCR_CHAR_COUNT);
 
-        BasicProps.SET.add(ID_IN_SOURCE);
-        BasicProps.SET.add(SOURCE_PATH);
-        BasicProps.SET.add(SOURCE_DECODER);
-        BasicProps.SET.add(HAS_PREVIEW);
-        BasicProps.SET.add(PREVIEW_EXT);
+    BasicProps.SET.add(ID_IN_SOURCE);
+    BasicProps.SET.add(SOURCE_PATH);
+    BasicProps.SET.add(SOURCE_DECODER);
+    BasicProps.SET.add(HAS_PREVIEW);
+    BasicProps.SET.add(PREVIEW_EXT);
+  }
+
+  public static class KnnVector {
+
+    private final double[] array;
+
+    public KnnVector(double[] array) {
+      this.array = array;
     }
 
-    public static class KnnVector {
+    public double[] getArray() {
+      return array;
+    }
 
-        private final double[] array;
+    @Override
+    public String toString() {
+      return Arrays.toString(array);
+    }
+  }
 
-        public KnnVector(double[] array) {
-            this.array = array;
+  public static boolean isByte(String field) {
+    return Byte.class.equals(typesMap.get(field));
+  }
+
+  public static boolean isShort(String field) {
+    return Short.class.equals(typesMap.get(field));
+  }
+
+  public static boolean isInteger(String field) {
+    return Integer.class.equals(typesMap.get(field));
+  }
+
+  public static boolean isLong(String field) {
+    return Long.class.equals(typesMap.get(field));
+  }
+
+  public static boolean isFloat(String field) {
+    return Float.class.equals(typesMap.get(field));
+  }
+
+  public static boolean isDouble(String field) {
+    return Double.class.equals(typesMap.get(field));
+  }
+
+  public static boolean isNumeric(String field) {
+    Class<?> type = typesMap.get(field);
+    return type != null && Number.class.isAssignableFrom(type);
+  }
+
+  public static boolean isIntegerNumber(String field) {
+    return isByte(field) || isShort(field) || isInteger(field) || isLong(field);
+  }
+
+  public static boolean isRealNumber(String field) {
+    return isFloat(field) || isDouble(field);
+  }
+
+  public static Map<String, Class<?>> getMetadataTypes() {
+    return Collections.unmodifiableMap(typesMap);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static void saveMetadataTypes(File confDir) throws IOException {
+    File metadataTypesFile = new File(confDir, attrTypesFilename);
+    Map<String, Object> types = new TreeMap<>();
+    for (Entry<String, Class<?>> e : typesMap.entrySet().toArray(new Entry[0])) {
+      if (ExtraProperties.FACE_ENCODINGS.equals(e.getKey())) {
+        continue;
+      }
+      types.put(e.getKey(), e.getValue().getName());
+    }
+    TomlProperties.store(types, metadataTypesFile.toPath());
+    IOUtils.fsync(metadataTypesFile.toPath(), false);
+  }
+
+  public static void loadMetadataTypes(File confDir) throws IOException, ClassNotFoundException {
+    TomlProperties props = new TomlProperties();
+    // seed with the built-in known types, then let the case file override them
+    Enumeration<URL> seeds = IndexItem.class.getClassLoader().getResources(attrTypesSeedResource);
+    while (seeds.hasMoreElements()) {
+      try (InputStream is = seeds.nextElement().openStream()) {
+        props.load(is);
+      }
+    }
+    File metadataTypesFile = new File(confDir, attrTypesFilename);
+    if (metadataTypesFile.exists()) {
+      props.load(metadataTypesFile.toPath());
+    }
+    for (String key : props.stringPropertyNames()) {
+      MetadataUtil.setMetadataType(key, Class.forName(props.getProperty(key)));
+    }
+  }
+
+  private static final String normalize(String value) {
+    return normalize(value, true);
+  }
+
+  public static final String normalize(String value, boolean toLowerCase) {
+    if (toLowerCase) {
+      value = value.toLowerCase();
+    }
+    char[] input = value.toCharArray();
+    char[] output = new char[input.length * 4];
+    int len = FastASCIIFoldingFilter.foldToASCII(input, 0, output, 0, input.length);
+    return new String(output, 0, len).trim();
+  }
+
+  public static Document Document(IItem evidence, File output) {
+    Document doc = new Document();
+
+    doc.add(new IntPoint(ID, evidence.getId()));
+    doc.add(new StoredField(ID, evidence.getId()));
+    doc.add(new NumericDocValuesField(ID, evidence.getId()));
+
+    doc.add(new StringField(EVIDENCE_UUID, evidence.getDataSource().getUUID(), Field.Store.YES));
+    doc.add(
+        new SortedDocValuesField(EVIDENCE_UUID, new BytesRef(evidence.getDataSource().getUUID())));
+
+    if (evidence.getTempAttribute(IGNORE_CONTENT_REF) == null) {
+      String value = evidence.getIdInDataSource();
+      if (value != null) {
+        doc.add(new StringField(ID_IN_SOURCE, value, Field.Store.YES));
+        doc.add(new SortedDocValuesField(ID_IN_SOURCE, new BytesRef(value)));
+      }
+      if (evidence.getInputStreamFactory() != null
+          && evidence.getInputStreamFactory().getDataSourceURI() != null) {
+        URI uri = evidence.getInputStreamFactory().getDataSourceURI();
+        value = Util.getRelativePath(output, uri).replace('\\', '/');
+
+        doc.add(new StringField(SOURCE_PATH, value, Field.Store.YES));
+        doc.add(new SortedDocValuesField(SOURCE_PATH, new BytesRef(value)));
+
+        value = evidence.getInputStreamFactory().getClass().getName();
+        doc.add(new StringField(SOURCE_DECODER, value, Field.Store.YES));
+        doc.add(new SortedDocValuesField(SOURCE_DECODER, new BytesRef(value)));
+      }
+    }
+
+    Integer intVal = evidence.getSubitemId();
+    if (intVal != null) {
+      doc.add(new IntPoint(SUBITEMID, intVal));
+      doc.add(new StoredField(SUBITEMID, intVal));
+      doc.add(new NumericDocValuesField(SUBITEMID, intVal));
+    }
+
+    intVal = evidence.getParentId();
+    if (intVal != null) {
+      doc.add(new IntPoint(PARENTID, intVal));
+      doc.add(new StoredField(PARENTID, intVal));
+      doc.add(new NumericDocValuesField(PARENTID, intVal));
+    }
+
+    doc.add(new Field(PARENTIDs, evidence.getParentIdsString(), storedTokenizedNoNormsField));
+    doc.add(new SortedDocValuesField(PARENTIDs, new BytesRef(evidence.getParentIdsString())));
+
+    String value = evidence.getName();
+    if (value == null) {
+      value = ""; // $NON-NLS-1$
+    }
+    Field nameField = new TextField(NAME, value, Field.Store.YES);
+    doc.add(nameField);
+    doc.add(new SortedDocValuesField(NAME, new BytesRef(normalize(value))));
+
+    value = evidence.getExt();
+    if (value == null) {
+      value = "";
+    }
+    doc.add(new Field(EXT, value, storedTokenizedNoNormsField));
+    doc.add(new SortedDocValuesField(EXT, new BytesRef(normalize(value))));
+
+    value = evidence.getType();
+    if (value == null) {
+      value = ""; // $NON-NLS-1$
+    }
+    doc.add(new Field(TYPE, value, storedTokenizedNoNormsField));
+    doc.add(new SortedDocValuesField(TYPE, new BytesRef(normalize(value))));
+
+    Long length = evidence.getLength();
+    if (length != null) {
+      doc.add(new LongPoint(LENGTH, length));
+      doc.add(new StoredField(LENGTH, length));
+      doc.add(new NumericDocValuesField(LENGTH, length));
+    }
+
+    Set<TimeStampEvent> timeEventSet = new TreeSet<>();
+
+    Date date = evidence.getCreationDate();
+    if (date != null) {
+      value = DateUtil.dateToString(date);
+    } else {
+      value = ""; // $NON-NLS-1$
+    }
+    doc.add(new Field(CREATED, value, dateField));
+    doc.add(new SortedDocValuesField(CREATED, new BytesRef(value)));
+    timeEventSet.add(new TimeStampEvent(value, CREATED));
+
+    date = evidence.getAccessDate();
+    if (date != null) {
+      value = DateUtil.dateToString(date);
+    } else {
+      value = ""; // $NON-NLS-1$
+    }
+    doc.add(new Field(ACCESSED, value, dateField));
+    doc.add(new SortedDocValuesField(ACCESSED, new BytesRef(value)));
+    timeEventSet.add(new TimeStampEvent(value, ACCESSED));
+
+    date = evidence.getModDate();
+    if (date != null) {
+      value = DateUtil.dateToString(date);
+    } else {
+      value = ""; // $NON-NLS-1$
+    }
+    doc.add(new Field(MODIFIED, value, dateField));
+    doc.add(new SortedDocValuesField(MODIFIED, new BytesRef(value)));
+    timeEventSet.add(new TimeStampEvent(value, MODIFIED));
+
+    date = evidence.getChangeDate();
+    if (date != null) {
+      value = DateUtil.dateToString(date);
+    } else {
+      value = ""; // $NON-NLS-1$
+    }
+    doc.add(new Field(CHANGED, value, dateField));
+    doc.add(new SortedDocValuesField(CHANGED, new BytesRef(value)));
+    timeEventSet.add(new TimeStampEvent(value, CHANGED));
+
+    value = evidence.getPath();
+    if (value == null) {
+      value = ""; // $NON-NLS-1$
+    }
+    doc.add(new Field(PATH, value, storedTokenizedNoNormsField));
+    if (value.length() > MAX_DOCVALUE_SIZE) {
+      value = value.substring(0, MAX_DOCVALUE_SIZE);
+    }
+    doc.add(new SortedDocValuesField(PATH, new BytesRef(normalize(value))));
+
+    for (String val : evidence.getCategorySet()) {
+      doc.add(new Field(CATEGORY, val, storedTokenizedNoNormsField));
+      doc.add(new SortedSetDocValuesField(CATEGORY, new BytesRef(normalize(val, false))));
+    }
+
+    MediaType type = (MediaType) evidence.getMediaType();
+    if (type != null) {
+      value = type.toString();
+    } else {
+      value = ""; // $NON-NLS-1$
+    }
+    doc.add(new Field(CONTENTTYPE, value, storedTokenizedNoNormsField));
+    doc.add(new SortedDocValuesField(CONTENTTYPE, new BytesRef(value)));
+
+    if (evidence.isTimedOut()) {
+      doc.add(new StringField(TIMEOUT, Boolean.TRUE.toString(), Field.Store.YES));
+      doc.add(new SortedDocValuesField(TIMEOUT, new BytesRef(Boolean.TRUE.toString())));
+    }
+
+    value = evidence.getHash();
+    if (value != null) {
+      doc.add(new Field(HASH, value, storedTokenizedNoNormsField));
+      doc.add(new SortedDocValuesField(HASH, new BytesRef(value)));
+    }
+
+    value = Boolean.toString(evidence.isDeleted());
+    doc.add(new StringField(DELETED, value, Field.Store.YES));
+    doc.add(new SortedDocValuesField(DELETED, new BytesRef(value)));
+
+    value = Boolean.toString(evidence.hasChildren());
+    doc.add(new StringField(HASCHILD, value, Field.Store.YES));
+    doc.add(new SortedDocValuesField(HASCHILD, new BytesRef(value)));
+
+    value = Boolean.toString(evidence.isDir());
+    doc.add(new StringField(ISDIR, value, Field.Store.YES));
+    doc.add(new SortedDocValuesField(ISDIR, new BytesRef(value)));
+
+    if (evidence.isRoot()) {
+      doc.add(new StringField(ISROOT, Boolean.TRUE.toString(), Field.Store.YES));
+      doc.add(new SortedDocValuesField(ISROOT, new BytesRef(Boolean.TRUE.toString())));
+    }
+
+    value = Boolean.toString(evidence.isCarved());
+    doc.add(new StringField(CARVED, value, Field.Store.YES));
+    doc.add(new SortedDocValuesField(CARVED, new BytesRef(value)));
+
+    value = Boolean.toString(evidence.isSubItem());
+    doc.add(new StringField(SUBITEM, value, Field.Store.YES));
+    doc.add(new SortedDocValuesField(SUBITEM, new BytesRef(value)));
+
+    if (evidence.getThumb() != null) doc.add(new StoredField(THUMB, evidence.getThumb()));
+
+    if (evidence.hasPreview()) {
+      value = Boolean.TRUE.toString();
+      doc.add(new StringField(HAS_PREVIEW, value, Field.Store.YES));
+      doc.add(new SortedDocValuesField(HAS_PREVIEW, new BytesRef(Boolean.TRUE.toString())));
+    }
+
+    value = evidence.getPreviewExt();
+    if (value != null) {
+      doc.add(new StringField(PREVIEW_EXT, value, Field.Store.YES));
+      doc.add(new SortedDocValuesField(PREVIEW_EXT, new BytesRef(value)));
+    }
+
+    byte[] similarityFeatures = (byte[]) evidence.getExtraAttribute(IMAGE_FEATURES);
+    // clear extra property to don't add it again later when iterating over extra props
+    evidence.getExtraAttributeMap().remove(IMAGE_FEATURES);
+    if (similarityFeatures != null) {
+      doc.add(new BinaryDocValuesField(IMAGE_FEATURES, new BytesRef(similarityFeatures)));
+      doc.add(new StoredField(IMAGE_FEATURES, similarityFeatures));
+      doc.add(
+          new IntPoint(
+              IMAGE_FEATURES,
+              similarityFeatures[0],
+              similarityFeatures[1],
+              similarityFeatures[2],
+              similarityFeatures[3]));
+    }
+
+    long off = evidence.getFileOffset();
+    if (off != -1) {
+      doc.add(new StoredField(OFFSET, Long.toString(off)));
+    }
+
+    for (Entry<String, Object> entry : evidence.getExtraAttributeMap().entrySet()) {
+      if (entry.getValue() instanceof Collection) {
+        for (Object val : (Collection<?>) entry.getValue()) {
+          if (typesMap.get(entry.getKey()) == null) {
+            MetadataUtil.setMetadataType(entry.getKey(), val.getClass());
+          }
+          addExtraAttributeToDoc(doc, entry.getKey(), val, true, timeEventSet);
         }
-
-        public double[] getArray() {
-            return array;
+      } else {
+        if (typesMap.get(entry.getKey()) == null) {
+          MetadataUtil.setMetadataType(entry.getKey(), entry.getValue().getClass());
         }
+        addExtraAttributeToDoc(doc, entry.getKey(), entry.getValue(), false, timeEventSet);
+      }
+    }
 
-        @Override
-        public String toString() {
-            return Arrays.toString(array);
+    Metadata metadata = (Metadata) evidence.getMetadata();
+    if (metadata != null) {
+      addMetadataToDoc(doc, (Metadata) evidence.getMetadata(), timeEventSet);
+    }
+
+    storeTimeStamps(doc, timeEventSet);
+
+    return doc;
+  }
+
+  private static void storeTimeStamps(Document doc, Set<TimeStampEvent> timeEventSet) {
+
+    String prevTimeStamp = null;
+    Set<String> eventsSet = new TreeSet<>();
+    List<String> eventsList = new ArrayList<>();
+    int i = 0;
+    for (TimeStampEvent tse : timeEventSet) {
+      i++;
+      if (tse.timeStamp == null || tse.timeStamp.isEmpty()) {
+        continue;
+      }
+      tse.timeEvent = tse.timeEvent.toLowerCase();
+
+      doc.add(new Field(TIMESTAMP, tse.timeStamp, dateField));
+      doc.add(new SortedSetDocValuesField(TIMESTAMP, new BytesRef(tse.timeStamp)));
+      doc.add(new Field(TIME_EVENT, tse.timeEvent, storedTokenizedNoNormsField));
+      doc.add(new SortedSetDocValuesField(TIME_EVENT, new BytesRef(tse.timeEvent)));
+
+      if (prevTimeStamp != null && !tse.timeStamp.equals(prevTimeStamp)) {
+        addTimeStampEventGroup(doc, eventsSet, eventsList);
+      }
+      eventsSet.add(tse.timeEvent);
+      if (i == timeEventSet.size()) {
+        addTimeStampEventGroup(doc, eventsSet, eventsList);
+      }
+      prevTimeStamp = tse.timeStamp;
+    }
+    // some date metadata could have multiple timestamps
+    List<String> sortedList = new ArrayList<>(eventsList);
+    Collections.sort(sortedList);
+    StringBuilder indexes = new StringBuilder();
+    String prevEvent = null;
+    for (String event : sortedList) {
+      if (indexes.length() > 0) {
+        if (event.equals(prevEvent)) {
+          indexes.append(EVENT_IDX_SEPARATOR2);
+        } else {
+          indexes.append(EVENT_IDX_SEPARATOR);
         }
+      }
+      indexes.append(indexOfObject(eventsList, event));
+      prevEvent = event;
+    }
+    doc.add(
+        new BinaryDocValuesField(
+            ExtraProperties.TIME_EVENT_ORDS, new BytesRef(indexes.toString())));
+  }
+
+  private static int indexOfObject(List<String> list, String o) {
+    for (int i = 0; i < list.size(); i++) {
+      if (list.get(i) == o) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  private static void addTimeStampEventGroup(
+      Document doc, Set<String> eventsSet, List<String> eventsList) {
+    String events = eventsSet.stream().collect(Collectors.joining(EVENT_SEPARATOR));
+    doc.add(new SortedSetDocValuesField(ExtraProperties.TIME_EVENT_GROUPS, new BytesRef(events)));
+    eventsList.add(events);
+    eventsSet.clear();
+  }
+
+  private static class TimeStampEvent implements Comparable<TimeStampEvent> {
+
+    private String timeStamp, timeEvent;
+
+    private TimeStampEvent(String timestamp, String timeEvent) {
+      this.timeStamp = timestamp;
+      this.timeEvent = timeEvent;
     }
 
-    public static boolean isByte(String field) {
-        return Byte.class.equals(typesMap.get(field));
-    }
-
-    public static boolean isShort(String field) {
-        return Short.class.equals(typesMap.get(field));
-    }
-
-    public static boolean isInteger(String field) {
-        return Integer.class.equals(typesMap.get(field));
-    }
-
-    public static boolean isLong(String field) {
-        return Long.class.equals(typesMap.get(field));
-    }
-
-    public static boolean isFloat(String field) {
-        return Float.class.equals(typesMap.get(field));
-    }
-
-    public static boolean isDouble(String field) {
-        return Double.class.equals(typesMap.get(field));
-    }
-
-    public static boolean isNumeric(String field) {
-        Class<?> type = typesMap.get(field);
-        return type != null && Number.class.isAssignableFrom(type);
-    }
-
-    public static boolean isIntegerNumber(String field) {
-        return isByte(field) || isShort(field) || isInteger(field) || isLong(field);
-    }
-
-    public static boolean isRealNumber(String field) {
-        return isFloat(field) || isDouble(field);
-    }
-
-    public static Map<String, Class<?>> getMetadataTypes() {
-        return Collections.unmodifiableMap(typesMap);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static void saveMetadataTypes(File confDir) throws IOException {
-        File metadataTypesFile = new File(confDir, attrTypesFilename);
-        Map<String, Object> types = new TreeMap<>();
-        for (Entry<String, Class<?>> e : typesMap.entrySet().toArray(new Entry[0])) {
-            if (ExtraProperties.FACE_ENCODINGS.equals(e.getKey())) {
-                continue;
-            }
-            types.put(e.getKey(), e.getValue().getName());
+    @Override
+    public int compareTo(TimeStampEvent o) {
+      boolean t1Empty = timeStamp == null || timeStamp.isEmpty();
+      boolean t2Empty = o.timeStamp == null || o.timeStamp.isEmpty();
+      if (t1Empty) {
+        if (t2Empty) {
+          return 0;
+        } else {
+          return -1;
         }
-        TomlProperties.store(types, metadataTypesFile.toPath());
-        IOUtils.fsync(metadataTypesFile.toPath(), false);
+      } else {
+        if (t2Empty) {
+          return 1;
+        } else {
+          int ret = timeStamp.compareTo(o.timeStamp);
+          if (ret == 0) {
+            ret = timeEvent.compareTo(o.timeEvent);
+          }
+          return ret;
+        }
+      }
     }
+  }
 
-    public static void loadMetadataTypes(File confDir) throws IOException, ClassNotFoundException {
-        TomlProperties props = new TomlProperties();
-        // seed with the built-in known types, then let the case file override them
-        Enumeration<URL> seeds = IndexItem.class.getClassLoader().getResources(attrTypesSeedResource);
-        while (seeds.hasMoreElements()) {
-            try (InputStream is = seeds.nextElement().openStream()) {
-                props.load(is);
-            }
-        }
-        File metadataTypesFile = new File(confDir, attrTypesFilename);
-        if (metadataTypesFile.exists()) {
-            props.load(metadataTypesFile.toPath());
-        }
-        for (String key : props.stringPropertyNames()) {
-            MetadataUtil.setMetadataType(key, Class.forName(props.getProperty(key)));
-        }
+  private static void addExtraAttributeToDoc(
+      Document doc,
+      String key,
+      Object oValue,
+      boolean isMultiValued,
+      Set<TimeStampEvent> timeEventSet) {
+
+    if (key.equals(ExtraProperties.LOCATIONS)) {
+      String[] coords = oValue.toString().split(";");
+      double lat = Double.valueOf(coords[0].trim());
+      double lon = Double.valueOf(coords[1].trim());
+      if (lat >= -90.0 && lat <= 90.0 && lon >= -180.0 && lon <= 180.0) {
+        doc.add(new LatLonPoint(key, lat, lon));
+        doc.add(new LatLonDocValuesField(key, lat, lon));
+        doc.add(new StringField(key, oValue.toString(), Field.Store.YES));
+        // used to group values in metadata filter panel, sorting doesn't make sense
+        doc.add(
+            new SortedSetDocValuesField(GEO_SSDV_PREFIX + key, new BytesRef(oValue.toString())));
+      }
+    } else if (oValue instanceof Date) {
+      String value = DateUtils.formatDate((Date) oValue);
+      doc.add(new Field(key, value, dateField));
+      if (!isMultiValued) doc.add(new SortedDocValuesField(key, new BytesRef(value)));
+      else doc.add(new SortedSetDocValuesField(key, new BytesRef(value)));
+
+      timeEventSet.add(new TimeStampEvent(value, key));
+
+    } else if (oValue instanceof Byte || oValue instanceof Short || oValue instanceof Integer) {
+      int intVal = ((Number) oValue).intValue();
+      doc.add(new IntPoint(key, intVal));
+      doc.add(new StoredField(key, intVal));
+      if (!isMultiValued) doc.add(new NumericDocValuesField(key, intVal));
+      else doc.add(new SortedNumericDocValuesField(key, intVal));
+
+    } else if (oValue instanceof Long) {
+      doc.add(new LongPoint(key, (Long) oValue));
+      doc.add(new StoredField(key, (Long) oValue));
+      if (!isMultiValued) doc.add(new NumericDocValuesField(key, (Long) oValue));
+      else doc.add(new SortedNumericDocValuesField(key, (Long) oValue));
+
+    } else if (oValue instanceof Float) {
+      doc.add(new FloatPoint(key, (Float) oValue));
+      doc.add(new StoredField(key, (Float) oValue));
+      if (!isMultiValued) doc.add(new FloatDocValuesField(key, (Float) oValue));
+      else
+        doc.add(
+            new SortedNumericDocValuesField(key, NumericUtils.floatToSortableInt((Float) oValue)));
+
+    } else if (oValue instanceof Double) {
+      doc.add(new DoublePoint(key, (Double) oValue));
+      doc.add(new StoredField(key, (Double) oValue));
+      if (!isMultiValued) doc.add(new DoubleDocValuesField(key, (Double) oValue));
+      else
+        doc.add(
+            new SortedNumericDocValuesField(
+                key, NumericUtils.doubleToSortableLong((Double) oValue)));
+
+    } else if (oValue instanceof KnnVector) {
+      float[] floatArray = convDoubleToFloatArray(((KnnVector) oValue).getArray());
+      byte[] byteArray = convFloatArrayToByteArray(floatArray);
+      int suffix = 0;
+      // KnnVectorField is not multivalued, must use other key if it exists
+      String knnKey = key;
+      while (doc.getField(knnKey) != null) {
+        knnKey = key + (++suffix);
+      }
+      doc.add(new SortedSetDocValuesField(key, new BytesRef(byteArray)));
+      doc.add(new StoredField(key, byteArray));
+      doc.add(new KnnFloatVectorField(knnKey, floatArray));
+
+    } else {
+      // value is typed as string
+      String value = oValue.toString();
+      doc.add(new Field(key, value, storedTokenizedNoNormsField));
+      if (value.length() > MAX_DOCVALUE_SIZE) {
+        value = value.substring(0, MAX_DOCVALUE_SIZE);
+      }
+      if (!isMultiValued) doc.add(new SortedDocValuesField(key, new BytesRef(normalize(value))));
+      else doc.add(new SortedSetDocValuesField(key, new BytesRef(normalize(value))));
     }
+  }
 
-    private static final String normalize(String value) {
-        return normalize(value, true);
+  public static final byte[] convFloatArrayToByteArray(float[] array) {
+    ByteBuffer buffer = ByteBuffer.allocate(4 * array.length);
+    for (float value : array) {
+      buffer.putFloat(value);
     }
+    return buffer.array();
+  }
 
-    public static final String normalize(String value, boolean toLowerCase) {
-        if (toLowerCase) {
-            value = value.toLowerCase();
-        }
-        char[] input = value.toCharArray();
-        char[] output = new char[input.length * 4];
-        int len = FastASCIIFoldingFilter.foldToASCII(input, 0, output, 0, input.length);
-        return new String(output, 0, len).trim();
+  public static final float[] convDoubleToFloatArray(double[] array) {
+    float[] result = new float[array.length];
+    for (int i = 0; i < array.length; i++) {
+      result[i] = (float) array[i];
     }
+    return result;
+  }
 
-    public static Document Document(IItem evidence, File output) {
-        Document doc = new Document();
+  private static void addMetadataToDoc(
+      Document doc, Metadata metadata, Set<TimeStampEvent> timeEventSet) {
+    MediaType mimetype = MediaType.parse(metadata.get(Metadata.CONTENT_TYPE));
+    if (mimetype != null) mimetype = mimetype.getBaseType();
 
-        doc.add(new IntPoint(ID, evidence.getId()));
-        doc.add(new StoredField(ID, evidence.getId()));
-        doc.add(new NumericDocValuesField(ID, evidence.getId()));
+    String[] names = metadata.names();
 
-        doc.add(new StringField(EVIDENCE_UUID, evidence.getDataSource().getUUID(), Field.Store.YES));
-        doc.add(new SortedDocValuesField(EVIDENCE_UUID, new BytesRef(evidence.getDataSource().getUUID())));
+    for (String key : names) {
+      if (key == null
+          || key.contains("Unknown tag")
+          || ignoredMetadata.contains(key)) { // $NON-NLS-1$
+        continue;
+      }
+      boolean isMultiValued = true; // metadata.getValues(key).length > 1;
+      for (String val : metadata.getValues(key)) {
+        if (val != null && !(val = val.trim()).isEmpty())
+          addMetadataKeyToDoc(doc, key, val, isMultiValued, mimetype, timeEventSet);
+      }
+    }
+  }
 
-        if (evidence.getTempAttribute(IGNORE_CONTENT_REF) == null) {
-            String value = evidence.getIdInDataSource();
-            if (value != null) {
-                doc.add(new StringField(ID_IN_SOURCE, value, Field.Store.YES));
-                doc.add(new SortedDocValuesField(ID_IN_SOURCE, new BytesRef(value)));
-            }
-            if (evidence.getInputStreamFactory() != null
-                    && evidence.getInputStreamFactory().getDataSourceURI() != null) {
-                URI uri = evidence.getInputStreamFactory().getDataSourceURI();
-                value = Util.getRelativePath(output, uri).replace('\\', '/');
+  private static void addMetadataKeyToDoc(
+      Document doc,
+      String key,
+      String value,
+      boolean isMultiValued,
+      MediaType mimetype,
+      Set<TimeStampEvent> timeEventSet) {
+    Object oValue = value;
+    Class<?> type = typesMap.get(key);
 
-                doc.add(new StringField(SOURCE_PATH, value, Field.Store.YES));
-                doc.add(new SortedDocValuesField(SOURCE_PATH, new BytesRef(value)));
+    if (type == null
+        && MetadataUtil.isHtmlMediaType(mimetype)
+        && !key.startsWith(ExtraProperties.UFED_META_PREFIX)) return;
 
-                value = evidence.getInputStreamFactory().getClass().getName();
-                doc.add(new StringField(SOURCE_DECODER, value, Field.Store.YES));
-                doc.add(new SortedDocValuesField(SOURCE_DECODER, new BytesRef(value)));
-            }
-        }
+    if (type == null) {
+      try {
+        Double doubleVal = Double.valueOf(value);
+        String newKey = key + ":number";
+        MetadataUtil.setMetadataType(newKey, Double.class);
+        addExtraAttributeToDoc(doc, newKey, doubleVal, isMultiValued, timeEventSet);
 
-        Integer intVal = evidence.getSubitemId();
-        if (intVal != null) {
-            doc.add(new IntPoint(SUBITEMID, intVal));
-            doc.add(new StoredField(SUBITEMID, intVal));
-            doc.add(new NumericDocValuesField(SUBITEMID, intVal));
-        }
-
-        intVal = evidence.getParentId();
-        if (intVal != null) {
-            doc.add(new IntPoint(PARENTID, intVal));
-            doc.add(new StoredField(PARENTID, intVal));
-            doc.add(new NumericDocValuesField(PARENTID, intVal));
-        }
-
-        doc.add(new Field(PARENTIDs, evidence.getParentIdsString(), storedTokenizedNoNormsField));
-        doc.add(new SortedDocValuesField(PARENTIDs, new BytesRef(evidence.getParentIdsString())));
-
-        String value = evidence.getName();
-        if (value == null) {
-            value = ""; //$NON-NLS-1$
-        }
-        Field nameField = new TextField(NAME, value, Field.Store.YES);
-        doc.add(nameField);
-        doc.add(new SortedDocValuesField(NAME, new BytesRef(normalize(value))));
-
-        value = evidence.getExt();
-        if (value == null) {
-            value = "";
-        }
-        doc.add(new Field(EXT, value, storedTokenizedNoNormsField));
-        doc.add(new SortedDocValuesField(EXT, new BytesRef(normalize(value))));
-
-        value = evidence.getType();
-        if (value == null) {
-            value = ""; //$NON-NLS-1$
-        }
-        doc.add(new Field(TYPE, value, storedTokenizedNoNormsField));
-        doc.add(new SortedDocValuesField(TYPE, new BytesRef(normalize(value))));
-
-        Long length = evidence.getLength();
-        if (length != null) {
-            doc.add(new LongPoint(LENGTH, length));
-            doc.add(new StoredField(LENGTH, length));
-            doc.add(new NumericDocValuesField(LENGTH, length));
-        }
-
-        Set<TimeStampEvent> timeEventSet = new TreeSet<>();
-
-        Date date = evidence.getCreationDate();
+      } catch (NumberFormatException e) {
+        Date date = DateUtil.tryToParseDate(value);
         if (date != null) {
-            value = DateUtil.dateToString(date);
-        } else {
-            value = ""; //$NON-NLS-1$
+          String newKey = key + ":date";
+          MetadataUtil.setMetadataType(newKey, Date.class);
+          addExtraAttributeToDoc(doc, newKey, date, isMultiValued, timeEventSet);
         }
-        doc.add(new Field(CREATED, value, dateField));
-        doc.add(new SortedDocValuesField(CREATED, new BytesRef(value)));
-        timeEventSet.add(new TimeStampEvent(value, CREATED));
-
-        date = evidence.getAccessDate();
-        if (date != null) {
-            value = DateUtil.dateToString(date);
-        } else {
-            value = ""; //$NON-NLS-1$
+      }
+    } else {
+      try {
+        if (type.equals(Double.class)) {
+          oValue = Double.valueOf(value);
+        } else if (type.equals(Integer.class)) {
+          oValue = Integer.valueOf(value);
+        } else if (type.equals(Float.class)) {
+          oValue = Float.valueOf(value);
+        } else if (type.equals(Long.class)) {
+          oValue = Long.valueOf(value);
+        } else if (type.equals(Date.class)) {
+          Date date = DateUtil.tryToParseDate(value);
+          if (date != null) oValue = date;
+          else throw new ParseException("Not a date", 0);
         }
-        doc.add(new Field(ACCESSED, value, dateField));
-        doc.add(new SortedDocValuesField(ACCESSED, new BytesRef(value)));
-        timeEventSet.add(new TimeStampEvent(value, ACCESSED));
-
-        date = evidence.getModDate();
-        if (date != null) {
-            value = DateUtil.dateToString(date);
-        } else {
-            value = ""; //$NON-NLS-1$
-        }
-        doc.add(new Field(MODIFIED, value, dateField));
-        doc.add(new SortedDocValuesField(MODIFIED, new BytesRef(value)));
-        timeEventSet.add(new TimeStampEvent(value, MODIFIED));
-
-        date = evidence.getChangeDate();
-        if (date != null) {
-            value = DateUtil.dateToString(date);
-        } else {
-            value = ""; //$NON-NLS-1$
-        }
-        doc.add(new Field(CHANGED, value, dateField));
-        doc.add(new SortedDocValuesField(CHANGED, new BytesRef(value)));
-        timeEventSet.add(new TimeStampEvent(value, CHANGED));
-
-        value = evidence.getPath();
-        if (value == null) {
-            value = ""; //$NON-NLS-1$
-        }
-        doc.add(new Field(PATH, value, storedTokenizedNoNormsField));
-        if (value.length() > MAX_DOCVALUE_SIZE) {
-            value = value.substring(0, MAX_DOCVALUE_SIZE);
-        }
-        doc.add(new SortedDocValuesField(PATH, new BytesRef(normalize(value))));
-
-        for (String val : evidence.getCategorySet()) {
-            doc.add(new Field(CATEGORY, val, storedTokenizedNoNormsField));
-            doc.add(new SortedSetDocValuesField(CATEGORY, new BytesRef(normalize(val, false))));
-        }
-
-        MediaType type = (MediaType) evidence.getMediaType();
-        if (type != null) {
-            value = type.toString();
-        } else {
-            value = ""; //$NON-NLS-1$
-        }
-        doc.add(new Field(CONTENTTYPE, value, storedTokenizedNoNormsField));
-        doc.add(new SortedDocValuesField(CONTENTTYPE, new BytesRef(value)));
-
-        if (evidence.isTimedOut()) {
-            doc.add(new StringField(TIMEOUT, Boolean.TRUE.toString(), Field.Store.YES));
-            doc.add(new SortedDocValuesField(TIMEOUT, new BytesRef(Boolean.TRUE.toString())));
-        }
-
-        value = evidence.getHash();
-        if (value != null) {
-            doc.add(new Field(HASH, value, storedTokenizedNoNormsField));
-            doc.add(new SortedDocValuesField(HASH, new BytesRef(value)));
-        }
-
-        value = Boolean.toString(evidence.isDeleted());
-        doc.add(new StringField(DELETED, value, Field.Store.YES));
-        doc.add(new SortedDocValuesField(DELETED, new BytesRef(value)));
-
-        value = Boolean.toString(evidence.hasChildren());
-        doc.add(new StringField(HASCHILD, value, Field.Store.YES));
-        doc.add(new SortedDocValuesField(HASCHILD, new BytesRef(value)));
-
-        value = Boolean.toString(evidence.isDir());
-        doc.add(new StringField(ISDIR, value, Field.Store.YES));
-        doc.add(new SortedDocValuesField(ISDIR, new BytesRef(value)));
-
-        if (evidence.isRoot()) {
-            doc.add(new StringField(ISROOT, Boolean.TRUE.toString(), Field.Store.YES));
-            doc.add(new SortedDocValuesField(ISROOT, new BytesRef(Boolean.TRUE.toString())));
-        }
-
-        value = Boolean.toString(evidence.isCarved());
-        doc.add(new StringField(CARVED, value, Field.Store.YES));
-        doc.add(new SortedDocValuesField(CARVED, new BytesRef(value)));
-
-        value = Boolean.toString(evidence.isSubItem());
-        doc.add(new StringField(SUBITEM, value, Field.Store.YES));
-        doc.add(new SortedDocValuesField(SUBITEM, new BytesRef(value)));
-
-        if (evidence.getThumb() != null)
-            doc.add(new StoredField(THUMB, evidence.getThumb()));
-
-        if (evidence.hasPreview()) {
-            value = Boolean.TRUE.toString();
-            doc.add(new StringField(HAS_PREVIEW, value, Field.Store.YES));
-            doc.add(new SortedDocValuesField(HAS_PREVIEW, new BytesRef(Boolean.TRUE.toString())));
-        }
-
-        value = evidence.getPreviewExt();
-        if (value != null) {
-            doc.add(new StringField(PREVIEW_EXT, value, Field.Store.YES));
-            doc.add(new SortedDocValuesField(PREVIEW_EXT, new BytesRef(value)));
-        }
-
-        byte[] similarityFeatures = (byte[]) evidence.getExtraAttribute(IMAGE_FEATURES);
-        // clear extra property to don't add it again later when iterating over extra props
-        evidence.getExtraAttributeMap().remove(IMAGE_FEATURES);
-        if (similarityFeatures != null) {
-            doc.add(new BinaryDocValuesField(IMAGE_FEATURES, new BytesRef(similarityFeatures)));
-            doc.add(new StoredField(IMAGE_FEATURES, similarityFeatures));
-            doc.add(new IntPoint(IMAGE_FEATURES, similarityFeatures[0], similarityFeatures[1],
-                    similarityFeatures[2], similarityFeatures[3]));
-        }
-
-        long off = evidence.getFileOffset();
-        if (off != -1) {
-            doc.add(new StoredField(OFFSET, Long.toString(off)));
-        }
-
-        for (Entry<String, Object> entry : evidence.getExtraAttributeMap().entrySet()) {
-            if (entry.getValue() instanceof Collection) {
-                for (Object val : (Collection<?>) entry.getValue()) {
-                    if (typesMap.get(entry.getKey()) == null) {
-                        MetadataUtil.setMetadataType(entry.getKey(), val.getClass());
-                    }
-                    addExtraAttributeToDoc(doc, entry.getKey(), val, true, timeEventSet);
-                }
-            } else {
-                if (typesMap.get(entry.getKey()) == null) {
-                    MetadataUtil.setMetadataType(entry.getKey(), entry.getValue().getClass());
-                }
-                addExtraAttributeToDoc(doc, entry.getKey(), entry.getValue(), false, timeEventSet);
-            }
-        }
-
-        Metadata metadata = (Metadata) evidence.getMetadata();
-        if (metadata != null) {
-            addMetadataToDoc(doc, (Metadata) evidence.getMetadata(), timeEventSet);
-        }
-
-        storeTimeStamps(doc, timeEventSet);
-
-        return doc;
+      } catch (NumberFormatException | ParseException e) {
+        // value doesn't match built-in type, store value in other field as string
+        key += ":string";
+        MetadataUtil.setMetadataType(key, String.class);
+      }
     }
 
-    private static void storeTimeStamps(Document doc, Set<TimeStampEvent> timeEventSet) {
+    addExtraAttributeToDoc(doc, key, oValue, isMultiValued, timeEventSet);
+  }
 
-        String prevTimeStamp = null;
-        Set<String> eventsSet = new TreeSet<>();
-        List<String> eventsList = new ArrayList<>();
-        int i = 0;
-        for (TimeStampEvent tse : timeEventSet) {
-            i++;
-            if (tse.timeStamp == null || tse.timeStamp.isEmpty()) {
-                continue;
-            }
-            tse.timeEvent = tse.timeEvent.toLowerCase();
+  public static IItem getItem(Document doc, IPEDSource iCase, boolean viewItem) {
 
-            doc.add(new Field(TIMESTAMP, tse.timeStamp, dateField));
-            doc.add(new SortedSetDocValuesField(TIMESTAMP, new BytesRef(tse.timeStamp)));
-            doc.add(new Field(TIME_EVENT, tse.timeEvent, storedTokenizedNoNormsField));
-            doc.add(new SortedSetDocValuesField(TIME_EVENT, new BytesRef(tse.timeEvent)));
+    try {
+      Item evidence = new Item();
 
-            if (prevTimeStamp != null && !tse.timeStamp.equals(prevTimeStamp)) {
-                addTimeStampEventGroup(doc, eventsSet, eventsList);
-            }
-            eventsSet.add(tse.timeEvent);
-            if (i == timeEventSet.size()) {
-                addTimeStampEventGroup(doc, eventsSet, eventsList);
-            }
-            prevTimeStamp = tse.timeStamp;
+      evidence.setName(doc.get(IndexItem.NAME));
+
+      // if evidence was stored with EXT, replace the generated in setName()
+      String ext = doc.get(IndexItem.EXT);
+      if (ext != null) {
+        evidence.setExtension(ext);
+      }
+
+      String value = doc.get(IndexItem.LENGTH);
+      Long len = null;
+      if (value != null && !value.isEmpty()) {
+        len = Long.valueOf(value);
+      }
+      evidence.setLength(len);
+
+      value = doc.get(IndexItem.ID);
+      if (value != null) {
+        evidence.setId(Integer.valueOf(value));
+      }
+
+      // evidence.setLabels(state.getLabels(id));
+      value = doc.get(IndexItem.PARENTID);
+      if (value != null) {
+        evidence.setParentId(Integer.valueOf(value));
+      }
+
+      value = doc.get(IndexItem.SUBITEMID);
+      if (value != null) {
+        evidence.setSubitemId(Integer.valueOf(value));
+      }
+
+      value = doc.get(IndexItem.EVIDENCE_UUID);
+      if (value != null) {
+        // TODO obter source corretamente
+        IDataSource dataSource = new DataSource();
+        dataSource.setUUID(value);
+        evidence.setDataSource(dataSource);
+      }
+
+      value = doc.get(IndexItem.TYPE);
+      if (value != null) {
+        evidence.setType(value);
+      }
+
+      for (String category : doc.getValues(IndexItem.CATEGORY)) {
+        evidence.addCategory(category);
+      }
+
+      value = doc.get(IndexItem.ACCESSED);
+      if (value != null && !value.isEmpty()) {
+        evidence.setAccessDate(DateUtil.stringToDate(value));
+      }
+
+      value = doc.get(IndexItem.CREATED);
+      if (value != null && !value.isEmpty()) {
+        evidence.setCreationDate(DateUtil.stringToDate(value));
+      }
+
+      value = doc.get(IndexItem.MODIFIED);
+      if (value != null && !value.isEmpty()) {
+        evidence.setModificationDate(DateUtil.stringToDate(value));
+      }
+
+      value = doc.get(IndexItem.CHANGED);
+      if (value != null && !value.isEmpty()) {
+        evidence.setChangeDate(DateUtil.stringToDate(value));
+      }
+
+      evidence.setPath(doc.get(IndexItem.PATH));
+
+      value = doc.get(IndexItem.CONTENTTYPE);
+      if (value != null) {
+        evidence.setMediaType(MediaType.parse(value));
+      }
+
+      File outputBase = iCase.getModuleDir();
+
+      value = doc.get(IndexItem.ID_IN_SOURCE);
+      if (value != null) {
+        evidence.setIdInDataSource(value);
+      }
+      if (doc.get(IndexItem.SOURCE_PATH) != null && doc.get(IndexItem.SOURCE_DECODER) != null) {
+        String sourcePath = doc.get(IndexItem.SOURCE_PATH);
+        String className = doc.get(IndexItem.SOURCE_DECODER);
+        if (SleuthkitInputStreamFactory.class.getName().equals(className)) {
+          // Use the correct TSK database (sleuth.db location and name may change in some
+          // situations), to avoid issue #1782.
+          SleuthkitCase sleuthCase = iCase.getSleuthCase();
+          if (sleuthCase != null) {
+            sourcePath =
+                sleuthCase.getDbDirPath() + File.separatorChar + sleuthCase.getDatabaseName();
+          }
+        } else if (!"iped.engine.task.MinIOTask$MinIOInputInputStreamFactory".equals(className)) {
+          sourcePath = Util.getResolvedFile(outputBase.getParent(), sourcePath).toString();
         }
-        // some date metadata could have multiple timestamps
-        List<String> sortedList = new ArrayList<>(eventsList);
-        Collections.sort(sortedList);
-        StringBuilder indexes = new StringBuilder();
-        String prevEvent = null;
-        for (String event : sortedList) {
-            if (indexes.length() > 0) {
-                if (event.equals(prevEvent)) {
-                    indexes.append(EVENT_IDX_SEPARATOR2);
-                } else {
-                    indexes.append(EVENT_IDX_SEPARATOR);
-                }
-            }
-            indexes.append(indexOfObject(eventsList, event));
-            prevEvent = event;
-        }
-        doc.add(new BinaryDocValuesField(ExtraProperties.TIME_EVENT_ORDS, new BytesRef(indexes.toString())));
-    }
-
-    private static int indexOfObject(List<String> list, String o) {
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i) == o) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private static void addTimeStampEventGroup(Document doc, Set<String> eventsSet, List<String> eventsList) {
-        String events = eventsSet.stream().collect(Collectors.joining(EVENT_SEPARATOR));
-        doc.add(new SortedSetDocValuesField(ExtraProperties.TIME_EVENT_GROUPS, new BytesRef(events)));
-        eventsList.add(events);
-        eventsSet.clear();
-    }
-
-    private static class TimeStampEvent implements Comparable<TimeStampEvent> {
-
-        private String timeStamp, timeEvent;
-
-        private TimeStampEvent(String timestamp, String timeEvent) {
-            this.timeStamp = timestamp;
-            this.timeEvent = timeEvent;
-        }
-
-        @Override
-        public int compareTo(TimeStampEvent o) {
-            boolean t1Empty = timeStamp == null || timeStamp.isEmpty();
-            boolean t2Empty = o.timeStamp == null || o.timeStamp.isEmpty();
-            if (t1Empty) {
-                if (t2Empty) {
-                    return 0;
-                } else {
-                    return -1;
-                }
-            } else {
-                if (t2Empty) {
-                    return 1;
-                } else {
-                    int ret = timeStamp.compareTo(o.timeStamp);
-                    if (ret == 0) {
-                        ret = timeEvent.compareTo(o.timeEvent);
-                    }
-                    return ret;
-                }
-            }
-        }
-
-    }
-
-    private static void addExtraAttributeToDoc(Document doc, String key, Object oValue, boolean isMultiValued,
-            Set<TimeStampEvent> timeEventSet) {
-
-        if (key.equals(ExtraProperties.LOCATIONS)) {
-            String[] coords = oValue.toString().split(";");
-            double lat = Double.valueOf(coords[0].trim());
-            double lon = Double.valueOf(coords[1].trim());
-            if (lat >= -90.0 && lat <= 90.0 && lon >= -180.0 && lon <= 180.0) {
-                doc.add(new LatLonPoint(key, lat, lon));
-                doc.add(new LatLonDocValuesField(key, lat, lon));
-                doc.add(new StringField(key, oValue.toString(), Field.Store.YES));
-                // used to group values in metadata filter panel, sorting doesn't make sense
-                doc.add(new SortedSetDocValuesField(GEO_SSDV_PREFIX + key, new BytesRef(oValue.toString())));
-            }
-        } else if (oValue instanceof Date) {
-            String value = DateUtils.formatDate((Date) oValue);
-            doc.add(new Field(key, value, dateField));
-            if (!isMultiValued)
-                doc.add(new SortedDocValuesField(key, new BytesRef(value)));
-            else
-                doc.add(new SortedSetDocValuesField(key, new BytesRef(value)));
-
-            timeEventSet.add(new TimeStampEvent(value, key));
-
-        } else if (oValue instanceof Byte || oValue instanceof Short || oValue instanceof Integer) {
-            int intVal = ((Number) oValue).intValue();
-            doc.add(new IntPoint(key, intVal));
-            doc.add(new StoredField(key, intVal));
-            if (!isMultiValued)
-                doc.add(new NumericDocValuesField(key, intVal));
-            else
-                doc.add(new SortedNumericDocValuesField(key, intVal));
-
-        } else if (oValue instanceof Long) {
-            doc.add(new LongPoint(key, (Long) oValue));
-            doc.add(new StoredField(key, (Long) oValue));
-            if (!isMultiValued)
-                doc.add(new NumericDocValuesField(key, (Long) oValue));
-            else
-                doc.add(new SortedNumericDocValuesField(key, (Long) oValue));
-
-        } else if (oValue instanceof Float) {
-            doc.add(new FloatPoint(key, (Float) oValue));
-            doc.add(new StoredField(key, (Float) oValue));
-            if (!isMultiValued)
-                doc.add(new FloatDocValuesField(key, (Float) oValue));
-            else
-                doc.add(new SortedNumericDocValuesField(key, NumericUtils.floatToSortableInt((Float) oValue)));
-
-        } else if (oValue instanceof Double) {
-            doc.add(new DoublePoint(key, (Double) oValue));
-            doc.add(new StoredField(key, (Double) oValue));
-            if (!isMultiValued)
-                doc.add(new DoubleDocValuesField(key, (Double) oValue));
-            else
-                doc.add(new SortedNumericDocValuesField(key, NumericUtils.doubleToSortableLong((Double) oValue)));
-
-        } else if (oValue instanceof KnnVector) {
-            float[] floatArray = convDoubleToFloatArray(((KnnVector) oValue).getArray());
-            byte[] byteArray = convFloatArrayToByteArray(floatArray);
-            int suffix = 0;
-            // KnnVectorField is not multivalued, must use other key if it exists
-            String knnKey = key;
-            while (doc.getField(knnKey) != null) {
-                knnKey = key + (++suffix);
-            }
-            doc.add(new SortedSetDocValuesField(key, new BytesRef(byteArray)));
-            doc.add(new StoredField(key, byteArray));
-            doc.add(new KnnFloatVectorField(knnKey, floatArray));
-
-        } else {
-            // value is typed as string
-            String value = oValue.toString();
-            doc.add(new Field(key, value, storedTokenizedNoNormsField));
-            if (value.length() > MAX_DOCVALUE_SIZE) {
-                value = value.substring(0, MAX_DOCVALUE_SIZE);
-            }
-            if (!isMultiValued)
-                doc.add(new SortedDocValuesField(key, new BytesRef(normalize(value))));
-            else
-                doc.add(new SortedSetDocValuesField(key, new BytesRef(normalize(value))));
-        }
-
-    }
-
-    public static final byte[] convFloatArrayToByteArray(float[] array) {
-        ByteBuffer buffer = ByteBuffer.allocate(4 * array.length);
-        for (float value : array) {
-            buffer.putFloat(value);
-        }
-        return buffer.array();
-    }
-
-    public static final float[] convDoubleToFloatArray(double[] array) {
-        float[] result = new float[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = (float) array[i];
-        }
-        return result;
-    }
-
-    private static void addMetadataToDoc(Document doc, Metadata metadata, Set<TimeStampEvent> timeEventSet) {
-        MediaType mimetype = MediaType.parse(metadata.get(Metadata.CONTENT_TYPE));
-        if (mimetype != null)
-            mimetype = mimetype.getBaseType();
-
-        String[] names = metadata.names();
-
-        for (String key : names) {
-            if (key == null || key.contains("Unknown tag") || ignoredMetadata.contains(key)) { //$NON-NLS-1$
-                continue;
-            }
-            boolean isMultiValued = true;// metadata.getValues(key).length > 1;
-            for (String val : metadata.getValues(key)) {
-                if (val != null && !(val = val.trim()).isEmpty())
-                    addMetadataKeyToDoc(doc, key, val, isMultiValued, mimetype, timeEventSet);
-            }
-
-        }
-    }
-
-    private static void addMetadataKeyToDoc(Document doc, String key, String value, boolean isMultiValued,
-            MediaType mimetype, Set<TimeStampEvent> timeEventSet) {
-        Object oValue = value;
-        Class<?> type = typesMap.get(key);
-
-        if (type == null && MetadataUtil.isHtmlMediaType(mimetype) && !key.startsWith(ExtraProperties.UFED_META_PREFIX))
-            return;
-
-        if (type == null) {
+        synchronized (inputStreamFactories) {
+          SeekableInputStreamFactory sisf = inputStreamFactories.get(sourcePath);
+          if (sisf == null) {
+            @SuppressWarnings("unchecked")
+            Class<SeekableInputStreamFactory> clazz =
+                (Class<SeekableInputStreamFactory>) Class.forName(className);
             try {
-                Double doubleVal = Double.valueOf(value);
-                String newKey = key + ":number";
-                MetadataUtil.setMetadataType(newKey, Double.class);
-                addExtraAttributeToDoc(doc, newKey, doubleVal, isMultiValued, timeEventSet);
+              Constructor<SeekableInputStreamFactory> c = clazz.getConstructor(Path.class);
+              sisf = c.newInstance(Path.of(sourcePath));
 
-            } catch (NumberFormatException e) {
-                Date date = DateUtil.tryToParseDate(value);
-                if (date != null) {
-                    String newKey = key + ":date";
-                    MetadataUtil.setMetadataType(newKey, Date.class);
-                    addExtraAttributeToDoc(doc, newKey, date, isMultiValued, timeEventSet);
-                }
+            } catch (NoSuchMethodException e) {
+              Constructor<SeekableInputStreamFactory> c = clazz.getConstructor(URI.class);
+              sisf = c.newInstance(URI.create(sourcePath));
             }
+            if (!iCase.isReport() && sisf.checkIfDataSourceExists()) {
+              checkIfExistsAndAsk(sisf, iCase.getModuleDir());
+            }
+            inputStreamFactories.put(sourcePath, sisf);
+          }
+          evidence.setInputStreamFactory(sisf);
+        }
+      }
+
+      value = doc.get(IndexItem.TIMEOUT);
+      if (value != null) {
+        evidence.setTimeOut(Boolean.parseBoolean(value));
+      }
+
+      value = doc.get(HAS_PREVIEW);
+      if (Boolean.parseBoolean(value)) {
+        evidence.setHasPreview(true);
+        evidence.setPreviewBaseFolder(outputBase);
+      }
+
+      value = doc.get(PREVIEW_EXT);
+      if (value != null) {
+        evidence.setPreviewExt(value);
+      }
+
+      value = doc.get(IndexItem.HASH);
+      if (value != null) {
+        value = value.toUpperCase();
+        evidence.setHash(value);
+      }
+
+      File viewFile = null;
+      if (StringUtils.isNotBlank(evidence.getHash())) {
+
+        if (Boolean.parseBoolean(doc.get(ThumbConstants.HAS_THUMB))) {
+          BytesRef thumb = doc.getBinaryValue(THUMB);
+          if (thumb != null) {
+            evidence.setThumb(thumb.bytes);
+          } else {
+            boolean isImage = MetadataUtil.isImageType(evidence.getMediaType());
+            boolean isVideo = MetadataUtil.isVideoType(evidence.getMediaType());
+            if (isImage || isVideo) {
+              String thumbFolder =
+                  isImage ? ThumbConstants.THUMBS_FOLDER_NAME : PreviewConstants.VIEW_FOLDER_NAME;
+              String thumbExt = isImage ? ThumbConstants.THUMB_EXT : VIDEO_PREVIEW_EXT;
+              File thumbFile =
+                  Util.getFileFromHash(
+                      new File(outputBase, thumbFolder), evidence.getHash(), thumbExt);
+              try {
+                if (thumbFile.exists()) {
+                  evidence.setThumb(Files.readAllBytes(thumbFile.toPath()));
+                }
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+        }
+
+        BytesRef bytesRef = doc.getBinaryValue(IMAGE_FEATURES);
+        if (bytesRef != null) {
+          evidence.setExtraAttribute(IMAGE_FEATURES, bytesRef.bytes);
+        }
+
+        viewFile =
+            Util.findFileFromHash(
+                new File(outputBase, PreviewConstants.VIEW_FOLDER_NAME), evidence.getHash());
+        if (viewFile != null) {
+          evidence.setViewFile(viewFile);
+        }
+      }
+
+      value = doc.get(IndexItem.DELETED);
+      if (value != null) {
+        evidence.setDeleted(Boolean.parseBoolean(value));
+      }
+
+      value = doc.get(IndexItem.ISDIR);
+      if (value != null) {
+        evidence.setIsDir(Boolean.parseBoolean(value));
+      }
+
+      value = doc.get(IndexItem.CARVED);
+      if (value != null) {
+        evidence.setCarved(Boolean.parseBoolean(value));
+      }
+
+      value = doc.get(IndexItem.SUBITEM);
+      if (value != null) {
+        evidence.setSubItem(Boolean.parseBoolean(value));
+      }
+
+      value = doc.get(IndexItem.HASCHILD);
+      if (value != null) {
+        evidence.setHasChildren(Boolean.parseBoolean(value));
+      }
+
+      value = doc.get(IndexItem.OFFSET);
+      if (value != null) {
+        evidence.setFileOffset(Long.parseLong(value));
+      }
+
+      value = doc.get(IndexItem.ISROOT);
+      if (value != null) {
+        evidence.setRoot(Boolean.parseBoolean(value));
+      }
+
+      Set<String> multiValuedFields = new HashSet<>();
+      for (IndexableField f : doc.getFields()) {
+        if (BasicProps.SET.contains(f.name())) continue;
+        Class<?> c = typesMap.get(f.name());
+        if (Item.getAllExtraAttributes().contains(f.name())) {
+          if (multiValuedFields.contains(f.name())) continue;
+          IndexableField[] fields = doc.getFields(f.name());
+          if (fields.length > 1) {
+            multiValuedFields.add(f.name());
+            List<Object> fieldList = new ArrayList<>();
+            for (IndexableField field : fields) fieldList.add(getCastedValue(c, field));
+            evidence.setExtraAttribute(f.name(), fieldList);
+          } else evidence.setExtraAttribute(f.name(), getCastedValue(c, f));
         } else {
-            try {
-                if (type.equals(Double.class)) {
-                    oValue = Double.valueOf(value);
-                } else if (type.equals(Integer.class)) {
-                    oValue = Integer.valueOf(value);
-                } else if (type.equals(Float.class)) {
-                    oValue = Float.valueOf(value);
-                } else if (type.equals(Long.class)) {
-                    oValue = Long.valueOf(value);
-                } else if (type.equals(Date.class)) {
-                    Date date = DateUtil.tryToParseDate(value);
-                    if (date != null)
-                        oValue = date;
-                    else
-                        throw new ParseException("Not a date", 0);
-                }
-            } catch (NumberFormatException | ParseException e) {
-                // value doesn't match built-in type, store value in other field as string
-                key += ":string";
-                MetadataUtil.setMetadataType(key, String.class);
+          if (Date.class.equals(c) && f.stringValue() != null) {
+            String val = f.stringValue();
+            evidence.getMetadata().add(f.name(), val);
+          } else {
+            Object casted = getCastedValue(c, f);
+            if (casted != null) {
+              evidence.getMetadata().add(f.name(), casted.toString());
             }
+          }
         }
+      }
 
-        addExtraAttributeToDoc(doc, key, oValue, isMultiValued, timeEventSet);
-    }
+      if (viewItem || (!IOUtil.hasFile(evidence) && evidence.getIdInDataSource() == null)) {
 
-    public static IItem getItem(Document doc, IPEDSource iCase, boolean viewItem) {
+        if (viewFile != null) {
+          evidence.setIdInDataSource("");
+          evidence.setInputStreamFactory(new FileInputStreamFactory(viewFile.toPath()));
+          evidence.setTempFile(viewFile);
+          // Do not reset media type (see issue #1409)
+          // evidence.setMediaType(null);
 
-        try {
-            Item evidence = new Item();
-
-            evidence.setName(doc.get(IndexItem.NAME));
-
-            // if evidence was stored with EXT, replace the generated in setName()
-            String ext = doc.get(IndexItem.EXT);
-            if (ext != null) {
-                evidence.setExtension(ext);
-            }
-
-            String value = doc.get(IndexItem.LENGTH);
-            Long len = null;
-            if (value != null && !value.isEmpty()) {
-                len = Long.valueOf(value);
-            }
-            evidence.setLength(len);
-
-            value = doc.get(IndexItem.ID);
-            if (value != null) {
-                evidence.setId(Integer.valueOf(value));
-            }
-
-            // evidence.setLabels(state.getLabels(id));
-            value = doc.get(IndexItem.PARENTID);
-            if (value != null) {
-                evidence.setParentId(Integer.valueOf(value));
-            }
-
-            value = doc.get(IndexItem.SUBITEMID);
-            if (value != null) {
-                evidence.setSubitemId(Integer.valueOf(value));
-            }
-
-            value = doc.get(IndexItem.EVIDENCE_UUID);
-            if (value != null) {
-                // TODO obter source corretamente
-                IDataSource dataSource = new DataSource();
-                dataSource.setUUID(value);
-                evidence.setDataSource(dataSource);
-            }
-
-            value = doc.get(IndexItem.TYPE);
-            if (value != null) {
-                evidence.setType(value);
-            }
-
-            for (String category : doc.getValues(IndexItem.CATEGORY)) {
-                evidence.addCategory(category);
-            }
-
-            value = doc.get(IndexItem.ACCESSED);
-            if (value != null && !value.isEmpty()) {
-                evidence.setAccessDate(DateUtil.stringToDate(value));
-            }
-
-            value = doc.get(IndexItem.CREATED);
-            if (value != null && !value.isEmpty()) {
-                evidence.setCreationDate(DateUtil.stringToDate(value));
-            }
-
-            value = doc.get(IndexItem.MODIFIED);
-            if (value != null && !value.isEmpty()) {
-                evidence.setModificationDate(DateUtil.stringToDate(value));
-            }
-
-            value = doc.get(IndexItem.CHANGED);
-            if (value != null && !value.isEmpty()) {
-                evidence.setChangeDate(DateUtil.stringToDate(value));
-            }
-
-            evidence.setPath(doc.get(IndexItem.PATH));
-
-            value = doc.get(IndexItem.CONTENTTYPE);
-            if (value != null) {
-                evidence.setMediaType(MediaType.parse(value));
-            }
-
-            File outputBase = iCase.getModuleDir();
-
-            value = doc.get(IndexItem.ID_IN_SOURCE);
-            if (value != null) {
-                evidence.setIdInDataSource(value);
-            }
-            if (doc.get(IndexItem.SOURCE_PATH) != null && doc.get(IndexItem.SOURCE_DECODER) != null) {
-                String sourcePath = doc.get(IndexItem.SOURCE_PATH);
-                String className = doc.get(IndexItem.SOURCE_DECODER);
-                if (SleuthkitInputStreamFactory.class.getName().equals(className)) {
-                    // Use the correct TSK database (sleuth.db location and name may change in some
-                    // situations), to avoid issue #1782.
-                    SleuthkitCase sleuthCase = iCase.getSleuthCase();
-                    if (sleuthCase != null) {
-                        sourcePath = sleuthCase.getDbDirPath() + File.separatorChar + sleuthCase.getDatabaseName();
-                    }
-                } else if (!"iped.engine.task.MinIOTask$MinIOInputInputStreamFactory".equals(className)) {
-                    sourcePath = Util.getResolvedFile(outputBase.getParent(), sourcePath).toString();
-                }
-                synchronized (inputStreamFactories) {
-                    SeekableInputStreamFactory sisf = inputStreamFactories.get(sourcePath);
-                    if (sisf == null) {
-                        @SuppressWarnings("unchecked")
-                        Class<SeekableInputStreamFactory> clazz = (Class<SeekableInputStreamFactory>) Class.forName(className);
-                        try {
-                            Constructor<SeekableInputStreamFactory> c =  clazz.getConstructor(Path.class);
-                            sisf = c.newInstance(Path.of(sourcePath));
-
-                        } catch (NoSuchMethodException e) {
-                            Constructor<SeekableInputStreamFactory> c = clazz.getConstructor(URI.class);
-                            sisf = c.newInstance(URI.create(sourcePath));
-                        }
-                        if (!iCase.isReport() && sisf.checkIfDataSourceExists()) {
-                            checkIfExistsAndAsk(sisf, iCase.getModuleDir());
-                        }
-                        inputStreamFactories.put(sourcePath, sisf);
-                    }
-                    evidence.setInputStreamFactory(sisf);
-                }
-            }
-
-            value = doc.get(IndexItem.TIMEOUT);
-            if (value != null) {
-                evidence.setTimeOut(Boolean.parseBoolean(value));
-            }
-
-            value = doc.get(HAS_PREVIEW);
-            if (Boolean.parseBoolean(value)) {
-                evidence.setHasPreview(true);
-                evidence.setPreviewBaseFolder(outputBase);
-            }
-
-            value = doc.get(PREVIEW_EXT);
-            if (value != null) {
-                evidence.setPreviewExt(value);
-            }
-
-            value = doc.get(IndexItem.HASH);
-            if (value != null) {
-                value = value.toUpperCase();
-                evidence.setHash(value);
-            }
-
-            File viewFile = null;
-            if (StringUtils.isNotBlank(evidence.getHash())) {
-
-                if (Boolean.parseBoolean(doc.get(ThumbConstants.HAS_THUMB))) {
-                    BytesRef thumb = doc.getBinaryValue(THUMB);
-                    if (thumb != null) {
-                        evidence.setThumb(thumb.bytes);
-                    } else {
-                        boolean isImage = MetadataUtil.isImageType(evidence.getMediaType());
-                        boolean isVideo = MetadataUtil.isVideoType(evidence.getMediaType());
-                        if (isImage || isVideo) {
-                            String thumbFolder = isImage ? ThumbConstants.THUMBS_FOLDER_NAME : PreviewConstants.VIEW_FOLDER_NAME;
-                            String thumbExt = isImage ? ThumbConstants.THUMB_EXT : VIDEO_PREVIEW_EXT;
-                            File thumbFile = Util.getFileFromHash(new File(outputBase, thumbFolder), evidence.getHash(), thumbExt);
-                            try {
-                                if (thumbFile.exists()) {
-                                    evidence.setThumb(Files.readAllBytes(thumbFile.toPath()));
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-
-                BytesRef bytesRef = doc.getBinaryValue(IMAGE_FEATURES);
-                if (bytesRef != null) {
-                    evidence.setExtraAttribute(IMAGE_FEATURES, bytesRef.bytes);
-                }
-
-                viewFile = Util.findFileFromHash(new File(outputBase, PreviewConstants.VIEW_FOLDER_NAME), evidence.getHash());
-                if (viewFile != null) {
-                    evidence.setViewFile(viewFile);
-                }
-            }
-
-            value = doc.get(IndexItem.DELETED);
-            if (value != null) {
-                evidence.setDeleted(Boolean.parseBoolean(value));
-            }
-
-            value = doc.get(IndexItem.ISDIR);
-            if (value != null) {
-                evidence.setIsDir(Boolean.parseBoolean(value));
-            }
-
-            value = doc.get(IndexItem.CARVED);
-            if (value != null) {
-                evidence.setCarved(Boolean.parseBoolean(value));
-            }
-
-            value = doc.get(IndexItem.SUBITEM);
-            if (value != null) {
-                evidence.setSubItem(Boolean.parseBoolean(value));
-            }
-
-            value = doc.get(IndexItem.HASCHILD);
-            if (value != null) {
-                evidence.setHasChildren(Boolean.parseBoolean(value));
-            }
-
-            value = doc.get(IndexItem.OFFSET);
-            if (value != null) {
-                evidence.setFileOffset(Long.parseLong(value));
-            }
-
-            value = doc.get(IndexItem.ISROOT);
-            if (value != null) {
-                evidence.setRoot(Boolean.parseBoolean(value));
-            }
-
-            Set<String> multiValuedFields = new HashSet<>();
-            for (IndexableField f : doc.getFields()) {
-                if (BasicProps.SET.contains(f.name()))
-                    continue;
-                Class<?> c = typesMap.get(f.name());
-                if (Item.getAllExtraAttributes().contains(f.name())) {
-                    if (multiValuedFields.contains(f.name()))
-                        continue;
-                    IndexableField[] fields = doc.getFields(f.name());
-                    if (fields.length > 1) {
-                        multiValuedFields.add(f.name());
-                        List<Object> fieldList = new ArrayList<>();
-                        for (IndexableField field : fields)
-                            fieldList.add(getCastedValue(c, field));
-                        evidence.setExtraAttribute(f.name(), fieldList);
-                    } else
-                        evidence.setExtraAttribute(f.name(), getCastedValue(c, f));
-                } else {
-                    if (Date.class.equals(c) && f.stringValue() != null) {
-                        String val = f.stringValue();
-                        evidence.getMetadata().add(f.name(), val);
-                    } else {
-                        Object casted = getCastedValue(c, f);
-                        if (casted != null) {
-                            evidence.getMetadata().add(f.name(), casted.toString());
-                        }
-                    }
-                }
-            }
-
-            if (viewItem || (!IOUtil.hasFile(evidence) && evidence.getIdInDataSource() == null)) {
-
-                if (viewFile != null) {
-                    evidence.setIdInDataSource("");
-                    evidence.setInputStreamFactory(new FileInputStreamFactory(viewFile.toPath()));
-                    evidence.setTempFile(viewFile);
-                    // Do not reset media type (see issue #1409)
-                    // evidence.setMediaType(null);
-
-                } else if (evidence.hasPreview()) {
-                    evidence.setIdInDataSource(PreviewInputStreamFactory.getIdentifierForPreview(evidence));
-                    evidence.setInputStreamFactory(new PreviewInputStreamFactory(outputBase.toURI()));
-                }
-            }
-
-            return evidence;
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else if (evidence.hasPreview()) {
+          evidence.setIdInDataSource(PreviewInputStreamFactory.getIdentifierForPreview(evidence));
+          evidence.setInputStreamFactory(new PreviewInputStreamFactory(outputBase.toURI()));
         }
+      }
 
-        return null;
+      return evidence;
 
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
-    public static synchronized void checkIfExistsAndAsk(SeekableInputStreamFactory sisf, File caseModuleDir)
-            throws IOException {
-        Path path = Paths.get(sisf.getDataSourceURI());
-        if (path != null && !Files.exists(path)) {
-            Path newPath = loadDataSourcePath(caseModuleDir, path);
-            if (newPath != null && Files.exists(newPath)) {
-                sisf.setDataSourceURI(newPath.toUri());
-                return;
-            }
-            File newDataSource = ImagePathResolverProvider.get().resolve(path.toFile(), true);
-            if (newDataSource != null) {
-                sisf.setDataSourceURI(newDataSource.toPath().toUri());
-                saveDataSourcePath(caseModuleDir, path, newDataSource.toPath());
-            }
-        }
-    }
+    return null;
+  }
 
-    private static void saveDataSourcePath(File caseModuleDir, Path oldPath, Path newPath) throws IOException {
-        File file = new File(caseModuleDir, NEW_DATASOURCE_PATH_FILE);
-        UTF8Properties props = new UTF8Properties();
-        if (file.exists())
-            props.load(file);
-        String newPathStr = Util.getRelativePath(caseModuleDir, newPath.toFile());
-        props.setProperty(oldPath.toString(), newPathStr);
-        try {
-            props.store(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+  public static synchronized void checkIfExistsAndAsk(
+      SeekableInputStreamFactory sisf, File caseModuleDir) throws IOException {
+    Path path = Paths.get(sisf.getDataSourceURI());
+    if (path != null && !Files.exists(path)) {
+      Path newPath = loadDataSourcePath(caseModuleDir, path);
+      if (newPath != null && Files.exists(newPath)) {
+        sisf.setDataSourceURI(newPath.toUri());
+        return;
+      }
+      File newDataSource = ImagePathResolverProvider.get().resolve(path.toFile(), true);
+      if (newDataSource != null) {
+        sisf.setDataSourceURI(newDataSource.toPath().toUri());
+        saveDataSourcePath(caseModuleDir, path, newDataSource.toPath());
+      }
     }
+  }
 
-    private static Path loadDataSourcePath(File caseModuleDir, Path oldPath) throws IOException {
-        File file = new File(caseModuleDir, NEW_DATASOURCE_PATH_FILE);
-        UTF8Properties props = new UTF8Properties();
-        if (file.exists())
-            props.load(file);
-        String path = props.getProperty(oldPath.toString());
-        if (path == null)
-            return null;
-        return Util.getResolvedFile(caseModuleDir.getParentFile().toPath().toString(), path);
+  private static void saveDataSourcePath(File caseModuleDir, Path oldPath, Path newPath)
+      throws IOException {
+    File file = new File(caseModuleDir, NEW_DATASOURCE_PATH_FILE);
+    UTF8Properties props = new UTF8Properties();
+    if (file.exists()) props.load(file);
+    String newPathStr = Util.getRelativePath(caseModuleDir, newPath.toFile());
+    props.setProperty(oldPath.toString(), newPathStr);
+    try {
+      props.store(file);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+  }
 
-    public static Object getCastedValue(Class<?> c, IndexableField f) throws ParseException {
-        if (Date.class.equals(c)) {
-            String value = f.stringValue();
-            try {
-                return DateUtil.stringToDate(value);
-            } catch (ParseException e) {
-                return DateUtil.tryToParseDate(value);
-            }
-        } else if (f.numericValue() != null) {
-            Number num = f.numericValue();
-            if (Byte.class.equals(c)) {
-                return num.byteValue();
-            } else if (Short.class.equals(c)) {
-                return num.shortValue();
-            } else if (Integer.class.equals(c)) {
-                return num.intValue();
-            } else if (Long.class.equals(c)) {
-                return num.longValue();
-            } else if (Float.class.equals(c)) {
-                return num.floatValue();
-            } else if (Double.class.equals(c)) {
-                return num.doubleValue();
-            } else {
-                return num;
-            }
-        } else if (f.binaryValue() != null) {
-            return f.binaryValue().bytes;
-        } else {
-            return f.stringValue();
-        }
+  private static Path loadDataSourcePath(File caseModuleDir, Path oldPath) throws IOException {
+    File file = new File(caseModuleDir, NEW_DATASOURCE_PATH_FILE);
+    UTF8Properties props = new UTF8Properties();
+    if (file.exists()) props.load(file);
+    String path = props.getProperty(oldPath.toString());
+    if (path == null) return null;
+    return Util.getResolvedFile(caseModuleDir.getParentFile().toPath().toString(), path);
+  }
+
+  public static Object getCastedValue(Class<?> c, IndexableField f) throws ParseException {
+    if (Date.class.equals(c)) {
+      String value = f.stringValue();
+      try {
+        return DateUtil.stringToDate(value);
+      } catch (ParseException e) {
+        return DateUtil.tryToParseDate(value);
+      }
+    } else if (f.numericValue() != null) {
+      Number num = f.numericValue();
+      if (Byte.class.equals(c)) {
+        return num.byteValue();
+      } else if (Short.class.equals(c)) {
+        return num.shortValue();
+      } else if (Integer.class.equals(c)) {
+        return num.intValue();
+      } else if (Long.class.equals(c)) {
+        return num.longValue();
+      } else if (Float.class.equals(c)) {
+        return num.floatValue();
+      } else if (Double.class.equals(c)) {
+        return num.doubleValue();
+      } else {
+        return num;
+      }
+    } else if (f.binaryValue() != null) {
+      return f.binaryValue().bytes;
+    } else {
+      return f.stringValue();
     }
-
+  }
 }

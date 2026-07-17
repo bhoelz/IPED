@@ -4,24 +4,23 @@ import netscape.javascript.JSObject;
 
 public interface JSInterfaceFunctions {
 
-    void selectMarkerBF(JSObject markers);
+  void selectMarkerBF(JSObject markers);
 
-    void alert(String alert);
+  void alert(String alert);
 
-    void markerMouseClickedBF(String markerId, int button, String modfJS);
+  void markerMouseClickedBF(String markerId, int button, String modfJS);
 
-    void markerMouseDblClickedBF(String markerId, int button);
+  void markerMouseDblClickedBF(String markerId, int button);
 
-    void markerMousePressedBF(String markerId);
+  void markerMousePressedBF(String markerId);
 
-    void markerMouseReleasedBF(String markerId);
+  void markerMouseReleasedBF(String markerId);
 
-    void markerMouseEnteredBF(String markerId);
+  void markerMouseEnteredBF(String markerId);
 
-    void markerMouseExitedBF(String markerId);
+  void markerMouseExitedBF(String markerId);
 
-    void checkMarkerBF(String markerId, boolean checked);
+  void checkMarkerBF(String markerId, boolean checked);
 
-    void exportKmlBF();
-
+  void exportKmlBF();
 }

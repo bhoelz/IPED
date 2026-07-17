@@ -8,23 +8,21 @@ package iped.exception;
 import java.io.Serial;
 
 /**
- * Thrown when a search query string cannot be parsed into a valid query.
- * Decouples API clients from the underlying query parser implementation.
+ * Thrown when a search query string cannot be parsed into a valid query. Decouples API clients from
+ * the underlying query parser implementation.
  *
  * @author WERNECK
  */
 public class QueryNodeException extends Exception {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
-    /**
-     * Creates an exception wrapping the parser-specific cause.
-     *
-     * @param cause the underlying query parsing failure
-     */
-    public QueryNodeException(Exception cause) {
-        super(cause);
-    }
-
+  /**
+   * Creates an exception wrapping the parser-specific cause.
+   *
+   * @param cause the underlying query parsing failure
+   */
+  public QueryNodeException(Exception cause) {
+    super(cause);
+  }
 }

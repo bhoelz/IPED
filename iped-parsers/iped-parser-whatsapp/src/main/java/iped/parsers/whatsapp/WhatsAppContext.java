@@ -1,75 +1,72 @@
 package iped.parsers.whatsapp;
 
 import iped.data.IItemReader;
-
 import java.util.List;
 
 public class WhatsAppContext {
 
-    private boolean isMainDB;
-    private boolean isBackup;
+  private boolean isMainDB;
+  private boolean isBackup;
 
-    private IItemReader item;
-    private List<Chat> chalist = null;
+  private IItemReader item;
+  private List<Chat> chalist = null;
 
-    private IItemReader mainDBItem;
+  private IItemReader mainDBItem;
 
-    private boolean parsingError = false;
+  private boolean parsingError = false;
 
+  public WhatsAppContext(boolean isMainDB, IItemReader item) {
+    this.setMainDB(isMainDB);
+    this.setItem(item);
+    this.setBackup(false);
+    this.setMainDBItem(null);
+  }
 
-    public WhatsAppContext(boolean isMainDB, IItemReader item) {
-        this.setMainDB(isMainDB);
-        this.setItem(item);
-        this.setBackup(false);
-        this.setMainDBItem(null);
+  public boolean isMainDB() {
+    return isMainDB;
+  }
 
-    }
+  public void setMainDB(boolean isMainDB) {
+    this.isMainDB = isMainDB;
+  }
 
-    public boolean isMainDB() {
-        return isMainDB;
-    }
+  public IItemReader getItem() {
+    return item;
+  }
 
-    public void setMainDB(boolean isMainDB) {
-        this.isMainDB = isMainDB;
-    }
+  public void setItem(IItemReader item) {
+    this.item = item;
+  }
 
-    public IItemReader getItem() {
-        return item;
-    }
+  public List<Chat> getChalist() {
+    return chalist;
+  }
 
-    public void setItem(IItemReader item) {
-        this.item = item;
-    }
+  public void setChalist(List<Chat> chalist) {
+    this.chalist = chalist;
+  }
 
-    public List<Chat> getChalist() {
-        return chalist;
-    }
+  public Boolean isBackup() {
+    return isBackup;
+  }
 
-    public void setChalist(List<Chat> chalist) {
-        this.chalist = chalist;
-    }
+  public void setBackup(Boolean isBackup) {
+    this.isBackup = isBackup;
+  }
 
-    public Boolean isBackup() {
-        return isBackup;
-    }
+  public IItemReader getMainDBItem() {
+    return mainDBItem;
+  }
 
-    public void setBackup(Boolean isBackup) {
-        this.isBackup = isBackup;
-    }
+  public void setMainDBItem(IItemReader mainDBItem) {
+    this.mainDBItem = mainDBItem;
+  }
 
-    public IItemReader getMainDBItem() {
-        return mainDBItem;
-    }
+  public boolean getParsingError() {
+    return parsingError;
+  }
 
-    public void setMainDBItem(IItemReader mainDBItem) {
-        this.mainDBItem = mainDBItem;
-    }
-
-    public boolean getParsingError() {
-        return parsingError;
-    }
-
-    public void setParsingError(boolean parsingError) {
-        this.parsingError = parsingError;
-    }
+  public void setParsingError(boolean parsingError) {
+    this.parsingError = parsingError;
+  }
 }

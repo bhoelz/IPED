@@ -17,132 +17,130 @@
 package iped.parsers.fork;
 
 import iped.parsers.fork.MemoryURLStreamHandlerFactory.MemoryURLStreamHandler;
-import org.apache.tika.fork.ForkProxy;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import org.apache.tika.fork.ForkProxy;
 
 class ClassLoaderProxy extends ClassLoader implements ForkProxy {
 
-    /** Serial version UID */
-    private static final long serialVersionUID = -7303109260448540420L;
+  /** Serial version UID */
+  private static final long serialVersionUID = -7303109260448540420L;
 
-    /**
-     * Names of resources that could not be found. Used to avoid repeated lookup of
-     * commonly accessed, but often not present, resources like
-     * <code>META-INF/services/javax.xml.parsers.SAXParserFactory</code>.
-     */
-    private final Set<String> notFound = new HashSet<String>();
+  /**
+   * Names of resources that could not be found. Used to avoid repeated lookup of commonly accessed,
+   * but often not present, resources like <code>
+   * META-INF/services/javax.xml.parsers.SAXParserFactory</code>.
+   */
+  private final Set<String> notFound = new HashSet<String>();
 
-    private final int resource;
+  private final int resource;
 
-    private transient DataInputStream input;
+  private transient DataInputStream input;
 
-    private transient DataOutputStream output;
+  private transient DataOutputStream output;
 
-    public ClassLoaderProxy(int resource) {
-        this.resource = resource;
+  public ClassLoaderProxy(int resource) {
+    this.resource = resource;
+  }
+
+  public void init(DataInputStream input, DataOutputStream output) {
+    this.input = input;
+    this.output = output;
+  }
+
+  @Override
+  protected synchronized URL findResource(String name) {
+    if (notFound.contains(name)) {
+      return null;
     }
+    try {
+      // Send a request to load the resource data
+      output.write(ForkServer.RESOURCE);
+      output.write(resource);
+      output.write(1);
+      output.writeUTF(name);
+      output.flush();
 
-    public void init(DataInputStream input, DataOutputStream output) {
-        this.input = input;
-        this.output = output;
-    }
-
-    @Override
-    protected synchronized URL findResource(String name) {
-        if (notFound.contains(name)) {
-            return null;
-        }
-        try {
-            // Send a request to load the resource data
-            output.write(ForkServer.RESOURCE);
-            output.write(resource);
-            output.write(1);
-            output.writeUTF(name);
-            output.flush();
-
-            // Receive the response
-            if (input.readBoolean()) {
-                return MemoryURLStreamHandler.createURL(readStream());
-            } else {
-                notFound.add(name);
-                return null;
-            }
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    @Override
-    protected synchronized Enumeration<URL> findResources(String name) throws IOException {
-        // Send a request to load the resources
-        output.write(ForkServer.RESOURCE);
-        output.write(resource);
-        output.write(2);
-        output.writeUTF(name);
-        output.flush();
-
-        // Receive the response
-        List<URL> resources = new ArrayList<URL>();
-        while (input.readBoolean()) {
-            resources.add(MemoryURLStreamHandler.createURL(readStream()));
-        }
-        return Collections.enumeration(resources);
-    }
-
-    @Override
-    protected synchronized Class<?> findClass(String name) throws ClassNotFoundException {
-        try {
-            // Send a request to load the class data
-            output.write(ForkServer.RESOURCE);
-            output.write(resource);
-            output.write(1);
-            output.writeUTF(name.replace('.', '/') + ".class");
-            output.flush();
-
-            // Receive the response
-            if (input.readBoolean()) {
-                byte[] data = readStream();
-                Class<?> clazz = defineClass(name, data, 0, data.length);
-                definePackageIfNecessary(name, clazz);
-                return clazz;
-            } else {
-                throw new ClassNotFoundException("Unable to find class " + name);
-            }
-        } catch (IOException e) {
-            throw new ClassNotFoundException("Unable to load class " + name, e);
-        }
-    }
-
-    private void definePackageIfNecessary(String className, Class<?> clazz) {
-        String packageName = toPackageName(className);
-        if (packageName != null && getPackage(packageName) == null) {
-            definePackage(packageName, null, null, null, null, null, null, null);
-        }
-    }
-
-    private String toPackageName(String className) {
-        int packageEndIndex = className.lastIndexOf('.');
-        if (packageEndIndex > 0) {
-            return className.substring(0, packageEndIndex);
-        }
+      // Receive the response
+      if (input.readBoolean()) {
+        return MemoryURLStreamHandler.createURL(readStream());
+      } else {
+        notFound.add(name);
         return null;
+      }
+    } catch (IOException e) {
+      return null;
     }
+  }
 
-    private byte[] readStream() throws IOException {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[0xffff];
-        int n;
-        while ((n = input.readUnsignedShort()) > 0) {
-            input.readFully(buffer, 0, n);
-            stream.write(buffer, 0, n);
-        }
-        return stream.toByteArray();
+  @Override
+  protected synchronized Enumeration<URL> findResources(String name) throws IOException {
+    // Send a request to load the resources
+    output.write(ForkServer.RESOURCE);
+    output.write(resource);
+    output.write(2);
+    output.writeUTF(name);
+    output.flush();
+
+    // Receive the response
+    List<URL> resources = new ArrayList<URL>();
+    while (input.readBoolean()) {
+      resources.add(MemoryURLStreamHandler.createURL(readStream()));
     }
+    return Collections.enumeration(resources);
+  }
 
+  @Override
+  protected synchronized Class<?> findClass(String name) throws ClassNotFoundException {
+    try {
+      // Send a request to load the class data
+      output.write(ForkServer.RESOURCE);
+      output.write(resource);
+      output.write(1);
+      output.writeUTF(name.replace('.', '/') + ".class");
+      output.flush();
+
+      // Receive the response
+      if (input.readBoolean()) {
+        byte[] data = readStream();
+        Class<?> clazz = defineClass(name, data, 0, data.length);
+        definePackageIfNecessary(name, clazz);
+        return clazz;
+      } else {
+        throw new ClassNotFoundException("Unable to find class " + name);
+      }
+    } catch (IOException e) {
+      throw new ClassNotFoundException("Unable to load class " + name, e);
+    }
+  }
+
+  private void definePackageIfNecessary(String className, Class<?> clazz) {
+    String packageName = toPackageName(className);
+    if (packageName != null && getPackage(packageName) == null) {
+      definePackage(packageName, null, null, null, null, null, null, null);
+    }
+  }
+
+  private String toPackageName(String className) {
+    int packageEndIndex = className.lastIndexOf('.');
+    if (packageEndIndex > 0) {
+      return className.substring(0, packageEndIndex);
+    }
+    return null;
+  }
+
+  private byte[] readStream() throws IOException {
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    byte[] buffer = new byte[0xffff];
+    int n;
+    while ((n = input.readUnsignedShort()) > 0) {
+      input.readFully(buffer, 0, n);
+      stream.write(buffer, 0, n);
+    }
+    return stream.toByteArray();
+  }
 }

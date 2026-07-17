@@ -19,39 +19,44 @@
 package iped.app.ui;
 
 import iped.engine.localization.CategoryLocalization;
-
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import java.awt.*;
 
 public class CategoryTreeCellRenderer extends DefaultTreeCellRenderer {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    @Override
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+  @Override
+  public Component getTreeCellRendererComponent(
+      JTree tree,
+      Object value,
+      boolean sel,
+      boolean expanded,
+      boolean leaf,
+      int row,
+      boolean hasFocus) {
 
-        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+    super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-        String category = value != null ? value.toString() : "";
-        category = category.replaceAll("\\((\\d*,*)*(\\d*.*)*\\)", "").trim();
-        category = getNonLocalizedCategory(category);
-        category = category != null ? category : "";
+    String category = value != null ? value.toString() : "";
+    category = category.replaceAll("\\((\\d*,*)*(\\d*.*)*\\)", "").trim();
+    category = getNonLocalizedCategory(category);
+    category = category != null ? category : "";
 
-        if (row == 0 && category.equals("root")) {
-            category = Messages.getString("CategoryTreeModel.RootName");
-            setText(category);
-            category = getNonLocalizedCategory(category);
-        }
-
-        Icon icon = IconManager.getCategoryIcon(category.toLowerCase());
-        setIcon(icon);
-
-        return this;
-
+    if (row == 0 && category.equals("root")) {
+      category = Messages.getString("CategoryTreeModel.RootName");
+      setText(category);
+      category = getNonLocalizedCategory(category);
     }
 
-    private String getNonLocalizedCategory(String category) {
-        return CategoryLocalization.getInstance().getNonLocalizedCategory(category);
-    }
+    Icon icon = IconManager.getCategoryIcon(category.toLowerCase());
+    setIcon(icon);
+
+    return this;
+  }
+
+  private String getNonLocalizedCategory(String category) {
+    return CategoryLocalization.getInstance().getNonLocalizedCategory(category);
+  }
 }

@@ -33,403 +33,416 @@ import iped.search.IIPEDSearcher;
 import iped.search.IMultiSearchResult;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.util.ProgressDialog;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.lucene.document.Document;
-
-import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.swing.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.lucene.document.Document;
 
 @Slf4j
 public class ExportFileTree extends CancelableWorker {
 
+  int baseDocId;
+  boolean onlyChecked, toZip;
+  File baseDir;
+  private volatile boolean error = false;
 
-    int baseDocId;
-    boolean onlyChecked, toZip;
-    File baseDir;
-    private volatile boolean error = false;
+  int total, progress = 0;
+  ProgressDialog progressDialog;
 
-    int total, progress = 0;
-    ProgressDialog progressDialog;
+  HashMap<Integer, Object> parentCache = new HashMap<Integer, Object>();
 
-    HashMap<Integer, Object> parentCache = new HashMap<Integer, Object>();
+  ZipArchiveOutputStream zaos;
+  HashingOutputStream hos;
+  byte[] buf = new byte[8 * 1024 * 1024];
 
-    ZipArchiveOutputStream zaos;
-    HashingOutputStream hos;
-    byte[] buf = new byte[8 * 1024 * 1024];
+  static Node root = (Node) App.get().tree.getModel().getRoot();
 
-    static Node root = (Node) App.get().tree.getModel().getRoot();
+  public ExportFileTree(File baseDir, int baseDocId, boolean onlyChecked) {
+    this(baseDir, baseDocId, onlyChecked, false);
+  }
 
-    public ExportFileTree(File baseDir, int baseDocId, boolean onlyChecked) {
-        this(baseDir, baseDocId, onlyChecked, false);
+  public ExportFileTree(File baseDir, int baseDocId, boolean onlyChecked, boolean toZip) {
+    this.baseDir = baseDir;
+    this.baseDocId = baseDocId;
+    this.onlyChecked = onlyChecked;
+    this.toZip = toZip;
+  }
+
+  private int[] getItemsToExport(boolean allocated) {
+
+    try {
+      String textQuery = "*:*"; // $NON-NLS-1$
+      if (baseDocId != root.docId) {
+        Document doc = App.get().appCase.getReader().storedFields().document(baseDocId);
+
+        String id = doc.get(IndexItem.ID);
+
+        textQuery =
+            IndexItem.PARENTIDs
+                + ":"
+                + id
+                + " "
+                + IndexItem.ID
+                + ":"
+                + id; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        String sourceUUID = doc.get(IndexItem.EVIDENCE_UUID);
+        textQuery =
+            IndexItem.EVIDENCE_UUID
+                + ":"
+                + sourceUUID
+                + " && ("
+                + textQuery
+                + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+      }
+
+      String activeStr =
+          IndexItem.SUBITEM
+              + ":false && "
+              + IndexItem.CARVED
+              + ":false && "
+              + IndexItem.DELETED
+              + ":false -"
+              + BaseCarveTask.FILE_FRAGMENT
+              + ":true";
+      if (allocated) textQuery = "(" + textQuery + ") && (" + activeStr + ")";
+      else textQuery = "(" + textQuery + ") AND NOT (" + activeStr + ")";
+
+      IIPEDSearcher task = new IPEDSearcher(App.get().appCase, textQuery);
+      IMultiSearchResult msr = task.multiSearch();
+      if (onlyChecked) {
+        msr = (MultiSearchResult) App.get().appCase.getMultiBookmarks().filterChecked(msr);
+      }
+      LuceneSearchResult result = MultiSearchResult.get(msr, App.get().appCase);
+
+      return result.getLuceneIds();
+
+    } catch (Exception e) {
+      return new int[0];
     }
+  }
 
-    public ExportFileTree(File baseDir, int baseDocId, boolean onlyChecked, boolean toZip) {
-        this.baseDir = baseDir;
-        this.baseDocId = baseDocId;
-        this.onlyChecked = onlyChecked;
-        this.toZip = toZip;
-    }
+  private void exportItem(int docId) {
+    exportItem(docId, false);
+  }
 
-    private int[] getItemsToExport(boolean allocated) {
+  private Object exportItem(int docId, boolean isParent) {
 
-        try {
-            String textQuery = "*:*"; //$NON-NLS-1$
-            if (baseDocId != root.docId) {
-                Document doc = App.get().appCase.getReader().storedFields().document(baseDocId);
+    Object exportedItem = null;
+    if (docId == baseDocId) {
+      exportedItem = exportItem(docId, baseDir, isParent);
+      parentCache.put(docId, exportedItem);
+    } else {
+      try {
+        Document doc = App.get().appCase.getReader().storedFields().document(docId);
 
-                String id = doc.get(IndexItem.ID);
-
-                textQuery = IndexItem.PARENTIDs + ":" + id + " " + IndexItem.ID + ":" + id; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                String sourceUUID = doc.get(IndexItem.EVIDENCE_UUID);
-                textQuery = IndexItem.EVIDENCE_UUID + ":" + sourceUUID + " && (" + textQuery + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            }
-
-            String activeStr = IndexItem.SUBITEM + ":false && " + IndexItem.CARVED + ":false && " + IndexItem.DELETED + ":false -" + BaseCarveTask.FILE_FRAGMENT + ":true";
-            if (allocated)
-                textQuery = "(" + textQuery + ") && (" + activeStr + ")";
-            else
-                textQuery = "(" + textQuery + ") AND NOT (" + activeStr + ")";
-
-            IIPEDSearcher task = new IPEDSearcher(App.get().appCase, textQuery);
-            IMultiSearchResult msr = task.multiSearch();
-            if (onlyChecked) {
-                msr = (MultiSearchResult) App.get().appCase.getMultiBookmarks().filterChecked(msr);
-            }
-            LuceneSearchResult result = MultiSearchResult.get(msr, App.get().appCase);
-
-            return result.getLuceneIds();
-
-        } catch (Exception e) {
-            return new int[0];
+        int parentDocId = root.docId;
+        String parentIdStr = doc.get(IndexItem.PARENTID);
+        if (parentIdStr != null) {
+          int parentId = Integer.parseInt(parentIdStr);
+          IIPEDSource source = App.get().appCase.getAtomicSource(docId);
+          int baseLuceneId = App.get().appCase.getBaseLuceneId(source);
+          parentDocId = source.getLuceneId(parentId) + baseLuceneId;
         }
+        Object exportedParent = parentCache.get(parentDocId);
+        if (exportedParent == null) {
+          exportedParent = exportItem(parentDocId, true);
+          parentCache.put(parentDocId, exportedParent);
+        }
+
+        exportedItem = exportItem(docId, exportedParent, isParent);
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
 
-    private void exportItem(int docId) {
-        exportItem(docId, false);
+    return exportedItem;
+  }
+
+  private File getNonExistingFile(File dst) {
+    int num = 1;
+    String name = dst.getName();
+    while (dst.exists()) {
+      dst = new File(dst.getParentFile(), Util.concat(name, num++));
+    }
+    return dst;
+  }
+
+  private File getExistingOrNewDir(File dst) {
+    int num = 1;
+    String name = dst.getName();
+    while (dst.exists() && !dst.isDirectory()) {
+      dst = new File(dst.getParentFile(), Util.concat(name, num++));
+    }
+    return dst;
+  }
+
+  private Object exportItem(int docId, Object subdir, boolean isParent) {
+
+    if (docId == root.docId || error) return null;
+
+    if (subdir == null) subdir = baseDir;
+
+    if (toZip) return exportItemToZip(docId, subdir, isParent);
+
+    File dst = null;
+    IItem item = null;
+    try {
+      item = App.get().appCase.getItemByLuceneID(docId);
+
+      String dstName = Util.getValidFilename(Util.getNameWithTrueExt(item));
+      dst = new File((File) subdir, dstName);
+
+      if (item.isDir() || isParent) {
+        if (!dst.isDirectory()) {
+          dst = getExistingOrNewDir(dst);
+          Files.createDirectories(dst.toPath());
+        }
+      } else {
+        log.info("Exporting file " + item.getPath()); // $NON-NLS-1$
+
+        try (InputStream in = item.getBufferedInputStream()) {
+          dst = getNonExistingFile(dst);
+          Files.copy(in, dst.toPath());
+        }
+      }
+
+      if (item.getModDate() != null) dst.setLastModified(item.getModDate().getTime());
+
+    } catch (Exception e1) {
+      e1.printStackTrace();
+
+    } finally {
+      item.dispose();
     }
 
-    private Object exportItem(int docId, boolean isParent) {
+    if (!isParent) {
+      progressDialog.setProgress(++progress);
+      progressDialog.setNote(
+          Messages.getString("ExportFileTree.Copied")
+              + progress //$NON-NLS-1$
+              + Messages.getString("ExportFileTree.from")
+              + total); //$NON-NLS-1$
+    }
 
-        Object exportedItem = null;
-        if (docId == baseDocId) {
-            exportedItem = exportItem(docId, baseDir, isParent);
-            parentCache.put(docId, exportedItem);
-        } else {
+    return dst;
+  }
+
+  private String exportItemToZip(int docId, Object subdir, boolean isParent) {
+
+    String dst = null;
+    IItem item = null;
+    try {
+      if (zaos == null) {
+        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(baseDir));
+        hos = new HashingOutputStream(Hashing.md5(), bos);
+        zaos = new ZipArchiveOutputStream(hos);
+      }
+
+      item = App.get().appCase.getItemByLuceneID(docId);
+      String dstName = item.getName().replace("/", "-").trim(); // $NON-NLS-1$ //$NON-NLS-2$
+      if (dstName.isEmpty()) dstName = "-"; // $NON-NLS-1$
+
+      dst = dstName;
+      if (subdir != baseDir) dst = subdir + dstName;
+
+      if (item.isDir() || isParent) dst += "/"; // $NON-NLS-1$
+
+      ZipArchiveEntry entry = new ZipArchiveEntry(dst);
+
+      if (item.getLength() != null) entry.setSize(item.getLength());
+
+      ExportFilesToZip.fillZipDates(entry, item);
+
+      zaos.putArchiveEntry(entry);
+
+      if (!item.isDir() && !isParent) {
+        log.info("Exporting file " + item.getPath()); // $NON-NLS-1$
+        try (InputStream in = item.getBufferedInputStream()) {
+          int len = 0;
+          while ((len = in.read(buf)) != -1 && !this.isCancelled())
             try {
-                Document doc = App.get().appCase.getReader().storedFields().document(docId);
-
-                int parentDocId = root.docId;
-                String parentIdStr = doc.get(IndexItem.PARENTID);
-                if (parentIdStr != null) {
-                    int parentId = Integer.parseInt(parentIdStr);
-                    IIPEDSource source = App.get().appCase.getAtomicSource(docId);
-                    int baseLuceneId = App.get().appCase.getBaseLuceneId(source);
-                    parentDocId = source.getLuceneId(parentId) + baseLuceneId;
-                }
-                Object exportedParent = parentCache.get(parentDocId);
-                if (exportedParent == null) {
-                    exportedParent = exportItem(parentDocId, true);
-                    parentCache.put(parentDocId, exportedParent);
-                }
-
-                exportedItem = exportItem(docId, exportedParent, isParent);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return exportedItem;
-
-    }
-
-    private File getNonExistingFile(File dst) {
-        int num = 1;
-        String name = dst.getName();
-        while (dst.exists()) {
-            dst = new File(dst.getParentFile(), Util.concat(name, num++));
-        }
-        return dst;
-    }
-
-    private File getExistingOrNewDir(File dst) {
-        int num = 1;
-        String name = dst.getName();
-        while (dst.exists() && !dst.isDirectory()) {
-            dst = new File(dst.getParentFile(), Util.concat(name, num++));
-        }
-        return dst;
-    }
-
-    private Object exportItem(int docId, Object subdir, boolean isParent) {
-
-        if (docId == root.docId || error)
-            return null;
-
-        if (subdir == null)
-            subdir = baseDir;
-
-        if (toZip)
-            return exportItemToZip(docId, subdir, isParent);
-
-        File dst = null;
-        IItem item = null;
-        try {
-            item = App.get().appCase.getItemByLuceneID(docId);
-
-            String dstName = Util.getValidFilename(Util.getNameWithTrueExt(item));
-            dst = new File((File) subdir, dstName);
-
-            if (item.isDir() || isParent) {
-                if (!dst.isDirectory()) {
-                    dst = getExistingOrNewDir(dst);
-                    Files.createDirectories(dst.toPath());
-                }
-            } else {
-                log.info("Exporting file " + item.getPath()); //$NON-NLS-1$
-
-                try (InputStream in = item.getBufferedInputStream()) {
-                    dst = getNonExistingFile(dst);
-                    Files.copy(in, dst.toPath());
-                }
+              zaos.write(buf, 0, len);
+            } catch (IOException e) {
+              showErrorMessage(e);
+              e.printStackTrace();
+              error = true;
+              return null;
             }
 
-            if (item.getModDate() != null)
-                dst.setLastModified(item.getModDate().getTime());
-
-        } catch (Exception e1) {
-            e1.printStackTrace();
-
-        } finally {
-            item.dispose();
+        } catch (IOException e) {
+          e.printStackTrace();
         }
+      }
+      zaos.closeArchiveEntry();
 
-        if (!isParent) {
-            progressDialog.setProgress(++progress);
-            progressDialog.setNote(Messages.getString("ExportFileTree.Copied") + progress //$NON-NLS-1$
-                    + Messages.getString("ExportFileTree.from") + total); //$NON-NLS-1$
-        }
+    } catch (IOException e1) {
+      showErrorMessage(e1);
+      error = true;
+      e1.printStackTrace();
 
-        return dst;
-
+    } finally {
+      if (item != null) item.dispose();
     }
 
-    private String exportItemToZip(int docId, Object subdir, boolean isParent) {
+    if (!isParent) {
+      progressDialog.setProgress(++progress);
+      progressDialog.setNote(
+          Messages.getString("ExportFileTree.Copied")
+              + progress //$NON-NLS-1$
+              + Messages.getString("ExportFileTree.from")
+              + total); //$NON-NLS-1$
+    }
 
-        String dst = null;
-        IItem item = null;
-        try {
-            if (zaos == null) {
-                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(baseDir));
-                hos = new HashingOutputStream(Hashing.md5(), bos);
-                zaos = new ZipArchiveOutputStream(hos);
+    return dst;
+  }
+
+  public static void showErrorMessage(final Exception e) {
+    try {
+      SwingUtilities.invokeAndWait(
+          new Runnable() {
+            @Override
+            public void run() {
+              JOptionPane.showMessageDialog(
+                  App.get(),
+                  Messages.getString("ExportFileTree.ExportError") + e.getMessage(),
+                  "Error", //$NON-NLS-2$
+                  JOptionPane.ERROR_MESSAGE);
             }
+          });
+    } catch (InvocationTargetException | InterruptedException e2) {
+      e2.printStackTrace();
+    }
+  }
 
-            item = App.get().appCase.getItemByLuceneID(docId);
-            String dstName = item.getName().replace("/", "-").trim(); //$NON-NLS-1$ //$NON-NLS-2$
-            if (dstName.isEmpty())
-                dstName = "-"; //$NON-NLS-1$
+  @Override
+  public boolean doCancel(boolean mayInterrupt) {
+    return cancel(false);
+  }
 
-            dst = dstName;
-            if (subdir != baseDir)
-                dst = subdir + dstName;
+  @Override
+  protected Boolean doInBackground() throws Exception {
 
-            if (item.isDir() || isParent)
-                dst += "/"; //$NON-NLS-1$
+    progressDialog = new ProgressDialog(App.get(), this);
 
-            ZipArchiveEntry entry = new ZipArchiveEntry(dst);
+    ArrayList<Integer> docIds = new ArrayList<Integer>();
+    for (int docId : getItemsToExport(true)) docIds.add(docId);
+    for (int docId : getItemsToExport(false)) docIds.add(docId);
 
-            if (item.getLength() != null)
-                entry.setSize(item.getLength());
+    total = docIds.size();
+    progressDialog.setMaximum(total);
 
-            ExportFilesToZip.fillZipDates(entry, item);
-
-            zaos.putArchiveEntry(entry);
-
-            if (!item.isDir() && !isParent) {
-                log.info("Exporting file " + item.getPath()); //$NON-NLS-1$
-                try (InputStream in = item.getBufferedInputStream()) {
-                    int len = 0;
-                    while ((len = in.read(buf)) != -1 && !this.isCancelled())
-                        try {
-                            zaos.write(buf, 0, len);
-                        } catch (IOException e) {
-                            showErrorMessage(e);
-                            e.printStackTrace();
-                            error = true;
-                            return null;
-                        }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            zaos.closeArchiveEntry();
-
-        } catch (IOException e1) {
-            showErrorMessage(e1);
-            error = true;
-            e1.printStackTrace();
-
-        } finally {
-            if (item != null)
-                item.dispose();
+    try {
+      for (int docId : docIds) {
+        exportItem(docId);
+        if (progressDialog.isCanceled() || error) {
+          break;
         }
+      }
 
-        if (!isParent) {
-            progressDialog.setProgress(++progress);
-            progressDialog.setNote(Messages.getString("ExportFileTree.Copied") + progress //$NON-NLS-1$
-                    + Messages.getString("ExportFileTree.from") + total); //$NON-NLS-1$
-        }
-
-        return dst;
-
+    } finally {
+      progressDialog.close();
+      if (zaos != null) zaos.close();
     }
 
-    public static void showErrorMessage(final Exception e) {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    JOptionPane.showMessageDialog(App.get(), Messages.getString("ExportFileTree.ExportError") + e.getMessage(), "Error", //$NON-NLS-2$
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            });
-        } catch (InvocationTargetException | InterruptedException e2) {
-            e2.printStackTrace();
-        }
+    return null;
+  }
+
+  @Override
+  protected void done() {
+    if (hos != null && !error) {
+      String hash = hos.hash().toString().toUpperCase();
+      log.info("MD5 of " + baseDir.getAbsolutePath() + ": " + hash); // $NON-NLS-1$ //$NON-NLS-2$
+      appendHashSuffixIfTriageMode(hash, baseDir);
+      HashDialog dialog = new HashDialog(hash, baseDir.getAbsolutePath());
+      dialog.setVisible(true);
     }
+  }
 
-    @Override
-    public boolean doCancel(boolean mayInterrupt) {
-        return cancel(false);
-    }
+  public static void appendHashSuffixIfTriageMode(String hash, File file) {
+    if (!App.triageGui) return;
+    String ext = ".zip";
+    int idx = file.getAbsolutePath().lastIndexOf(ext);
+    File newFile = new File(file.getAbsolutePath().substring(0, idx) + "_MD5_" + hash + ext);
+    file.renameTo(newFile);
+  }
 
-    @Override
-    protected Boolean doInBackground() throws Exception {
+  public static void saveFile(int baseDocId, boolean onlyChecked, boolean toZip) {
+    try {
+      // JFileChooser fileChooser = new JFileChooser();
+      // [Triage] Patch para o caso de o arquivo selecionado já existir. Na versão
+      // original, ele era sobrescrito silenciosamente.
+      JFileChooser fileChooser =
+          new JFileChooser() {
+            /** */
+            private static final long serialVersionUID = 1L;
 
-        progressDialog = new ProgressDialog(App.get(), this);
-
-        ArrayList<Integer> docIds = new ArrayList<Integer>();
-        for (int docId : getItemsToExport(true))
-            docIds.add(docId);
-        for (int docId : getItemsToExport(false))
-            docIds.add(docId);
-
-        total = docIds.size();
-        progressDialog.setMaximum(total);
-
-        try {
-            for (int docId : docIds) {
-                exportItem(docId);
-                if (progressDialog.isCanceled() || error) {
-                    break;
-                }
-            }
-
-        } finally {
-            progressDialog.close();
-            if (zaos != null)
-                zaos.close();
-        }
-
-        return null;
-    }
-
-    @Override
-    protected void done() {
-        if (hos != null && !error) {
-            String hash = hos.hash().toString().toUpperCase();
-            log.info("MD5 of " + baseDir.getAbsolutePath() + ": " + hash); //$NON-NLS-1$ //$NON-NLS-2$
-            appendHashSuffixIfTriageMode(hash, baseDir);
-            HashDialog dialog = new HashDialog(hash, baseDir.getAbsolutePath());
-            dialog.setVisible(true);
-        }
-    }
-
-    public static void appendHashSuffixIfTriageMode(String hash, File file) {
-        if (!App.triageGui)
-            return;
-        String ext = ".zip";
-        int idx = file.getAbsolutePath().lastIndexOf(ext);
-        File newFile = new File(file.getAbsolutePath().substring(0, idx) + "_MD5_" + hash + ext);
-        file.renameTo(newFile);
-    }
-
-    public static void saveFile(int baseDocId, boolean onlyChecked, boolean toZip) {
-        try {
-            // JFileChooser fileChooser = new JFileChooser();
-            // [Triage] Patch para o caso de o arquivo selecionado já existir. Na versão
-            // original, ele era sobrescrito silenciosamente.
-            JFileChooser fileChooser = new JFileChooser() {
-                /**
-                 *
-                 */
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void approveSelection() {
-                    File f = getSelectedFile();
-                    if (f.exists() && f.isFile() && getDialogType() == SAVE_DIALOG) {
-                        int result = JOptionPane.showConfirmDialog(this, Messages.getString("ExportToZIP.FileAlreadyExistsMessageText"), Messages.getString("ExportToZIP.FileAlreadyExistsMessageTitle"), JOptionPane.YES_NO_CANCEL_OPTION);
-                        switch (result) {
-                            case JOptionPane.YES_OPTION:
-                                super.approveSelection();
-                                return;
-                            case JOptionPane.NO_OPTION:
-                                return;
-                            case JOptionPane.CLOSED_OPTION:
-                                return;
-                            case JOptionPane.CANCEL_OPTION:
-                                cancelSelection();
-                                return;
-                        }
-                    }
+            @Override
+            public void approveSelection() {
+              File f = getSelectedFile();
+              if (f.exists() && f.isFile() && getDialogType() == SAVE_DIALOG) {
+                int result =
+                    JOptionPane.showConfirmDialog(
+                        this,
+                        Messages.getString("ExportToZIP.FileAlreadyExistsMessageText"),
+                        Messages.getString("ExportToZIP.FileAlreadyExistsMessageTitle"),
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+                switch (result) {
+                  case JOptionPane.YES_OPTION:
                     super.approveSelection();
+                    return;
+                  case JOptionPane.NO_OPTION:
+                    return;
+                  case JOptionPane.CLOSED_OPTION:
+                    return;
+                  case JOptionPane.CANCEL_OPTION:
+                    cancelSelection();
+                    return;
                 }
-            };
-
-            File moduleDir = App.get().appCase.getAtomicSourceBySourceId(0).getModuleDir();
-            fileChooser.setCurrentDirectory(moduleDir.getParentFile());
-
-            /*
-             * [Triage] Se existe o diretório padrão de dados exportados, como o
-             * /home/caine/DADOS_EXPORTADOS, abre como padrão nesse diretório
-             */
-            File dirDadosExportados = new File(Messages.getString("ExportToZIP.DefaultPath"));
-            if (dirDadosExportados.exists()) {
-                fileChooser.setCurrentDirectory(dirDadosExportados);
+              }
+              super.approveSelection();
             }
+          };
 
-            fileChooser.setFileFilter(null);
-            if (toZip) {
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                // int randInt = (int)(Math.random() * ((1000 - 0) + 1));
-                // fileChooser.setSelectedFile(new
-                // File(Messages.getString("ExportToZIP.DefaultName").substring(0,
-                // Messages.getString("ExportToZIP.DefaultName").length() - 4)+"_"+ randInt +
-                // ".zip"));
-                fileChooser.setSelectedFile(new File(Messages.getString("ExportToZIP.DefaultName")));
-            } else
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+      File moduleDir = App.get().appCase.getAtomicSourceBySourceId(0).getModuleDir();
+      fileChooser.setCurrentDirectory(moduleDir.getParentFile());
 
-            if (fileChooser.showSaveDialog(App.get()) == JFileChooser.APPROVE_OPTION) {
-                File baseDir = fileChooser.getSelectedFile();
-                if (toZip && !baseDir.getName().toLowerCase().endsWith(".zip")) //$NON-NLS-1$
-                    baseDir = new File(baseDir.getAbsolutePath() + ".zip"); //$NON-NLS-1$
+      /*
+       * [Triage] Se existe o diretório padrão de dados exportados, como o
+       * /home/caine/DADOS_EXPORTADOS, abre como padrão nesse diretório
+       */
+      File dirDadosExportados = new File(Messages.getString("ExportToZIP.DefaultPath"));
+      if (dirDadosExportados.exists()) {
+        fileChooser.setCurrentDirectory(dirDadosExportados);
+      }
 
-                log.info("Exporting files to " + baseDir.getAbsolutePath()); //$NON-NLS-1$
-                (new ExportFileTree(baseDir, baseDocId, onlyChecked, toZip)).execute();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+      fileChooser.setFileFilter(null);
+      if (toZip) {
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        // int randInt = (int)(Math.random() * ((1000 - 0) + 1));
+        // fileChooser.setSelectedFile(new
+        // File(Messages.getString("ExportToZIP.DefaultName").substring(0,
+        // Messages.getString("ExportToZIP.DefaultName").length() - 4)+"_"+ randInt +
+        // ".zip"));
+        fileChooser.setSelectedFile(new File(Messages.getString("ExportToZIP.DefaultName")));
+      } else fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+      if (fileChooser.showSaveDialog(App.get()) == JFileChooser.APPROVE_OPTION) {
+        File baseDir = fileChooser.getSelectedFile();
+        if (toZip && !baseDir.getName().toLowerCase().endsWith(".zip")) // $NON-NLS-1$
+        baseDir = new File(baseDir.getAbsolutePath() + ".zip"); // $NON-NLS-1$
+
+        log.info("Exporting files to " + baseDir.getAbsolutePath()); // $NON-NLS-1$
+        (new ExportFileTree(baseDir, baseDocId, onlyChecked, toZip)).execute();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-
+  }
 }

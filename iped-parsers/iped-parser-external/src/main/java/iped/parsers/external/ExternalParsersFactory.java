@@ -16,18 +16,17 @@
  */
 package iped.parsers.external;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 import org.apache.tika.config.ServiceLoader;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.CompositeParser;
 import org.apache.tika.parser.Parser;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.*;
 
 /**
  * Creates instances of ExternalParser based on XML configuration files.
@@ -36,52 +35,55 @@ import java.util.*;
  */
 public class ExternalParsersFactory {
 
-    public static final String EXTERNAL_PARSER_PROP = "tika.external.parsers";
+  public static final String EXTERNAL_PARSER_PROP = "tika.external.parsers";
 
-    public static List<ExternalParser> create() throws IOException, TikaException {
-        return create(new ServiceLoader());
-    }
+  public static List<ExternalParser> create() throws IOException, TikaException {
+    return create(new ServiceLoader());
+  }
 
-    public static List<ExternalParser> create(ServiceLoader loader) throws IOException, TikaException {
-        return create("tika-external-parsers.xml", loader);
-    }
+  public static List<ExternalParser> create(ServiceLoader loader)
+      throws IOException, TikaException {
+    return create("tika-external-parsers.xml", loader);
+  }
 
-    public static List<ExternalParser> create(String filename, ServiceLoader loader) throws IOException, TikaException {
-        String filepath = ExternalParsersFactory.class.getPackage().getName().replace('.', '/') + "/" + filename;
-        Enumeration<URL> files = loader.findServiceResources(filepath);
-        ArrayList<URL> list = Collections.list(files);
-        String externalParsers = System.getProperty(EXTERNAL_PARSER_PROP);
-        if (externalParsers != null) {
-            File externalFile = new File(externalParsers);
-            if (!externalFile.exists())
-                throw new IOException("Specified external parsers file not found: " + externalParsers);
-            URL externalURL = externalFile.toURI().toURL();
-            list.add(externalURL);
-        }
-        URL[] urls = list.toArray(new URL[list.size()]);
-        return create(urls);
+  public static List<ExternalParser> create(String filename, ServiceLoader loader)
+      throws IOException, TikaException {
+    String filepath =
+        ExternalParsersFactory.class.getPackage().getName().replace('.', '/') + "/" + filename;
+    Enumeration<URL> files = loader.findServiceResources(filepath);
+    ArrayList<URL> list = Collections.list(files);
+    String externalParsers = System.getProperty(EXTERNAL_PARSER_PROP);
+    if (externalParsers != null) {
+      File externalFile = new File(externalParsers);
+      if (!externalFile.exists())
+        throw new IOException("Specified external parsers file not found: " + externalParsers);
+      URL externalURL = externalFile.toURI().toURL();
+      list.add(externalURL);
     }
+    URL[] urls = list.toArray(new URL[list.size()]);
+    return create(urls);
+  }
 
-    public static List<ExternalParser> create(URL... urls) throws IOException, TikaException {
-        List<ExternalParser> parsers = new ArrayList<ExternalParser>();
-        for (URL url : urls) {
-            try (InputStream stream = url.openStream()) {
-                parsers.addAll(ExternalParsersConfigReader.read(stream));
-            }
-        }
-        return parsers;
+  public static List<ExternalParser> create(URL... urls) throws IOException, TikaException {
+    List<ExternalParser> parsers = new ArrayList<ExternalParser>();
+    for (URL url : urls) {
+      try (InputStream stream = url.openStream()) {
+        parsers.addAll(ExternalParsersConfigReader.read(stream));
+      }
     }
+    return parsers;
+  }
 
-    public static void attachExternalParsers(TikaConfig config) throws IOException, TikaException {
-        attachExternalParsers(create(), config);
-    }
+  public static void attachExternalParsers(TikaConfig config) throws IOException, TikaException {
+    attachExternalParsers(create(), config);
+  }
 
-    public static void attachExternalParsers(List<ExternalParser> parsers, TikaConfig config) {
-        Parser parser = config.getParser();
-        if (parser instanceof CompositeParser) {
-            CompositeParser cParser = (CompositeParser) parser;
-            Map<MediaType, Parser> parserMap = cParser.getParsers();
-        }
-        // TODO
+  public static void attachExternalParsers(List<ExternalParser> parsers, TikaConfig config) {
+    Parser parser = config.getParser();
+    if (parser instanceof CompositeParser) {
+      CompositeParser cParser = (CompositeParser) parser;
+      Map<MediaType, Parser> parserMap = cParser.getParsers();
     }
+    // TODO
+  }
 }

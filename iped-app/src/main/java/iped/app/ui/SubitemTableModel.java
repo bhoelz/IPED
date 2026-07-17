@@ -20,6 +20,8 @@ package iped.app.ui;
 
 import iped.properties.BasicProps;
 import iped.utils.LocalizedFormat;
+import java.awt.*;
+import javax.swing.*;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.index.Term;
@@ -28,41 +30,41 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
-import javax.swing.*;
-import java.awt.*;
-
 public class SubitemTableModel extends BaseTableModel {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    public SubitemTableModel() {
-    }
+  public SubitemTableModel() {}
 
-    @Override
-    public void valueChanged(ListSelectionModel lsm) {
-        App.get().getTextViewer().textTable.scrollRectToVisible(new Rectangle());
+  @Override
+  public void valueChanged(ListSelectionModel lsm) {
+    App.get().getTextViewer().textTable.scrollRectToVisible(new Rectangle());
 
-        FileProcessor parsingTask = new FileProcessor(results.getLuceneIds()[selectedIndex], false);
-        parsingTask.execute();
+    FileProcessor parsingTask = new FileProcessor(results.getLuceneIds()[selectedIndex], false);
+    parsingTask.execute();
 
-        App.get().parentItemModel.fireTableDataChanged();
-    }
+    App.get().parentItemModel.fireTableDataChanged();
+  }
 
-    @Override
-    public Query createQuery(Document doc) {
+  @Override
+  public Query createQuery(Document doc) {
 
-        String id = doc.get(BasicProps.ID);
-        String sourceUUID = doc.get(BasicProps.EVIDENCE_UUID);
+    String id = doc.get(BasicProps.ID);
+    String sourceUUID = doc.get(BasicProps.EVIDENCE_UUID);
 
-        BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
-        queryBuilder.add(IntPoint.newExactQuery(BasicProps.PARENTID, Integer.parseInt(id)), Occur.MUST);
-        queryBuilder.add(new TermQuery(new Term(BasicProps.EVIDENCE_UUID, sourceUUID)), Occur.MUST);
+    BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
+    queryBuilder.add(IntPoint.newExactQuery(BasicProps.PARENTID, Integer.parseInt(id)), Occur.MUST);
+    queryBuilder.add(new TermQuery(new Term(BasicProps.EVIDENCE_UUID, sourceUUID)), Occur.MUST);
 
-        return queryBuilder.build();
-    }
+    return queryBuilder.build();
+  }
 
-    @Override
-    public void onListItemsResultsComplete() {
-        App.get().subitemDock.setTitleText(LocalizedFormat.format(results.getLength()) + Messages.getString("SubitemTableModel.Subitens"));
-    }
+  @Override
+  public void onListItemsResultsComplete() {
+    App.get()
+        .subitemDock
+        .setTitleText(
+            LocalizedFormat.format(results.getLength())
+                + Messages.getString("SubitemTableModel.Subitens"));
+  }
 }

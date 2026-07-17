@@ -25,135 +25,134 @@ import iped.engine.config.schema.ConfigurationDiffMerge;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * JAX-RS resource for configuration management.
- * Exposes REST endpoints for configuration operations, backups, and merging.
+ * JAX-RS resource for configuration management. Exposes REST endpoints for configuration
+ * operations, backups, and merging.
  */
 @Path("/api/v1/configurations")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ConfigurationResource {
-    private final ConfigurationAPIController controller;
-    private final ConfigurationDiffMerge diffMerge;
-    private final ObjectMapper mapper = new ObjectMapper();
+  private final ConfigurationAPIController controller;
+  private final ConfigurationDiffMerge diffMerge;
+  private final ObjectMapper mapper = new ObjectMapper();
 
-    public ConfigurationResource() {
-        ConfigurationManager configManager = ConfigurationManager.get();
-        this.controller = new ConfigurationAPIController(configManager);
-        this.diffMerge = new ConfigurationDiffMerge();
+  public ConfigurationResource() {
+    ConfigurationManager configManager = ConfigurationManager.get();
+    this.controller = new ConfigurationAPIController(configManager);
+    this.diffMerge = new ConfigurationDiffMerge();
+  }
+
+  @GET
+  public Response getCurrentConfigurations() {
+    Map<String, Object> result = controller.getCurrentConfiguration();
+    return Response.ok(result).build();
+  }
+
+  @GET
+  @Path("/{componentName}")
+  public Response getConfiguration(@PathParam("componentName") String componentName) {
+    Map<String, Object> result = controller.getConfiguration(componentName);
+    if ((boolean) result.get("success")) {
+      return Response.ok(result).build();
+    }
+    return Response.status(Response.Status.NOT_FOUND).entity(result).build();
+  }
+
+  @GET
+  @Path("/{componentName}/export")
+  public Response exportConfiguration(@PathParam("componentName") String componentName) {
+    Map<String, Object> result = controller.exportConfiguration(componentName);
+    if ((boolean) result.get("success")) {
+      return Response.ok(result).build();
+    }
+    return Response.status(Response.Status.NOT_FOUND).entity(result).build();
+  }
+
+  @GET
+  @Path("/export/all")
+  public Response exportAllConfigurations() {
+    Map<String, Object> result = controller.exportAllConfigurations();
+    return Response.ok(result).build();
+  }
+
+  @GET
+  @Path("/metadata")
+  public Response getConfigurationMetadata() {
+    Map<String, Object> result = controller.getConfigurationMetadata();
+    return Response.ok(result).build();
+  }
+
+  @POST
+  @Path("/backup")
+  public Response createBackup(Map<String, Object> request) {
+    String backupPath = (String) request.get("backupPath");
+    if (backupPath == null) {
+      Map<String, Object> error = new HashMap<>();
+      error.put("success", false);
+      error.put("error", "backupPath required");
+      return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
     }
 
-    @GET
-    public Response getCurrentConfigurations() {
-        Map<String, Object> result = controller.getCurrentConfiguration();
-        return Response.ok(result).build();
+    Map<String, Object> result = controller.createBackup(backupPath);
+    if ((boolean) result.get("success")) {
+      return Response.ok(result).build();
     }
+    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(result).build();
+  }
 
-    @GET
-    @Path("/{componentName}")
-    public Response getConfiguration(@PathParam("componentName") String componentName) {
-        Map<String, Object> result = controller.getConfiguration(componentName);
-        if ((boolean) result.get("success")) {
-            return Response.ok(result).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).entity(result).build();
+  @POST
+  @Path("/diff")
+  public Response compareConfigurations(Map<String, Object> request) {
+    try {
+      ObjectNode config1 = mapper.valueToTree(request.get("config1"));
+      ObjectNode config2 = mapper.valueToTree(request.get("config2"));
+
+      ConfigurationDiffMerge.ConfigurationDiff diff = diffMerge.diff(config1, config2);
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("success", true);
+      response.put("added", diff.getAdded());
+      response.put("removed", diff.getRemoved());
+      response.put("modified", diff.getModified());
+      response.put("totalChanges", diff.getTotalChanges());
+
+      return Response.ok(response).build();
+    } catch (Exception e) {
+      Map<String, Object> error = new HashMap<>();
+      error.put("success", false);
+      error.put("error", "Invalid configuration format: " + e.getMessage());
+      return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
     }
+  }
 
-    @GET
-    @Path("/{componentName}/export")
-    public Response exportConfiguration(@PathParam("componentName") String componentName) {
-        Map<String, Object> result = controller.exportConfiguration(componentName);
-        if ((boolean) result.get("success")) {
-            return Response.ok(result).build();
-        }
-        return Response.status(Response.Status.NOT_FOUND).entity(result).build();
+  @POST
+  @Path("/merge")
+  public Response mergeConfigurations(Map<String, Object> request) {
+    try {
+      ObjectNode baseConfig = mapper.valueToTree(request.get("baseConfig"));
+      ObjectNode config1 = mapper.valueToTree(request.get("config1"));
+      ObjectNode config2 = mapper.valueToTree(request.get("config2"));
+
+      ConfigurationDiffMerge.MergeResult result = diffMerge.merge(baseConfig, config1, config2);
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("success", true);
+      response.put("mergedConfig", result.getMergedConfig());
+      response.put("applied", result.getApplied());
+      response.put("conflicts", result.getConflicts());
+      response.put("hasConflicts", result.hasConflicts());
+      response.put("conflictCount", result.getConflictCount());
+
+      return Response.ok(response).build();
+    } catch (Exception e) {
+      Map<String, Object> error = new HashMap<>();
+      error.put("success", false);
+      error.put("error", "Invalid configuration format: " + e.getMessage());
+      return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
     }
-
-    @GET
-    @Path("/export/all")
-    public Response exportAllConfigurations() {
-        Map<String, Object> result = controller.exportAllConfigurations();
-        return Response.ok(result).build();
-    }
-
-    @GET
-    @Path("/metadata")
-    public Response getConfigurationMetadata() {
-        Map<String, Object> result = controller.getConfigurationMetadata();
-        return Response.ok(result).build();
-    }
-
-    @POST
-    @Path("/backup")
-    public Response createBackup(Map<String, Object> request) {
-        String backupPath = (String) request.get("backupPath");
-        if (backupPath == null) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("error", "backupPath required");
-            return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
-        }
-
-        Map<String, Object> result = controller.createBackup(backupPath);
-        if ((boolean) result.get("success")) {
-            return Response.ok(result).build();
-        }
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(result).build();
-    }
-
-    @POST
-    @Path("/diff")
-    public Response compareConfigurations(Map<String, Object> request) {
-        try {
-            ObjectNode config1 = mapper.valueToTree(request.get("config1"));
-            ObjectNode config2 = mapper.valueToTree(request.get("config2"));
-
-            ConfigurationDiffMerge.ConfigurationDiff diff = diffMerge.diff(config1, config2);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("added", diff.getAdded());
-            response.put("removed", diff.getRemoved());
-            response.put("modified", diff.getModified());
-            response.put("totalChanges", diff.getTotalChanges());
-
-            return Response.ok(response).build();
-        } catch (Exception e) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("error", "Invalid configuration format: " + e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
-        }
-    }
-
-    @POST
-    @Path("/merge")
-    public Response mergeConfigurations(Map<String, Object> request) {
-        try {
-            ObjectNode baseConfig = mapper.valueToTree(request.get("baseConfig"));
-            ObjectNode config1 = mapper.valueToTree(request.get("config1"));
-            ObjectNode config2 = mapper.valueToTree(request.get("config2"));
-
-            ConfigurationDiffMerge.MergeResult result = diffMerge.merge(baseConfig, config1, config2);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("mergedConfig", result.getMergedConfig());
-            response.put("applied", result.getApplied());
-            response.put("conflicts", result.getConflicts());
-            response.put("hasConflicts", result.hasConflicts());
-            response.put("conflictCount", result.getConflictCount());
-
-            return Response.ok(response).build();
-        } catch (Exception e) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("error", "Invalid configuration format: " + e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
-        }
-    }
+  }
 }

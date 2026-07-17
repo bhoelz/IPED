@@ -4,8 +4,7 @@ import java.io.File;
 
 public interface GraphServiceFactory {
 
-    GraphService getGraphService();
+  GraphService getGraphService();
 
-    GraphService getGraphService(File graphDbFolder);
-
+  GraphService getGraphService(File graphDbFolder);
 }

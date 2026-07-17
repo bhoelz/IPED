@@ -7,8 +7,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * This interface is used to indicate a configurable object that holds
- * configuration for some module.
+ * This interface is used to indicate a configurable object that holds configuration for some
+ * module.
  *
  * @param <T> the type of used for configuration
  * @author Bruno W. P. Hoelz
@@ -16,44 +16,42 @@ import java.util.List;
  */
 public interface Configurable<T> extends Serializable {
 
-    /**
-     * Returns a filter to be used for resource lookup on the configuration
-     * directory system
-     *
-     * @return the filter to be used
-     */
-    DirectoryStream.Filter<Path> getResourceLookupFilter();
+  /**
+   * Returns a filter to be used for resource lookup on the configuration directory system
+   *
+   * @return the filter to be used
+   */
+  DirectoryStream.Filter<Path> getResourceLookupFilter();
 
-    /**
-     * Process the configuration resources found after applying the lookup filter.
-     *
-     * @param resources the filtered configuration resources.
-     */
-    default void processConfigs(List<Path> resources) throws IOException {
-        for (Path path : resources) {
-            processConfig(path);
-        }
+  /**
+   * Process the configuration resources found after applying the lookup filter.
+   *
+   * @param resources the filtered configuration resources.
+   */
+  default void processConfigs(List<Path> resources) throws IOException {
+    for (Path path : resources) {
+      processConfig(path);
     }
+  }
 
-    /**
-     * Process a configuration resource found after applying the lookup filter.
-     *
-     * @param resource a configuration resource.
-     */
-    void processConfig(Path resource) throws IOException;
+  /**
+   * Process a configuration resource found after applying the lookup filter.
+   *
+   * @param resource a configuration resource.
+   */
+  void processConfig(Path resource) throws IOException;
 
-    /**
-     * Gets the configuration object.
-     *
-     * @return the configuration object.
-     */
-    T getConfiguration();
+  /**
+   * Gets the configuration object.
+   *
+   * @return the configuration object.
+   */
+  T getConfiguration();
 
-    /**
-     * Sets the configuration object.
-     *
-     * @param config the configuration object.
-     */
-    void setConfiguration(T config);
-
+  /**
+   * Sets the configuration object.
+   *
+   * @param config the configuration object.
+   */
+  void setConfiguration(T config);
 }

@@ -45,6 +45,13 @@ import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.properties.BasicProps;
 import iped.utils.IOUtil;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -56,838 +63,824 @@ import org.apache.lucene.util.Bits;
 import org.sleuthkit.datamodel.SleuthkitCase;
 import org.sleuthkit.datamodel.TskCoreException;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.IntStream;
-
 @Slf4j
 public class IPEDSource implements IIPEDSource {
 
+  public static final String MODULE_DIR = "iped"; // $NON-NLS-1$
+  public static final String INDEX_DIR = "index"; // $NON-NLS-1$
+  public static final String DATA_DIR = "data"; // $NON-NLS-1$
+  public static final String LIB_DIR = "lib"; // $NON-NLS-1$
+  public static final String SLEUTH_DB = "sleuth.db"; // $NON-NLS-1$
+  public static final String PREV_TEMP_INFO_PATH = DATA_DIR + "/prevTempDir.txt"; // $NON-NLS-1$
 
-    public static final String MODULE_DIR = "iped"; //$NON-NLS-1$
-    public static final String INDEX_DIR = "index"; //$NON-NLS-1$
-    public static final String DATA_DIR = "data"; //$NON-NLS-1$
-    public static final String LIB_DIR = "lib"; //$NON-NLS-1$
-    public static final String SLEUTH_DB = "sleuth.db"; //$NON-NLS-1$
-    public static final String PREV_TEMP_INFO_PATH = DATA_DIR + "/prevTempDir.txt"; //$NON-NLS-1$
+  /** workaround para JVM não coletar objeto, nesse caso Sleuthkit perde referencia para FS_INFO */
+  private static List<SleuthkitCase> tskCaseList =
+      Collections.synchronizedList(new ArrayList<SleuthkitCase>());
 
-    /**
-     * workaround para JVM não coletar objeto, nesse caso Sleuthkit perde referencia
-     * para FS_INFO
-     */
-    private static List<SleuthkitCase> tskCaseList = Collections.synchronizedList(new ArrayList<SleuthkitCase>());
+  private File casePath;
+  private File moduleDir;
+  private File index;
 
-    private File casePath;
-    private File moduleDir;
-    private File index;
+  SleuthkitCase sleuthCase;
+  IndexReader reader;
+  LeafReader atomicReader;
+  IndexWriter iw;
+  IndexSearcher searcher;
+  Analyzer analyzer;
 
-    SleuthkitCase sleuthCase;
-    IndexReader reader;
-    LeafReader atomicReader;
-    IndexWriter iw;
-    IndexSearcher searcher;
-    Analyzer analyzer;
+  private ExecutorService searchExecutorService;
 
-    private ExecutorService searchExecutorService;
+  protected ArrayList<String> leafCategories = new ArrayList<String>();
+  protected Category categoryTree;
+  protected final Map<String, Set<String>> descendantsCategories =
+      new HashMap<String, Set<String>>();
 
-    protected ArrayList<String> leafCategories = new ArrayList<String>();
-    protected Category categoryTree;
-    protected final Map<String, Set<String>> descendantsCategories = new HashMap<String, Set<String>>();
+  private IBookmarks bookmarks;
+  IMultiBookmarks multiBookmarks;
 
-    private IBookmarks bookmarks;
-    IMultiBookmarks multiBookmarks;
+  private int[] ids, docs;
+  private BitSet parentDocs;
 
-    private int[] ids, docs;
-    private BitSet parentDocs;
+  protected int sourceId = -1;
 
-    protected int sourceId = -1;
+  int totalItens = 0;
 
-    int totalItens = 0;
+  private int lastId = -1;
 
-    private int lastId = -1;
+  LinkedHashSet<String> keywords = new LinkedHashSet<String>();
 
-    LinkedHashSet<String> keywords = new LinkedHashSet<String>();
+  Set<String> extraAttributes = new HashSet<String>();
 
-    Set<String> extraAttributes = new HashSet<String>();
+  Set<String> evidenceUUIDs = new TreeSet<String>();
 
-    Set<String> evidenceUUIDs = new TreeSet<String>();
+  boolean isReport = false;
 
-    boolean isReport = false;
+  boolean askImagePathIfNotFound = true;
 
-    boolean askImagePathIfNotFound = true;
+  /** Manages additional-processing results for this case. Never null. */
+  private IAdditionalDataSourceManager additionalDataSourceManager =
+      new DefaultAdditionalDataSourceManager();
 
-    /** Manages additional-processing results for this case. Never null. */
-    private IAdditionalDataSourceManager additionalDataSourceManager =
-            new DefaultAdditionalDataSourceManager();
+  public static boolean checkIfIsCaseFolder(File dir) {
+    File module = new File(dir, MODULE_DIR);
+    if (new File(module, INDEX_DIR).exists()
+        && new File(module, LIB_DIR).exists()
+        && new File(module, DATA_DIR).exists()) {
+      return true;
+    }
+    return false;
+  }
 
-    public static boolean checkIfIsCaseFolder(File dir) {
-        File module = new File(dir, MODULE_DIR);
-        if (new File(module, INDEX_DIR).exists() && new File(module, LIB_DIR).exists() && new File(module, DATA_DIR).exists()) {
-            return true;
-        }
-        return false;
+  public static File getTempDirInfoFile(File moduleDir) {
+    return new File(moduleDir, IPEDSource.PREV_TEMP_INFO_PATH);
+  }
+
+  public static File getTempIndexDir(File moduleDir) throws IOException {
+    File prevTempInfoFile = getTempDirInfoFile(moduleDir);
+    String prevTemp = new String(Files.readAllBytes(prevTempInfoFile.toPath()), "UTF-8");
+    return new File(prevTemp, INDEX_DIR);
+  }
+
+  public IPEDSource(File casePath) {
+    this(casePath, null);
+  }
+
+  public IPEDSource(File casePath, IndexWriter iw) {
+    this(casePath, iw, true);
+  }
+
+  @SuppressWarnings("unchecked")
+  public IPEDSource(File casePath, IndexWriter iw, boolean askImagePathIfNotFound) {
+    this.askImagePathIfNotFound = askImagePathIfNotFound;
+    this.casePath = casePath;
+    moduleDir = new File(casePath, MODULE_DIR);
+    index = new File(moduleDir, INDEX_DIR);
+    this.iw = iw;
+
+    // return if multicase
+    if (this instanceof IPEDMultiSource) return;
+
+    if (!index.exists() && iw == null) {
+      File defaultIndex = index;
+      try {
+        index = getTempIndexDir(moduleDir);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      if (!index.exists()) {
+        throw new RuntimeException(
+            "Index not found: " + defaultIndex.getAbsolutePath()); // $NON-NLS-1$
+      }
     }
 
-    public static File getTempDirInfoFile(File moduleDir) {
-        return new File(moduleDir, IPEDSource.PREV_TEMP_INFO_PATH);
+    // sourceId = nextId.getAndIncrement();
+
+    try {
+      Configuration.getInstance()
+          .loadConfigurables(moduleDir.getAbsolutePath(), true, EngineConfigContributor.INSTANCE);
+
+      isReport = new File(moduleDir, "data/containsReport.flag").exists(); // $NON-NLS-1$
+
+      File sleuthFile = new File(casePath, SLEUTH_DB);
+      if (sleuthFile.exists()) {
+        if (SleuthkitReader.sleuthCase != null)
+          // workaroud para demora ao abrir o caso enquanto tsk_loaddb não termina
+          sleuthCase = SleuthkitReader.sleuthCase;
+        else {
+          // Unpatched TSK doesn't work with a read-only DB, must be writeable
+          if (!SleuthkitReader.isTSKPatched()) {
+            sleuthFile = SleuthkitInputStreamFactory.getWriteableDBFile(sleuthFile);
+          }
+          sleuthCase = SleuthkitInputStreamFactory.openSleuthkitCase(sleuthFile.getAbsolutePath());
+        }
+
+        if (!isReport) updateImagePathsToAbsolute(casePath, sleuthFile);
+
+        tskCaseList.add(sleuthCase);
+      }
+
+      AnalysisConfig analysisConfig = ConfigurationManager.get().findObject(AnalysisConfig.class);
+      if (analysisConfig.isPreOpenImagesOnSleuth() && iw == null) {
+        TouchSleuthkitImages.preOpenImagesOnSleuth(
+            sleuthCase,
+            analysisConfig.isOpenImagesCacheWarmUpEnabled(),
+            analysisConfig.getOpenImagesCacheWarmUpThreads());
+      }
+
+      openIndex(index, iw);
+
+      IndexSearcher.setMaxClauseCount(Integer.MAX_VALUE);
+      analyzer = AppAnalyzer.get();
+
+      populateLuceneIdToIdMap();
+      invertIdToLuceneIdArray();
+      populateEvidenceUUIDs();
+      countTotalItems();
+
+      SleuthkitReader.loadImagePasswords(moduleDir);
+
+      loadLeafCategories();
+      loadCategoryTree();
+      buildDescendantsCategories(categoryTree);
+
+      loadKeywords();
+
+      IndexMetadata.loadMetadataTypes(new File(moduleDir, "conf")); // $NON-NLS-1$
+
+      File extraAttrFile =
+          new File(
+              moduleDir, "data/" + IndexExtraAttributes.EXTRA_ATTRIBUTES_FILENAME); // $NON-NLS-1$
+      if (extraAttrFile.exists()) {
+        extraAttributes = (Set<String>) Util.readObject(extraAttrFile.getAbsolutePath());
+        Item.getAllExtraAttributes().addAll(extraAttributes);
+      }
+
+      bookmarks = new BitmapBookmarks(this);
+      bookmarks.loadState();
+      multiBookmarks = new MultiBitmapBookmarks(Collections.singletonList(this));
+
+      loadAdditionalDataSources();
+
+    } catch (Exception e) {
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
+      }
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  /** Clear bookmarks to items removed from the case. */
+  public void clearOldBookmarks() {
+    ArrayList<Integer> idsToRemove = new ArrayList<>();
+    for (int id = 0; id <= lastId; id++) {
+      if (docs[id] == -1) {
+        idsToRemove.add(id);
+      }
+    }
+    for (int bookmarkId : bookmarks.getBookmarkMap().keySet().toArray(new Integer[0])) {
+      bookmarks.removeBookmark(idsToRemove, bookmarkId);
+      if (bookmarks.getBookmarkCount(bookmarkId) == 0) {
+        bookmarks.delBookmark(bookmarkId);
+      }
+    }
+    for (int id : idsToRemove) {
+      bookmarks.setChecked(false, id);
+    }
+    bookmarks.saveState(true);
+  }
+
+  public void populateLuceneIdToIdMap() throws IOException {
+
+    log.info("Creating LuceneId to ID mapping..."); // $NON-NLS-1$
+    ids = new int[reader.maxDoc()];
+    for (int i = 0; i < ids.length; i++) {
+      ids[i] = -1;
     }
 
-    public static File getTempIndexDir(File moduleDir) throws IOException {
-        File prevTempInfoFile = getTempDirInfoFile(moduleDir);
-        String prevTemp = new String(Files.readAllBytes(prevTempInfoFile.toPath()), "UTF-8");
-        return new File(prevTemp, INDEX_DIR);
+    parentDocs = new BitSet(ids.length);
+
+    NumericDocValues ndv = atomicReader.getNumericDocValues(IndexItem.ID);
+    if (ndv == null) {
+      // no items in index
+      return;
     }
 
-    public IPEDSource(File casePath) {
-        this(casePath, null);
+    Bits liveDocs = atomicReader.getLiveDocs();
+
+    int i;
+    while ((i = ndv.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+      if (liveDocs != null && !liveDocs.get(i)) {
+        continue;
+      }
+      ids[i] = (int) ndv.longValue();
+      parentDocs.set(i);
+      if (ids[i] > lastId) lastId = ids[i];
     }
+  }
 
-    public IPEDSource(File casePath, IndexWriter iw) {
-        this(casePath, iw, true);
+  protected void invertIdToLuceneIdArray() {
+    docs = new int[lastId + 1];
+    for (int i = 0; i < docs.length; i++) {
+      docs[i] = -1;
     }
-
-    @SuppressWarnings("unchecked")
-    public IPEDSource(File casePath, IndexWriter iw, boolean askImagePathIfNotFound) {
-        this.askImagePathIfNotFound = askImagePathIfNotFound;
-        this.casePath = casePath;
-        moduleDir = new File(casePath, MODULE_DIR);
-        index = new File(moduleDir, INDEX_DIR);
-        this.iw = iw;
-
-        // return if multicase
-        if (this instanceof IPEDMultiSource)
-            return;
-
-        if (!index.exists() && iw == null) {
-            File defaultIndex = index;
-            try {
-                index = getTempIndexDir(moduleDir);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            if (!index.exists()) {
-                throw new RuntimeException("Index not found: " + defaultIndex.getAbsolutePath()); //$NON-NLS-1$
-            }
-        }
-
-        // sourceId = nextId.getAndIncrement();
-
-        try {
-            Configuration.getInstance().loadConfigurables(moduleDir.getAbsolutePath(), true, EngineConfigContributor.INSTANCE);
-
-            isReport = new File(moduleDir, "data/containsReport.flag").exists(); //$NON-NLS-1$
-
-            File sleuthFile = new File(casePath, SLEUTH_DB);
-            if (sleuthFile.exists()) {
-                if (SleuthkitReader.sleuthCase != null)
-                    // workaroud para demora ao abrir o caso enquanto tsk_loaddb não termina
-                    sleuthCase = SleuthkitReader.sleuthCase;
-                else {
-                    // Unpatched TSK doesn't work with a read-only DB, must be writeable
-                    if (!SleuthkitReader.isTSKPatched()) {
-                        sleuthFile = SleuthkitInputStreamFactory.getWriteableDBFile(sleuthFile);
-                    }
-                    sleuthCase = SleuthkitInputStreamFactory.openSleuthkitCase(sleuthFile.getAbsolutePath());
-                }
-
-                if (!isReport)
-                    updateImagePathsToAbsolute(casePath, sleuthFile);
-
-                tskCaseList.add(sleuthCase);
-            }
-
-            AnalysisConfig analysisConfig = ConfigurationManager.get().findObject(AnalysisConfig.class);
-            if (analysisConfig.isPreOpenImagesOnSleuth() && iw == null) {
-                TouchSleuthkitImages.preOpenImagesOnSleuth(sleuthCase, analysisConfig.isOpenImagesCacheWarmUpEnabled(),
-                        analysisConfig.getOpenImagesCacheWarmUpThreads());
-            }
-
-            openIndex(index, iw);
-
-            IndexSearcher.setMaxClauseCount(Integer.MAX_VALUE);
-            analyzer = AppAnalyzer.get();
-
-            populateLuceneIdToIdMap();
-            invertIdToLuceneIdArray();
-            populateEvidenceUUIDs();
-            countTotalItems();
-
-            SleuthkitReader.loadImagePasswords(moduleDir);
-
-            loadLeafCategories();
-            loadCategoryTree();
-            buildDescendantsCategories(categoryTree);
-
-            loadKeywords();
-
-            IndexMetadata.loadMetadataTypes(new File(moduleDir, "conf")); //$NON-NLS-1$
-
-            File extraAttrFile = new File(moduleDir, "data/" + IndexExtraAttributes.EXTRA_ATTRIBUTES_FILENAME); //$NON-NLS-1$
-            if (extraAttrFile.exists()) {
-                extraAttributes = (Set<String>) Util.readObject(extraAttrFile.getAbsolutePath());
-                Item.getAllExtraAttributes().addAll(extraAttributes);
-            }
-
-            bookmarks = new BitmapBookmarks(this);
-            bookmarks.loadState();
-            multiBookmarks = new MultiBitmapBookmarks(Collections.singletonList(this));
-
-            loadAdditionalDataSources();
-
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
-            throw new RuntimeException(e.getMessage(), e);
-        }
+    for (int i = 0; i < ids.length; i++) {
+      if (ids[i] > -1) {
+        docs[ids[i]] = i;
+      }
     }
+  }
 
-    /**
-     * Clear bookmarks to items removed from the case.
-     */
-    public void clearOldBookmarks() {
-        ArrayList<Integer> idsToRemove = new ArrayList<>();
-        for (int id = 0; id <= lastId; id++) {
-            if (docs[id] == -1) {
-                idsToRemove.add(id);
-            }
-        }
-        for (int bookmarkId : bookmarks.getBookmarkMap().keySet().toArray(new Integer[0])) {
-            bookmarks.removeBookmark(idsToRemove, bookmarkId);
-            if (bookmarks.getBookmarkCount(bookmarkId) == 0) {
-                bookmarks.delBookmark(bookmarkId);
-            }
-        }
-        for (int id : idsToRemove) {
-            bookmarks.setChecked(false, id);
-        }
-        bookmarks.saveState(true);
+  private void populateEvidenceUUIDs() throws IOException {
+    SortedDocValues sdv = atomicReader.getSortedDocValues(BasicProps.EVIDENCE_UUID);
+    if (sdv == null) return;
+    for (int i = 0; i < sdv.getValueCount(); i++) {
+      evidenceUUIDs.add(sdv.lookupOrd(i).utf8ToString());
     }
+  }
 
-    public void populateLuceneIdToIdMap() throws IOException {
+  public Set<String> getEvidenceUUIDs() {
+    return evidenceUUIDs;
+  }
 
-        log.info("Creating LuceneId to ID mapping..."); //$NON-NLS-1$
-        ids = new int[reader.maxDoc()];
-        for (int i = 0; i < ids.length; i++) {
-            ids[i] = -1;
-        }
-
-        parentDocs = new BitSet(ids.length);
-
-        NumericDocValues ndv = atomicReader.getNumericDocValues(IndexItem.ID);
-        if (ndv == null) {
-            // no items in index
-            return;
-        }
-
-        Bits liveDocs = atomicReader.getLiveDocs();
-
-        int i;
-        while ((i = ndv.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-            if (liveDocs != null && !liveDocs.get(i)) {
-                continue;
-            }
-            ids[i] = (int) ndv.longValue();
-            parentDocs.set(i);
-            if (ids[i] > lastId)
-                lastId = ids[i];
-        }
-    }
-
-    protected void invertIdToLuceneIdArray() {
-        docs = new int[lastId + 1];
-        for (int i = 0; i < docs.length; i++) {
-            docs[i] = -1;
-        }
-        for (int i = 0; i < ids.length; i++) {
-            if (ids[i] > -1) {
-                docs[ids[i]] = i;
-            }
-        }
-    }
-
-    private void populateEvidenceUUIDs() throws IOException {
-        SortedDocValues sdv = atomicReader.getSortedDocValues(BasicProps.EVIDENCE_UUID);
-        if (sdv == null)
-            return;
-        for (int i = 0; i < sdv.getValueCount(); i++) {
-            evidenceUUIDs.add(sdv.lookupOrd(i).utf8ToString());
-        }
-    }
-
-    public Set<String> getEvidenceUUIDs() {
-        return evidenceUUIDs;
-    }
-
-    private void countTotalItems() {
-        // Não ignora tree nodes em reports
-        /*
-         * Bits liveDocs = MultiFields.getLiveDocs(reader); for(int i = 0; i <
-         * docs.length; i++) if(docs[i] > 0 && (liveDocs == null ||
-         * liveDocs.get(docs[i]))) totalItens++;
-         *
-         * //inclui docId = 0 na contagem se nao for deletado if(liveDocs == null ||
-         * liveDocs.get(0)) totalItens++;
-         */
-
-        // ignora tree nodes
-        IPEDSearcher pesquisa = new IPEDSearcher(this, ""); //$NON-NLS-1$
-        pesquisa.setNoScoring(true);
-        try {
-            totalItens = pesquisa.search().getLength();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadLeafCategories() throws IOException {
-        Terms terms = atomicReader.terms(IndexItem.CATEGORY);
-        if (terms == null)
-            return;
-        TermsEnum termsEnum = terms.iterator();
-        while (termsEnum.next() != null) {
-            String cat = termsEnum.term().utf8ToString();
-            leafCategories.add(cat);
-        }
-    }
-
-    protected void loadCategoryTree() {
-        CategoryConfig config = ConfigurationManager.get().findObject(CategoryConfig.class);
-        Category root = config.getRootCategory().clone();
-        // root.setName(rootName);
-        ArrayList<Category> leafs = getLeafCategories(root);
-        leafs.stream().forEach(l -> checkAndAddMissingCategory(root, l));
-        filterEmptyCategories(root, leafs);
-        countNumItems(root);
-        categoryTree = root;
-    }
-
-    private void buildDescendantsCategories(Category category) {
-        Set<String> descendants = new HashSet<String>();
-        fillDescendants(category, category, descendants);
-        if (!descendants.isEmpty()) {
-            descendantsCategories.put(category.getName().toLowerCase(), descendants);
-        }
-
-        Set<Category> children = category.getChildren();
-        for (Category child : children) {
-            buildDescendantsCategories(child);
-        }
-    }
-
-    private void fillDescendants(Category ancestral, Category current, Set<String> descendants) {
-        Set<Category> children = current.getChildren();
-        for (Category child : children) {
-            descendants.add(child.getName().toLowerCase());
-            fillDescendants(ancestral, child, descendants);
-        }
-    }
-
-    private boolean checkAndAddMissingCategory(Category root, Category leaf) {
-        boolean found = false;
-        if (leaf.getName().equalsIgnoreCase(root.getName())) {
-            found = true;
-        } else {
-            for (Category child : root.getChildren()) {
-                if (checkAndAddMissingCategory(child, leaf)) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        if (!found && root.getParent() == null) {
-            leaf.setParent(root);
-            root.getChildren().add(leaf);
-        }
-        return found;
-    }
-
-    private ArrayList<Category> getLeafCategories(Category root) {
-        ArrayList<Category> categoryList = new ArrayList<Category>();
-        for (String category : leafCategories) {
-            categoryList.add(new Category(category, root));
-        }
-        return categoryList;
-    }
-
-    private boolean filterEmptyCategories(Category category, ArrayList<Category> leafCategories) {
-        boolean hasItems = false;
-        if (leafCategories.contains(category)) {
-            hasItems = true;
-        }
-        for (Category child : category.getChildren().toArray(new Category[0])) {
-            if (filterEmptyCategories(child, leafCategories)) {
-                hasItems = true;
-            }
-        }
-        if (!hasItems && category.getParent() != null) {
-            category.getParent().getChildren().remove(category);
-        }
-        return hasItems;
-    }
-
-    private int countNumItems(Category category) {
-        if (category.getNumItems() != -1)
-            return category.getNumItems();
-
-        for (Category child : category.getChildren()) {
-            countNumItems(child);
-        }
-
-        String query = IndexItem.CATEGORY + ":\"" + category.getName() + "\"";
-        IPEDSearcher searcher = new IPEDSearcher(this, query);
-        searcher.setNoScoring(true);
-        int num = 0;
-        try {
-            if (this instanceof IPEDMultiSource) {
-                num = searcher.multiSearch().getLength();
-            } else {
-                num = searcher.search().getLength();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        category.setNumItems(num);
-        return num;
-    }
-
-    private void loadKeywords() {
-        ArrayList<String> words;
-        try {
-            words = Util.loadKeywords(moduleDir.getAbsolutePath() + "/palavras-chave.txt", "UTF-8"); //$NON-NLS-1$//$NON-NLS-2$
-        } catch (IOException e) {
-            words = new ArrayList<String>();
-        }
-        for (String word : words)
-            keywords.add(word);
-    }
-
-    private void openIndex(File index, IndexWriter iw) throws IOException {
-        log.info("Opening index " + index.getAbsolutePath()); //$NON-NLS-1$
-
-        if (iw == null) {
-            Directory directory = ConfiguredFSDirectory.open(index);
-            reader = DirectoryReader.open(directory);
-        } else {
-            reader = DirectoryReader.open(iw, true, false);
-        }
-
-        // TODO get rid of deprecated SlowCompositeReaderWrapper
-        atomicReader = SlowCompositeReaderWrapper.wrap(reader);
-
-        openSearcher();
-
-        log.info("Index opened"); //$NON-NLS-1$
-    }
-
-    protected void openSearcher() {
-        AnalysisConfig analysisConfig = ConfigurationManager.get().findObject(AnalysisConfig.class);
-        if (analysisConfig.getSearchThreads() > 1) {
-            searchExecutorService = Executors.newFixedThreadPool(analysisConfig.getSearchThreads());
-            searcher = new IndexSearcher(reader, searchExecutorService);
-        } else
-            searcher = new IndexSearcher(reader);
-
-        searcher.setSimilarity(new IndexerSimilarity());
-    }
-
-    @Override
-    public void close() {
-        try {
-            IOUtil.closeQuietly(reader);
-
-            if (searchExecutorService != null)
-                searchExecutorService.shutdown();
-
-            // Close all registered additional data sources
-            for (iped.datasource.IAdditionalDataSource ads : additionalDataSourceManager.getSources()) {
-                IOUtil.closeQuietly(ads);
-            }
-
-            // if(sleuthCase != null)
-            // sleuthCase.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Returns the item enriched with any additional-processing results that
-     * have been stored for it.  When no additional data exists for the item
-     * the original item is returned unchanged (no allocation overhead).
+  private void countTotalItems() {
+    // Não ignora tree nodes em reports
+    /*
+     * Bits liveDocs = MultiFields.getLiveDocs(reader); for(int i = 0; i <
+     * docs.length; i++) if(docs[i] > 0 && (liveDocs == null ||
+     * liveDocs.get(docs[i]))) totalItens++;
      *
-     * <p><strong>Note for task-processing code:</strong> use
-     * {@link #getRawItemByID(int)} instead when running tasks so that only
-     * the new results produced by the task are captured, not pre-existing
-     * additional attributes.</p>
+     * //inclui docId = 0 na contagem se nao for deletado if(liveDocs == null ||
+     * liveDocs.get(0)) totalItens++;
      */
-    public IItem getItemByLuceneID(int docID) {
-        try {
-            Document doc = searcher.storedFields().document(docID);
-            IItem item = IndexItem.getItem(doc, this, false);
-            if (additionalDataSourceManager.hasAnySources()) {
-                java.util.Map<String, Object> extra =
-                        additionalDataSourceManager.getMergedExtraAttributes(item.getId());
-                if (!extra.isEmpty()) {
-                    return new EnrichedItem(item, extra);
-                }
-            }
-            return item;
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+    // ignora tree nodes
+    IPEDSearcher pesquisa = new IPEDSearcher(this, ""); // $NON-NLS-1$
+    pesquisa.setNoScoring(true);
+    try {
+      totalItens = pesquisa.search().getLength();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void loadLeafCategories() throws IOException {
+    Terms terms = atomicReader.terms(IndexItem.CATEGORY);
+    if (terms == null) return;
+    TermsEnum termsEnum = terms.iterator();
+    while (termsEnum.next() != null) {
+      String cat = termsEnum.term().utf8ToString();
+      leafCategories.add(cat);
+    }
+  }
+
+  protected void loadCategoryTree() {
+    CategoryConfig config = ConfigurationManager.get().findObject(CategoryConfig.class);
+    Category root = config.getRootCategory().clone();
+    // root.setName(rootName);
+    ArrayList<Category> leafs = getLeafCategories(root);
+    leafs.stream().forEach(l -> checkAndAddMissingCategory(root, l));
+    filterEmptyCategories(root, leafs);
+    countNumItems(root);
+    categoryTree = root;
+  }
+
+  private void buildDescendantsCategories(Category category) {
+    Set<String> descendants = new HashSet<String>();
+    fillDescendants(category, category, descendants);
+    if (!descendants.isEmpty()) {
+      descendantsCategories.put(category.getName().toLowerCase(), descendants);
+    }
+
+    Set<Category> children = category.getChildren();
+    for (Category child : children) {
+      buildDescendantsCategories(child);
+    }
+  }
+
+  private void fillDescendants(Category ancestral, Category current, Set<String> descendants) {
+    Set<Category> children = current.getChildren();
+    for (Category child : children) {
+      descendants.add(child.getName().toLowerCase());
+      fillDescendants(ancestral, child, descendants);
+    }
+  }
+
+  private boolean checkAndAddMissingCategory(Category root, Category leaf) {
+    boolean found = false;
+    if (leaf.getName().equalsIgnoreCase(root.getName())) {
+      found = true;
+    } else {
+      for (Category child : root.getChildren()) {
+        if (checkAndAddMissingCategory(child, leaf)) {
+          found = true;
+          break;
         }
+      }
+    }
+    if (!found && root.getParent() == null) {
+      leaf.setParent(root);
+      root.getChildren().add(leaf);
+    }
+    return found;
+  }
+
+  private ArrayList<Category> getLeafCategories(Category root) {
+    ArrayList<Category> categoryList = new ArrayList<Category>();
+    for (String category : leafCategories) {
+      categoryList.add(new Category(category, root));
+    }
+    return categoryList;
+  }
+
+  private boolean filterEmptyCategories(Category category, ArrayList<Category> leafCategories) {
+    boolean hasItems = false;
+    if (leafCategories.contains(category)) {
+      hasItems = true;
+    }
+    for (Category child : category.getChildren().toArray(new Category[0])) {
+      if (filterEmptyCategories(child, leafCategories)) {
+        hasItems = true;
+      }
+    }
+    if (!hasItems && category.getParent() != null) {
+      category.getParent().getChildren().remove(category);
+    }
+    return hasItems;
+  }
+
+  private int countNumItems(Category category) {
+    if (category.getNumItems() != -1) return category.getNumItems();
+
+    for (Category child : category.getChildren()) {
+      countNumItems(child);
     }
 
-    public IItem getItemByID(int id) {
-        return getItemByLuceneID(docs[id]);
+    String query = IndexItem.CATEGORY + ":\"" + category.getName() + "\"";
+    IPEDSearcher searcher = new IPEDSearcher(this, query);
+    searcher.setNoScoring(true);
+    int num = 0;
+    try {
+      if (this instanceof IPEDMultiSource) {
+        num = searcher.multiSearch().getLength();
+      } else {
+        num = searcher.search().getLength();
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
-    /**
-     * Returns the raw item from the main Lucene index without merging any
-     * additional-processing results.  Used by {@code AdditionalTaskRunner} to
-     * ensure tasks start from a clean slate.
-     *
-     * @param id IPED item identifier
-     * @return the raw item, or {@code null} on error
-     */
-    public IItem getRawItemByID(int id) {
-        return getRawItemByLuceneID(docs[id]);
+    category.setNumItems(num);
+    return num;
+  }
+
+  private void loadKeywords() {
+    ArrayList<String> words;
+    try {
+      words =
+          Util.loadKeywords(
+              moduleDir.getAbsolutePath() + "/palavras-chave.txt",
+              "UTF-8"); //$NON-NLS-1$//$NON-NLS-2$
+    } catch (IOException e) {
+      words = new ArrayList<String>();
+    }
+    for (String word : words) keywords.add(word);
+  }
+
+  private void openIndex(File index, IndexWriter iw) throws IOException {
+    log.info("Opening index " + index.getAbsolutePath()); // $NON-NLS-1$
+
+    if (iw == null) {
+      Directory directory = ConfiguredFSDirectory.open(index);
+      reader = DirectoryReader.open(directory);
+    } else {
+      reader = DirectoryReader.open(iw, true, false);
     }
 
-    private IItem getRawItemByLuceneID(int docID) {
-        try {
-            Document doc = searcher.storedFields().document(docID);
-            return IndexItem.getItem(doc, this, false);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+    // TODO get rid of deprecated SlowCompositeReaderWrapper
+    atomicReader = SlowCompositeReaderWrapper.wrap(reader);
+
+    openSearcher();
+
+    log.info("Index opened"); // $NON-NLS-1$
+  }
+
+  protected void openSearcher() {
+    AnalysisConfig analysisConfig = ConfigurationManager.get().findObject(AnalysisConfig.class);
+    if (analysisConfig.getSearchThreads() > 1) {
+      searchExecutorService = Executors.newFixedThreadPool(analysisConfig.getSearchThreads());
+      searcher = new IndexSearcher(reader, searchExecutorService);
+    } else searcher = new IndexSearcher(reader);
+
+    searcher.setSimilarity(new IndexerSimilarity());
+  }
+
+  @Override
+  public void close() {
+    try {
+      IOUtil.closeQuietly(reader);
+
+      if (searchExecutorService != null) searchExecutorService.shutdown();
+
+      // Close all registered additional data sources
+      for (iped.datasource.IAdditionalDataSource ads : additionalDataSourceManager.getSources()) {
+        IOUtil.closeQuietly(ads);
+      }
+
+      // if(sleuthCase != null)
+      // sleuthCase.close();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * Returns the item enriched with any additional-processing results that have been stored for it.
+   * When no additional data exists for the item the original item is returned unchanged (no
+   * allocation overhead).
+   *
+   * <p><strong>Note for task-processing code:</strong> use {@link #getRawItemByID(int)} instead
+   * when running tasks so that only the new results produced by the task are captured, not
+   * pre-existing additional attributes.
+   */
+  public IItem getItemByLuceneID(int docID) {
+    try {
+      Document doc = searcher.storedFields().document(docID);
+      IItem item = IndexItem.getItem(doc, this, false);
+      if (additionalDataSourceManager.hasAnySources()) {
+        java.util.Map<String, Object> extra =
+            additionalDataSourceManager.getMergedExtraAttributes(item.getId());
+        if (!extra.isEmpty()) {
+          return new EnrichedItem(item, extra);
         }
+      }
+      return item;
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
     }
+  }
 
-    /**
-     * @return the additional data source manager for this case; never null
-     */
-    public IAdditionalDataSourceManager getAdditionalDataSourceManager() {
-        return additionalDataSourceManager;
+  public IItem getItemByID(int id) {
+    return getItemByLuceneID(docs[id]);
+  }
+
+  /**
+   * Returns the raw item from the main Lucene index without merging any additional-processing
+   * results. Used by {@code AdditionalTaskRunner} to ensure tasks start from a clean slate.
+   *
+   * @param id IPED item identifier
+   * @return the raw item, or {@code null} on error
+   */
+  public IItem getRawItemByID(int id) {
+    return getRawItemByLuceneID(docs[id]);
+  }
+
+  private IItem getRawItemByLuceneID(int docID) {
+    try {
+      Document doc = searcher.storedFields().document(docID);
+      return IndexItem.getItem(doc, this, false);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
     }
+  }
 
-    /**
-     * Called during case bootstrap.  Scans the module directory for a
-     * {@code .additional-index/} subdirectory and, if found, registers a
-     * {@link LuceneAdditionalDataSource} with the manager.
-     */
-    private void loadAdditionalDataSources() {
-        java.nio.file.Path additionalIndexPath =
-                moduleDir.toPath().resolve(".additional-index"); //$NON-NLS-1$
-        if (java.nio.file.Files.exists(additionalIndexPath)) {
-            try {
-                LuceneAdditionalDataSource ads = new LuceneAdditionalDataSource(additionalIndexPath);
-                additionalDataSourceManager.register(ads);
-                log.info("Additional processing index loaded from {}", additionalIndexPath); //$NON-NLS-1$
-            } catch (IOException e) {
-                log.error("Could not open additional processing index at {}", additionalIndexPath, e); //$NON-NLS-1$
-            }
-        }
+  /**
+   * @return the additional data source manager for this case; never null
+   */
+  public IAdditionalDataSourceManager getAdditionalDataSourceManager() {
+    return additionalDataSourceManager;
+  }
+
+  /**
+   * Called during case bootstrap. Scans the module directory for a {@code .additional-index/}
+   * subdirectory and, if found, registers a {@link LuceneAdditionalDataSource} with the manager.
+   */
+  private void loadAdditionalDataSources() {
+    java.nio.file.Path additionalIndexPath =
+        moduleDir.toPath().resolve(".additional-index"); // $NON-NLS-1$
+    if (java.nio.file.Files.exists(additionalIndexPath)) {
+      try {
+        LuceneAdditionalDataSource ads = new LuceneAdditionalDataSource(additionalIndexPath);
+        additionalDataSourceManager.register(ads);
+        log.info("Additional processing index loaded from {}", additionalIndexPath); // $NON-NLS-1$
+      } catch (IOException e) {
+        log.error(
+            "Could not open additional processing index at {}",
+            additionalIndexPath,
+            e); //$NON-NLS-1$
+      }
     }
+  }
 
-    public void reopen() throws IOException {
-        close();
-        openIndex(index, iw);
+  public void reopen() throws IOException {
+    close();
+    openIndex(index, iw);
+  }
+
+  public void checkImagePaths() throws IPEDException, TskCoreException {
+    if (sleuthCase == null || isReport) return;
+    Map<Long, List<String>> imgPaths = sleuthCase.getImagePaths();
+    for (Long id : imgPaths.keySet()) {
+      List<String> paths = imgPaths.get(id);
+      for (String path : paths) {
+        if (!new File(path).exists()
+            && !path.toLowerCase().contains("physicaldrive")) // $NON-NLS-1$
+        throw new IPEDException(
+              Messages.getString("IPEDSource.ImageNotFound")
+                  + new File(path).getAbsolutePath()); // $NON-NLS-1$
+      }
     }
+  }
 
-    public void checkImagePaths() throws IPEDException, TskCoreException {
-        if (sleuthCase == null || isReport)
-            return;
-        Map<Long, List<String>> imgPaths = sleuthCase.getImagePaths();
-        for (Long id : imgPaths.keySet()) {
-            List<String> paths = imgPaths.get(id);
-            for (String path : paths) {
-                if (!new File(path).exists() && !path.toLowerCase().contains("physicaldrive")) //$NON-NLS-1$
-                    throw new IPEDException(
-                            Messages.getString("IPEDSource.ImageNotFound") + new File(path).getAbsolutePath()); //$NON-NLS-1$
-            }
-        }
-    }
-
-    /**
-     * Substitui caminhos absolutos para imagens por relativos
-     *
-     */
-    public void updateImagePathsToRelative() {
-        if (sleuthCase == null)
-            return;
-        try {
-            File sleuthFile = new File(sleuthCase.getDbDirPath() + "/" + SLEUTH_DB); //$NON-NLS-1$
-            Map<Long, List<String>> imgPaths = sleuthCase.getImagePaths();
-            for (Long id : imgPaths.keySet()) {
-                List<String> paths = imgPaths.get(id);
-                ArrayList<String> newPaths = new ArrayList<String>();
-                for (String path : paths) {
-                    File file = new File(path);
-                    if (!file.isAbsolute())
-                        break;
-                    String relPath = Util.getRelativePath(sleuthFile, file);
-                    file = new File(relPath);
-                    if (file.isAbsolute() || !new File(sleuthFile.getParentFile(), relPath).exists())
-                        break;
-                    else
-                        newPaths.add(relPath);
-                }
-                if (newPaths.size() > 0)
-                    sleuthCase.setImagePaths(id, newPaths);
-            }
-        } catch (Exception e) {
-            log.error("Error converting image references to relative paths"); //$NON-NLS-1$
-        }
-    }
-
-    private void updateImagePathsToAbsolute(File casePath, File sleuthFile) throws Exception {
-        char letter = casePath.getAbsolutePath().charAt(0);
-        boolean isWindowsNetworkShare = casePath.getAbsolutePath().startsWith("\\\\");
-        Map<Long, List<String>> imgPaths = sleuthCase.getImagePaths();
-        for (Long id : imgPaths.keySet()) {
-            List<String> paths = imgPaths.get(id);
-            ArrayList<String> newPaths = new ArrayList<String>();
-            for (String path : paths) {
-                if (isWindowsNetworkShare && !path.startsWith("\\") && !path.startsWith("/") && path.length() > 1
-                        && path.charAt(1) != ':') {
-                    String newPath = new File(casePath.getAbsolutePath() + File.separator + path).getCanonicalPath();
-                    if (new File(newPath).exists())
-                        newPaths.add(newPath);
-                } else if ((new File(path).exists() && path.contains(File.separator))
-                        || (System.getProperty("os.name").startsWith("Windows")
-                                && path.toLowerCase().contains("physicaldrive"))) {
-                    newPaths = null;
-                    break;
-                } else {
-                    path = path.replace("/", File.separator).replace("\\", File.separator);
-                    String newPath = letter + path.substring(1);
-                    if (new File(newPath).exists())
-                        newPaths.add(newPath);
-                    else {
-                        File baseFile = sleuthFile;
-                        while ((baseFile = baseFile.getParentFile()) != null) {
-                            File file = new File(path);
-                            String relPath = ""; //$NON-NLS-1$
-                            do {
-                                relPath = File.separator + file.getName() + relPath;
-                                newPath = baseFile.getAbsolutePath() + relPath;
-                                file = file.getParentFile();
-
-                            } while (file != null && !new File(newPath).exists());
-
-                            if (new File(newPath).exists()) {
-                                newPaths.add(newPath);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (newPaths != null)
-                if (newPaths.size() > 0) {
-                    testCanWriteToCase(sleuthFile);
-                    sleuthCase.setImagePaths(id, newPaths);
-                } else if (iw == null) {
-                    if (askImagePathIfNotFound) {
-                        askNewImagePath(id, paths, sleuthFile);
-                    } else {
-                        throw new RuntimeException("Image not found: " + paths.get(0));
-                    }
-                }
-        }
-    }
-
-    File tmpCaseFile = null;
-
-    private void testCanWriteToCase(File sleuthFile) throws TskCoreException, IOException {
-        if (tmpCaseFile != null) return;
-        File writeableDBFile = SleuthkitInputStreamFactory.getWriteableDBFile(sleuthFile);
-        if (writeableDBFile != sleuthFile){
-            tmpCaseFile = writeableDBFile;
-            // causes "case is closed" error in some cases
-            // sleuthCase.close();
-            sleuthCase = SleuthkitInputStreamFactory.openSleuthkitCase(tmpCaseFile.getAbsolutePath());
-            tskCaseList.add(sleuthCase);
-        }
-    }
-
-    private void askNewImagePath(long imgId, List<String> paths, File sleuthFile) throws TskCoreException, IOException {
-        File newImage = ImagePathResolverProvider.get().resolve(new File(paths.get(0)), false);
-        if (newImage == null) {
-            return;
-        }
-
+  /** Substitui caminhos absolutos para imagens por relativos */
+  public void updateImagePathsToRelative() {
+    if (sleuthCase == null) return;
+    try {
+      File sleuthFile = new File(sleuthCase.getDbDirPath() + "/" + SLEUTH_DB); // $NON-NLS-1$
+      Map<Long, List<String>> imgPaths = sleuthCase.getImagePaths();
+      for (Long id : imgPaths.keySet()) {
+        List<String> paths = imgPaths.get(id);
         ArrayList<String> newPaths = new ArrayList<String>();
-        if (paths.size() == 1) {
-            newPaths.add(newImage.getAbsolutePath());
-        } else
-            for (String path : paths) {
-                String ext = path.substring(path.lastIndexOf('.'));
-                String basePath = newImage.getAbsolutePath().substring(0, newImage.getAbsolutePath().lastIndexOf('.'));
-                if (!new File(basePath + ext).exists())
-                    throw new IOException(Messages.getString("IPEDSource.ImgFragNotFound") + basePath + ext); //$NON-NLS-1$
-                newPaths.add(basePath + ext);
-            }
-        testCanWriteToCase(sleuthFile);
-        sleuthCase.setImagePaths(imgId, newPaths);
-    }
-
-    public String getItemProperty(int id, String propertyName) {
-        String propertyValue = null;
-        try {
-            Document doc = searcher.storedFields().document(getLuceneId(id));
-            propertyValue = doc.get(propertyName);
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (String path : paths) {
+          File file = new File(path);
+          if (!file.isAbsolute()) break;
+          String relPath = Util.getRelativePath(sleuthFile, file);
+          file = new File(relPath);
+          if (file.isAbsolute() || !new File(sleuthFile.getParentFile(), relPath).exists()) break;
+          else newPaths.add(relPath);
         }
-        return propertyValue;
+        if (newPaths.size() > 0) sleuthCase.setImagePaths(id, newPaths);
+      }
+    } catch (Exception e) {
+      log.error("Error converting image references to relative paths"); // $NON-NLS-1$
     }
+  }
 
-    public int getSourceId() {
-        return sourceId;
-    }
+  private void updateImagePathsToAbsolute(File casePath, File sleuthFile) throws Exception {
+    char letter = casePath.getAbsolutePath().charAt(0);
+    boolean isWindowsNetworkShare = casePath.getAbsolutePath().startsWith("\\\\");
+    Map<Long, List<String>> imgPaths = sleuthCase.getImagePaths();
+    for (Long id : imgPaths.keySet()) {
+      List<String> paths = imgPaths.get(id);
+      ArrayList<String> newPaths = new ArrayList<String>();
+      for (String path : paths) {
+        if (isWindowsNetworkShare
+            && !path.startsWith("\\")
+            && !path.startsWith("/")
+            && path.length() > 1
+            && path.charAt(1) != ':') {
+          String newPath =
+              new File(casePath.getAbsolutePath() + File.separator + path).getCanonicalPath();
+          if (new File(newPath).exists()) newPaths.add(newPath);
+        } else if ((new File(path).exists() && path.contains(File.separator))
+            || (System.getProperty("os.name").startsWith("Windows")
+                && path.toLowerCase().contains("physicaldrive"))) {
+          newPaths = null;
+          break;
+        } else {
+          path = path.replace("/", File.separator).replace("\\", File.separator);
+          String newPath = letter + path.substring(1);
+          if (new File(newPath).exists()) newPaths.add(newPath);
+          else {
+            File baseFile = sleuthFile;
+            while ((baseFile = baseFile.getParentFile()) != null) {
+              File file = new File(path);
+              String relPath = ""; // $NON-NLS-1$
+              do {
+                relPath = File.separator + file.getName() + relPath;
+                newPath = baseFile.getAbsolutePath() + relPath;
+                file = file.getParentFile();
 
-    public File getIndex() {
-        return index;
-    }
+              } while (file != null && !new File(newPath).exists());
 
-    public File getModuleDir() {
-        return moduleDir;
-    }
-
-    public File getCaseDir() {
-        return casePath;
-    }
-
-    public int getId(int luceneId) {
-        return ids[luceneId];
-    }
-
-    public IntStream getLuceneIdStream() {
-    	return parentDocs.stream();
-    }
-
-    public int getLuceneId(IItemId itemId) {
-        return docs[itemId.getId()];
-    }
-
-    public int getLuceneId(int id) {
-        return docs[id];
-    }
-
-    public int getParentId(int id) {
-        try {
-            Set<String> field = Collections.singleton(BasicProps.PARENTID);
-            Document doc = searcher.storedFields().document(getLuceneId(id), field);
-            String parent = doc.get(BasicProps.PARENTID);
-            if (parent != null && !parent.isEmpty()) {
-                return Integer.valueOf(parent);
+              if (new File(newPath).exists()) {
+                newPaths.add(newPath);
+                break;
+              }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+          }
         }
-        return -1;
+      }
+      if (newPaths != null)
+        if (newPaths.size() > 0) {
+          testCanWriteToCase(sleuthFile);
+          sleuthCase.setImagePaths(id, newPaths);
+        } else if (iw == null) {
+          if (askImagePathIfNotFound) {
+            askNewImagePath(id, paths, sleuthFile);
+          } else {
+            throw new RuntimeException("Image not found: " + paths.get(0));
+          }
+        }
+    }
+  }
+
+  File tmpCaseFile = null;
+
+  private void testCanWriteToCase(File sleuthFile) throws TskCoreException, IOException {
+    if (tmpCaseFile != null) return;
+    File writeableDBFile = SleuthkitInputStreamFactory.getWriteableDBFile(sleuthFile);
+    if (writeableDBFile != sleuthFile) {
+      tmpCaseFile = writeableDBFile;
+      // causes "case is closed" error in some cases
+      // sleuthCase.close();
+      sleuthCase = SleuthkitInputStreamFactory.openSleuthkitCase(tmpCaseFile.getAbsolutePath());
+      tskCaseList.add(sleuthCase);
+    }
+  }
+
+  private void askNewImagePath(long imgId, List<String> paths, File sleuthFile)
+      throws TskCoreException, IOException {
+    File newImage = ImagePathResolverProvider.get().resolve(new File(paths.get(0)), false);
+    if (newImage == null) {
+      return;
     }
 
-    public List<String> getLeafCategories() {
-        return leafCategories;
-    }
+    ArrayList<String> newPaths = new ArrayList<String>();
+    if (paths.size() == 1) {
+      newPaths.add(newImage.getAbsolutePath());
+    } else
+      for (String path : paths) {
+        String ext = path.substring(path.lastIndexOf('.'));
+        String basePath =
+            newImage.getAbsolutePath().substring(0, newImage.getAbsolutePath().lastIndexOf('.'));
+        if (!new File(basePath + ext).exists())
+          throw new IOException(
+              Messages.getString("IPEDSource.ImgFragNotFound") + basePath + ext); // $NON-NLS-1$
+        newPaths.add(basePath + ext);
+      }
+    testCanWriteToCase(sleuthFile);
+    sleuthCase.setImagePaths(imgId, newPaths);
+  }
 
-    public Set<String> getDescendantsCategories(String ancestral) {
-        return descendantsCategories.get(ancestral);
+  public String getItemProperty(int id, String propertyName) {
+    String propertyValue = null;
+    try {
+      Document doc = searcher.storedFields().document(getLuceneId(id));
+      propertyValue = doc.get(propertyName);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return propertyValue;
+  }
 
-    public Category getCategoryTree() {
-        return categoryTree;
+  public int getSourceId() {
+    return sourceId;
+  }
+
+  public File getIndex() {
+    return index;
+  }
+
+  public File getModuleDir() {
+    return moduleDir;
+  }
+
+  public File getCaseDir() {
+    return casePath;
+  }
+
+  public int getId(int luceneId) {
+    return ids[luceneId];
+  }
+
+  public IntStream getLuceneIdStream() {
+    return parentDocs.stream();
+  }
+
+  public int getLuceneId(IItemId itemId) {
+    return docs[itemId.getId()];
+  }
+
+  public int getLuceneId(int id) {
+    return docs[id];
+  }
+
+  public int getParentId(int id) {
+    try {
+      Set<String> field = Collections.singleton(BasicProps.PARENTID);
+      Document doc = searcher.storedFields().document(getLuceneId(id), field);
+      String parent = doc.get(BasicProps.PARENTID);
+      if (parent != null && !parent.isEmpty()) {
+        return Integer.valueOf(parent);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    return -1;
+  }
 
-    public Set<String> getKeywords() {
-        return keywords;
-    }
+  public List<String> getLeafCategories() {
+    return leafCategories;
+  }
 
-    public Set<String> getExtraAttributes() {
-        return this.extraAttributes;
-    }
+  public Set<String> getDescendantsCategories(String ancestral) {
+    return descendantsCategories.get(ancestral);
+  }
 
-    public Analyzer getAnalyzer() {
-        return analyzer;
-    }
+  public Category getCategoryTree() {
+    return categoryTree;
+  }
 
-    @Override
-    public Object getSearchAnalyzer() {
-        return getAnalyzer();
-    }
+  public Set<String> getKeywords() {
+    return keywords;
+  }
 
-    public SleuthkitCase getSleuthCase() {
-        return sleuthCase;
-    }
+  public Set<String> getExtraAttributes() {
+    return this.extraAttributes;
+  }
 
-    public IndexReader getReader() {
-        return reader;
-    }
+  public Analyzer getAnalyzer() {
+    return analyzer;
+  }
 
-    @Override
-    public Object getIndexReaderHandle() {
-        return getReader();
-    }
+  @Override
+  public Object getSearchAnalyzer() {
+    return getAnalyzer();
+  }
 
-    public LeafReader getAtomicReader() {
-        return this.atomicReader;
-    }
+  public SleuthkitCase getSleuthCase() {
+    return sleuthCase;
+  }
 
-    @Override
-    public Object getAtomicIndexReader() {
-        return getAtomicReader();
-    }
+  public IndexReader getReader() {
+    return reader;
+  }
 
-    public LeafReader getLeafReader() {
-        return this.atomicReader;
-    }
+  @Override
+  public Object getIndexReaderHandle() {
+    return getReader();
+  }
 
-    @Override
-    public Object getLeafIndexReader() {
-        return getLeafReader();
-    }
+  public LeafReader getAtomicReader() {
+    return this.atomicReader;
+  }
 
-    public IndexSearcher getSearcher() {
-        return searcher;
-    }
+  @Override
+  public Object getAtomicIndexReader() {
+    return getAtomicReader();
+  }
 
-    @Override
-    public Object getIndexSearcherHandle() {
-        return getSearcher();
-    }
+  public LeafReader getLeafReader() {
+    return this.atomicReader;
+  }
 
-    public IBookmarks getBookmarks() {
-        return bookmarks;
-    }
+  @Override
+  public Object getLeafIndexReader() {
+    return getLeafReader();
+  }
 
-    public IMultiBookmarks getMultiBookmarks() {
-        return this.multiBookmarks;
-    }
+  public IndexSearcher getSearcher() {
+    return searcher;
+  }
 
-    public int getTotalItems() {
-        return totalItens;
-    }
+  @Override
+  public Object getIndexSearcherHandle() {
+    return getSearcher();
+  }
 
-    public int getLastId() {
-        return lastId;
-    }
+  public IBookmarks getBookmarks() {
+    return bookmarks;
+  }
 
-    public boolean isReport() {
-        return isReport;
-    }
+  public IMultiBookmarks getMultiBookmarks() {
+    return this.multiBookmarks;
+  }
 
+  public int getTotalItems() {
+    return totalItens;
+  }
+
+  public int getLastId() {
+    return lastId;
+  }
+
+  public boolean isReport() {
+    return isReport;
+  }
 }
-

@@ -29,191 +29,202 @@ import iped.engine.preview.PreviewRepositoryManager;
 import iped.engine.task.ParsingTaskBootstrap;
 import iped.engine.task.SignatureTask;
 import iped.parsers.standard.StandardParser;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.search.MatchAllDocsQuery;
-
-import javax.swing.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.search.MatchAllDocsQuery;
 
 @Slf4j
 public class UICaseDataLoader extends SwingWorker<Void, Integer> {
 
+  private boolean updateItems;
 
-    private boolean updateItems;
+  private TreeViewModel treeModel;
+  private Manager manager;
 
-    private TreeViewModel treeModel;
-    private Manager manager;
+  public UICaseDataLoader(Manager manager) {
+    this(manager, false);
+  }
 
-    public UICaseDataLoader(Manager manager) {
-        this(manager, false);
+  public UICaseDataLoader(Manager manager, boolean updateItems) {
+    this.manager = manager;
+    this.updateItems = updateItems;
+  }
+
+  @Override
+  protected void process(List<Integer> chunks) {
+    // App.get().setSize(1350, 500);
+
+    App.get().dialogBar.setLocationRelativeTo(App.get());
+
+    if (!this.isDone()) {
+      App.get().dialogBar.setVisible(true);
     }
+  }
 
-    public UICaseDataLoader(Manager manager, boolean updateItems) {
-        this.manager = manager;
-        this.updateItems = updateItems;
-    }
+  @Override
+  protected Void doInBackground() {
+    publish(0);
 
-    @Override
-    protected void process(List<Integer> chunks) {
-        // App.get().setSize(1350, 500);
+    try {
+      // ImageIO.setUseCache(false);
 
-        App.get().dialogBar.setLocationRelativeTo(App.get());
+      if (updateItems) App.get().appCase.close();
 
-        if (!this.isDone()) {
-            App.get().dialogBar.setVisible(true);
-        }
+      if (!App.get().isMultiCase) {
+        IPEDSource singleCase = null;
+        if (manager == null) singleCase = new IPEDSource(App.get().casesPathFile);
+        else singleCase = new IPEDSource(App.get().casesPathFile, manager.getIndexWriter());
 
-    }
+        App.get().appCase = new IPEDMultiSource(singleCase);
+      } else App.get().appCase = new IPEDMultiSource(App.get().casesPathFile);
 
-    @Override
-    protected Void doInBackground() {
-        publish(0);
+      checkIfProcessingFinished(App.get().appCase);
 
-        try {
-            // ImageIO.setUseCache(false);
+      App.get().appCase.checkImagePaths();
+      App.get()
+          .appCase
+          .getMultiBookmarks()
+          .addSelectionListener(App.get().getViewerController().getHtmlLinkViewer());
+      App.get().getViewerController().notifyAppLoaded();
 
-            if (updateItems)
-                App.get().appCase.close();
-
-            if (!App.get().isMultiCase) {
-                IPEDSource singleCase = null;
-                if (manager == null)
-                    singleCase = new IPEDSource(App.get().casesPathFile);
-                else
-                    singleCase = new IPEDSource(App.get().casesPathFile, manager.getIndexWriter());
-
-                App.get().appCase = new IPEDMultiSource(singleCase);
-            } else
-                App.get().appCase = new IPEDMultiSource(App.get().casesPathFile);
-
-            checkIfProcessingFinished(App.get().appCase);
-
-            App.get().appCase.checkImagePaths();
-            App.get().appCase.getMultiBookmarks().addSelectionListener(App.get().getViewerController().getHtmlLinkViewer());
-            App.get().getViewerController().notifyAppLoaded();
-
-            // only configure PreviewRepository when opening in AppMain (case not being processed)
-            if (Manager.getInstance() == null) {
-                App.get().appCase.getAtomicSources().forEach(ipedCase -> {
-                    try {
-                        PreviewRepositoryManager.configureReadOnly(ipedCase.getModuleDir());
-                    } catch (IOException e) {
-                        log.error("Error configuring PreviewRepositoryManager", e);
-                        showErrorDialog(e);
-                    }
+      // only configure PreviewRepository when opening in AppMain (case not being processed)
+      if (Manager.getInstance() == null) {
+        App.get()
+            .appCase
+            .getAtomicSources()
+            .forEach(
+                ipedCase -> {
+                  try {
+                    PreviewRepositoryManager.configureReadOnly(ipedCase.getModuleDir());
+                  } catch (IOException e) {
+                    log.error("Error configuring PreviewRepositoryManager", e);
+                    showErrorDialog(e);
+                  }
                 });
-            }
+      }
 
-            if (!updateItems) {
-                App.get().appGraphAnalytics.initGraphService();
+      if (!updateItems) {
+        App.get().appGraphAnalytics.initGraphService();
 
-                log.info("Loading Columns"); //$NON-NLS-1$
-                App.get().resultsModel.initCols();
-                App.get().resultsTable.setRowSorter(new ResultTableRowSorter());
+        log.info("Loading Columns"); // $NON-NLS-1$
+        App.get().resultsModel.initCols();
+        App.get().resultsTable.setRowSorter(new ResultTableRowSorter());
 
-                SignatureTask.installCustomSignatures();
-                ParsingTaskBootstrap.configure(ConfigurationManager.get());
-                StandardParser autoParser = new StandardParser();
-                App.get().setAutoParser(autoParser);
+        SignatureTask.installCustomSignatures();
+        ParsingTaskBootstrap.configure(ConfigurationManager.get());
+        StandardParser autoParser = new StandardParser();
+        App.get().setAutoParser(autoParser);
 
-                FileProcessor exibirAjuda = new FileProcessor(-1, false);
-                exibirAjuda.execute();
+        FileProcessor exibirAjuda = new FileProcessor(-1, false);
+        exibirAjuda.execute();
 
-                log.info("Listing all items"); //$NON-NLS-1$
-                UICaseSearcherFilter pesquisa = new UICaseSearcherFilter(new MatchAllDocsQuery());
-                pesquisa.execute();
-                log.info("Listing all items Finished"); //$NON-NLS-1$
-            } else {
-                App.get().notifyCaseDataChanged();
-            }
+        log.info("Listing all items"); // $NON-NLS-1$
+        UICaseSearcherFilter pesquisa = new UICaseSearcherFilter(new MatchAllDocsQuery());
+        pesquisa.execute();
+        log.info("Listing all items Finished"); // $NON-NLS-1$
+      } else {
+        App.get().notifyCaseDataChanged();
+      }
 
-            treeModel = new TreeViewModel();
+      treeModel = new TreeViewModel();
 
-        } catch (Throwable e) {
-            e.printStackTrace();
-            showErrorDialog(e);
-        }
-
-        return null;
+    } catch (Throwable e) {
+      e.printStackTrace();
+      showErrorDialog(e);
     }
 
-    private void checkIfProcessingFinished(IPEDMultiSource multiSource) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                HashMap<String, List<String>> failedCases = new HashMap<>();
-                for (IPEDSource source : multiSource.getAtomicSources()) {
-                    EvidenceStatus status = new EvidenceStatus(source.getCaseDir());
-                    List<String> failedEvidences = status.getFailedEvidences();
-                    if (manager == null && (failedEvidences == null || !failedEvidences.isEmpty())) {
-                        failedCases.put(source.getCaseDir().getAbsolutePath(), failedEvidences);
-                    }
-                }
-                StringBuilder message = new StringBuilder();
-                if (!failedCases.isEmpty()) {
-                    if (multiSource.getAtomicSources().size() > 1) {
-                        message.append(Messages.getString("ProcessingNotFinished.cases"));
-                    }
-                    int i = 0;
-                    for (String failedCase : failedCases.keySet()) {
-                        message.append("\n");
-                        if (multiSource.getAtomicSources().size() > 1) {
-                            message.append("\n" + (++i) + ". " + failedCase);
-                        }
-                        List<String> evidences = failedCases.get(failedCase);
-                        if (evidences != null) {
-                            for (int j = 0; j < evidences.size(); j++) {
-                                message.append("\n        " + (j + 1) + ". ");
-                                message.append(Messages.getString("ProcessingNotFinished.evidence"));
-                                message.append(" " + evidences.get(j));
-                            }
-                        }
-                    }
-                }
-                if (message.length() > 0) {
-                    JOptionPane.showMessageDialog(App.get(), Messages.getString("ProcessingNotFinished.message") + message, Messages.getString("ProcessingNotFinished.title"), JOptionPane.WARNING_MESSAGE);
-                }
+    return null;
+  }
+
+  private void checkIfProcessingFinished(IPEDMultiSource multiSource) {
+    SwingUtilities.invokeLater(
+        new Runnable() {
+          @Override
+          public void run() {
+            HashMap<String, List<String>> failedCases = new HashMap<>();
+            for (IPEDSource source : multiSource.getAtomicSources()) {
+              EvidenceStatus status = new EvidenceStatus(source.getCaseDir());
+              List<String> failedEvidences = status.getFailedEvidences();
+              if (manager == null && (failedEvidences == null || !failedEvidences.isEmpty())) {
+                failedCases.put(source.getCaseDir().getAbsolutePath(), failedEvidences);
+              }
             }
+            StringBuilder message = new StringBuilder();
+            if (!failedCases.isEmpty()) {
+              if (multiSource.getAtomicSources().size() > 1) {
+                message.append(Messages.getString("ProcessingNotFinished.cases"));
+              }
+              int i = 0;
+              for (String failedCase : failedCases.keySet()) {
+                message.append("\n");
+                if (multiSource.getAtomicSources().size() > 1) {
+                  message.append("\n" + (++i) + ". " + failedCase);
+                }
+                List<String> evidences = failedCases.get(failedCase);
+                if (evidences != null) {
+                  for (int j = 0; j < evidences.size(); j++) {
+                    message.append("\n        " + (j + 1) + ". ");
+                    message.append(Messages.getString("ProcessingNotFinished.evidence"));
+                    message.append(" " + evidences.get(j));
+                  }
+                }
+              }
+            }
+            if (message.length() > 0) {
+              JOptionPane.showMessageDialog(
+                  App.get(),
+                  Messages.getString("ProcessingNotFinished.message") + message,
+                  Messages.getString("ProcessingNotFinished.title"),
+                  JOptionPane.WARNING_MESSAGE);
+            }
+          }
         });
-    }
+  }
 
-    private void showErrorDialog(final Throwable e) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                App.get().dialogBar.setVisible(false);
-                String msg = e.getMessage();
-                if (msg == null && e.getCause() != null) {
-                    msg = e.getCause().getMessage();
-                }
-                JOptionPane.showMessageDialog(App.get(), Messages.getString("AppLazyInitializer.errorMsg.line1") //$NON-NLS-1$
-                        + Messages.getString("AppLazyInitializer.errorMsg.line2") //$NON-NLS-1$
-                        + App.get().getLogConfiguration().getLogFile() + Messages.getString("AppLazyInitializer.errorMsg.line3") + msg, // $NON-NLS-1$
-                        Messages.getString("AppLazyInitializer.errorTitle"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-            }
-        });
-    }
-
-    @Override
-    public void done() {
-        try {
-            CategoryTreeModel.install();
-            AIFiltersLoader.load();
-            App.get().filterManager.loadFilters();
-            BookmarksController.get().updateUIandHistory();
-
-            App.get().tree.setModel(treeModel);
-            App.get().tree.setLargeModel(true);
-            App.get().tree.setCellRenderer(new TreeCellRenderer());
-
-            if (updateItems) {
-                ColumnsManagerUI.getInstance().dispose();
-                App.get().appletListener.updateFileListing();
-            }
-        } finally {
+  private void showErrorDialog(final Throwable e) {
+    SwingUtilities.invokeLater(
+        new Runnable() {
+          @Override
+          public void run() {
             App.get().dialogBar.setVisible(false);
-        }
+            String msg = e.getMessage();
+            if (msg == null && e.getCause() != null) {
+              msg = e.getCause().getMessage();
+            }
+            JOptionPane.showMessageDialog(
+                App.get(),
+                Messages.getString("AppLazyInitializer.errorMsg.line1") // $NON-NLS-1$
+                    + Messages.getString("AppLazyInitializer.errorMsg.line2") // $NON-NLS-1$
+                    + App.get().getLogConfiguration().getLogFile()
+                    + Messages.getString("AppLazyInitializer.errorMsg.line3")
+                    + msg, // $NON-NLS-1$
+                Messages.getString("AppLazyInitializer.errorTitle"),
+                JOptionPane.ERROR_MESSAGE); // $NON-NLS-1$
+          }
+        });
+  }
+
+  @Override
+  public void done() {
+    try {
+      CategoryTreeModel.install();
+      AIFiltersLoader.load();
+      App.get().filterManager.loadFilters();
+      BookmarksController.get().updateUIandHistory();
+
+      App.get().tree.setModel(treeModel);
+      App.get().tree.setLargeModel(true);
+      App.get().tree.setCellRenderer(new TreeCellRenderer());
+
+      if (updateItems) {
+        ColumnsManagerUI.getInstance().dispose();
+        App.get().appletListener.updateFileListing();
+      }
+    } finally {
+      App.get().dialogBar.setVisible(false);
     }
+  }
 }

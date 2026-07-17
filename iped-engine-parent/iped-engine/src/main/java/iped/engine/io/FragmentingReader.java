@@ -1,98 +1,93 @@
 package iped.engine.io;
 
 import iped.engine.util.TextCache.KnownSizeReader;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 
 public class FragmentingReader extends Reader {
 
-    // Tamanho mínimo dos fragmentos de divisão do texto de arquivos grandes
-    private long textSplitSize;
+  // Tamanho mínimo dos fragmentos de divisão do texto de arquivos grandes
+  private long textSplitSize;
 
-    // Tamanho de sobreposição de texto nas bordas dos fragmentos
-    private int textOverlapSize;
+  // Tamanho de sobreposição de texto nas bordas dos fragmentos
+  private int textOverlapSize;
 
-    private Reader reader;
+  private Reader reader;
 
-    private long fragmentRead = 0;
-    private long totalTextSize = 0;
-    private long fragReadMark = 0;
-    private int lastRead = 0;
+  private long fragmentRead = 0;
+  private long totalTextSize = 0;
+  private long fragReadMark = 0;
+  private int lastRead = 0;
 
-    private long knownSize = -1;
+  private long knownSize = -1;
 
-    public FragmentingReader(Reader reader, long textSplitSize, int textOverlapSize) {
-        this.textSplitSize = textSplitSize;
-        this.textOverlapSize = textOverlapSize;
+  public FragmentingReader(Reader reader, long textSplitSize, int textOverlapSize) {
+    this.textSplitSize = textSplitSize;
+    this.textOverlapSize = textOverlapSize;
 
-        if (reader instanceof KnownSizeReader) {
-            knownSize = ((KnownSizeReader) reader).getSize();
-        }
-        if (reader.markSupported())
-            this.reader = reader;
-        else
-            this.reader = new BufferedReader(reader);
+    if (reader instanceof KnownSizeReader) {
+      knownSize = ((KnownSizeReader) reader).getSize();
     }
+    if (reader.markSupported()) this.reader = reader;
+    else this.reader = new BufferedReader(reader);
+  }
 
-    public int estimateNumberOfFrags() {
-        if (knownSize > -1) {
-            long size = knownSize;
-            if (size <= textSplitSize + textOverlapSize) {
-                return 1;
-            } else {
-                return (int) Math.ceil(((double) size - textOverlapSize) / textSplitSize);
-            }
-        }
+  public int estimateNumberOfFrags() {
+    if (knownSize > -1) {
+      long size = knownSize;
+      if (size <= textSplitSize + textOverlapSize) {
+        return 1;
+      } else {
+        return (int) Math.ceil(((double) size - textOverlapSize) / textSplitSize);
+      }
+    }
+    return -1;
+  }
+
+  @Override
+  public int read(char[] cbuf, int off, int len) throws IOException {
+
+    if (fragmentRead >= textSplitSize) {
+      if (fragReadMark == 0) {
+        reader.mark(textOverlapSize);
+        fragReadMark = fragmentRead;
+      } else if (fragmentRead - fragReadMark == textOverlapSize) {
         return -1;
+      }
+      if (fragmentRead + len > textSplitSize + textOverlapSize) {
+        len = (int) (textSplitSize + textOverlapSize - fragmentRead);
+      }
+    } else if (fragmentRead + len > textSplitSize) {
+      len = (int) (textSplitSize - fragmentRead);
     }
 
-    @Override
-    public int read(char[] cbuf, int off, int len) throws IOException {
-
-        if (fragmentRead >= textSplitSize) {
-            if (fragReadMark == 0) {
-                reader.mark(textOverlapSize);
-                fragReadMark = fragmentRead;
-            } else if (fragmentRead - fragReadMark == textOverlapSize) {
-                return -1;
-            }
-            if (fragmentRead + len > textSplitSize + textOverlapSize) {
-                len = (int) (textSplitSize + textOverlapSize - fragmentRead);
-            }
-        } else if (fragmentRead + len > textSplitSize) {
-            len = (int) (textSplitSize - fragmentRead);
-        }
-
-        lastRead = reader.read(cbuf, off, len);
-        if (lastRead != -1) {
-            fragmentRead += lastRead;
-        }
-
-        return lastRead;
-
+    lastRead = reader.read(cbuf, off, len);
+    if (lastRead != -1) {
+      fragmentRead += lastRead;
     }
 
-    public boolean nextFragment() throws IOException {
-        totalTextSize += fragmentRead;
-        if (lastRead == -1) {
-            return false;
-        }
-        totalTextSize -= textOverlapSize;
-        fragmentRead = 0;
-        fragReadMark = 0;
-        reader.reset();
-        return true;
-    }
+    return lastRead;
+  }
 
-    public long getTotalTextSize() {
-        return totalTextSize;
+  public boolean nextFragment() throws IOException {
+    totalTextSize += fragmentRead;
+    if (lastRead == -1) {
+      return false;
     }
+    totalTextSize -= textOverlapSize;
+    fragmentRead = 0;
+    fragReadMark = 0;
+    reader.reset();
+    return true;
+  }
 
-    @Override
-    public void close() throws IOException {
-        reader.close();
-    }
+  public long getTotalTextSize() {
+    return totalTextSize;
+  }
 
+  @Override
+  public void close() throws IOException {
+    reader.close();
+  }
 }

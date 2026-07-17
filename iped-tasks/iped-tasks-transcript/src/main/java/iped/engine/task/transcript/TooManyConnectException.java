@@ -4,13 +4,10 @@ import java.net.ConnectException;
 
 public class TooManyConnectException extends ConnectException {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    public TooManyConnectException() {
-        super("Too many connection errors to transcription server, maybe it is down.");
-    }
-
+  public TooManyConnectException() {
+    super("Too many connection errors to transcription server, maybe it is down.");
+  }
 }

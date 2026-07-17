@@ -3,29 +3,27 @@ package iped.engine.task;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.config.TaskInstallerConfig;
 import iped.engine.core.Worker;
-
 import java.util.List;
 
 /**
- * Instancia e instala as tarefas de processamento em um Worker. A ordem de
- * execução das tarefas pelo Worker é definida pela sua ordem de instalação.
+ * Instancia e instala as tarefas de processamento em um Worker. A ordem de execução das tarefas
+ * pelo Worker é definida pela sua ordem de instalação.
  *
- * A ordem de execução das tarefas é um parâmetro muito sensível que tem direto
- * impacto na corretude do processamento, por isso deve ser configurada com
- * cautela.
+ * <p>A ordem de execução das tarefas é um parâmetro muito sensível que tem direto impacto na
+ * corretude do processamento, por isso deve ser configurada com cautela.
  */
 public class TaskInstaller {
 
-    public void installProcessingTasks(Worker worker) throws Exception {
+  public void installProcessingTasks(Worker worker) throws Exception {
 
-        TaskInstallerConfig taskConfig = ConfigurationManager.get().findObject(TaskInstallerConfig.class);
+    TaskInstallerConfig taskConfig =
+        ConfigurationManager.get().findObject(TaskInstallerConfig.class);
 
-        List<AbstractTask> tasks = taskConfig.getNewTaskInstances();
-        worker.tasks.addAll(tasks);
+    List<AbstractTask> tasks = taskConfig.getNewTaskInstances();
+    worker.tasks.addAll(tasks);
 
-        for (AbstractTask t : tasks) {
-            t.setWorker(worker);
-        }
+    for (AbstractTask t : tasks) {
+      t.setWorker(worker);
     }
-
+  }
 }

@@ -3,194 +3,197 @@ package iped.parsers.mail.win10.entries;
 import java.util.Date;
 
 public class AppointmentEntry extends AbstractEntry {
-    private int storeId;
-    private int parentFolderId;
-    private String body;
-    private boolean bodyFound;
-    private String eventName;
-    private String location;
-    private boolean repeat;
-    private boolean allDay;
-    private long status;
-    private long reminderTimeMin;
-    private String organizer;
-    private String account;
-    private String link;
-    private long durationMin;
-    private Date startTime;
-    private String additionalPeople;
-    private ResponseType response;
-    private long updateCount;
-    private String bodyOriginalPath;
+  private int storeId;
+  private int parentFolderId;
+  private String body;
+  private boolean bodyFound;
+  private String eventName;
+  private String location;
+  private boolean repeat;
+  private boolean allDay;
+  private long status;
+  private long reminderTimeMin;
+  private String organizer;
+  private String account;
+  private String link;
+  private long durationMin;
+  private Date startTime;
+  private String additionalPeople;
+  private ResponseType response;
+  private long updateCount;
+  private String bodyOriginalPath;
 
-    public AppointmentEntry(int rowId) {
-        super(rowId);
-    }
+  public AppointmentEntry(int rowId) {
+    super(rowId);
+  }
 
-    public int getStoreId() {
-        return this.storeId;
-    }
+  public int getStoreId() {
+    return this.storeId;
+  }
 
-    public void setStoreId(int storeId) {
-        this.storeId = storeId;
-    }
+  public void setStoreId(int storeId) {
+    this.storeId = storeId;
+  }
 
-    public void setBody(String body) {
-        this.body = body;
-        if (!body.isEmpty()) {
-            this.bodyFound = true;
-        }
+  public void setBody(String body) {
+    this.body = body;
+    if (!body.isEmpty()) {
+      this.bodyFound = true;
     }
-    
-    public String getBody() {
-        return this.body;
-    }
+  }
 
-    public boolean getBodyFound() {
-        return this.bodyFound;
-    }
+  public String getBody() {
+    return this.body;
+  }
 
-    public int getParentFolderId() {
-        return this.parentFolderId;
-    }
+  public boolean getBodyFound() {
+    return this.bodyFound;
+  }
 
-    public void setParentFolderId(int parentFolderId) {
-        this.parentFolderId = parentFolderId;
-    }
+  public int getParentFolderId() {
+    return this.parentFolderId;
+  }
 
-    public String getEventName() {
-        return this.eventName;
-    }
+  public void setParentFolderId(int parentFolderId) {
+    this.parentFolderId = parentFolderId;
+  }
 
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
-    }
+  public String getEventName() {
+    return this.eventName;
+  }
 
-    public String getLocation() {
-        return this.location;
-    }
+  public void setEventName(String eventName) {
+    this.eventName = eventName;
+  }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+  public String getLocation() {
+    return this.location;
+  }
 
-    public boolean isRepeat() {
-        return this.repeat;
-    }
+  public void setLocation(String location) {
+    this.location = location;
+  }
 
-    public boolean getRepeat() {
-        return this.repeat;
-    }
+  public boolean isRepeat() {
+    return this.repeat;
+  }
 
-    public void setRepeat(boolean repeat) {
-        this.repeat = repeat;
-    }
+  public boolean getRepeat() {
+    return this.repeat;
+  }
 
-    public boolean isAllDay() {
-        return this.allDay;
-    }
+  public void setRepeat(boolean repeat) {
+    this.repeat = repeat;
+  }
 
-    public boolean getAllDay() {
-        return this.allDay;
-    }
+  public boolean isAllDay() {
+    return this.allDay;
+  }
 
-    public void setAllDay(boolean allDay) {
-        this.allDay = allDay;
-    }
+  public boolean getAllDay() {
+    return this.allDay;
+  }
 
-    public long getStatus() {
-        return this.status;
-    }
+  public void setAllDay(boolean allDay) {
+    this.allDay = allDay;
+  }
 
-    public void setStatus(long status) {
-        this.status = status;
-    }
+  public long getStatus() {
+    return this.status;
+  }
 
-    public long getReminderTimeMin() {
-        return this.reminderTimeMin;
-    }
+  public void setStatus(long status) {
+    this.status = status;
+  }
 
-    public void setReminderTimeMin(long reminderTimeMin) {
-        this.reminderTimeMin = reminderTimeMin;
-    }
+  public long getReminderTimeMin() {
+    return this.reminderTimeMin;
+  }
 
-    public String getOrganizer() {
-        return this.organizer;
-    }
+  public void setReminderTimeMin(long reminderTimeMin) {
+    this.reminderTimeMin = reminderTimeMin;
+  }
 
-    public void setOrganizer(String organizer) {
-        this.organizer = organizer;
-    }
+  public String getOrganizer() {
+    return this.organizer;
+  }
 
-    public String getAccount() {
-        return this.account;
-    }
+  public void setOrganizer(String organizer) {
+    this.organizer = organizer;
+  }
 
-    public void setAccount(String account) {
-        this.account = account;
-    }
+  public String getAccount() {
+    return this.account;
+  }
 
-    public String getLink() {
-        return this.link;
-    }
+  public void setAccount(String account) {
+    this.account = account;
+  }
 
-    public void setLink(String link) {
-        this.link = link;
-    }
+  public String getLink() {
+    return this.link;
+  }
 
-    public long getDurationMin() {
-        return this.durationMin;
-    }
+  public void setLink(String link) {
+    this.link = link;
+  }
 
-    public void setDurationMin(long durationMin) {
-        this.durationMin = durationMin;
-    }
+  public long getDurationMin() {
+    return this.durationMin;
+  }
 
-    public Date getStartTime() {
-        return this.startTime;
-    }
+  public void setDurationMin(long durationMin) {
+    this.durationMin = durationMin;
+  }
 
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
+  public Date getStartTime() {
+    return this.startTime;
+  }
 
-    public String getNamelist() {
-        return this.additionalPeople;
-    }
+  public void setStartTime(Date startTime) {
+    this.startTime = startTime;
+  }
 
-    public void setAdditionalPeople(String additionalPeople) {
-        this.additionalPeople = additionalPeople;
-    }
-    
-    public String getAdditionalPeople() {
-        return additionalPeople;
-    }
+  public String getNamelist() {
+    return this.additionalPeople;
+  }
 
-    public ResponseType getResponse() {
-        return this.response;
-    }
+  public void setAdditionalPeople(String additionalPeople) {
+    this.additionalPeople = additionalPeople;
+  }
 
-    public void setResponse(ResponseType response) {
-        this.response = response;
-    }
+  public String getAdditionalPeople() {
+    return additionalPeople;
+  }
 
-    public long getUpdateCount() {
-        return this.updateCount;
-    }
+  public ResponseType getResponse() {
+    return this.response;
+  }
 
-    public void setUpdateCount(long updateCount) {
-        this.updateCount = updateCount;
-    }
+  public void setResponse(ResponseType response) {
+    this.response = response;
+  }
 
-    public String getBodyOriginalPath() {
-        return this.bodyOriginalPath;
-    }
+  public long getUpdateCount() {
+    return this.updateCount;
+  }
 
-    public void setBodyOriginalPath(String originalBodyPath) {
-        this.bodyOriginalPath = originalBodyPath;
-    }
+  public void setUpdateCount(long updateCount) {
+    this.updateCount = updateCount;
+  }
 
-    public enum ResponseType {
-        ACCEPTED, DECLINED, TENTATIVE, AWAITING;
-    }
+  public String getBodyOriginalPath() {
+    return this.bodyOriginalPath;
+  }
+
+  public void setBodyOriginalPath(String originalBodyPath) {
+    this.bodyOriginalPath = originalBodyPath;
+  }
+
+  public enum ResponseType {
+    ACCEPTED,
+    DECLINED,
+    TENTATIVE,
+    AWAITING;
+  }
 }

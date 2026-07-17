@@ -16,36 +16,34 @@
  */
 package iped.parsers.fork;
 
+import java.util.HashSet;
 import org.apache.tika.metadata.Metadata;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.HashSet;
-
 class UniqueMetadataContentHandler extends DefaultHandler {
 
-    private final Metadata metadata;
+  private final Metadata metadata;
 
-    private String lastMeta = null;
+  private String lastMeta = null;
 
-    private HashSet<String> metasWritten = new HashSet<>();
+  private HashSet<String> metasWritten = new HashSet<>();
 
-    public UniqueMetadataContentHandler(Metadata metadata) {
-        this.metadata = metadata;
+  public UniqueMetadataContentHandler(Metadata metadata) {
+    this.metadata = metadata;
+  }
+
+  public void startElement(String uri, String local, String name, Attributes attributes)
+      throws SAXException {
+    if ("meta".equals(local)) {
+      String aname = attributes.getValue("name");
+      String content = attributes.getValue("content");
+      if (!metasWritten.contains(aname)) {
+        metadata.add(aname, content);
+      }
+      if (lastMeta != null && !aname.equals(lastMeta)) metasWritten.add(lastMeta);
+      lastMeta = aname;
     }
-
-    public void startElement(String uri, String local, String name, Attributes attributes) throws SAXException {
-        if ("meta".equals(local)) {
-            String aname = attributes.getValue("name");
-            String content = attributes.getValue("content");
-            if (!metasWritten.contains(aname)) {
-                metadata.add(aname, content);
-            }
-            if (lastMeta != null && !aname.equals(lastMeta))
-                metasWritten.add(lastMeta);
-            lastMeta = aname;
-        }
-    }
-
+  }
 }

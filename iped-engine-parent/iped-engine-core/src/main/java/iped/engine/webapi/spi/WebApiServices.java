@@ -1,17 +1,17 @@
 package iped.engine.webapi.spi;
 
 public interface WebApiServices {
-    SourceCatalogService sources();
+  SourceCatalogService sources();
 
-    SearchService search();
+  SearchService search();
 
-    SelectionService selection();
+  SelectionService selection();
 
-    BookmarkService bookmarks();
+  BookmarkService bookmarks();
 
-    TextService text();
+  TextService text();
 
-    RenditionService renditions();
+  RenditionService renditions();
 
-    ViewerSessionService viewerSessions();
+  ViewerSessionService viewerSessions();
 }

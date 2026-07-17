@@ -18,43 +18,42 @@
  */
 package iped.app.ui.controls;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 public class ErrorIcon extends ImageIcon {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-    private int width = 32;
-    private int height = 32;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    private BasicStroke stroke = new BasicStroke(4);
+  private int width = 32;
+  private int height = 32;
 
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-        Graphics2D g2d = (Graphics2D) g.create();
+  private BasicStroke stroke = new BasicStroke(4);
 
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(x + 1, y + 1, width - 2, height - 2);
+  public void paintIcon(Component c, Graphics g, int x, int y) {
+    Graphics2D g2d = (Graphics2D) g.create();
 
-        g2d.setColor(Color.BLACK);
-        g2d.drawRect(x + 1, y + 1, width - 2, height - 2);
+    g2d.setColor(Color.WHITE);
+    g2d.fillRect(x + 1, y + 1, width - 2, height - 2);
 
-        g2d.setColor(Color.RED);
+    g2d.setColor(Color.BLACK);
+    g2d.drawRect(x + 1, y + 1, width - 2, height - 2);
 
-        g2d.setStroke(stroke);
-        g2d.drawLine(x + 10, y + 10, x + width - 10, y + height - 10);
-        g2d.drawLine(x + 10, y + height - 10, x + width - 10, y + 10);
+    g2d.setColor(Color.RED);
 
-        g2d.dispose();
-    }
+    g2d.setStroke(stroke);
+    g2d.drawLine(x + 10, y + 10, x + width - 10, y + height - 10);
+    g2d.drawLine(x + 10, y + height - 10, x + width - 10, y + 10);
 
-    public int getIconWidth() {
-        return width;
-    }
+    g2d.dispose();
+  }
 
-    public int getIconHeight() {
-        return height;
-    }
+  public int getIconWidth() {
+    return width;
+  }
+
+  public int getIconHeight() {
+    return height;
+  }
 }

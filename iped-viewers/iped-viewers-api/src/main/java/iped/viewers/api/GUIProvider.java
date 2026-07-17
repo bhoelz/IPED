@@ -9,12 +9,11 @@ import java.util.Set;
 
 public interface GUIProvider {
 
-    FileDialog createFileDialog(String title, int mode);
+  FileDialog createFileDialog(String title, int mode);
 
-    IColumnsManager getColumnsManager();
+  IColumnsManager getColumnsManager();
 
-    Set<String> getSelectedBookmarks();
+  Set<String> getSelectedBookmarks();
 
-    Set<String> getSelectedCategories();
-
+  Set<String> getSelectedCategories();
 }

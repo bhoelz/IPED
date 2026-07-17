@@ -4,31 +4,30 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Abstraction over the engine's processing orchestrator, exposed to the webapi
- * layer without creating a compile-time dependency on engine internals.
- * Implementations live in iped-engine and are registered via
- * {@link ProcessingServiceRegistry}.
+ * Abstraction over the engine's processing orchestrator, exposed to the webapi layer without
+ * creating a compile-time dependency on engine internals. Implementations live in iped-engine and
+ * are registered via {@link ProcessingServiceRegistry}.
  */
 public interface IProcessingService {
 
-    List<UUID> getActiveCaseIds();
+  List<UUID> getActiveCaseIds();
 
-    int getActiveCaseCount();
+  int getActiveCaseCount();
 
-    /** Returns the case state string, or {@code null} if the case is not found. */
-    String getCaseState(UUID caseId);
+  /** Returns the case state string, or {@code null} if the case is not found. */
+  String getCaseState(UUID caseId);
 
-    boolean caseExists(UUID caseId);
+  boolean caseExists(UUID caseId);
 
-    void pauseCase(UUID caseId);
+  void pauseCase(UUID caseId);
 
-    void resumeCase(UUID caseId);
+  void resumeCase(UUID caseId);
 
-    int getMaxConcurrentCases();
+  int getMaxConcurrentCases();
 
-    long getMaxMemoryPerCase();
+  long getMaxMemoryPerCase();
 
-    long getTotalMemoryUsage();
+  long getTotalMemoryUsage();
 
-    long getMemoryUsage(UUID caseId);
+  long getMemoryUsage(UUID caseId);
 }

@@ -5,13 +5,6 @@ import iped.app.ui.Messages;
 import iped.engine.graph.FreeQueryListener;
 import iped.engine.graph.GraphService;
 import iped.engine.graph.GraphServiceFactoryImpl;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.QueryExecutionException;
-import org.neo4j.graphdb.Relationship;
-
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -21,443 +14,447 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.QueryExecutionException;
+import org.neo4j.graphdb.Relationship;
 
 public class AdvancedSearchDialog extends JDialog {
 
-    private static final long serialVersionUID = 6125670943354716824L;
+  private static final long serialVersionUID = 6125670943354716824L;
 
-    private AppGraphAnalytics app;
+  private AppGraphAnalytics app;
 
-    private AdvancedSearchDataModel dataModel;
+  private AdvancedSearchDataModel dataModel;
 
-    private JTextArea queryTextArea;
+  private JTextArea queryTextArea;
 
-    private JTable resultsTable;
+  private JTable resultsTable;
 
-    private JLabel statusLabel;
+  private JLabel statusLabel;
 
-    private boolean open;
+  private boolean open;
 
-    private JButton addButton;
+  private JButton addButton;
 
-    private SwingWorker<?, ?> currentWorker = null;
+  private SwingWorker<?, ?> currentWorker = null;
 
-    public AdvancedSearchDialog(AppGraphAnalytics app) {
-        this.app = app;
-        createGUI();
+  public AdvancedSearchDialog(AppGraphAnalytics app) {
+    this.app = app;
+    createGUI();
+  }
+
+  public AdvancedSearchDialog() {
+    super();
+    createGUI();
+  }
+
+  private void createGUI() {
+    setTitle(Messages.get("GraphAnalysis.AdvancedSearch"));
+    JPanel container = new JPanel();
+    container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
+    container.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+    add(container);
+
+    JSplitPane splitPane =
+        new JSplitPane(JSplitPane.VERTICAL_SPLIT, createQueryPanel(), createResultsPanel());
+    splitPane.setBorder(BorderFactory.createEmptyBorder());
+    splitPane.setOneTouchExpandable(true);
+    splitPane.setResizeWeight(0.7d);
+    container.add(splitPane);
+
+    setModalityType(ModalityType.DOCUMENT_MODAL);
+
+    if (app != null) {
+      setLocationRelativeTo(App.get());
     }
+    pack();
 
-    public AdvancedSearchDialog() {
-        super();
-        createGUI();
+    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+    getRootPane()
+        .registerKeyboardAction(
+            new CloseDialogAction(this),
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+            JComponent.WHEN_IN_FOCUSED_WINDOW);
+  }
+
+  @Override
+  public void setVisible(boolean b) {
+    this.open = b;
+    super.setVisible(b);
+  }
+
+  private JPanel createResultsPanel() {
+    JPanel resultsPanel = new JPanel();
+    resultsPanel.setLayout(new BoxLayout(resultsPanel, BoxLayout.PAGE_AXIS));
+
+    this.dataModel = new AdvancedSearchDataModel();
+
+    this.resultsTable = new JTable(dataModel);
+    resultsTable.setFillsViewportHeight(true);
+    resultsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+    resultsTable.doLayout();
+    JScrollPane resultsScroll = new JScrollPane(resultsTable);
+    resultsPanel.add(resultsScroll);
+    resultsPanel.add(createResultsButtonsPanel());
+    return resultsPanel;
+  }
+
+  private JPanel createQueryPanel() {
+    JPanel queryPanel = new JPanel();
+    queryPanel.setLayout(new BoxLayout(queryPanel, BoxLayout.PAGE_AXIS));
+
+    this.queryTextArea = new JTextArea();
+    this.queryTextArea.getActionMap().put("Execute", new ExecuteAction());
+    KeyStroke controlS = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+    this.queryTextArea.getInputMap().put(controlS, "Execute");
+
+    JScrollPane queryScroll = new JScrollPane(queryTextArea);
+
+    // queryScroll.setPreferredSize(new Dimension(500, 250));
+    queryPanel.add(queryScroll);
+    queryPanel.add(createQueryButtonsPanel());
+    return queryPanel;
+  }
+
+  private JPanel createQueryButtonsPanel() {
+    JButton cancelButton = new JButton(new CancelAction());
+    cancelButton.setText(Messages.getString("GraphAnalysis.Cancel"));
+
+    JButton executeButton = new JButton(new ExecuteAction());
+    executeButton.setText(Messages.getString("GraphAnalysis.Execute"));
+
+    JButton exportButton = new JButton(new ExportQueryAction());
+    exportButton.setText(Messages.getString("GraphAnalysis.Export"));
+
+    JPanel buttonsPanel = new JPanel();
+    buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
+    buttonsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    buttonsPanel.add(Box.createHorizontalGlue());
+    buttonsPanel.add(cancelButton);
+    buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+    buttonsPanel.add(exportButton);
+    buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+    buttonsPanel.add(executeButton);
+    return buttonsPanel;
+  }
+
+  private JPanel createResultsButtonsPanel() {
+    addButton = new JButton(new AddToGraphAction());
+    addButton.setText(Messages.getString("GraphAnalysis.AddToAnalysis"));
+
+    JPanel buttonsPanel = new JPanel();
+    buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
+    buttonsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    buttonsPanel.add(Box.createHorizontalGlue());
+
+    this.statusLabel = new JLabel("");
+    buttonsPanel.add(statusLabel);
+    buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+    buttonsPanel.add(addButton);
+    return buttonsPanel;
+  }
+
+  public boolean isOpen() {
+    return open;
+  }
+
+  private void cancel() {
+    if (currentWorker != null) {
+      currentWorker.cancel(true);
     }
+  }
 
-    private void createGUI() {
-        setTitle(Messages.get("GraphAnalysis.AdvancedSearch"));
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
-        container.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+  private class CancelAction extends AbstractAction {
 
-        add(container);
+    private static final long serialVersionUID = 8868786294434591213L;
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, createQueryPanel(), createResultsPanel());
-        splitPane.setBorder(BorderFactory.createEmptyBorder());
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setResizeWeight(0.7d);
-        container.add(splitPane);
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      cancel();
+    }
+  }
 
-        setModalityType(ModalityType.DOCUMENT_MODAL);
+  private class ExecuteAction extends AbstractAction {
 
-        if (app != null) {
-            setLocationRelativeTo(App.get());
+    private static final long serialVersionUID = 8093130024947391899L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      cancel();
+      String query = queryTextArea.getText();
+      currentWorker = new AdvancedSearchWorker(query);
+      currentWorker.execute();
+    }
+  }
+
+  private class ExportQueryAction extends AbstractAction {
+
+    private static final long serialVersionUID = -6089668817373131233L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      JFileChooser fileChooser = new JFileChooser();
+      int option = fileChooser.showSaveDialog(App.get());
+      if (option == JFileChooser.APPROVE_OPTION) {
+        File output = fileChooser.getSelectedFile();
+        if (!output.getName().endsWith(".csv")) {
+          output = new File(output.getParentFile(), output.getName() + ".csv");
         }
-        pack();
 
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        getRootPane().registerKeyboardAction(new CloseDialogAction(this), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                JComponent.WHEN_IN_FOCUSED_WINDOW);
+        cancel();
+        String query = queryTextArea.getText();
+        currentWorker = new ExportQueryWorker(query, output);
+        currentWorker.execute();
+      }
+    }
+  }
+
+  private class ExportQueryWorker extends SwingWorker<Void, Void> implements FreeQueryListener {
+
+    private String query;
+    private File output;
+
+    private Writer out;
+
+    private List<String> columns;
+
+    public ExportQueryWorker(String query, File output) {
+      super();
+      this.query = query;
+      this.output = output;
     }
 
     @Override
-    public void setVisible(boolean b) {
-        this.open = b;
-        super.setVisible(b);
+    protected Void doInBackground() throws Exception {
+      setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+      setEnabled(false);
+
+      open();
+
+      GraphService graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
+      try {
+        graphService.advancedSearch(query, this);
+      } catch (QueryExecutionException e) {
+        JOptionPane.showMessageDialog(AdvancedSearchDialog.this, e.getLocalizedMessage());
+      }
+      return null;
     }
 
-    private JPanel createResultsPanel() {
-        JPanel resultsPanel = new JPanel();
-        resultsPanel.setLayout(new BoxLayout(resultsPanel, BoxLayout.PAGE_AXIS));
-
-        this.dataModel = new AdvancedSearchDataModel();
-
-        this.resultsTable = new JTable(dataModel);
-        resultsTable.setFillsViewportHeight(true);
-        resultsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        resultsTable.doLayout();
-        JScrollPane resultsScroll = new JScrollPane(resultsTable);
-        resultsPanel.add(resultsScroll);
-        resultsPanel.add(createResultsButtonsPanel());
-        return resultsPanel;
+    private void open() throws FileNotFoundException {
+      out =
+          new BufferedWriter(
+              new OutputStreamWriter(new FileOutputStream(output), Charset.forName("utf-8")));
     }
 
-    private JPanel createQueryPanel() {
-        JPanel queryPanel = new JPanel();
-        queryPanel.setLayout(new BoxLayout(queryPanel, BoxLayout.PAGE_AXIS));
-
-        this.queryTextArea = new JTextArea();
-        this.queryTextArea.getActionMap().put("Execute", new ExecuteAction());
-        KeyStroke controlS = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
-        this.queryTextArea.getInputMap().put(controlS, "Execute");
-
-        JScrollPane queryScroll = new JScrollPane(queryTextArea);
-
-        // queryScroll.setPreferredSize(new Dimension(500, 250));
-        queryPanel.add(queryScroll);
-        queryPanel.add(createQueryButtonsPanel());
-        return queryPanel;
+    @Override
+    protected void done() {
+      close();
+      setEnabled(true);
+      setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+      JOptionPane.showMessageDialog(
+          AdvancedSearchDialog.this, Messages.getString("GraphAnalysis.Done"));
     }
 
-    private JPanel createQueryButtonsPanel() {
-        JButton cancelButton = new JButton(new CancelAction());
-        cancelButton.setText(Messages.getString("GraphAnalysis.Cancel"));
-
-        JButton executeButton = new JButton(new ExecuteAction());
-        executeButton.setText(Messages.getString("GraphAnalysis.Execute"));
-
-        JButton exportButton = new JButton(new ExportQueryAction());
-        exportButton.setText(Messages.getString("GraphAnalysis.Export"));
-
-        JPanel buttonsPanel = new JPanel();
-        buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
-        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        buttonsPanel.add(Box.createHorizontalGlue());
-        buttonsPanel.add(cancelButton);
-        buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonsPanel.add(exportButton);
-        buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonsPanel.add(executeButton);
-        return buttonsPanel;
-    }
-
-    private JPanel createResultsButtonsPanel() {
-        addButton = new JButton(new AddToGraphAction());
-        addButton.setText(Messages.getString("GraphAnalysis.AddToAnalysis"));
-
-        JPanel buttonsPanel = new JPanel();
-        buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
-        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        buttonsPanel.add(Box.createHorizontalGlue());
-
-        this.statusLabel = new JLabel("");
-        buttonsPanel.add(statusLabel);
-        buttonsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonsPanel.add(addButton);
-        return buttonsPanel;
-    }
-
-    public boolean isOpen() {
-        return open;
-    }
-
-    private void cancel() {
-        if (currentWorker != null) {
-            currentWorker.cancel(true);
+    private void close() {
+      if (out != null) {
+        try {
+          out.close();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
         }
+      }
     }
 
-    private class CancelAction extends AbstractAction {
-
-        private static final long serialVersionUID = 8868786294434591213L;
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            cancel();
+    @Override
+    public void columnsFound(List<String> columns) {
+      this.columns = columns;
+      try {
+        Iterator<String> iterator = columns.iterator();
+        while (iterator.hasNext()) {
+          out.write("\"");
+          out.write(iterator.next());
+          out.write("\"");
+          if (iterator.hasNext()) {
+            out.write(",");
+          }
         }
-
+        out.write("\r\n");
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
-    private class ExecuteAction extends AbstractAction {
-
-        private static final long serialVersionUID = 8093130024947391899L;
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            cancel();
-            String query = queryTextArea.getText();
-            currentWorker = new AdvancedSearchWorker(query);
-            currentWorker.execute();
+    @Override
+    public void resultFound(Map<String, Object> result) {
+      try {
+        Iterator<String> iterator = columns.iterator();
+        while (iterator.hasNext()) {
+          out.write("\"");
+          Object value = result.get(iterator.next());
+          if (value != null) {
+            out.write(value.toString());
+          } else {
+            out.write("null");
+          }
+          out.write("\"");
+          if (iterator.hasNext()) {
+            out.write(",");
+          }
         }
+        out.write("\r\n");
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 
+  private class AdvancedSearchWorker extends SwingWorker<Void, Void> {
+
+    private String query;
+    private long start;
+    private long end;
+
+    public AdvancedSearchWorker(String query) {
+      super();
+      this.query = query;
     }
 
-    private class ExportQueryAction extends AbstractAction {
+    @Override
+    protected Void doInBackground() throws Exception {
+      setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+      GraphService graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
+      try {
+        start = System.currentTimeMillis();
+        graphService.advancedSearch(query, dataModel);
+        end = System.currentTimeMillis();
+      } catch (QueryExecutionException e) {
+        JOptionPane.showMessageDialog(AdvancedSearchDialog.this, e.getLocalizedMessage());
+      }
+      return null;
+    }
 
-        private static final long serialVersionUID = -6089668817373131233L;
+    @Override
+    protected void done() {
+      dataModel.fireTableStructureChanged();
+      dataModel.fireTableDataChanged();
+      resultsTable.doLayout();
+      setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+      statusLabel.setText(
+          Messages.getString("GraphAnalysis.Results", resultsTable.getRowCount(), (end - start)));
+    }
+  }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JFileChooser fileChooser = new JFileChooser();
-            int option = fileChooser.showSaveDialog(App.get());
-            if (option == JFileChooser.APPROVE_OPTION) {
-                File output = fileChooser.getSelectedFile();
-                if (!output.getName().endsWith(".csv")) {
-                    output = new File(output.getParentFile(), output.getName() + ".csv");
-                }
+  private class AddToGraphAction extends AbstractAction {
 
-                cancel();
-                String query = queryTextArea.getText();
-                currentWorker = new ExportQueryWorker(query, output);
-                currentWorker.execute();
+    private static final long serialVersionUID = 3964279252827602007L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      int rowCount = dataModel.getRowCount();
+      if (rowCount == 0) {
+        return;
+      }
+
+      HashSet<Long> idEntities = new HashSet<>(rowCount);
+      HashSet<Long> idRelationships = new HashSet<>(rowCount);
+
+      for (int index = 0; index < rowCount; index++) {
+        for (int col = 0; col < dataModel.getColumnCount(); col++) {
+          Object value = dataModel.getValueAt(index, col);
+          if (value instanceof Node) {
+            Node node = (Node) value;
+            idEntities.add(node.getId());
+          } else if (value instanceof Relationship) {
+            Relationship rel = (Relationship) value;
+            idEntities.add(rel.getStartNodeId());
+            idEntities.add(rel.getEndNodeId());
+            idRelationships.add(rel.getId());
+          } else if (value instanceof Path) {
+            Path path = (Path) value;
+            for (Node node : path.nodes()) {
+              idEntities.add(node.getId());
             }
+            for (Relationship rel : path.relationships()) {
+              idRelationships.add(rel.getId());
+            }
+          }
         }
+      }
 
-    }
-
-    private class ExportQueryWorker extends SwingWorker<Void, Void> implements FreeQueryListener {
-
-        private String query;
-        private File output;
-
-        private Writer out;
-
-        private List<String> columns;
-
-        public ExportQueryWorker(String query, File output) {
-            super();
-            this.query = query;
-            this.output = output;
-        }
-
-        @Override
-        protected Void doInBackground() throws Exception {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            setEnabled(false);
-
-            open();
-
-            GraphService graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
+      if (!idEntities.isEmpty()) {
+        AddNodeWorker nodeWorker = app.addNodesToGraph(idEntities);
+        new Thread() {
+          @Override
+          public void run() {
             try {
-                graphService.advancedSearch(query, this);
-            } catch (QueryExecutionException e) {
-                JOptionPane.showMessageDialog(AdvancedSearchDialog.this, e.getLocalizedMessage());
+              nodeWorker.get();
+              app.addRelationshipsToGraph(idRelationships);
+
+            } catch (InterruptedException | ExecutionException e) {
+              e.printStackTrace();
             }
-            return null;
-        }
+          }
+        }.start();
+      } else {
+        app.addRelationshipsToGraph(idRelationships);
+      }
+    }
+  }
 
-        private void open() throws FileNotFoundException {
-            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output), Charset.forName("utf-8")));
-        }
+  private class AdvancedSearchDataModel extends AbstractTableModel implements FreeQueryListener {
 
-        @Override
-        protected void done() {
-            close();
-            setEnabled(true);
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            JOptionPane.showMessageDialog(AdvancedSearchDialog.this, Messages.getString("GraphAnalysis.Done"));
-        }
+    private static final long serialVersionUID = -1790129675219773709L;
 
-        private void close() {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+    private List<String> columns = Collections.emptyList();
 
-        @Override
-        public void columnsFound(List<String> columns) {
-            this.columns = columns;
-            try {
-                Iterator<String> iterator = columns.iterator();
-                while (iterator.hasNext()) {
-                    out.write("\"");
-                    out.write(iterator.next());
-                    out.write("\"");
-                    if (iterator.hasNext()) {
-                        out.write(",");
-                    }
-                }
-                out.write("\r\n");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    private List<Object[]> results = new ArrayList<>();
 
-        @Override
-        public void resultFound(Map<String, Object> result) {
-            try {
-                Iterator<String> iterator = columns.iterator();
-                while (iterator.hasNext()) {
-                    out.write("\"");
-                    Object value = result.get(iterator.next());
-                    if (value != null) {
-                        out.write(value.toString());
-                    } else {
-                        out.write("null");
-                    }
-                    out.write("\"");
-                    if (iterator.hasNext()) {
-                        out.write(",");
-                    }
-                }
-                out.write("\r\n");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
-
+    @Override
+    public int getRowCount() {
+      return results.size();
     }
 
-    private class AdvancedSearchWorker extends SwingWorker<Void, Void> {
-
-        private String query;
-        private long start;
-        private long end;
-
-        public AdvancedSearchWorker(String query) {
-            super();
-            this.query = query;
-        }
-
-        @Override
-        protected Void doInBackground() throws Exception {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            GraphService graphService = GraphServiceFactoryImpl.getInstance().getGraphService();
-            try {
-                start = System.currentTimeMillis();
-                graphService.advancedSearch(query, dataModel);
-                end = System.currentTimeMillis();
-            } catch (QueryExecutionException e) {
-                JOptionPane.showMessageDialog(AdvancedSearchDialog.this, e.getLocalizedMessage());
-            }
-            return null;
-        }
-
-        @Override
-        protected void done() {
-            dataModel.fireTableStructureChanged();
-            dataModel.fireTableDataChanged();
-            resultsTable.doLayout();
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            statusLabel.setText(Messages.getString("GraphAnalysis.Results", resultsTable.getRowCount(), (end - start)));
-        }
-
+    @Override
+    public int getColumnCount() {
+      return columns.size();
     }
 
-    private class AddToGraphAction extends AbstractAction {
-
-        private static final long serialVersionUID = 3964279252827602007L;
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            int rowCount = dataModel.getRowCount();
-            if (rowCount == 0) {
-                return;
-            }
-
-            HashSet<Long> idEntities = new HashSet<>(rowCount);
-            HashSet<Long> idRelationships = new HashSet<>(rowCount);
-
-            for (int index = 0; index < rowCount; index++) {
-                for (int col = 0; col < dataModel.getColumnCount(); col++) {
-                    Object value = dataModel.getValueAt(index, col);
-                    if (value instanceof Node) {
-                        Node node = (Node) value;
-                        idEntities.add(node.getId());
-                    } else if (value instanceof Relationship) {
-                        Relationship rel = (Relationship) value;
-                        idEntities.add(rel.getStartNodeId());
-                        idEntities.add(rel.getEndNodeId());
-                        idRelationships.add(rel.getId());
-                    } else if (value instanceof Path) {
-                        Path path = (Path) value;
-                        for (Node node : path.nodes()) {
-                            idEntities.add(node.getId());
-                        }
-                        for (Relationship rel : path.relationships()) {
-                            idRelationships.add(rel.getId());
-                        }
-                    }
-                }
-            }
-
-            if (!idEntities.isEmpty()) {
-                AddNodeWorker nodeWorker = app.addNodesToGraph(idEntities);
-                new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            nodeWorker.get();
-                            app.addRelationshipsToGraph(idRelationships);
-
-                        } catch (InterruptedException | ExecutionException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }.start();
-            } else {
-                app.addRelationshipsToGraph(idRelationships);
-            }
-
-        }
-
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+      return this.results.get(rowIndex)[columnIndex];
     }
 
-    private class AdvancedSearchDataModel extends AbstractTableModel implements FreeQueryListener {
-
-        private static final long serialVersionUID = -1790129675219773709L;
-
-        private List<String> columns = Collections.emptyList();
-
-        private List<Object[]> results = new ArrayList<>();
-
-        @Override
-        public int getRowCount() {
-            return results.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return columns.size();
-        }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            return this.results.get(rowIndex)[columnIndex];
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            return columns.get(column);
-        }
-
-        @Override
-        public void columnsFound(List<String> columns) {
-            this.columns = new ArrayList<>(columns);
-            this.results.clear();
-            addButton.setEnabled(false);
-        }
-
-        @Override
-        public void resultFound(Map<String, Object> resultMap) {
-            int size = columns.size();
-            Object[] result = new Object[size];
-            Object value = null;
-            boolean enabled = false;
-            for (int index = 0; index < size; index++) {
-                value = resultMap.get(columns.get(index));
-                result[index] = value;
-                if (!enabled) {
-                    enabled = value instanceof Node || value instanceof Relationship || value instanceof Path;
-                    addButton.setEnabled(enabled);
-                }
-            }
-            results.add(result);
-        }
-
+    @Override
+    public String getColumnName(int column) {
+      return columns.get(column);
     }
 
+    @Override
+    public void columnsFound(List<String> columns) {
+      this.columns = new ArrayList<>(columns);
+      this.results.clear();
+      addButton.setEnabled(false);
+    }
+
+    @Override
+    public void resultFound(Map<String, Object> resultMap) {
+      int size = columns.size();
+      Object[] result = new Object[size];
+      Object value = null;
+      boolean enabled = false;
+      for (int index = 0; index < size; index++) {
+        value = resultMap.get(columns.get(index));
+        result[index] = value;
+        if (!enabled) {
+          enabled = value instanceof Node || value instanceof Relationship || value instanceof Path;
+          addButton.setEnabled(enabled);
+        }
+      }
+      results.add(result);
+    }
+  }
 }

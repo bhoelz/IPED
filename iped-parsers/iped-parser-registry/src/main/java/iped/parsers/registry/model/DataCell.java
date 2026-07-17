@@ -3,12 +3,11 @@ package iped.parsers.registry.model;
 import java.util.Arrays;
 
 public class DataCell extends CellContent {
-    public DataCell(RegistryFile reg, byte[] data) {
-        super(reg, data);
-    }
+  public DataCell(RegistryFile reg, byte[] data) {
+    super(reg, data);
+  }
 
-    String getCellDescriptor() {
-        return new String(Arrays.copyOf(data, 2));
-    }
-
+  String getCellDescriptor() {
+    return new String(Arrays.copyOf(data, 2));
+  }
 }

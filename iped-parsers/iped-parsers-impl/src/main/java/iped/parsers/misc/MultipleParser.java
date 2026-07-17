@@ -4,6 +4,11 @@ import iped.io.IStreamSource;
 import iped.parsers.standard.StandardParser;
 import iped.parsers.util.ItemInfo;
 import iped.utils.IOUtil;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
+import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.config.Field;
 import org.apache.tika.exception.TikaException;
@@ -20,151 +25,146 @@ import org.apache.tika.utils.ParserUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
-import java.util.*;
-
 /**
  * Runs a list of parsers sequentially on a file.
  *
  * @author Nassif
- *
  */
 @Slf4j
 public class MultipleParser extends AbstractParser {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
+  private List<Parser> parsers = new ArrayList<>();
 
-    private List<Parser> parsers = new ArrayList<>();
+  private Set<MediaType> supportedTypes = new HashSet<>();
 
-    private Set<MediaType> supportedTypes = new HashSet<>();
+  @Field private boolean stopAfterSomeParserWorks = false;
 
-    @Field
-    private boolean stopAfterSomeParserWorks = false;
+  @Field private String parserName = MultipleParser.class.getSimpleName();
 
-    @Field
-    private String parserName = MultipleParser.class.getSimpleName();
+  public String getParserName() {
+    return parserName;
+  }
 
-    public String getParserName() {
-        return parserName;
+  @Override
+  public Set<MediaType> getSupportedTypes(ParseContext context) {
+    return supportedTypes;
+  }
+
+  public void addParser(Parser parser) {
+    parsers.add(parser);
+  }
+
+  public void addSupportedTypes(Set<MediaType> mimes) {
+    supportedTypes.addAll(mimes);
+  }
+
+  @Field
+  public void setParsers(String value)
+      throws InstantiationException,
+          IllegalAccessException,
+          ClassNotFoundException,
+          IllegalArgumentException,
+          InvocationTargetException,
+          NoSuchMethodException,
+          SecurityException {
+    String[] parsers = value.split(";");
+    for (String p : parsers) {
+      if (!(p = p.trim()).isEmpty()) {
+        this.parsers.add((Parser) Class.forName(p).getDeclaredConstructor().newInstance());
+      }
     }
+  }
 
-    @Override
-    public Set<MediaType> getSupportedTypes(ParseContext context) {
-        return supportedTypes;
-    }
+  @Override
+  public void parse(
+      InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
+      throws IOException, SAXException, TikaException {
 
-    public void addParser(Parser parser) {
-        parsers.add(parser);
-    }
-
-    public void addSupportedTypes(Set<MediaType> mimes) {
-        supportedTypes.addAll(mimes);
-    }
-
-    @Field
-    public void setParsers(String value) throws InstantiationException, IllegalAccessException, ClassNotFoundException,
-            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-        String[] parsers = value.split(";");
-        for (String p : parsers) {
-            if (!(p = p.trim()).isEmpty()) {
-                this.parsers.add((Parser) Class.forName(p).getDeclaredConstructor().newInstance());
-            }
+    ItemInfo itemInfo = context.get(ItemInfo.class);
+    IStreamSource source = context.get(IStreamSource.class);
+    TemporaryResources tmp = new TemporaryResources();
+    TikaException tikaException = null;
+    EmbeddedContentHandler embeddedHandler = new EmbeddedContentHandler(handler);
+    embeddedHandler.startDocument();
+    try {
+      TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
+      boolean firstTis = true;
+      Path tempPath = null;
+      for (Parser parser : parsers) {
+        if (tis != null && (tis.hasFile() || source == null)) {
+          tempPath = tis.getPath();
         }
-    }
-
-    @Override
-    public void parse(InputStream stream, ContentHandler handler, Metadata metadata, ParseContext context)
-            throws IOException, SAXException, TikaException {
-
-        ItemInfo itemInfo = context.get(ItemInfo.class);
-        IStreamSource source = context.get(IStreamSource.class);
-        TemporaryResources tmp = new TemporaryResources();
-        TikaException tikaException = null;
-        EmbeddedContentHandler embeddedHandler = new EmbeddedContentHandler(handler);
-        embeddedHandler.startDocument();
+        if (tis == null) {
+          if (tempPath != null) {
+            tis = TikaInputStream.get(tempPath);
+          } else {
+            tis = TikaInputStream.get(source.getSeekableInputStream());
+          }
+          firstTis = false;
+        }
+        Metadata newMetadata = getNewMetadata(metadata);
         try {
-            TikaInputStream tis = TikaInputStream.get(() -> stream, tmp);
-            boolean firstTis = true;
-            Path tempPath = null;
-            for (Parser parser : parsers) {
-                if (tis != null && (tis.hasFile() || source == null)) {
-                    tempPath = tis.getPath();
-                }
-                if (tis == null) {
-                    if (tempPath != null) {
-                        tis = TikaInputStream.get(tempPath);
-                    } else {
-                        tis = TikaInputStream.get(source.getSeekableInputStream());
-                    }
-                    firstTis = false;
-                }
-                Metadata newMetadata = getNewMetadata(metadata);
-                try {
-                    parser.parse(tis, embeddedHandler, newMetadata, context);
+          parser.parse(tis, embeddedHandler, newMetadata, context);
 
-                    if (stopAfterSomeParserWorks) {
-                        break;
-                    }
+          if (stopAfterSomeParserWorks) {
+            break;
+          }
 
-                    // if this parser works, clear exception to not throw it
-                    tikaException = null;
+          // if this parser works, clear exception to not throw it
+          tikaException = null;
 
-                } catch (Throwable e) {
-                    ParserUtils.recordParserFailure(parser, e, newMetadata);
-                    String filepath = itemInfo != null ? itemInfo.getPath() : "file";
-                    log.warn("Exception from {} on {}: {}", parser.getClass().getName(), filepath, e.toString());
-                    if (tikaException == null) {
-                        tikaException = new TikaException("Exception from " + parser.getClass().getName());
-                    }
-                    tikaException.addSuppressed(e);
-
-                } finally {
-                    ParserUtils.recordParserDetails(parser, newMetadata);
-                    // merge even if parser fails, some meta could be extracted
-                    mergeMetadata(metadata, newMetadata);
-                    if (!firstTis) {
-                        IOUtil.closeQuietly(tis);
-                    }
-                    tis = null;
-                }
-            }
+        } catch (Throwable e) {
+          ParserUtils.recordParserFailure(parser, e, newMetadata);
+          String filepath = itemInfo != null ? itemInfo.getPath() : "file";
+          log.warn(
+              "Exception from {} on {}: {}", parser.getClass().getName(), filepath, e.toString());
+          if (tikaException == null) {
+            tikaException = new TikaException("Exception from " + parser.getClass().getName());
+          }
+          tikaException.addSuppressed(e);
 
         } finally {
-            embeddedHandler.endDocument();
-            tmp.close();
-            if (tikaException != null) {
-                throw tikaException;
-            }
+          ParserUtils.recordParserDetails(parser, newMetadata);
+          // merge even if parser fails, some meta could be extracted
+          mergeMetadata(metadata, newMetadata);
+          if (!firstTis) {
+            IOUtil.closeQuietly(tis);
+          }
+          tis = null;
         }
-    }
+      }
 
-    private Metadata getNewMetadata(Metadata metadata) {
-        Metadata newMetadata = new Metadata();
-        newMetadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY));
-        newMetadata.set(Metadata.CONTENT_LENGTH, metadata.get(Metadata.CONTENT_LENGTH));
-        newMetadata.set(Metadata.CONTENT_TYPE, metadata.get(Metadata.CONTENT_TYPE));
-        newMetadata.set(StandardParser.INDEXER_CONTENT_TYPE,
-                metadata.get(StandardParser.INDEXER_CONTENT_TYPE));
-        return metadata;
+    } finally {
+      embeddedHandler.endDocument();
+      tmp.close();
+      if (tikaException != null) {
+        throw tikaException;
+      }
     }
+  }
 
-    private void mergeMetadata(Metadata metadata, Metadata newMetadata) {
-        for (String name : newMetadata.names()) {
-            Set<String> oldValues = new TreeSet<>(Arrays.asList(metadata.getValues(name)));
-            for (String newVal : newMetadata.getValues(name)) {
-                if (!oldValues.contains(newVal)) {
-                    metadata.add(name, newVal);
-                }
-            }
+  private Metadata getNewMetadata(Metadata metadata) {
+    Metadata newMetadata = new Metadata();
+    newMetadata.set(
+        TikaCoreProperties.RESOURCE_NAME_KEY, metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY));
+    newMetadata.set(Metadata.CONTENT_LENGTH, metadata.get(Metadata.CONTENT_LENGTH));
+    newMetadata.set(Metadata.CONTENT_TYPE, metadata.get(Metadata.CONTENT_TYPE));
+    newMetadata.set(
+        StandardParser.INDEXER_CONTENT_TYPE, metadata.get(StandardParser.INDEXER_CONTENT_TYPE));
+    return metadata;
+  }
+
+  private void mergeMetadata(Metadata metadata, Metadata newMetadata) {
+    for (String name : newMetadata.names()) {
+      Set<String> oldValues = new TreeSet<>(Arrays.asList(metadata.getValues(name)));
+      for (String newVal : newMetadata.getValues(name)) {
+        if (!oldValues.contains(newVal)) {
+          metadata.add(name, newVal);
         }
+      }
     }
-
+  }
 }
-

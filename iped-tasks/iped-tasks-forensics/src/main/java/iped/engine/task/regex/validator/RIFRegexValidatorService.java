@@ -1,7 +1,6 @@
 package iped.engine.task.regex.validator;
 
 import iped.engine.task.regex.BasicAbstractRegexValidatorService;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -10,32 +9,31 @@ import java.util.regex.Pattern;
 
 public class RIFRegexValidatorService extends BasicAbstractRegexValidatorService {
 
-    private static final String REPLACEMENT = " ";
+  private static final String REPLACEMENT = " ";
 
-    private static final String REGEX_NAME = "RIF";
+  private static final String REGEX_NAME = "RIF";
 
-    private final Pattern NOT_ALLOWED_CHARS_PATTERN = Pattern.compile("[^RIF0-9]+");
+  private final Pattern NOT_ALLOWED_CHARS_PATTERN = Pattern.compile("[^RIF0-9]+");
 
-    @Override
-    public boolean validate(String hit) {
-        return true;
-    }
+  @Override
+  public boolean validate(String hit) {
+    return true;
+  }
 
-    @Override
-    public String format(String hit) {
-        Matcher matcher = NOT_ALLOWED_CHARS_PATTERN.matcher(hit);
-        return matcher.replaceAll(REPLACEMENT).trim();
-    }
+  @Override
+  public String format(String hit) {
+    Matcher matcher = NOT_ALLOWED_CHARS_PATTERN.matcher(hit);
+    return matcher.replaceAll(REPLACEMENT).trim();
+  }
 
-    @Override
-    public List<String> getRegexNames() {
-        return Arrays.asList(REGEX_NAME);
-    }
+  @Override
+  public List<String> getRegexNames() {
+    return Arrays.asList(REGEX_NAME);
+  }
 
-    @Override
-    public void init(File confDir) {
-        // TODO Auto-generated method stub
+  @Override
+  public void init(File confDir) {
+    // TODO Auto-generated method stub
 
-    }
-
+  }
 }

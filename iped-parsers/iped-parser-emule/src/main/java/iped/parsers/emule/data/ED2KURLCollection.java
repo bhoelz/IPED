@@ -4,21 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ED2KURLCollection implements ECollection {
-    String name;
-    ArrayList<ECollectionFile> files = new ArrayList<ECollectionFile>();
-    
-    public ED2KURLCollection(String name) {
-        this.name = name;
-    }
+  String name;
+  ArrayList<ECollectionFile> files = new ArrayList<ECollectionFile>();
 
-    @Override
-    public String getName() {
-        return name;
-    }
+  public ED2KURLCollection(String name) {
+    this.name = name;
+  }
 
-    @Override
-    public List<ECollectionFile> getFiles() {
-        return files;
-    }
+  @Override
+  public String getName() {
+    return name;
+  }
 
+  @Override
+  public List<ECollectionFile> getFiles() {
+    return files;
+  }
 }

@@ -18,105 +18,103 @@
  */
 package iped.engine.config.schema;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * Unit tests for SchemaValidator.
- * Tests basic validation functionality.
- */
+/** Unit tests for SchemaValidator. Tests basic validation functionality. */
 class SchemaValidatorTest {
 
-    private SchemaValidator validator;
-    private ObjectMapper mapper;
+  private SchemaValidator validator;
+  private ObjectMapper mapper;
 
-    @BeforeEach
-    void setUp() {
-        validator = new SchemaValidator();
-        mapper = new ObjectMapper();
-    }
+  @BeforeEach
+  void setUp() {
+    validator = new SchemaValidator();
+    mapper = new ObjectMapper();
+  }
 
-    @Test
-    void testValidatorInitialization() {
-        assertNotNull(validator);
-        assertNotNull(mapper);
-    }
+  @Test
+  void testValidatorInitialization() {
+    assertNotNull(validator);
+    assertNotNull(mapper);
+  }
 
-    @Test
-    void testValidationResultSuccess() {
-        SchemaValidator.ValidationResult result = new SchemaValidator.ValidationResult(true, new java.util.ArrayList<>());
-        assertTrue(result.isValid());
-        assertEquals(0, result.getErrors().size());
-    }
+  @Test
+  void testValidationResultSuccess() {
+    SchemaValidator.ValidationResult result =
+        new SchemaValidator.ValidationResult(true, new java.util.ArrayList<>());
+    assertTrue(result.isValid());
+    assertEquals(0, result.getErrors().size());
+  }
 
-    @Test
-    void testValidationResultFailure() {
-        java.util.List<String> errors = new java.util.ArrayList<>();
-        errors.add("Test error");
-        SchemaValidator.ValidationResult result = new SchemaValidator.ValidationResult(false, errors);
+  @Test
+  void testValidationResultFailure() {
+    java.util.List<String> errors = new java.util.ArrayList<>();
+    errors.add("Test error");
+    SchemaValidator.ValidationResult result = new SchemaValidator.ValidationResult(false, errors);
 
-        assertFalse(result.isValid());
-        assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrorReport().contains("Validation failed"));
-    }
+    assertFalse(result.isValid());
+    assertEquals(1, result.getErrors().size());
+    assertTrue(result.getErrorReport().contains("Validation failed"));
+  }
 
-    @Test
-    void testValidationResultErrorReporting() {
-        java.util.List<String> errors = new java.util.ArrayList<>();
-        errors.add("Field 'name' is required");
-        errors.add("Field 'age' must be an integer");
-        SchemaValidator.ValidationResult result = new SchemaValidator.ValidationResult(false, errors);
+  @Test
+  void testValidationResultErrorReporting() {
+    java.util.List<String> errors = new java.util.ArrayList<>();
+    errors.add("Field 'name' is required");
+    errors.add("Field 'age' must be an integer");
+    SchemaValidator.ValidationResult result = new SchemaValidator.ValidationResult(false, errors);
 
-        String report = result.getErrorReport();
-        assertTrue(report.contains("2 error"));
-        assertTrue(report.contains("name"));
-        assertTrue(report.contains("age"));
-    }
+    String report = result.getErrorReport();
+    assertTrue(report.contains("2 error"));
+    assertTrue(report.contains("name"));
+    assertTrue(report.contains("age"));
+  }
 
-    @Test
-    void testValidateEmptyJson() throws Exception {
-        String schema = "{ \"type\": \"object\" }";
-        String json = "{}";
-        ObjectNode schemaNode = (ObjectNode) mapper.readTree(schema);
+  @Test
+  void testValidateEmptyJson() throws Exception {
+    String schema = "{ \"type\": \"object\" }";
+    String json = "{}";
+    ObjectNode schemaNode = (ObjectNode) mapper.readTree(schema);
 
-        SchemaValidator.ValidationResult result = validator.validateJson(json, schemaNode);
-        assertNotNull(result);
-    }
+    SchemaValidator.ValidationResult result = validator.validateJson(json, schemaNode);
+    assertNotNull(result);
+  }
 
-    @Test
-    void testValidateComplexJson() throws Exception {
-        String json = "{ \"name\": \"test\", \"count\": 42, \"enabled\": true }";
-        String schema = "{ \"type\": \"object\" }";
-        ObjectNode schemaNode = (ObjectNode) mapper.readTree(schema);
+  @Test
+  void testValidateComplexJson() throws Exception {
+    String json = "{ \"name\": \"test\", \"count\": 42, \"enabled\": true }";
+    String schema = "{ \"type\": \"object\" }";
+    ObjectNode schemaNode = (ObjectNode) mapper.readTree(schema);
 
-        SchemaValidator.ValidationResult result = validator.validateJson(json, schemaNode);
-        assertNotNull(result);
-    }
+    SchemaValidator.ValidationResult result = validator.validateJson(json, schemaNode);
+    assertNotNull(result);
+  }
 
-    @Test
-    void testValidateWithObjectType() throws Exception {
-        String schema = "{ \"type\": \"object\" }";
-        String validJson = "{ \"field\": \"value\" }";
+  @Test
+  void testValidateWithObjectType() throws Exception {
+    String schema = "{ \"type\": \"object\" }";
+    String validJson = "{ \"field\": \"value\" }";
 
-        ObjectNode schemaNode = (ObjectNode) mapper.readTree(schema);
-        SchemaValidator.ValidationResult result = validator.validateJson(validJson, schemaNode);
+    ObjectNode schemaNode = (ObjectNode) mapper.readTree(schema);
+    SchemaValidator.ValidationResult result = validator.validateJson(validJson, schemaNode);
 
-        assertTrue(result.isValid());
-    }
+    assertTrue(result.isValid());
+  }
 
-    @Test
-    void testValidationDoesNotThrow() throws Exception {
-        String schema = "{ \"type\": \"object\" }";
-        String json = "{ \"test\": \"data\" }";
-        ObjectNode schemaNode = (ObjectNode) mapper.readTree(schema);
+  @Test
+  void testValidationDoesNotThrow() throws Exception {
+    String schema = "{ \"type\": \"object\" }";
+    String json = "{ \"test\": \"data\" }";
+    ObjectNode schemaNode = (ObjectNode) mapper.readTree(schema);
 
-        assertDoesNotThrow(() -> {
-            validator.validateJson(json, schemaNode);
+    assertDoesNotThrow(
+        () -> {
+          validator.validateJson(json, schemaNode);
         });
-    }
-
+  }
 }

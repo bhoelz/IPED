@@ -16,6 +16,10 @@
  */
 package iped.engine.lucene;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.index.*;
 import org.apache.lucene.index.MultiDocValues.MultiSortedDocValues;
 import org.apache.lucene.search.AcceptDocs;
@@ -23,27 +27,17 @@ import org.apache.lucene.search.KnnCollector;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * This class forces a composite reader (eg a {@link
- * MultiReader} or {@link DirectoryReader}) to emulate a
- * {@link LeafReader}.  This requires implementing the postings
- * APIs on-the-fly, using the static methods in {@link
- * MultiTerms}, {@link MultiDocValues}, by stepping through
- * the sub-readers to merge fields/terms, appending docs, etc.
+ * This class forces a composite reader (eg a {@link MultiReader} or {@link DirectoryReader}) to
+ * emulate a {@link LeafReader}. This requires implementing the postings APIs on-the-fly, using the
+ * static methods in {@link MultiTerms}, {@link MultiDocValues}, by stepping through the sub-readers
+ * to merge fields/terms, appending docs, etc.
  *
- * <p><b>NOTE</b>: this class almost always results in a
- * performance hit.  If this is important to your use case,
- * you'll get better performance by gathering the sub readers using
- * {@link IndexReader#getContext()} to get the
- * leaves and then operate per-LeafReader,
- * instead of using this class.
+ * <p><b>NOTE</b>: this class almost always results in a performance hit. If this is important to
+ * your use case, you'll get better performance by gathering the sub readers using {@link
+ * IndexReader#getContext()} to get the leaves and then operate per-LeafReader, instead of using
+ * this class.
  */
-
 public final class SlowCompositeReaderWrapper extends LeafReader {
 
   private final CompositeReader in;
@@ -54,16 +48,16 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
   // also have a cached FieldInfos instance so this is consistent. SOLR-12878
   private FieldInfos fieldInfos;
 
-  final Map<String,Terms> cachedTerms = new ConcurrentHashMap<>();
+  final Map<String, Terms> cachedTerms = new ConcurrentHashMap<>();
 
   // TODO: consider ConcurrentHashMap ?
   // TODO: this could really be a weak map somewhere else on the coreCacheKey,
   // but do we really need to optimize slow-wrapper any more?
-  final Map<String,OrdinalMap> cachedOrdMaps = new HashMap<>();
+  final Map<String, OrdinalMap> cachedOrdMaps = new HashMap<>();
 
-  /** This method is sugar for getting an {@link LeafReader} from
-   * an {@link IndexReader} of any kind. If the reader is already atomic,
-   * it is returned unchanged, otherwise wrapped by this class.
+  /**
+   * This method is sugar for getting an {@link LeafReader} from an {@link IndexReader} of any kind.
+   * If the reader is already atomic, it is returned unchanged, otherwise wrapped by this class.
    */
   public static LeafReader wrap(IndexReader reader) throws IOException {
     if (reader instanceof CompositeReader) {
@@ -90,21 +84,26 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
           minVersion = leafVersion;
         }
       }
-      metaData = new LeafMetaData(reader.leaves().get(0).reader().getMetaData().createdVersionMajor(), minVersion, null, false);
+      metaData =
+          new LeafMetaData(
+              reader.leaves().get(0).reader().getMetaData().createdVersionMajor(),
+              minVersion,
+              null,
+              false);
     }
     try {
-        fieldInfos = FieldInfos.getMergedFieldInfos(in);
+      fieldInfos = FieldInfos.getMergedFieldInfos(in);
     } catch (IllegalArgumentException e) {
-        // quick and dirty workaround for https://github.com/sepinf-inc/IPED/issues/661
-        String error = e.toString();
-        if (error.contains("cannot change field") && error.contains("to inconsistent index options")) {
-            e.printStackTrace();
-        } else {
-            throw e;
-        }
+      // quick and dirty workaround for https://github.com/sepinf-inc/IPED/issues/661
+      String error = e.toString();
+      if (error.contains("cannot change field")
+          && error.contains("to inconsistent index options")) {
+        e.printStackTrace();
+      } else {
+        throw e;
+      }
     }
-
-}
+  }
 
   @Override
   public String toString() {
@@ -128,13 +127,17 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
   public Terms terms(String field) throws IOException {
     ensureOpen();
     try {
-      return cachedTerms.computeIfAbsent(field, f -> {
-        try {
-          return MultiTerms.getTerms(in, f);
-        } catch (IOException e) { // yuck!  ...sigh... checked exceptions with built-in lambdas are a pain
-          throw new RuntimeException("unwrapMe", e);
-        }
-      });
+      return cachedTerms.computeIfAbsent(
+          field,
+          f -> {
+            try {
+              return MultiTerms.getTerms(in, f);
+            } catch (
+                IOException
+                    e) { // yuck!  ...sigh... checked exceptions with built-in lambdas are a pain
+              throw new RuntimeException("unwrapMe", e);
+            }
+          });
     } catch (RuntimeException e) {
       if (e.getMessage().equals("unwrapMe") && e.getCause() instanceof IOException) {
         throw (IOException) e.getCause();
@@ -171,7 +174,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
         // uncached, or not a multi dv
         SortedDocValues dv = MultiDocValues.getSortedValues(in, field);
         if (dv instanceof MultiSortedDocValues) {
-          map = ((MultiSortedDocValues)dv).mapping;
+          map = ((MultiSortedDocValues) dv).mapping;
           IndexReader.CacheHelper cacheHelper = getReaderCacheHelper();
           if (cacheHelper != null && map.owner == cacheHelper.getKey()) {
             cachedOrdMaps.put(field, map);
@@ -182,7 +185,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
     }
     int size = in.leaves().size();
     final SortedDocValues[] values = new SortedDocValues[size];
-    final int[] starts = new int[size+1];
+    final int[] starts = new int[size + 1];
     long totalCost = 0;
     for (int i = 0; i < size; i++) {
       LeafReaderContext context = in.leaves().get(i);
@@ -213,7 +216,7 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
         // uncached, or not a multi dv
         SortedSetDocValues dv = MultiDocValues.getSortedSetValues(in, field);
         if (dv instanceof MultiDocValues.MultiSortedSetDocValues) {
-          map = ((MultiDocValues.MultiSortedSetDocValues)dv).mapping;
+          map = ((MultiDocValues.MultiSortedSetDocValues) dv).mapping;
           IndexReader.CacheHelper cacheHelper = getReaderCacheHelper();
           if (cacheHelper != null && map.owner == cacheHelper.getKey()) {
             cachedOrdMaps.put(field, map);
@@ -226,13 +229,13 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
     assert map != null;
     int size = in.leaves().size();
     final SortedSetDocValues[] values = new SortedSetDocValues[size];
-    final int[] starts = new int[size+1];
+    final int[] starts = new int[size + 1];
     long cost = 0;
     for (int i = 0; i < size; i++) {
       LeafReaderContext context = in.leaves().get(i);
       final LeafReader reader = context.reader();
       final FieldInfo fieldInfo = reader.getFieldInfos().fieldInfo(field);
-      if(fieldInfo != null && fieldInfo.getDocValuesType() != DocValuesType.SORTED_SET){
+      if (fieldInfo != null && fieldInfo.getDocValuesType() != DocValuesType.SORTED_SET) {
         return null;
       }
       SortedSetDocValues v = reader.getSortedSetDocValues(field);
@@ -313,28 +316,32 @@ public final class SlowCompositeReaderWrapper extends LeafReader {
     return metaData;
   }
 
-    @Override
-    public FloatVectorValues getFloatVectorValues(String field) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
-    }
+  @Override
+  public FloatVectorValues getFloatVectorValues(String field) throws IOException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
 
-    @Override
-    public ByteVectorValues getByteVectorValues(String field) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
-    }
+  @Override
+  public ByteVectorValues getByteVectorValues(String field) throws IOException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
 
-    @Override
-    public void searchNearestVectors(String field, float[] target, KnnCollector knnCollector, AcceptDocs acceptDocs) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
-    }
+  @Override
+  public void searchNearestVectors(
+      String field, float[] target, KnnCollector knnCollector, AcceptDocs acceptDocs)
+      throws IOException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
 
-    @Override
-    public void searchNearestVectors(String field, byte[] target, KnnCollector knnCollector, AcceptDocs acceptDocs) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet.");
-    }
+  @Override
+  public void searchNearestVectors(
+      String field, byte[] target, KnnCollector knnCollector, AcceptDocs acceptDocs)
+      throws IOException {
+    throw new UnsupportedOperationException("Not implemented yet.");
+  }
 
-    @Override
-    public DocValuesSkipper getDocValuesSkipper(String field) {
-        return null;
-    }
+  @Override
+  public DocValuesSkipper getDocValuesSkipper(String field) {
+    return null;
+  }
 }

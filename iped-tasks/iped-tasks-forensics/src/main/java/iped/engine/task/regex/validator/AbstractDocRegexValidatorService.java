@@ -1,80 +1,78 @@
 package iped.engine.task.regex.validator;
 
 import iped.engine.task.regex.BasicAbstractRegexValidatorService;
-
 import java.io.File;
 import java.util.regex.Pattern;
 
 public abstract class AbstractDocRegexValidatorService extends BasicAbstractRegexValidatorService {
 
-    protected static final Pattern NON_DIGIT = Pattern.compile("[^0-9]");
+  protected static final Pattern NON_DIGIT = Pattern.compile("[^0-9]");
 
-    @Override
-    public void init(File confDir) {
-        // Nothing to do.
+  @Override
+  public void init(File confDir) {
+    // Nothing to do.
+  }
+
+  @Override
+  public boolean validate(String doc) {
+    if (doc == null) {
+      return false;
     }
 
-    @Override
-    public boolean validate(String doc) {
-        if (doc == null) {
-            return false;
-        }
+    doc = NON_DIGIT.matcher(doc).replaceAll("");
 
-        doc = NON_DIGIT.matcher(doc).replaceAll("");
+    int acceptableLength = getAcceptableLength();
+    boolean isLengthValid = doc.length() == acceptableLength;
 
-        int acceptableLength = getAcceptableLength();
-        boolean isLengthValid = doc.length() == acceptableLength;
-
-        if (!isLengthValid) {
-            return false;
-        }
-
-        boolean repeated = isRepeated(doc.substring(0, doc.length() - 2));
-        if (repeated) {
-            return false;
-        }
-        int numVerifiers = getNumVerifiers();
-        int numberLength = acceptableLength - numVerifiers;
-        String number = doc.substring(0, numberLength);
-        String verifiers = doc.substring(numberLength);
-
-        int[] weights = getWeights();
-
-        for (int verifier = 0; verifier < numVerifiers; verifier++) {
-            int docDigit = Integer.parseInt(verifiers.substring(verifier, verifier + 1));
-            int digit = calcDigit(number, weights);
-            number += digit;
-
-            if (docDigit != digit) {
-                return false;
-            }
-        }
-        return true;
+    if (!isLengthValid) {
+      return false;
     }
 
-    private static final boolean isRepeated(final String str) {
-        for (char c : str.toCharArray()) {
-            if (c != str.charAt(0)) {
-                return false;
-            }
-        }
-        return true;
+    boolean repeated = isRepeated(doc.substring(0, doc.length() - 2));
+    if (repeated) {
+      return false;
     }
+    int numVerifiers = getNumVerifiers();
+    int numberLength = acceptableLength - numVerifiers;
+    String number = doc.substring(0, numberLength);
+    String verifiers = doc.substring(numberLength);
 
-    protected static int calcDigit(String number, int[] weight) {
-        int sum = 0;
-        for (int index = number.length() - 1; index >= 0; index--) {
-            int digit = Integer.parseInt(number.substring(index, index + 1));
-            sum += digit * weight[weight.length - number.length() + index];
-        }
-        sum = 11 - sum % 11;
-        return sum > 9 ? 0 : sum;
+    int[] weights = getWeights();
+
+    for (int verifier = 0; verifier < numVerifiers; verifier++) {
+      int docDigit = Integer.parseInt(verifiers.substring(verifier, verifier + 1));
+      int digit = calcDigit(number, weights);
+      number += digit;
+
+      if (docDigit != digit) {
+        return false;
+      }
     }
+    return true;
+  }
 
-    protected abstract int getNumVerifiers();
+  private static final boolean isRepeated(final String str) {
+    for (char c : str.toCharArray()) {
+      if (c != str.charAt(0)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-    protected abstract int getAcceptableLength();
+  protected static int calcDigit(String number, int[] weight) {
+    int sum = 0;
+    for (int index = number.length() - 1; index >= 0; index--) {
+      int digit = Integer.parseInt(number.substring(index, index + 1));
+      sum += digit * weight[weight.length - number.length() + index];
+    }
+    sum = 11 - sum % 11;
+    return sum > 9 ? 0 : sum;
+  }
 
-    protected abstract int[] getWeights();
+  protected abstract int getNumVerifiers();
 
+  protected abstract int getAcceptableLength();
+
+  protected abstract int[] getWeights();
 }

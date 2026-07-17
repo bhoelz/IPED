@@ -28,8 +28,6 @@ import iped.engine.data.DataSource;
 import iped.engine.data.Item;
 import iped.properties.ExtraProperties;
 import iped.utils.FileInputStreamFactory;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -41,216 +39,217 @@ import java.nio.file.attribute.UserPrincipal;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FolderTreeReader extends DataSourceReader {
 
-    public static final String FS_OWNER = "fileSystemOwner"; //$NON-NLS-1$
+  public static final String FS_OWNER = "fileSystemOwner"; // $NON-NLS-1$
 
+  private FileInputStreamFactory inputStreamFactory;
 
-    private FileInputStreamFactory inputStreamFactory;
+  private Pattern excludePattern;
+  private File rootFile;
+  private String evidenceName;
+  private CmdLineArgs args;
 
-    private Pattern excludePattern;
-    private File rootFile;
-    private String evidenceName;
-    private CmdLineArgs args;
+  public FolderTreeReader(ICaseData caseData, File output, boolean listOnly) {
+    super(caseData, output, listOnly);
+  }
 
-    public FolderTreeReader(ICaseData caseData, File output, boolean listOnly) {
-        super(caseData, output, listOnly);
+  public void read(File file) throws Exception {
+    evidenceName = getEvidenceName(file);
+    if (evidenceName == null) {
+      evidenceName = file.getName();
+    }
+    dataSource = new DataSource(file);
+    dataSource.setName(evidenceName);
+    read(file, null);
+  }
+
+  private boolean isRoot(File file) {
+    for (File f : File.listRoots()) {
+      if (f.equals(file)) return true;
+    }
+    return false;
+  }
+
+  @Override
+  public void read(File file, IItem parent) throws Exception {
+    args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
+    evidenceName = getEvidenceName(file);
+    if (evidenceName == null) {
+      evidenceName = file.getName();
+    }
+    if (evidenceName.isEmpty() && isRoot(file)) {
+      evidenceName = file.getAbsolutePath().substring(0, 2);
     }
 
-    public void read(File file) throws Exception {
-        evidenceName = getEvidenceName(file);
-        if (evidenceName == null) {
-            evidenceName = file.getName();
-        }
-        dataSource = new DataSource(file);
-        dataSource.setName(evidenceName);
-        read(file, null);
-
+    FileSystemConfig fsConfig = ConfigurationManager.get().findObject(FileSystemConfig.class);
+    if (!fsConfig.getSkipFolderRegex().isEmpty()) {
+      excludePattern = Pattern.compile(fsConfig.getSkipFolderRegex(), Pattern.CASE_INSENSITIVE);
     }
 
-    private boolean isRoot(File file) {
-        for (File f : File.listRoots()) {
-            if (f.equals(file))
-                return true;
+    rootFile = file;
+    inputStreamFactory = new FileInputStreamFactory(rootFile.toPath());
+
+    transverse(file, parent);
+  }
+
+  private void transverse(File file, IItem parent) throws IOException {
+    new FolderVisitor(parent).walk(file);
+  }
+
+  private IItem getEvidence(Path path, BasicFileAttributes attr) {
+    if (listOnly) {
+      caseData.incDiscoveredEvidences(1);
+      caseData.incDiscoveredVolume(attr.size());
+      return null;
+
+    } else {
+      File file = path.toFile();
+      IItem item = new Item();
+      item.setDataSource(dataSource);
+      String relativePath = rootFile.toPath().relativize(path).toString();
+      item.setIdInDataSource(relativePath);
+      item.setInputStreamFactory(inputStreamFactory);
+      if (file.equals(rootFile)) {
+        item.setName(evidenceName);
+      } else {
+        item.setName(file.getName());
+      }
+
+      if (args.isAddowner())
+        try {
+          UserPrincipal owner = Files.getOwner(path);
+          if (owner != null) item.setExtraAttribute(FS_OWNER, owner.toString());
+
+        } catch (IOException e) {
+          e.printStackTrace();
         }
-        return false;
+
+      return item;
+    }
+  }
+
+  class FolderVisitor implements FileVisitor<Path> {
+
+    private LinkedList<IItem> parents = new LinkedList<>();
+
+    public FolderVisitor(IItem parent) {
+      super();
+      if (parent != null) {
+        this.parents.add(parent);
+      }
+    }
+
+    public void walk(File file) throws IOException {
+      Path startingDir = file.toPath();
+      Files.walkFileTree(startingDir, this);
     }
 
     @Override
-    public void read(File file, IItem parent) throws Exception {
-        args = (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName());
-        evidenceName = getEvidenceName(file);
-        if (evidenceName == null) {
-            evidenceName = file.getName();
-        }
-        if (evidenceName.isEmpty() && isRoot(file)) {
-            evidenceName = file.getAbsolutePath().substring(0, 2);
-        }
+    public FileVisitResult visitFile(Path path, BasicFileAttributes attr) {
+      if (Thread.interrupted()) {
+        return FileVisitResult.TERMINATE;
+      }
 
-        FileSystemConfig fsConfig = ConfigurationManager.get().findObject(FileSystemConfig.class);
-        if (!fsConfig.getSkipFolderRegex().isEmpty()) {
-            excludePattern = Pattern.compile(fsConfig.getSkipFolderRegex(), Pattern.CASE_INSENSITIVE);
-        }
+      IItem item = getEvidence(path, attr);
+      if (item != null) {
+        if (!parents.isEmpty()) {
+          item.setParent(parents.getLast());
 
-        rootFile = file;
-        inputStreamFactory = new FileInputStreamFactory(rootFile.toPath());
-
-        transverse(file, parent);
-    }
-
-    private void transverse(File file, IItem parent)
-            throws IOException {
-        new FolderVisitor(parent).walk(file);
-    }
-
-    private IItem getEvidence(Path path, BasicFileAttributes attr) {
-        if (listOnly) {
-            caseData.incDiscoveredEvidences(1);
-            caseData.incDiscoveredVolume(attr.size());
-            return null;
-
+          if (parents.size() == 2) {
+            item.setExtraAttribute(
+                ExtraProperties.DATASOURCE_READER, this.getClass().getSimpleName());
+          }
         } else {
-            File file = path.toFile();
-            IItem item = new Item();
-            item.setDataSource(dataSource);
-            String relativePath = rootFile.toPath().relativize(path).toString();
-            item.setIdInDataSource(relativePath);
-            item.setInputStreamFactory(inputStreamFactory);
-            if (file.equals(rootFile)) {
-                item.setName(evidenceName);
-            } else {
-                item.setName(file.getName());
-            }
-
-            if (args.isAddowner())
-                try {
-                    UserPrincipal owner = Files.getOwner(path);
-                    if (owner != null)
-                        item.setExtraAttribute(FS_OWNER, owner.toString());
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            return item;
-        }
-    }
-
-    class FolderVisitor implements FileVisitor<Path> {
-
-        private LinkedList<IItem> parents = new LinkedList<>();
-
-        public FolderVisitor(IItem parent) {
-            super();
-            if (parent != null) {
-                this.parents.add(parent);
-            }
+          item.setRoot(true);
         }
 
-        public void walk(File file) throws IOException {
-            Path startingDir = file.toPath();
-            Files.walkFileTree(startingDir, this);
+        String fileName = item.getName();
+        String evidencePath =
+            parents.isEmpty() ? fileName : parents.getLast().getPath() + File.separator + fileName;
+        evidencePath = evidencePath.replace(File.separatorChar, '/');
+        item.setPath(evidencePath);
+
+        if (attr.isDirectory()) {
+          item.setIsDir(true);
         }
 
-        @Override
-        public FileVisitResult visitFile(Path path, BasicFileAttributes attr) {
-            if (Thread.interrupted()) {
-                return FileVisitResult.TERMINATE;
-            }
+        item.setAccessDate(new Date(attr.lastAccessTime().toMillis()));
+        item.setCreationDate(new Date(attr.creationTime().toMillis()));
+        item.setModificationDate(new Date(attr.lastModifiedTime().toMillis()));
+        item.setLength(attr.size());
 
-            IItem item = getEvidence(path, attr);
-            if (item != null) {
-                if (!parents.isEmpty()) {
-                    item.setParent(parents.getLast());
+        try {
+          Manager.getInstance().addItemToQueue(item);
 
-                    if (parents.size() == 2) {
-                        item.setExtraAttribute(ExtraProperties.DATASOURCE_READER, this.getClass().getSimpleName());
-                    }
-                } else {
-                    item.setRoot(true);
-                }
-
-                String fileName = item.getName();
-                String evidencePath = parents.isEmpty() ? fileName
-                        : parents.getLast().getPath() + File.separator + fileName;
-                evidencePath = evidencePath.replace(File.separatorChar, '/');
-                item.setPath(evidencePath);
-
-                if (attr.isDirectory()) {
-                    item.setIsDir(true);
-                }
-
-                item.setAccessDate(new Date(attr.lastAccessTime().toMillis()));
-                item.setCreationDate(new Date(attr.creationTime().toMillis()));
-                item.setModificationDate(new Date(attr.lastModifiedTime().toMillis()));
-                item.setLength(attr.size());
-
-                try {
-                    Manager.getInstance().addItemToQueue(item);
-
-                } catch (InterruptedException e) {
-                    return FileVisitResult.TERMINATE;
-                }
-
-                if (attr.isDirectory()) {
-                    // must getId() after Manager.getInstance().addItemToQueue();, it could set item
-                    // id to previous id
-                    // with --continue
-                    parents.addLast(item);
-                }
-            }
-
-            return FileVisitResult.CONTINUE;
+        } catch (InterruptedException e) {
+          return FileVisitResult.TERMINATE;
         }
 
-        @Override
-        public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attr) throws IOException {
-
-            if (excludePattern != null && excludePattern.matcher(path.toString()).find()) {
-                return FileVisitResult.SKIP_SUBTREE;
-            }
-
-            if (this.visitFile(path, attr).equals(FileVisitResult.TERMINATE)) {
-                return FileVisitResult.TERMINATE;
-            }
-
-            if (attr.isSymbolicLink() || attr.isOther()) { // pula links simbólicos e NTFS junctions
-                parents.pollLast();
-                return FileVisitResult.SKIP_SUBTREE;
-            }
-
-            return FileVisitResult.CONTINUE;
+        if (attr.isDirectory()) {
+          // must getId() after Manager.getInstance().addItemToQueue();, it could set item
+          // id to previous id
+          // with --continue
+          parents.addLast(item);
         }
+      }
 
-        @Override
-        public FileVisitResult postVisitDirectory(Path path, IOException exception) throws IOException {
-
-            parents.pollLast();
-
-            if (exception != null) {
-                log.error("Directory ignored: " + path.toFile().getAbsolutePath() + ": " + exception.toString());
-            }
-
-            return FileVisitResult.CONTINUE;
-        }
-
-        @Override
-        public FileVisitResult visitFileFailed(Path path, IOException exception) throws IOException {
-
-            if (exception != null) {
-                log.error("File/Folder ignored: " + path.toFile().getAbsolutePath() + ": " + exception.toString());
-            }
-
-            return FileVisitResult.CONTINUE;
-        }
-
+      return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public boolean isSupported(File datasource) {
-        return true;
+    public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attr)
+        throws IOException {
+
+      if (excludePattern != null && excludePattern.matcher(path.toString()).find()) {
+        return FileVisitResult.SKIP_SUBTREE;
+      }
+
+      if (this.visitFile(path, attr).equals(FileVisitResult.TERMINATE)) {
+        return FileVisitResult.TERMINATE;
+      }
+
+      if (attr.isSymbolicLink() || attr.isOther()) { // pula links simbólicos e NTFS junctions
+        parents.pollLast();
+        return FileVisitResult.SKIP_SUBTREE;
+      }
+
+      return FileVisitResult.CONTINUE;
     }
 
+    @Override
+    public FileVisitResult postVisitDirectory(Path path, IOException exception) throws IOException {
+
+      parents.pollLast();
+
+      if (exception != null) {
+        log.error(
+            "Directory ignored: " + path.toFile().getAbsolutePath() + ": " + exception.toString());
+      }
+
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(Path path, IOException exception) throws IOException {
+
+      if (exception != null) {
+        log.error(
+            "File/Folder ignored: "
+                + path.toFile().getAbsolutePath()
+                + ": "
+                + exception.toString());
+      }
+
+      return FileVisitResult.CONTINUE;
+    }
+  }
+
+  @Override
+  public boolean isSupported(File datasource) {
+    return true;
+  }
 }

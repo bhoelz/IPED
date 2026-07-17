@@ -1,6 +1,6 @@
 /*
  * Copyright 2012-2014, Luis Filipe da Cruz Nassif
- * 
+ *
  * This file is part of Indexador e Processador de Evidências Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -22,17 +22,14 @@ import java.io.IOException;
 
 public class TimeoutException extends IOException {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    public TimeoutException() {
-        super();
-    }
+  public TimeoutException() {
+    super();
+  }
 
-    public TimeoutException(String msg) {
-        super(msg);
-    }
-
+  public TimeoutException(String msg) {
+    super(msg);
+  }
 }

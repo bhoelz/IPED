@@ -1,68 +1,67 @@
 package iped.app.ui;
 
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
 
 public class SpinnerDialog extends JDialog {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-    private JSpinner spinner;
-    private JButton button;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    public SpinnerDialog(Frame parent, String title, String label, int val, int minVal, int maxVal) {
-        super(parent);
-        this.setModal(true);
-        this.setTitle(title);
+  private JSpinner spinner;
+  private JButton button;
 
-        SpinnerNumberModel model = new SpinnerNumberModel(val, minVal, maxVal, 1);
+  public SpinnerDialog(Frame parent, String title, String label, int val, int minVal, int maxVal) {
+    super(parent);
+    this.setModal(true);
+    this.setTitle(title);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+    SpinnerNumberModel model = new SpinnerNumberModel(val, minVal, maxVal, 1);
 
-        JPanel labelPanel = new JPanel();
-        JLabel jLabel = new JLabel(label);
-        labelPanel.add(jLabel);
-        labelPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 0, 30));
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
-        JPanel spinnerPanel = new JPanel();
-        spinner = new JSpinner(model);
-        spinnerPanel.add(spinner);
+    JPanel labelPanel = new JPanel();
+    JLabel jLabel = new JLabel(label);
+    labelPanel.add(jLabel);
+    labelPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 0, 30));
 
-        JPanel okPanel = new JPanel();
-        button = new JButton("OK"); //$NON-NLS-1$
-        okPanel.add(button);
-        okPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 20, 10));
+    JPanel spinnerPanel = new JPanel();
+    spinner = new JSpinner(model);
+    spinnerPanel.add(spinner);
 
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SpinnerDialog.this.dispose();
-            }
+    JPanel okPanel = new JPanel();
+    button = new JButton("OK"); // $NON-NLS-1$
+    okPanel.add(button);
+    okPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 20, 10));
+
+    button.addActionListener(
+        new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            SpinnerDialog.this.dispose();
+          }
         });
 
-        panel.add(labelPanel, BorderLayout.WEST);
-        panel.add(spinnerPanel, BorderLayout.EAST);
-        panel.add(okPanel, BorderLayout.SOUTH);
+    panel.add(labelPanel, BorderLayout.WEST);
+    panel.add(spinnerPanel, BorderLayout.EAST);
+    panel.add(okPanel, BorderLayout.SOUTH);
 
-        this.getContentPane().add(panel);
+    this.getContentPane().add(panel);
 
-        this.pack();
+    this.pack();
 
-        this.setLocationRelativeTo(parent);
-    }
+    this.setLocationRelativeTo(parent);
+  }
 
-    public void addChangeListener(ChangeListener l) {
-        spinner.addChangeListener(l);
-    }
+  public void addChangeListener(ChangeListener l) {
+    spinner.addChangeListener(l);
+  }
 
-    public int getSelectedValue() {
-        return (Integer) spinner.getValue();
-    }
-
+  public int getSelectedValue() {
+    return (Integer) spinner.getValue();
+  }
 }

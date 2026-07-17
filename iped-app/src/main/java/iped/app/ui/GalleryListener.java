@@ -18,101 +18,96 @@
  */
 package iped.app.ui;
 
-
-import lombok.extern.slf4j.Slf4j;
-
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GalleryListener implements ListSelectionListener, MouseListener, KeyListener {
 
-    private GalleryCellEditor cellEditor;
+  private GalleryCellEditor cellEditor;
 
-    @Override
-    public void valueChanged(ListSelectionEvent e) {
+  @Override
+  public void valueChanged(ListSelectionEvent e) {
 
-        if (!ResultTableListener.syncingSelectedItems && !e.getValueIsAdjusting()) {
-            ResultTableListener.syncingSelectedItems = true;
-            App.get().resultsTable.getSelectionModel().setValueIsAdjusting(true);
-            App.get().resultsTable.clearSelection();
-            int[] selRows = App.get().gallery.getSelectedCells();
-            int start = 0;
-            while (start < selRows.length) {
-                int i = start + 1;
-                while (i < selRows.length && selRows[i] - selRows[i - 1] == 1) {
-                    i++;
-                }
-                App.get().resultsTable.addRowSelectionInterval(selRows[start], selRows[i - 1]);
-                start = i;
-            }
-            int leadIdx = App.get().gallery.getLeadSelectionIndex();
-            if (leadIdx != -1) {
-                App.get().resultsTable.addRowSelectionInterval(leadIdx, leadIdx);
-            }
-            App.get().resultsTable.getSelectionModel().setValueIsAdjusting(false);
-            ResultTableListener.syncingSelectedItems = false;
+    if (!ResultTableListener.syncingSelectedItems && !e.getValueIsAdjusting()) {
+      ResultTableListener.syncingSelectedItems = true;
+      App.get().resultsTable.getSelectionModel().setValueIsAdjusting(true);
+      App.get().resultsTable.clearSelection();
+      int[] selRows = App.get().gallery.getSelectedCells();
+      int start = 0;
+      while (start < selRows.length) {
+        int i = start + 1;
+        while (i < selRows.length && selRows[i] - selRows[i - 1] == 1) {
+          i++;
         }
-
+        App.get().resultsTable.addRowSelectionInterval(selRows[start], selRows[i - 1]);
+        start = i;
+      }
+      int leadIdx = App.get().gallery.getLeadSelectionIndex();
+      if (leadIdx != -1) {
+        App.get().resultsTable.addRowSelectionInterval(leadIdx, leadIdx);
+      }
+      App.get().resultsTable.getSelectionModel().setValueIsAdjusting(false);
+      ResultTableListener.syncingSelectedItems = false;
     }
+  }
 
-    @Override
-    public void mouseClicked(MouseEvent arg0) {
-        // TODO Auto-generated method stub
+  @Override
+  public void mouseClicked(MouseEvent arg0) {
+    // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void mouseExited(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void mousePressed(MouseEvent evt) {}
+
+  @Override
+  public void mouseReleased(MouseEvent evt) {
+    for (MouseListener ml : App.get().resultsTable.getListeners(MouseListener.class)) {
+      ml.mouseReleased(evt);
     }
+  }
 
-    @Override
-    public void mouseEntered(MouseEvent arg0) {
-        // TODO Auto-generated method stub
-
+  @Override
+  public void keyPressed(KeyEvent evt) {
+    for (KeyListener kl : App.get().resultsTable.getListeners(KeyListener.class)) {
+      kl.keyPressed(evt);
     }
+  }
 
-    @Override
-    public void mouseExited(MouseEvent arg0) {
-        // TODO Auto-generated method stub
+  @Override
+  public void keyReleased(KeyEvent evt) {
+    cellEditor.stopCellEditing();
+  }
 
-    }
+  @Override
+  public void keyTyped(KeyEvent arg0) {
+    // TODO Auto-generated method stub
 
-    @Override
-    public void mousePressed(MouseEvent evt) {
+  }
 
-    }
+  public void setCellEditor(GalleryCellEditor cellEditor) {
+    this.cellEditor = cellEditor;
+  }
 
-    @Override
-    public void mouseReleased(MouseEvent evt) {
-        for (MouseListener ml : App.get().resultsTable.getListeners(MouseListener.class)) {
-            ml.mouseReleased(evt);
-        }
-    }
-
-    @Override
-    public void keyPressed(KeyEvent evt) {
-        for (KeyListener kl : App.get().resultsTable.getListeners(KeyListener.class)) {
-            kl.keyPressed(evt);
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent evt) {
-        cellEditor.stopCellEditing();
-    }
-
-    @Override
-    public void keyTyped(KeyEvent arg0) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void setCellEditor(GalleryCellEditor cellEditor) {
-        this.cellEditor = cellEditor;
-    }
-
-    public GalleryCellEditor getCellEditor() {
-        return cellEditor;
-    }
+  public GalleryCellEditor getCellEditor() {
+    return cellEditor;
+  }
 }

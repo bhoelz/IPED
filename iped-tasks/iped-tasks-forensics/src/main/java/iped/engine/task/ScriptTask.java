@@ -23,104 +23,101 @@ import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.data.IPEDSource;
 import iped.engine.search.IPEDSearcher;
-
-import javax.script.*;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
+import javax.script.*;
 
 public class ScriptTask extends AbstractTask {
 
-    private static IPEDSource ipedCase;
-    private static int numInstances = 0;
+  private static IPEDSource ipedCase;
+  private static int numInstances = 0;
 
-    private File scriptFile;
-    private ScriptEngine engine;
-    private Invocable inv;
-    private String scriptName;
+  private File scriptFile;
+  private ScriptEngine engine;
+  private Invocable inv;
+  private String scriptName;
 
-    public ScriptTask(File scriptFile) {
-        this.scriptFile = scriptFile;
-        try {
-            loadScript(this.scriptFile);
+  public ScriptTask(File scriptFile) {
+    this.scriptFile = scriptFile;
+    try {
+      loadScript(this.scriptFile);
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public void loadScript(File file)
-            throws IOException, ScriptException, UnsupportedEncodingException, NoSuchMethodException {
+  public void loadScript(File file)
+      throws IOException, ScriptException, UnsupportedEncodingException, NoSuchMethodException {
 
-        try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), "UTF-8")) { //$NON-NLS-1$
+    try (InputStreamReader reader =
+        new InputStreamReader(new FileInputStream(file), "UTF-8")) { // $NON-NLS-1$
 
-            ScriptEngineManager manager = new ScriptEngineManager();
-            String ext = file.getName().substring(file.getName().lastIndexOf('.') + 1);
-            engine = manager.getEngineByExtension(ext);
-            Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-            // bindings.put("polyglot.js.nashorn-compat", true);
-            engine.eval(reader);
-            inv = (Invocable) engine;
-        }
-
+      ScriptEngineManager manager = new ScriptEngineManager();
+      String ext = file.getName().substring(file.getName().lastIndexOf('.') + 1);
+      engine = manager.getEngineByExtension(ext);
+      Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+      // bindings.put("polyglot.js.nashorn-compat", true);
+      engine.eval(reader);
+      inv = (Invocable) engine;
     }
+  }
 
-    @Override
-    public List<Configurable<?>> getConfigurables() {
-        try {
-            List<Configurable<?>> configs = (List<Configurable<?>>) inv.invokeFunction("getConfigurables");
-            return configs != null ? configs : Collections.emptyList();
+  @Override
+  public List<Configurable<?>> getConfigurables() {
+    try {
+      List<Configurable<?>> configs =
+          (List<Configurable<?>>) inv.invokeFunction("getConfigurables");
+      return configs != null ? configs : Collections.emptyList();
 
-        } catch (NoSuchMethodException | ScriptException e) {
-            throw new RuntimeException(e);
-        }
+    } catch (NoSuchMethodException | ScriptException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
 
-        engine.put("caseData", this.caseData); //$NON-NLS-1$
-        engine.put("moduleDir", this.output); //$NON-NLS-1$
-        engine.put("worker", this.worker); //$NON-NLS-1$
-        engine.put("stats", this.stats); //$NON-NLS-1$
+    engine.put("caseData", this.caseData); // $NON-NLS-1$
+    engine.put("moduleDir", this.output); // $NON-NLS-1$
+    engine.put("worker", this.worker); // $NON-NLS-1$
+    engine.put("stats", this.stats); // $NON-NLS-1$
 
-        scriptName = (String) inv.invokeFunction("getName"); //$NON-NLS-1$
+    scriptName = (String) inv.invokeFunction("getName"); // $NON-NLS-1$
 
-        inv.invokeFunction("init", configurationManager); //$NON-NLS-1$
+    inv.invokeFunction("init", configurationManager); // $NON-NLS-1$
 
-        numInstances++;
+    numInstances++;
+  }
+
+  @Override
+  public void finish() throws Exception {
+
+    if (ipedCase == null) ipedCase = new IPEDSource(this.output.getParentFile(), worker.writer);
+
+    try {
+      IPEDSearcher searcher = new IPEDSearcher(ipedCase);
+
+      engine.put("ipedCase", ipedCase); // $NON-NLS-1$
+      engine.put("searcher", searcher); // $NON-NLS-1$
+
+      inv.invokeFunction("finish"); // $NON-NLS-1$
+
+    } finally {
+      // remove references to heavy objects
+      engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+      if (--numInstances == 0) ipedCase.close();
     }
+  }
 
-    @Override
-    public void finish() throws Exception {
+  @Override
+  public void process(IItem e) throws Exception {
+    inv.invokeFunction("process", e); // $NON-NLS-1$
+  }
 
-        if (ipedCase == null)
-            ipedCase = new IPEDSource(this.output.getParentFile(), worker.writer);
-
-        try {
-            IPEDSearcher searcher = new IPEDSearcher(ipedCase);
-
-            engine.put("ipedCase", ipedCase); //$NON-NLS-1$
-            engine.put("searcher", searcher); //$NON-NLS-1$
-
-            inv.invokeFunction("finish"); //$NON-NLS-1$
-
-        } finally {
-            // remove references to heavy objects
-            engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
-            if (--numInstances == 0)
-                ipedCase.close();
-        }
-    }
-
-    @Override
-    public void process(IItem e) throws Exception {
-        inv.invokeFunction("process", e); //$NON-NLS-1$
-    }
-
-    @Override
-    public String getName() {
-        return scriptName;
-    }
-
+  @Override
+  public String getName() {
+    return scriptName;
+  }
 }

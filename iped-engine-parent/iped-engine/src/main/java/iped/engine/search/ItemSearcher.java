@@ -4,89 +4,85 @@ import iped.data.IItemReader;
 import iped.engine.data.IPEDSource;
 import iped.search.IItemSearcher;
 import iped.search.SearchResult;
-import org.apache.lucene.index.IndexWriter;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.lucene.index.IndexWriter;
 
 public class ItemSearcher implements IItemSearcher {
 
-    File caseFolder;
-    IndexWriter iw;
-    IPEDSource iSource;
+  File caseFolder;
+  IndexWriter iw;
+  IPEDSource iSource;
 
-    public ItemSearcher(IPEDSource iSource) {
-        this.iSource = iSource;
+  public ItemSearcher(IPEDSource iSource) {
+    this.iSource = iSource;
+  }
+
+  public ItemSearcher(File caseFolder, IndexWriter iw) {
+    this.caseFolder = caseFolder;
+    this.iw = iw;
+    this.iSource = new IPEDSource(caseFolder, iw);
+  }
+
+  @Override
+  public List<IItemReader> search(String luceneQuery) {
+
+    List<IItemReader> items = new ArrayList<IItemReader>();
+    for (IItemReader item : searchIterable(luceneQuery)) {
+      items.add(item);
     }
+    return items;
+  }
 
-    public ItemSearcher(File caseFolder, IndexWriter iw) {
-        this.caseFolder = caseFolder;
-        this.iw = iw;
-        this.iSource = new IPEDSource(caseFolder, iw);
-    }
+  @Override
+  public Iterable<IItemReader> searchIterable(String luceneQuery) {
 
-    @Override
-    public List<IItemReader> search(String luceneQuery) {
+    SearchResult result = getResult(luceneQuery);
 
-        List<IItemReader> items = new ArrayList<IItemReader>();
-        for (IItemReader item : searchIterable(luceneQuery)) {
-            items.add(item);
-        }
-        return items;
-    }
+    return new Iterable<IItemReader>() {
+      @Override
+      public Iterator<IItemReader> iterator() {
+        return new Iterator<IItemReader>() {
 
-    @Override
-    public Iterable<IItemReader> searchIterable(String luceneQuery) {
+          int pos = 0;
 
-        SearchResult result = getResult(luceneQuery);
+          @Override
+          public boolean hasNext() {
+            return pos < result.getLength();
+          }
 
-        return new Iterable<IItemReader>() {
-            @Override
-            public Iterator<IItemReader> iterator() {
-                return new Iterator<IItemReader>() {
-
-                    int pos = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        return pos < result.getLength();
-                    }
-
-                    @Override
-                    public IItemReader next() {
-                        return iSource.getItemByID(result.getId(pos++));
-                    }
-
-                };
-            }
+          @Override
+          public IItemReader next() {
+            return iSource.getItemByID(result.getId(pos++));
+          }
         };
+      }
+    };
+  }
+
+  private SearchResult getResult(String luceneQuery) {
+    try {
+      IPEDSearcher searcher = new IPEDSearcher(iSource, luceneQuery);
+      searcher.setTreeQuery(true);
+      searcher.setNoScoring(true);
+      return searcher.search();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      return new SearchResult(new int[0], new float[0]);
     }
+  }
 
-    private SearchResult getResult(String luceneQuery) {
-        try {
-            IPEDSearcher searcher = new IPEDSearcher(iSource, luceneQuery);
-            searcher.setTreeQuery(true);
-            searcher.setNoScoring(true);
-            return searcher.search();
+  @Override
+  public void close() throws IOException {
+    if (iSource != null) iSource.close();
+  }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new SearchResult(new int[0], new float[0]);
-        }
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (iSource != null)
-            iSource.close();
-    }
-
-    @Override
-    public String escapeQuery(String string) {
-        return QueryBuilder.escape(string);
-    }
-
+  @Override
+  public String escapeQuery(String string) {
+    return QueryBuilder.escape(string);
+  }
 }

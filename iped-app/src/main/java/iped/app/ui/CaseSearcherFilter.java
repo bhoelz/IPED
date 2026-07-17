@@ -27,6 +27,11 @@ import iped.engine.search.QueryBuilder;
 import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.viewers.api.*;
+import java.lang.ref.SoftReference;
+import java.util.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import javax.swing.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -34,336 +39,334 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.roaringbitmap.RoaringBitmap;
 
-import javax.swing.*;
-import java.lang.ref.SoftReference;
-import java.util.*;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-
 @Slf4j
 public class CaseSearcherFilter extends CancelableWorker<MultiSearchResult, Object> {
-    ArrayList<CaseSearchFilterListener> listeners = new ArrayList<CaseSearchFilterListener>();
-    RoaringBitmap[] unionsArray;
-    RoaringBitmap[] excludeUnionsArray;
+  ArrayList<CaseSearchFilterListener> listeners = new ArrayList<CaseSearchFilterListener>();
+  RoaringBitmap[] unionsArray;
+  RoaringBitmap[] excludeUnionsArray;
 
-    public static SoftReference<MultiSearchResult> allItemsCache;
-    private static IPEDSource ipedCase;
+  public static SoftReference<MultiSearchResult> allItemsCache;
+  private static IPEDSource ipedCase;
 
-    private ExecutorService threadPool;
+  private ExecutorService threadPool;
 
-    volatile int numFilters = 0;
+  volatile int numFilters = 0;
 
-    String queryText;
-    Query query;
-    IPEDSearcher searcher;
-    FilterManager filterManager;
+  String queryText;
+  Query query;
+  IPEDSearcher searcher;
+  FilterManager filterManager;
 
-    public CaseSearcherFilter(String queryText) {
-        this.queryText = queryText;
-        searcher = new IPEDSearcher(App.get().appCase, queryText);
-        filterManager = App.get().getFilterManager();
+  public CaseSearcherFilter(String queryText) {
+    this.queryText = queryText;
+    searcher = new IPEDSearcher(App.get().appCase, queryText);
+    filterManager = App.get().getFilterManager();
+  }
+
+  public CaseSearcherFilter(Query query) {
+    this.query = query;
+    searcher = new IPEDSearcher(App.get().appCase, query);
+    filterManager = App.get().getFilterManager();
+  }
+
+  public void applyUIQueryFilters() {
+    applyUIQueryFilters(null); // no exceptions
+  }
+
+  public void applyUIQueryFilters(Set<IQueryFilterer> exceptions) {
+    try {
+      searcher.setQuery(getQueryWithUIFilter(exceptions));
+
+    } catch (ParseException | QueryNodeException e) {
+      JOptionPane.showMessageDialog(
+          App.get(),
+          Messages.getString("UISearcher.Error.Msg") + e.getMessage(), // $NON-NLS-1$
+          Messages.getString("UISearcher.Error.Title"),
+          JOptionPane.ERROR_MESSAGE); // $NON-NLS-1$
+      // e.printStackTrace();
+    }
+  }
+
+  private Query getQueryWithUIFilter(Set<IQueryFilterer> exceptions)
+      throws ParseException, QueryNodeException {
+    Query result;
+    numFilters = 0;
+    if (queryText != null) {
+      result = new QueryBuilder(App.get().appCase).getQuery(queryText);
+      if (!queryText.trim().isEmpty()) numFilters++;
+    } else {
+      result = query;
+      if (!(query instanceof MatchAllDocsQuery)) numFilters++;
     }
 
-    public CaseSearcherFilter(Query query) {
-        this.query = query;
-        searcher = new IPEDSearcher(App.get().appCase, query);
-        filterManager = App.get().getFilterManager();
-    }
+    if (applyUIFilters) {
+      List<IQueryFilterer> queryFilterers = filterManager.queryFilterers;
+      for (Iterator iterator = queryFilterers.iterator(); iterator.hasNext(); ) {
+        IQueryFilterer iQueryFilterer = (IQueryFilterer) iterator.next();
 
-    public void applyUIQueryFilters() {
-        applyUIQueryFilters(null);// no exceptions
-    }
-
-    public void applyUIQueryFilters(Set<IQueryFilterer> exceptions) {
-        try {
-            searcher.setQuery(getQueryWithUIFilter(exceptions));
-
-        } catch (ParseException | QueryNodeException e) {
-            JOptionPane.showMessageDialog(App.get(), Messages.getString("UISearcher.Error.Msg") + e.getMessage(), //$NON-NLS-1$
-                    Messages.getString("UISearcher.Error.Title"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-            // e.printStackTrace();
+        if (filterManager.isFiltererEnabled(iQueryFilterer)) {
+          if (exceptions == null || !exceptions.contains(iQueryFilterer)) {
+            Query fquery = iQueryFilterer.getQuery();
+            if (fquery != null) {
+              BooleanQuery.Builder boolQuery = new BooleanQuery.Builder();
+              boolQuery.add(fquery, Occur.MUST);
+              boolQuery.add(result, Occur.MUST);
+              result = boolQuery.build();
+              numFilters++;
+            }
+          }
         }
+      }
     }
 
-    private Query getQueryWithUIFilter(Set<IQueryFilterer> exceptions) throws ParseException, QueryNodeException {
-        Query result;
-        numFilters = 0;
-        if (queryText != null) {
-            result = new QueryBuilder(App.get().appCase).getQuery(queryText);
-            if (!queryText.trim().isEmpty())
-                numFilters++;
+    return result;
+  }
+
+  MultiSearchResult result = null;
+  private boolean applyUIFilters = true;
+
+  public MultiSearchResult getDoneResult() {
+    return this.result;
+  }
+
+  @Override
+  public MultiSearchResult doInBackground() {
+
+    synchronized (this.getClass()) {
+      Date d1 = new Date();
+
+      if (this.isCancelled()) throw new CancellationException();
+
+      try {
+        for (CaseSearchFilterListener caseSearchFilterListener : listeners) {
+          caseSearchFilterListener.onStart();
+        }
+
+        if (this.isCancelled()) {
+          throw new CancellationException();
+        }
+
+        if (ipedCase == null || ipedCase != App.get().appCase) {
+          allItemsCache = null;
+          ipedCase = App.get().appCase;
+        }
+
+        Query q = searcher.getQuery();
+        // log.info("Searching for query " + (q != null ? q.toString() : queryText));
+        // //$NON-NLS-1$
+
+        if (q instanceof MatchAllDocsQuery && allItemsCache != null) result = allItemsCache.get();
+
+        if (result == null) {
+          result = searcher.multiSearch();
+
+          if (this.isCancelled()) {
+            throw new CancellationException();
+          }
+
+          if (q instanceof MatchAllDocsQuery
+              && (allItemsCache == null || allItemsCache.get() == null))
+            allItemsCache = new SoftReference(result.clone());
+        }
+
+        result.setIPEDSource(ipedCase);
+
+        if (applyUIFilters && filterManager != null) {
+          List<IResultSetFilterer> rsFilterers = filterManager.getResultSetFilterers();
+
+          for (Iterator iterator = rsFilterers.iterator();
+              iterator.hasNext() && result.getLength() > 0; ) {
+            if (this.isCancelled()) {
+              throw new CancellationException();
+            }
+
+            IResultSetFilterer iRSFilterer = (IResultSetFilterer) iterator.next();
+            applyFilterer(iRSFilterer, result);
+          }
+        }
+
+        if (this.isCancelled()) {
+          throw new CancellationException();
+        }
+        if (unionsArray != null) {
+          MultiSearchResult newresult = filterManager.applyFilter(unionsArray, result);
+          if (newresult != result) {
+            numFilters++;
+            result = newresult;
+            result.setIPEDSource(ipedCase);
+          }
+        }
+        if (excludeUnionsArray != null) {
+          MultiSearchResult newresult =
+              filterManager.applyExcludeFilter(excludeUnionsArray, result);
+          if (newresult != result) {
+            numFilters++;
+            result = newresult;
+            result.setIPEDSource(ipedCase);
+          }
+        }
+
+      } catch (Throwable e) {
+        if (!(e instanceof CancellationException)) {
+          e.printStackTrace();
+        }
+        return new MultiSearchResult(new ItemId[0], new float[0]);
+      }
+
+      result.setIpedSearcher(searcher);
+      result.setIPEDSource(ipedCase);
+
+      Date d2 = new Date();
+      log.info("Search and filtering took {}ms", d2.getTime() - d1.getTime());
+
+      return result;
+    }
+  }
+
+  private void applyFilterer(IResultSetFilterer iRSFilterer, MultiSearchResult result2) {
+    if (filterManager.isFiltererEnabled(iRSFilterer)) {
+      IFilter rsFilter = iRSFilterer.getFilter();
+
+      if (rsFilter != null) {
+        if (rsFilter instanceof IBitmapFilter) { // if the filter exposes a internal bitmap
+          applyBitmapFilter((IBitmapFilter) rsFilter);
         } else {
-            result = query;
-            if (!(query instanceof MatchAllDocsQuery))
-                numFilters++;
-        }
-
-        if (applyUIFilters) {
-            List<IQueryFilterer> queryFilterers = filterManager.queryFilterers;
-            for (Iterator iterator = queryFilterers.iterator(); iterator.hasNext();) {
-                IQueryFilterer iQueryFilterer = (IQueryFilterer) iterator.next();
-
-                if (filterManager.isFiltererEnabled(iQueryFilterer)) {
-                    if (exceptions == null || !exceptions.contains(iQueryFilterer)) {
-                        Query fquery = iQueryFilterer.getQuery();
-                        if (fquery != null) {
-                            BooleanQuery.Builder boolQuery = new BooleanQuery.Builder();
-                            boolQuery.add(fquery, Occur.MUST);
-                            boolQuery.add(result, Occur.MUST);
-                            result = boolQuery.build();
-                            numFilters++;
-                        }
-                    }
-                }
+          RoaringBitmap[] cachedBitmaps =
+              filterManager.getCachedBitmaps((IResultSetFilter) rsFilter);
+          if (cachedBitmaps != null) { // if filtermanager returned a cached bitmap
+            applyBitmapFilter(cachedBitmaps);
+          } else {
+            MultiSearchResult newresult =
+                filterManager.applyFilter((IResultSetFilter) rsFilter, result);
+            if (newresult != result) {
+              numFilters++;
+              result = newresult;
+              result.setIPEDSource(ipedCase);
             }
+          }
         }
+      }
+    }
+  }
 
-        return result;
+  private void applyBitmapFilter(RoaringBitmap[] cachedBitmaps) {
+    RoaringBitmap[] lunionsArray = result.getCasesBitSets((IPEDMultiSource) ipedCase);
+    for (int i = 0; i < unionsArray.length; i++) {
+      lunionsArray[i].and(cachedBitmaps[i]);
     }
 
-    MultiSearchResult result = null;
-    private boolean applyUIFilters = true;
+    MultiSearchResult newresult = filterManager.applyFilter(lunionsArray, result);
+    if (newresult != result) {
+      numFilters++;
+      result = newresult;
+      result.setIPEDSource(ipedCase);
+    }
+  }
 
-    public MultiSearchResult getDoneResult() {
-        return this.result;
+  private void applyBitmapFilter(IBitmapFilter rsFilter) {
+    RoaringBitmap[] lunionsArray = result.getCasesBitSets((IPEDMultiSource) ipedCase);
+    for (int i = 0; i < lunionsArray.length; i++) {
+      if (rsFilter.isToFilterOut()) {
+        lunionsArray[i].andNot(((IBitmapFilter) rsFilter).getBitmap()[i]);
+      } else {
+        lunionsArray[i].and(((IBitmapFilter) rsFilter).getBitmap()[i]);
+      }
     }
 
-    @Override
-    public MultiSearchResult doInBackground() {
+    MultiSearchResult newresult = filterManager.applyFilter(lunionsArray, result);
+    if (newresult != result) {
+      numFilters++;
+      result = newresult;
+      result.setIPEDSource(ipedCase);
+    }
+  }
 
-        synchronized (this.getClass()) {
+  @Override
+  public void done() {
+    for (CaseSearchFilterListener caseSearchFilterListener : listeners) {
+      if (isCancelled()) {
+        break;
+      }
+      caseSearchFilterListener.onDone();
+    }
+  }
 
-            Date d1 = new Date();
+  @Override
+  public boolean doCancel(boolean mayInterruptIfRunning) {
+    searcher.cancel();
 
-            if (this.isCancelled())
-                throw new CancellationException();
-
-            try {
-                for (CaseSearchFilterListener caseSearchFilterListener : listeners) {
-                    caseSearchFilterListener.onStart();
-                }
-
-                if (this.isCancelled()) {
-                    throw new CancellationException();
-                }
-
-                if (ipedCase == null || ipedCase != App.get().appCase) {
-                    allItemsCache = null;
-                    ipedCase = App.get().appCase;
-                }
-
-                Query q = searcher.getQuery();
-                // log.info("Searching for query " + (q != null ? q.toString() : queryText));
-                // //$NON-NLS-1$
-
-                if (q instanceof MatchAllDocsQuery && allItemsCache != null)
-                    result = allItemsCache.get();
-
-                if (result == null) {
-                    result = searcher.multiSearch();
-
-                    if (this.isCancelled()) {
-                        throw new CancellationException();
-                    }
-
-                    if (q instanceof MatchAllDocsQuery && (allItemsCache == null || allItemsCache.get() == null))
-                        allItemsCache = new SoftReference(result.clone());
-                }
-
-                result.setIPEDSource(ipedCase);
-
-                if (applyUIFilters && filterManager != null) {
-                    List<IResultSetFilterer> rsFilterers = filterManager.getResultSetFilterers();
-
-                    for (Iterator iterator = rsFilterers.iterator(); iterator.hasNext() && result.getLength() > 0;) {
-                        if (this.isCancelled()) {
-                            throw new CancellationException();
-                        }
-
-                        IResultSetFilterer iRSFilterer = (IResultSetFilterer) iterator.next();
-                        applyFilterer(iRSFilterer, result);
-                    }
-                }
-
-                if (this.isCancelled()) {
-                    throw new CancellationException();
-                }
-                if (unionsArray != null) {
-                    MultiSearchResult newresult = filterManager.applyFilter(unionsArray, result);
-                    if (newresult != result) {
-                        numFilters++;
-                        result = newresult;
-                        result.setIPEDSource(ipedCase);
-                    }
-                }
-                if (excludeUnionsArray != null) {
-                    MultiSearchResult newresult = filterManager.applyExcludeFilter(excludeUnionsArray, result);
-                    if (newresult != result) {
-                        numFilters++;
-                        result = newresult;
-                        result.setIPEDSource(ipedCase);
-                    }
-                }
-
-            } catch (Throwable e) {
-                if (!(e instanceof CancellationException)) {
-                    e.printStackTrace();
-                }
-                return new MultiSearchResult(new ItemId[0], new float[0]);
-            }
-
-            result.setIpedSearcher(searcher);
-            result.setIPEDSource(ipedCase);
-
-            Date d2 = new Date();
-            log.info("Search and filtering took {}ms", d2.getTime() - d1.getTime());
-
-            return result;
-        }
+    for (CaseSearchFilterListener caseSearchFilterListener : listeners) {
+      caseSearchFilterListener.onCancel(mayInterruptIfRunning);
     }
 
-    private void applyFilterer(IResultSetFilterer iRSFilterer, MultiSearchResult result2) {
-        if (filterManager.isFiltererEnabled(iRSFilterer)) {
-            IFilter rsFilter = iRSFilterer.getFilter();
+    return cancel(mayInterruptIfRunning);
+  }
 
-            if (rsFilter != null) {
-                if (rsFilter instanceof IBitmapFilter) {// if the filter exposes a internal bitmap
-                    applyBitmapFilter((IBitmapFilter) rsFilter);
-                } else {
-                    RoaringBitmap[] cachedBitmaps = filterManager.getCachedBitmaps((IResultSetFilter) rsFilter);
-                    if (cachedBitmaps != null) { // if filtermanager returned a cached bitmap
-                        applyBitmapFilter(cachedBitmaps);
-                    } else {
-                        MultiSearchResult newresult = filterManager.applyFilter((IResultSetFilter) rsFilter, result);
-                        if (newresult != result) {
-                            numFilters++;
-                            result = newresult;
-                            result.setIPEDSource(ipedCase);
-                        }
-                    }
-                }
-            }
-        }
+  public int getNumFilters() {
+    return numFilters;
+  }
+
+  public void setNumFilters(int numFilters) {
+    this.numFilters = numFilters;
+  }
+
+  public IPEDSearcher getSearcher() {
+    return searcher;
+  }
+
+  public void setSearcher(IPEDSearcher searcher) {
+    this.searcher = searcher;
+  }
+
+  public String getQueryText() {
+    return queryText;
+  }
+
+  public void setQueryText(String queryText) {
+    this.queryText = queryText;
+  }
+
+  public void addCaseSearchFilterListener(CaseSearchFilterListener csfl) {
+    listeners.add(csfl);
+  }
+
+  public ExecutorService getThreadPool() {
+    return threadPool;
+  }
+
+  public void setThreadPool(ExecutorService threadPool) {
+    this.threadPool = threadPool;
+  }
+
+  public void setAppyUIFilters(boolean applyUIFilters) {
+    this.applyUIFilters = applyUIFilters;
+  }
+
+  public void addBitmapExcludeFilter(RoaringBitmap[] lunionsArray) {
+    if (excludeUnionsArray == null) {
+      excludeUnionsArray = new RoaringBitmap[lunionsArray.length];
     }
-
-    private void applyBitmapFilter(RoaringBitmap[] cachedBitmaps) {
-        RoaringBitmap[] lunionsArray = result.getCasesBitSets((IPEDMultiSource) ipedCase);
-        for (int i = 0; i < unionsArray.length; i++) {
-            lunionsArray[i].and(cachedBitmaps[i]);
-        }
-
-        MultiSearchResult newresult = filterManager.applyFilter(lunionsArray, result);
-        if (newresult != result) {
-            numFilters++;
-            result = newresult;
-            result.setIPEDSource(ipedCase);
-        }
+    for (int i = 0; i < excludeUnionsArray.length; i++) {
+      if (excludeUnionsArray[i] == null) {
+        excludeUnionsArray[i] = new RoaringBitmap();
+        excludeUnionsArray[i].or(lunionsArray[i]);
+      } else {
+        excludeUnionsArray[i].and(lunionsArray[i]);
+      }
     }
+  }
 
-    private void applyBitmapFilter(IBitmapFilter rsFilter) {
-        RoaringBitmap[] lunionsArray = result.getCasesBitSets((IPEDMultiSource) ipedCase);
-        for (int i = 0; i < lunionsArray.length; i++) {
-            if (rsFilter.isToFilterOut()) {
-                lunionsArray[i].andNot(((IBitmapFilter) rsFilter).getBitmap()[i]);
-            } else {
-                lunionsArray[i].and(((IBitmapFilter) rsFilter).getBitmap()[i]);
-            }
-        }
-
-        MultiSearchResult newresult = filterManager.applyFilter(lunionsArray, result);
-        if (newresult != result) {
-            numFilters++;
-            result = newresult;
-            result.setIPEDSource(ipedCase);
-        }
+  public void addBitmapFilter(RoaringBitmap[] lunionsArray) {
+    if (unionsArray == null) {
+      unionsArray = new RoaringBitmap[lunionsArray.length];
     }
-
-    @Override
-    public void done() {
-        for (CaseSearchFilterListener caseSearchFilterListener : listeners) {
-            if (isCancelled()) {
-                break;
-            }
-            caseSearchFilterListener.onDone();
-        }
+    for (int i = 0; i < unionsArray.length; i++) {
+      if (unionsArray[i] == null) {
+        unionsArray[i] = new RoaringBitmap();
+        unionsArray[i].or(lunionsArray[i]);
+      } else {
+        unionsArray[i].and(lunionsArray[i]);
+      }
     }
-
-    @Override
-    public boolean doCancel(boolean mayInterruptIfRunning) {
-        searcher.cancel();
-
-        for (CaseSearchFilterListener caseSearchFilterListener : listeners) {
-            caseSearchFilterListener.onCancel(mayInterruptIfRunning);
-        }
-
-        return cancel(mayInterruptIfRunning);
-    }
-
-    public int getNumFilters() {
-        return numFilters;
-    }
-
-    public void setNumFilters(int numFilters) {
-        this.numFilters = numFilters;
-    }
-
-    public IPEDSearcher getSearcher() {
-        return searcher;
-    }
-
-    public void setSearcher(IPEDSearcher searcher) {
-        this.searcher = searcher;
-    }
-
-    public String getQueryText() {
-        return queryText;
-    }
-
-    public void setQueryText(String queryText) {
-        this.queryText = queryText;
-    }
-
-    public void addCaseSearchFilterListener(CaseSearchFilterListener csfl) {
-        listeners.add(csfl);
-    }
-
-    public ExecutorService getThreadPool() {
-        return threadPool;
-    }
-
-    public void setThreadPool(ExecutorService threadPool) {
-        this.threadPool = threadPool;
-    }
-
-    public void setAppyUIFilters(boolean applyUIFilters) {
-        this.applyUIFilters = applyUIFilters;
-    }
-
-    public void addBitmapExcludeFilter(RoaringBitmap[] lunionsArray) {
-        if (excludeUnionsArray == null) {
-            excludeUnionsArray = new RoaringBitmap[lunionsArray.length];
-        }
-        for (int i = 0; i < excludeUnionsArray.length; i++) {
-            if (excludeUnionsArray[i] == null) {
-                excludeUnionsArray[i] = new RoaringBitmap();
-                excludeUnionsArray[i].or(lunionsArray[i]);
-            } else {
-                excludeUnionsArray[i].and(lunionsArray[i]);
-            }
-        }
-    }
-
-    public void addBitmapFilter(RoaringBitmap[] lunionsArray) {
-        if (unionsArray == null) {
-            unionsArray = new RoaringBitmap[lunionsArray.length];
-        }
-        for (int i = 0; i < unionsArray.length; i++) {
-            if (unionsArray[i] == null) {
-                unionsArray[i] = new RoaringBitmap();
-                unionsArray[i].or(lunionsArray[i]);
-            } else {
-                unionsArray[i].and(lunionsArray[i]);
-            }
-        }
-    }
+  }
 }

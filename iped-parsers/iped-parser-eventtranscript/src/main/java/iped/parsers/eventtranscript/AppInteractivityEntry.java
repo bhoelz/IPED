@@ -6,229 +6,228 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class AppInteractivityEntry {
-    private String app;
-    private Date timestamp;
-    private String timestampStr;
-    private String localTime;
-    private String timezone;
-    private String tagName;
-    private String eventName;
-    private Date aggregationStartTime;
-    private String aggregationStartTimeStr;
-    private String aggregationDuration;
-    private String appVersionDate;
-    private String PEHeaderChecksum;
-    private String type;
-    private String windowSize;
-    private String mouseInputSec;
-    private String inFocusDuration;
-    private String userActiveDuration;
-    private String sinceFirstInteractivityMS;
-    private String userOrDisplayActiveDuration;
-    private String focusLostCount;
-    private String programID;
-    private String userID;
-    private String userSID;
-    private String JSONPayload;
+  private String app;
+  private Date timestamp;
+  private String timestampStr;
+  private String localTime;
+  private String timezone;
+  private String tagName;
+  private String eventName;
+  private Date aggregationStartTime;
+  private String aggregationStartTimeStr;
+  private String aggregationDuration;
+  private String appVersionDate;
+  private String PEHeaderChecksum;
+  private String type;
+  private String windowSize;
+  private String mouseInputSec;
+  private String inFocusDuration;
+  private String userActiveDuration;
+  private String sinceFirstInteractivityMS;
+  private String userOrDisplayActiveDuration;
+  private String focusLostCount;
+  private String programID;
+  private String userID;
+  private String userSID;
+  private String JSONPayload;
 
-    public Date getTimestamp() {
-        return this.timestamp;
+  public Date getTimestamp() {
+    return this.timestamp;
+  }
+
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
+  }
+
+  public void setTimestamp(String timestamp) throws ParseException {
+    this.timestampStr = timestamp;
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    format.setTimeZone(TimeZone.getTimeZone("UTC"));
+    setTimestamp(format.parse(timestamp));
+  }
+
+  public String getLocalTime() {
+    return this.localTime;
+  }
+
+  public void setLocalTime(String localTime) {
+    this.localTime = localTime;
+  }
+
+  public String getTimezone() {
+    return this.timezone;
+  }
+
+  public void setTimezone(String timezone) {
+    this.timezone = timezone;
+  }
+
+  public String getTimestampStr() {
+    return this.timestampStr;
+  }
+
+  public String getTagName() {
+    return this.tagName;
+  }
+
+  public void setTagName(String tagName) {
+    this.tagName = tagName;
+  }
+
+  public String getEventName() {
+    return this.eventName;
+  }
+
+  public void setEventName(String eventName) {
+    this.eventName = eventName;
+  }
+
+  public Date getAggregationStartTime() {
+    return this.aggregationStartTime;
+  }
+
+  public void setAggregationStartTime(String aggregationStartTime) throws ParseException {
+    this.aggregationStartTimeStr = aggregationStartTime != null ? aggregationStartTime : "";
+    if (!aggregationStartTime.isEmpty()) {
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      format.setTimeZone(TimeZone.getTimeZone("UTC"));
+      setAggregationStartTime(format.parse(aggregationStartTime));
     }
+  }
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
+  public void setAggregationStartTime(Date aggregationStartTime) {
+    this.aggregationStartTime = aggregationStartTime;
+  }
 
-    public void setTimestamp(String timestamp) throws ParseException {
-        this.timestampStr = timestamp;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        format.setTimeZone(TimeZone.getTimeZone("UTC"));
-        setTimestamp(format.parse(timestamp));
-    }
+  public String getAggregationStartTimeStr() {
+    return this.aggregationStartTimeStr;
+  }
 
-    public String getLocalTime() {
-        return this.localTime;
-    }
+  public String getAggregationDuration() {
+    return this.aggregationDuration;
+  }
 
-    public void setLocalTime(String localTime) {
-        this.localTime = localTime;
-    }
+  public void setAggregationDuration(String aggregationDuration) {
+    this.aggregationDuration = aggregationDuration;
+  }
 
-    public String getTimezone() {
-        return this.timezone;
-    }
+  public String getApp() {
+    return this.app;
+  }
 
-    public void setTimezone(String timezone) {
-        this.timezone = timezone;
-    }
+  public void setApp(String appId) {
+    this.app = appId;
+  }
 
-    public String getTimestampStr() {
-        return this.timestampStr;
-    }
+  public String getAppVersionDate() {
+    return this.appVersionDate;
+  }
 
-    public String getTagName() {
-        return this.tagName;
-    }
+  public void setAppVersionDate(String appVersionDate) {
+    this.appVersionDate = appVersionDate;
+  }
 
-    public void setTagName(String tagName) {
-        this.tagName = tagName;
-    }
+  public String getPEHeaderChecksum() {
+    return this.PEHeaderChecksum;
+  }
 
-    public String getEventName() {
-        return this.eventName;
-    }
+  public void setPEHeaderChecksum(String PEHeaderChecksum) {
+    this.PEHeaderChecksum = PEHeaderChecksum;
+  }
 
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
-    }
+  public String getType() {
+    return this.type;
+  }
 
-    public Date getAggregationStartTime() {
-        return this.aggregationStartTime;
-    }
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    public void setAggregationStartTime(String aggregationStartTime) throws ParseException {
-        this.aggregationStartTimeStr = aggregationStartTime != null ? aggregationStartTime : "";
-        if (!aggregationStartTime.isEmpty()) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            format.setTimeZone(TimeZone.getTimeZone("UTC"));
-            setAggregationStartTime(format.parse(aggregationStartTime));
-        }
-    }
+  public String getWindowSize() {
+    return this.windowSize;
+  }
 
-    public void setAggregationStartTime(Date aggregationStartTime) {
-        this.aggregationStartTime = aggregationStartTime;
-    }
+  public void setWindowSize(String windowSize) {
+    this.windowSize = windowSize;
+  }
 
-    public String getAggregationStartTimeStr() {
-        return this.aggregationStartTimeStr;
-    }
+  public String getMouseInputSec() {
+    return this.mouseInputSec;
+  }
 
-    public String getAggregationDuration() {
-        return this.aggregationDuration;
-    }
+  public void setMouseInputSec(String mouseInputSec) {
+    this.mouseInputSec = mouseInputSec;
+  }
 
-    public void setAggregationDuration(String aggregationDuration) {
-        this.aggregationDuration = aggregationDuration;
-    }
+  public String getInFocusDuration() {
+    return this.inFocusDuration;
+  }
 
-    public String getApp() {
-        return this.app;
-    }
+  public void setInFocusDuration(String inFocusDurationMS) {
+    this.inFocusDuration = inFocusDurationMS;
+  }
 
-    public void setApp(String appId) {
-        this.app = appId;
-    }
+  public String getUserActiveDuration() {
+    return this.userActiveDuration;
+  }
 
-    public String getAppVersionDate() {
-        return this.appVersionDate;
-    }
+  public void setUserActiveDuration(String userActiveDuration) {
+    this.userActiveDuration = userActiveDuration;
+  }
 
-    public void setAppVersionDate(String appVersionDate) {
-        this.appVersionDate = appVersionDate;
-    }
+  public String getSinceFirstInteractivityMS() {
+    return this.sinceFirstInteractivityMS;
+  }
 
-    public String getPEHeaderChecksum() {
-        return this.PEHeaderChecksum;
-    }
+  public void setSinceFirstInteractivityMS(String sinceFirstInteractivityMS) {
+    this.sinceFirstInteractivityMS = sinceFirstInteractivityMS;
+  }
 
-    public void setPEHeaderChecksum(String PEHeaderChecksum) {
-        this.PEHeaderChecksum = PEHeaderChecksum;
-    }
+  public String getUserOrDisplayActiveDuration() {
+    return this.userOrDisplayActiveDuration;
+  }
 
-    public String getType() {
-        return this.type;
-    }
+  public void setUserOrDisplayActiveDuration(String userOrDisplayActiveDuration) {
+    this.userOrDisplayActiveDuration = userOrDisplayActiveDuration;
+  }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+  public String getFocusLostCount() {
+    return this.focusLostCount;
+  }
 
-    public String getWindowSize() {
-        return this.windowSize;
-    }
+  public void setFocusLostCount(String focusLostCount) {
+    this.focusLostCount = focusLostCount;
+  }
 
-    public void setWindowSize(String windowSize) {
-        this.windowSize = windowSize;
-    }
+  public String getProgramID() {
+    return this.programID;
+  }
 
-    public String getMouseInputSec() {
-        return this.mouseInputSec;
-    }
+  public void setProgramID(String programID) {
+    this.programID = programID;
+  }
 
-    public void setMouseInputSec(String mouseInputSec) {
-        this.mouseInputSec = mouseInputSec;
-    }
+  public String getUserID() {
+    return this.userID;
+  }
 
-    public String getInFocusDuration() {
-        return this.inFocusDuration;
-    }
+  public void setUserID(String userID) {
+    this.userID = userID;
+  }
 
-    public void setInFocusDuration(String inFocusDurationMS) {
-        this.inFocusDuration = inFocusDurationMS;
-    }
+  public String getUserSID() {
+    return this.userSID;
+  }
 
-    public String getUserActiveDuration() {
-        return this.userActiveDuration;
-    }
+  public void setUserSID(String userSID) {
+    this.userSID = userSID;
+  }
 
-    public void setUserActiveDuration(String userActiveDuration) {
-        this.userActiveDuration = userActiveDuration;
-    }
+  public String getJSONPayload() {
+    return this.JSONPayload;
+  }
 
-    public String getSinceFirstInteractivityMS() {
-        return this.sinceFirstInteractivityMS;
-    }
-
-    public void setSinceFirstInteractivityMS(String sinceFirstInteractivityMS) {
-        this.sinceFirstInteractivityMS = sinceFirstInteractivityMS;
-    }
-
-    public String getUserOrDisplayActiveDuration() {
-        return this.userOrDisplayActiveDuration;
-    }
-
-    public void setUserOrDisplayActiveDuration(String userOrDisplayActiveDuration) {
-        this.userOrDisplayActiveDuration = userOrDisplayActiveDuration;
-    }
-
-    public String getFocusLostCount() {
-        return this.focusLostCount;
-    }
-
-    public void setFocusLostCount(String focusLostCount) {
-        this.focusLostCount = focusLostCount;
-    }
-
-    public String getProgramID() {
-        return this.programID;
-    }
-
-    public void setProgramID(String programID) {
-        this.programID = programID;
-    }
-
-    public String getUserID() {
-        return this.userID;
-    }
-
-    public void setUserID(String userID) {
-        this.userID = userID;
-    }
-
-    public String getUserSID() {
-        return this.userSID;
-    }
-
-    public void setUserSID(String userSID) {
-        this.userSID = userSID;
-    }
-
-    public String getJSONPayload() {
-        return this.JSONPayload;
-    }
-
-    public void setJSONPayload(String JSONPayload) {
-        this.JSONPayload = JSONPayload;
-    }
-
+  public void setJSONPayload(String JSONPayload) {
+    this.JSONPayload = JSONPayload;
+  }
 }

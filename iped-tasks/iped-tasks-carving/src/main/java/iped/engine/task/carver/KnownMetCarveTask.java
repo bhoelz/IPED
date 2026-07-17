@@ -26,14 +26,13 @@ import iped.io.SeekableInputStream;
 import iped.parsers.emule.KnownMetDecoder;
 import iped.parsers.emule.KnownMetEntry;
 import iped.utils.IOUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.tika.mime.MediaType;
-
 import java.io.BufferedInputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.mime.MediaType;
 
 /**
  * Tarefa específica para carving de arquivos known.met do e-Mule.
@@ -43,269 +42,259 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class KnownMetCarveTask extends BaseCarveTask {
 
-    private static final String ENABLE_PARAM = "enableKnownMetCarving";
+  private static final String ENABLE_PARAM = "enableKnownMetCarving";
 
+  /** Indica se a tarefa está habilitada ou não. */
+  private static boolean taskEnabled = false;
 
-    /**
-     * Indica se a tarefa está habilitada ou não.
-     */
-    private static boolean taskEnabled = false;
+  /** Indicador de inicialização, para controle de sincronização entre instâncias da classe. */
+  private static final AtomicBoolean init = new AtomicBoolean(false);
 
-    /**
-     * Indicador de inicialização, para controle de sincronização entre instâncias
-     * da classe.
-     */
-    private static final AtomicBoolean init = new AtomicBoolean(false);
+  /**
+   * Case-scoped finalization flag and carved-item counter. Held in caseData so
+   * concurrent/sequential cases don't share or leak each other's counters.
+   */
+  static final class KnownMetAccumulator {
+    static final String KEY = KnownMetAccumulator.class.getName();
+    final AtomicBoolean finished = new AtomicBoolean(false);
+    final AtomicInteger numCarvedItems = new AtomicInteger();
+  }
 
-    /**
-     * Case-scoped finalization flag and carved-item counter. Held in caseData so
-     * concurrent/sequential cases don't share or leak each other's counters.
-     */
-    static final class KnownMetAccumulator {
-        static final String KEY = KnownMetAccumulator.class.getName();
-        final AtomicBoolean finished = new AtomicBoolean(false);
-        final AtomicInteger numCarvedItems = new AtomicInteger();
-    }
+  // Used in place of a case-scoped accumulator when caseData is null (i.e.
+  // running standalone, no case). Static, consistent with the other carve
+  // tasks' accum() fallback (see BaseCarveTask), even though this task doesn't
+  // spawn per-item instances itself. Cleared in finish() so successive
+  // standalone runs in the same JVM don't share state.
+  private static volatile KnownMetAccumulator standaloneAccum;
 
-    // Used in place of a case-scoped accumulator when caseData is null (i.e.
-    // running standalone, no case). Static, consistent with the other carve
-    // tasks' accum() fallback (see BaseCarveTask), even though this task doesn't
-    // spawn per-item instances itself. Cleared in finish() so successive
-    // standalone runs in the same JVM don't share state.
-    private static volatile KnownMetAccumulator standaloneAccum;
-
-    private KnownMetAccumulator accum() {
-        if (caseData == null) {
-            KnownMetAccumulator a = standaloneAccum;
-            if (a == null) {
-                synchronized (KnownMetCarveTask.class) {
-                    a = standaloneAccum;
-                    if (a == null) {
-                        a = new KnownMetAccumulator();
-                        standaloneAccum = a;
-                    }
-                }
-            }
-            return a;
+  private KnownMetAccumulator accum() {
+    if (caseData == null) {
+      KnownMetAccumulator a = standaloneAccum;
+      if (a == null) {
+        synchronized (KnownMetCarveTask.class) {
+          a = standaloneAccum;
+          if (a == null) {
+            a = new KnownMetAccumulator();
+            standaloneAccum = a;
+          }
         }
-        KnownMetAccumulator a = (KnownMetAccumulator) caseData.getCaseObject(KnownMetAccumulator.KEY);
+      }
+      return a;
+    }
+    KnownMetAccumulator a = (KnownMetAccumulator) caseData.getCaseObject(KnownMetAccumulator.KEY);
+    if (a == null) {
+      synchronized (KnownMetCarveTask.class) {
+        a = (KnownMetAccumulator) caseData.getCaseObject(KnownMetAccumulator.KEY);
         if (a == null) {
-            synchronized (KnownMetCarveTask.class) {
-                a = (KnownMetAccumulator) caseData.getCaseObject(KnownMetAccumulator.KEY);
-                if (a == null) {
-                    a = new KnownMetAccumulator();
-                    caseData.putCaseObject(KnownMetAccumulator.KEY, a);
-                }
-            }
+          a = new KnownMetAccumulator();
+          caseData.putCaseObject(KnownMetAccumulator.KEY, a);
         }
-        return a;
+      }
     }
+    return a;
+  }
 
-    /**
-     * Media type dos arquivos recuperados.
-     */
+  /** Media type dos arquivos recuperados. */
+  private static final MediaType eMuleMediaType = MediaType.application("x-emule"); // $NON-NLS-1$
 
-    private static final MediaType eMuleMediaType = MediaType.application("x-emule"); //$NON-NLS-1$
+  /** Media type dos arquivos part.met recuperados. */
+  private static final MediaType eMulePartMetMediaType =
+      MediaType.application("x-emule-part-met"); // $NON-NLS-1$
 
-    /**
-     * Media type dos arquivos part.met recuperados.
-     */
+  /** Passo para verificação do início do arquivo. */
+  private final int step = 512;
 
-    private static final MediaType eMulePartMetMediaType = MediaType.application("x-emule-part-met"); //$NON-NLS-1$
+  /**
+   * Heurística de data mínima utilizada para filtrar arquivos plausíveis. Aproximadamente -20 anos.
+   */
+  private static final long dateMin = System.currentTimeMillis() - 1000L * 60 * 60 * 24 * 365 * 20;
 
-    /**
-     * Passo para verificação do início do arquivo.
-     */
-    private final int step = 512;
+  /** Data máxima. Aproximadamente +5 anos. */
+  private static final long dateMax = System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365 * 5;
 
-    /**
-     * Heurística de data mínima utilizada para filtrar arquivos plausíveis.
-     * Aproximadamente -20 anos.
-     */
-    private static final long dateMin = System.currentTimeMillis() - 1000L * 60 * 60 * 24 * 365 * 20;
+  @Override
+  public boolean isEnabled() {
+    return taskEnabled;
+  }
 
-    /**
-     * Data máxima. Aproximadamente +5 anos.
-     */
-    private static final long dateMax = System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365 * 5;
+  @Override
+  public List<Configurable<?>> getConfigurables() {
+    return Arrays.asList(new EnableTaskProperty(ENABLE_PARAM));
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return taskEnabled;
-    }
-
-    @Override
-    public List<Configurable<?>> getConfigurables() {
-        return Arrays.asList(new EnableTaskProperty(ENABLE_PARAM));
-    }
-
-    /**
-     * Inicializa tarefa, realizando controle de alocação de apenas uma thread
-     * principal.
-     */
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
-        synchronized (init) {
-            if (!init.get()) {
-                taskEnabled = configurationManager.getEnableTaskProperty(ENABLE_PARAM);
-                if (taskEnabled) {
-                    log.info("Task enabled."); //$NON-NLS-1$
-                } else {
-                    log.info("Task disabled."); //$NON-NLS-1$
-                }
-                init.set(true);
-            }
+  /** Inicializa tarefa, realizando controle de alocação de apenas uma thread principal. */
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
+    synchronized (init) {
+      if (!init.get()) {
+        taskEnabled = configurationManager.getEnableTaskProperty(ENABLE_PARAM);
+        if (taskEnabled) {
+          log.info("Task enabled."); // $NON-NLS-1$
+        } else {
+          log.info("Task disabled."); // $NON-NLS-1$
         }
+        init.set(true);
+      }
     }
+  }
 
-    /**
-     * Finaliza a tarefa.
-     */
-    @Override
-    public void finish() throws Exception {
-        KnownMetAccumulator a = accum();
-        synchronized (a.finished) {
-            if (taskEnabled && !a.finished.get()) {
-                a.finished.set(true);
-                log.info("Carved Items: " + a.numCarvedItems.get()); //$NON-NLS-1$
-            }
-        }
-        if (caseData == null) {
-            standaloneAccum = null;
-            BaseCarveTask.clearStandaloneAccum();
-        }
+  /** Finaliza a tarefa. */
+  @Override
+  public void finish() throws Exception {
+    KnownMetAccumulator a = accum();
+    synchronized (a.finished) {
+      if (taskEnabled && !a.finished.get()) {
+        a.finished.set(true);
+        log.info("Carved Items: " + a.numCarvedItems.get()); // $NON-NLS-1$
+      }
     }
+    if (caseData == null) {
+      standaloneAccum = null;
+      BaseCarveTask.clearStandaloneAccum();
+    }
+  }
 
-    public void process(IItem evidence) {
-        // Verifica se está desabilitado e se o tipo de arquivo é tratado
-        if (!taskEnabled || (caseData != null && caseData.isIpedReport()) || !isAcceptedType((MediaType) evidence.getMediaType()))
-            return;
+  public void process(IItem evidence) {
+    // Verifica se está desabilitado e se o tipo de arquivo é tratado
+    if (!taskEnabled
+        || (caseData != null && caseData.isIpedReport())
+        || !isAcceptedType((MediaType) evidence.getMediaType())) return;
 
-        AtomicInteger numCarvedItems = accum().numCarvedItems;
+    AtomicInteger numCarvedItems = accum().numCarvedItems;
 
-        // Percorre conteúdo buscando padrões plausíveis de arquivos known.met
-        byte[] bb = new byte[1];
-        byte[] buf = new byte[step - 1];
-        byte[] buf2 = new byte[1 << 20];
-        BufferedInputStream is = null;
-        long offset = 0;
-        try {
-            is = evidence.getBufferedInputStream();
-            while (is.read(bb) > 0) {
-                byte read = bb[0];
-                if (read == 14 || read == 15) {
-                    is.readNBytes(buf, 0, buf.length);
-                    int numFiles = toInt(buf, 0);
-                    if (numFiles > 0 && numFiles < 65536) {
-                        int pos = 4;
-                        long date = toInt(buf, pos) * 1000L;
-                        if (date > dateMin && date < dateMax) {
-                            pos += 4;
-                            pos += 16;
-                            int numParts = toSmall(buf, pos);
-                            pos += 2;
-                            pos += 16 * numParts;
-                            if (pos < 500) {
-                                int numTags = toInt(buf, pos);
-                                if (numTags > 2 && numTags < 100) {
-                                    int len = 512 * numFiles;
-                                    SeekableInputStream inParse = null;
-                                    try {
-                                        inParse = evidence.getSeekableInputStream();
-                                        inParse.seek(offset);
-                                        List<KnownMetEntry> l = KnownMetDecoder.parseToList(inParse, len, true);
-                                        if (!l.isEmpty()) {
-                                            // Check if at least one entry has a defined name and file size (#2116)
-                                            boolean valid = false;
-                                            for(KnownMetEntry entry : l) {
-                                                if (entry.getName() != null && entry.getFileSize() > 0) {
-                                                    valid = true;
-                                                    break;
-                                                }
-                                            }
-                                            if (valid) {
-                                                addCarvedFile(evidence, offset, len, "Carved-" + offset + "-known.met",
-                                                        eMuleMediaType);
-                                                numCarvedItems.incrementAndGet();
-                                            }
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    } finally {
-                                        IOUtil.closeQuietly(inParse);
-                                    }
-                                }
-                            }
+    // Percorre conteúdo buscando padrões plausíveis de arquivos known.met
+    byte[] bb = new byte[1];
+    byte[] buf = new byte[step - 1];
+    byte[] buf2 = new byte[1 << 20];
+    BufferedInputStream is = null;
+    long offset = 0;
+    try {
+      is = evidence.getBufferedInputStream();
+      while (is.read(bb) > 0) {
+        byte read = bb[0];
+        if (read == 14 || read == 15) {
+          is.readNBytes(buf, 0, buf.length);
+          int numFiles = toInt(buf, 0);
+          if (numFiles > 0 && numFiles < 65536) {
+            int pos = 4;
+            long date = toInt(buf, pos) * 1000L;
+            if (date > dateMin && date < dateMax) {
+              pos += 4;
+              pos += 16;
+              int numParts = toSmall(buf, pos);
+              pos += 2;
+              pos += 16 * numParts;
+              if (pos < 500) {
+                int numTags = toInt(buf, pos);
+                if (numTags > 2 && numTags < 100) {
+                  int len = 512 * numFiles;
+                  SeekableInputStream inParse = null;
+                  try {
+                    inParse = evidence.getSeekableInputStream();
+                    inParse.seek(offset);
+                    List<KnownMetEntry> l = KnownMetDecoder.parseToList(inParse, len, true);
+                    if (!l.isEmpty()) {
+                      // Check if at least one entry has a defined name and file size (#2116)
+                      boolean valid = false;
+                      for (KnownMetEntry entry : l) {
+                        if (entry.getName() != null && entry.getFileSize() > 0) {
+                          valid = true;
+                          break;
                         }
+                      }
+                      if (valid) {
+                        addCarvedFile(
+                            evidence,
+                            offset,
+                            len,
+                            "Carved-" + offset + "-known.met",
+                            eMuleMediaType);
+                        numCarvedItems.incrementAndGet();
+                      }
                     }
-                } else if (read == -32 || read == -30) {
-                    is.readNBytes(buf, 0, buf.length);
-                    long date = toInt(buf, 0) * 1000L;
-                    if (date > dateMin && date < dateMax) {
-                        int pos = 20;
-                        int numParts = toSmall(buf, pos);
-                        int numTags = 2;
-                        pos += 2;
-                        pos += 16 * numParts;
-                        if (pos < 500) {
-                            numTags = toInt(buf, pos);
-                        }
-                        if (numTags >= 2 && numTags <= 1024 && numParts <= 4096 && numParts >= 0) {
-                            SeekableInputStream inParse = null;
-                            try {
-                                inParse = evidence.getSeekableInputStream();
-                                inParse.seek(offset);
-                                int bytesRead = inParse.readNBytes(buf2, 0, buf2.length);
-                                if (bytesRead > 25) {
-                                    KnownMetEntry entry = new KnownMetEntry();
-                                    int len = KnownMetDecoder.parseEntry(entry, 1, buf2, true);
-                                    if (len > 0) {
-                                        addCarvedFile(evidence, offset, len + 1, "Carved-" + offset + "-part.met", //$NON-NLS-1$ //$NON-NLS-2$
-                                                eMulePartMetMediaType);
-                                        numCarvedItems.incrementAndGet();
-                                    }
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } finally {
-                                IOUtil.closeQuietly(inParse);
-                            }
-                        }
-                    }
-                } else {
-                    long skip = 0;
-                    do {
-                        long i = is.skip(step - 1 - skip);
-                        if (i == 0) {
-                            // check EOF
-                            is.mark(1);
-                            if (is.read() == -1) {
-                                return;
-                            }
-                            is.reset();
-                        }
-                        skip += i;
-                    } while (skip < step - 1);
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  } finally {
+                    IOUtil.closeQuietly(inParse);
+                  }
                 }
-                offset += step;
+              }
             }
-        } catch (Exception e) {
-            log.warn(evidence.toString(), e);
-        } finally {
-            IOUtil.closeQuietly(is);
+          }
+        } else if (read == -32 || read == -30) {
+          is.readNBytes(buf, 0, buf.length);
+          long date = toInt(buf, 0) * 1000L;
+          if (date > dateMin && date < dateMax) {
+            int pos = 20;
+            int numParts = toSmall(buf, pos);
+            int numTags = 2;
+            pos += 2;
+            pos += 16 * numParts;
+            if (pos < 500) {
+              numTags = toInt(buf, pos);
+            }
+            if (numTags >= 2 && numTags <= 1024 && numParts <= 4096 && numParts >= 0) {
+              SeekableInputStream inParse = null;
+              try {
+                inParse = evidence.getSeekableInputStream();
+                inParse.seek(offset);
+                int bytesRead = inParse.readNBytes(buf2, 0, buf2.length);
+                if (bytesRead > 25) {
+                  KnownMetEntry entry = new KnownMetEntry();
+                  int len = KnownMetDecoder.parseEntry(entry, 1, buf2, true);
+                  if (len > 0) {
+                    addCarvedFile(
+                        evidence,
+                        offset,
+                        len + 1,
+                        "Carved-" + offset + "-part.met", // $NON-NLS-1$ //$NON-NLS-2$
+                        eMulePartMetMediaType);
+                    numCarvedItems.incrementAndGet();
+                  }
+                }
+              } catch (Exception e) {
+                e.printStackTrace();
+              } finally {
+                IOUtil.closeQuietly(inParse);
+              }
+            }
+          }
+        } else {
+          long skip = 0;
+          do {
+            long i = is.skip(step - 1 - skip);
+            if (i == 0) {
+              // check EOF
+              is.mark(1);
+              if (is.read() == -1) {
+                return;
+              }
+              is.reset();
+            }
+            skip += i;
+          } while (skip < step - 1);
         }
+        offset += step;
+      }
+    } catch (Exception e) {
+      log.warn(evidence.toString(), e);
+    } finally {
+      IOUtil.closeQuietly(is);
     }
+  }
 
-    private static final int toInt(byte[] b, int offset) {
-        return (b[offset] & 0XFF) | ((b[offset + 1] & 0XFF) << 8) | ((b[offset + 2] & 0XFF) << 16)
-                | ((b[offset + 3] & 0XFF) << 24);
-    }
+  private static final int toInt(byte[] b, int offset) {
+    return (b[offset] & 0XFF)
+        | ((b[offset + 1] & 0XFF) << 8)
+        | ((b[offset + 2] & 0XFF) << 16)
+        | ((b[offset + 3] & 0XFF) << 24);
+  }
 
-    private static final int toSmall(byte[] b, int offset) {
-        return (b[offset] & 0XFF) | ((b[offset + 1] & 0XFF) << 8);
-    }
+  private static final int toSmall(byte[] b, int offset) {
+    return (b[offset] & 0XFF) | ((b[offset + 1] & 0XFF) << 8);
+  }
 
-    private static boolean isAcceptedType(MediaType mediaType) {
-        return LedCarveTask.isAcceptedType(mediaType);
-    }
+  private static boolean isAcceptedType(MediaType mediaType) {
+    return LedCarveTask.isAcceptedType(mediaType);
+  }
 }

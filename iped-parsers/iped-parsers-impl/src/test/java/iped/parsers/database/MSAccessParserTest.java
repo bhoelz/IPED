@@ -1,5 +1,7 @@
 package iped.parsers.database;
 
+import java.io.IOException;
+import java.io.InputStream;
 import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -12,102 +14,93 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 public class MSAccessParserTest extends TestCase {
 
-    private static InputStream getStream(String name) {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+  private static InputStream getStream(String name) {
+    return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+  }
+
+  @Test
+  public void testMboxParsing() throws IOException, SAXException, TikaException {
+
+    MSAccessParser parser = new MSAccessParser();
+    Metadata metadata = new Metadata();
+    ContentHandler handler = new DefaultHandler();
+    ParseContext context = new ParseContext();
+    parser.getSupportedTypes(context);
+    try (InputStream stream = getStream("test-files/test_mdb.mdb")) {
+      parser.parse(stream, handler, metadata, context);
     }
+  }
 
-    @Test
-    public void testMboxParsing() throws IOException, SAXException, TikaException {
+  @SuppressWarnings("static-access")
+  @Test
+  public void testMSAccessMetadata() throws IOException, SAXException, TikaException {
 
-        MSAccessParser parser = new MSAccessParser();
-        Metadata metadata = new Metadata();
-        ContentHandler handler = new DefaultHandler();
-        ParseContext context = new ParseContext();
-        parser.getSupportedTypes(context);
-        try (InputStream stream = getStream("test-files/test_mdb.mdb")) {
-            parser.parse(stream, handler, metadata, context);
-
-        }
-
+    String filepath = "test-files/test_mdb.mdb";
+    MSAccessParser parser = new MSAccessParser();
+    Metadata metadata = new Metadata();
+    BodyContentHandler handler = new BodyContentHandler();
+    ParseContext context = new ParseContext();
+    metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, filepath);
+    context.set(Parser.class, parser);
+    try (InputStream stream = getStream(filepath)) {
+      parser.parse(stream, handler, metadata, context);
+      assertEquals("Arial Software", metadata.get("Company"));
+      assertEquals("Arial Software", metadata.get("Author"));
+      assertEquals(MSAccessParser.ACCESS_MIME_TYPE.toString(), metadata.get(metadata.CONTENT_TYPE));
+      assertEquals("Campaign_Template", metadata.get("Title"));
     }
+  }
 
-    @SuppressWarnings("static-access")
-    @Test
-    public void testMSAccessMetadata() throws IOException, SAXException, TikaException {
+  @Test
+  public void testMSAccessHandler() throws IOException, SAXException, TikaException {
 
-        String filepath = "test-files/test_mdb.mdb";
-        MSAccessParser parser = new MSAccessParser();
-        Metadata metadata = new Metadata();
-        BodyContentHandler handler = new BodyContentHandler();
-        ParseContext context = new ParseContext();
-        metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, filepath);
-        context.set(Parser.class, parser);
-        try (InputStream stream = getStream(filepath)) {
-            parser.parse(stream, handler, metadata, context);
-            assertEquals("Arial Software", metadata.get("Company"));
-            assertEquals("Arial Software", metadata.get("Author"));
-            assertEquals(MSAccessParser.ACCESS_MIME_TYPE.toString(), metadata.get(metadata.CONTENT_TYPE));
-            assertEquals("Campaign_Template", metadata.get("Title"));
+    String filepath = "test-files/test_mdb.mdb";
+    MSAccessParser parser = new MSAccessParser();
+    Metadata metadata = new Metadata();
+    BodyContentHandler handler = new BodyContentHandler();
+    ParseContext context = new ParseContext();
+    context.set(Parser.class, parser);
+    try (InputStream stream = getStream(filepath)) {
+      parser.parse(stream, handler, metadata, context);
 
-        }
+      String hts = handler.toString();
+
+      assertTrue(hts.contains("Email_Address"));
+      assertTrue(hts.contains("test@test.pf.com"));
+      assertTrue(hts.contains("gege@baba.pf.com"));
+      assertTrue(hts.contains("sergiomorales@moral.com"));
+
+      assertTrue(hts.contains("First_Name"));
+      assertTrue(hts.contains("pftest"));
+      assertTrue(hts.contains("geraldo"));
+      assertTrue(hts.contains("sérgio"));
+
+      assertTrue(hts.contains("Last_Name"));
+      assertTrue(hts.contains("supertest"));
+      assertTrue(hts.contains("barba"));
+      assertTrue(hts.contains("mörales"));
+
+      assertTrue(hts.contains("Address"));
+      assertTrue(hts.contains("asasul"));
+      assertTrue(hts.contains("praia do cabo"));
+      assertTrue(hts.contains("sèrgiocitý"));
+
+      assertTrue(hts.contains("City"));
+      assertTrue(hts.contains("brasilia"));
+      assertTrue(hts.contains("rio de fevereiro"));
+      assertTrue(hts.contains("curitiba"));
+
+      assertTrue(hts.contains("State"));
+      assertTrue(hts.contains("df"));
+      assertTrue(hts.contains("rf"));
+      assertTrue(hts.contains("pr"));
+
+      assertTrue(hts.contains("Country"));
+      assertTrue(hts.contains("brazil"));
+      assertTrue(hts.contains("uniao dos estados do brazil"));
+      assertTrue(hts.contains("federação brasileira"));
     }
-
-    @Test
-    public void testMSAccessHandler() throws IOException, SAXException, TikaException {
-
-        String filepath = "test-files/test_mdb.mdb";
-        MSAccessParser parser = new MSAccessParser();
-        Metadata metadata = new Metadata();
-        BodyContentHandler handler = new BodyContentHandler();
-        ParseContext context = new ParseContext();
-        context.set(Parser.class, parser);
-        try (InputStream stream = getStream(filepath)) {
-            parser.parse(stream, handler, metadata, context);
-
-            String hts = handler.toString();
-
-            assertTrue(hts.contains("Email_Address"));
-            assertTrue(hts.contains("test@test.pf.com"));
-            assertTrue(hts.contains("gege@baba.pf.com"));
-            assertTrue(hts.contains("sergiomorales@moral.com"));
-
-            assertTrue(hts.contains("First_Name"));
-            assertTrue(hts.contains("pftest"));
-            assertTrue(hts.contains("geraldo"));
-            assertTrue(hts.contains("sérgio"));
-
-            assertTrue(hts.contains("Last_Name"));
-            assertTrue(hts.contains("supertest"));
-            assertTrue(hts.contains("barba"));
-            assertTrue(hts.contains("mörales"));
-
-            assertTrue(hts.contains("Address"));
-            assertTrue(hts.contains("asasul"));
-            assertTrue(hts.contains("praia do cabo"));
-            assertTrue(hts.contains("sèrgiocitý"));
-
-            assertTrue(hts.contains("City"));
-            assertTrue(hts.contains("brasilia"));
-            assertTrue(hts.contains("rio de fevereiro"));
-            assertTrue(hts.contains("curitiba"));
-
-            assertTrue(hts.contains("State"));
-            assertTrue(hts.contains("df"));
-            assertTrue(hts.contains("rf"));
-            assertTrue(hts.contains("pr"));
-
-            assertTrue(hts.contains("Country"));
-            assertTrue(hts.contains("brazil"));
-            assertTrue(hts.contains("uniao dos estados do brazil"));
-            assertTrue(hts.contains("federação brasileira"));
-
-        }
-
-    }
-
+  }
 }

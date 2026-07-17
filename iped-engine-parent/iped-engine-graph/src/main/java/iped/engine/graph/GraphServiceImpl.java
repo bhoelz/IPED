@@ -1,608 +1,613 @@
 package iped.engine.graph;
 
+import java.io.File;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.dbms.api.DatabaseManagementServiceBuilder;
 import org.neo4j.graphdb.*;
 
-import java.io.File;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
 @Slf4j
 public class GraphServiceImpl implements GraphService {
 
+  private DatabaseManagementService managementService;
+  private GraphDatabaseService graphDB;
+  private boolean started = false;
+  private File dbHome;
 
-    private DatabaseManagementService managementService;
-    private GraphDatabaseService graphDB;
-    private boolean started = false;
-    private File dbHome;
+  public void start(File dbHome) {
+    if (!started) {
+      this.dbHome = dbHome;
+      log.info("Starting neo4j service at " + dbHome.getAbsolutePath());
 
-    public void start(File dbHome) {
-        if (!started) {
-            this.dbHome = dbHome;
-            log.info("Starting neo4j service at " + dbHome.getAbsolutePath());
+      managementService = new DatabaseManagementServiceBuilder(dbHome.toPath()).build();
+      graphDB = managementService.database(GraphConstants.DB_NAME);
 
-            managementService = new DatabaseManagementServiceBuilder(dbHome.toPath()).build();
-            graphDB = managementService.database(GraphConstants.DB_NAME);
+      started = true;
 
-            started = true;
-
-        } else {
-            log.info("Service already started.");
-        }
+    } else {
+      log.info("Service already started.");
     }
+  }
 
-    public synchronized void stop() {
-        if (started) {
-            log.info("Shutting down neo4j service.");
-            managementService.shutdown();
-            started = false;
-        } else {
-            log.info("Service already stopped.");
-        }
+  public synchronized void stop() {
+    if (started) {
+      log.info("Shutting down neo4j service.");
+      managementService.shutdown();
+      started = false;
+    } else {
+      log.info("Service already stopped.");
     }
+  }
 
-    public GraphDatabaseService getGraphDb() {
-        return graphDB;
+  public GraphDatabaseService getGraphDb() {
+    return graphDB;
+  }
+
+  @Override
+  public synchronized File getDbHome() {
+    return dbHome;
+  }
+
+  @Override
+  public List<Long> getMoreConnectedNodes(int maxNodes) {
+    Transaction tx = null;
+    List<Long> ids = new ArrayList<>();
+    try {
+      tx = graphDB.beginTx();
+
+      Result result =
+          tx.execute(
+              "MATCH (n) RETURN id(n) as id, size((n)--()) as degree ORDER BY degree DESC LIMIT "
+                  + maxNodes);
+      while (result.hasNext()) {
+        Map<String, Object> map = result.next();
+        Long id = (Long) map.get("id");
+        Long degree = (Long) map.get("degree");
+        if (degree > 0) {
+          ids.add(id);
+        }
+      }
+      tx.commit();
+
+    } finally {
+      tx.close();
     }
+    return ids;
+  }
 
-    @Override
-    public synchronized File getDbHome() {
-        return dbHome;
+  @Override
+  public void getEdges(String[] ids, EdgeQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
+
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", ids);
+      Result result =
+          tx.execute(
+              "MATCH ()-[r]-() WHERE r.relId IN $param RETURN DISTINCT r as edge", parameters);
+
+      boolean proceed = true;
+      while (result.hasNext() && proceed) {
+        Relationship edge = (Relationship) result.next().get("edge");
+        proceed = listener.edgeFound(edge);
+      }
+
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public List<Long> getMoreConnectedNodes(int maxNodes) {
-        Transaction tx = null;
-        List<Long> ids = new ArrayList<>();
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void getNodes(Collection<Long> ids, NodeQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            Result result = tx.execute(
-                    "MATCH (n) RETURN id(n) as id, size((n)--()) as degree ORDER BY degree DESC LIMIT " + maxNodes);
-            while (result.hasNext()) {
-                Map<String, Object> map = result.next();
-                Long id = (Long) map.get("id");
-                Long degree = (Long) map.get("degree");
-                if (degree > 0) {
-                    ids.add(id);
-                }
-            }
-            tx.commit();
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", ids);
+      Result result = tx.execute("MATCH (n) WHERE ID(n) IN $param RETURN n", parameters);
 
-        } finally {
-            tx.close();
-        }
-        return ids;
+      ResourceIterator<Node> resourceIterator = result.columnAs("n");
+      boolean proceed = true;
+      while (resourceIterator.hasNext() && proceed) {
+        Node node = resourceIterator.next();
+        proceed = listener.nodeFound(node);
+      }
+
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public void getEdges(String[] ids, EdgeQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void getNeighboursWithLabels(
+      Collection<String> labels, Long nodeId, NodeEdgeQueryListener listener, int maxNodes) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", ids);
-            Result result = tx.execute("MATCH ()-[r]-() WHERE r.relId IN $param RETURN DISTINCT r as edge",
-                    parameters);
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("labels", labels);
+      parameters.put("nodeId", nodeId);
+      Result result =
+          tx.execute(
+              "MATCH (n)-[r]-(m) WHERE ID(n) = $nodeId AND ANY(l IN LABELS(m) WHERE l IN $labels) RETURN m as node, r as edge",
+              parameters);
+      if (maxNodes == -1) {
+        emitAllNeighbours(result, listener);
+      } else {
+        emitTopNeighbours(result, listener, maxNodes);
+      }
 
-            boolean proceed = true;
-            while (result.hasNext() && proceed) {
-                Relationship edge = (Relationship) result.next().get("edge");
-                proceed = listener.edgeFound(edge);
-            }
-
-            tx.commit();
-        } finally {
-            tx.close();
-        }
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public void getNodes(Collection<Long> ids, NodeQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void getNeighbours(Long id, NodeEdgeQueryListener listener, int maxNodes) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", ids);
-            Result result = tx.execute("MATCH (n) WHERE ID(n) IN $param RETURN n", parameters);
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", id);
+      Result result =
+          tx.execute(
+              "MATCH (n)-[r]-(m) WHERE ID(n) = $param RETURN m as node, r as edge", parameters);
+      if (maxNodes == -1) {
+        emitAllNeighbours(result, listener);
+      } else {
+        emitTopNeighbours(result, listener, maxNodes);
+      }
 
-            ResourceIterator<Node> resourceIterator = result.columnAs("n");
-            boolean proceed = true;
-            while (resourceIterator.hasNext() && proceed) {
-                Node node = resourceIterator.next();
-                proceed = listener.nodeFound(node);
-            }
-
-            tx.commit();
-        } finally {
-            tx.close();
-        }
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public void getNeighboursWithLabels(Collection<String> labels, Long nodeId, NodeEdgeQueryListener listener,
-            int maxNodes) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void getNeighboursWithRelationships(
+      Collection<String> relationships, Long nodeId, NodeEdgeQueryListener listener, int maxNodes) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("labels", labels);
-            parameters.put("nodeId", nodeId);
-            Result result = tx.execute(
-                    "MATCH (n)-[r]-(m) WHERE ID(n) = $nodeId AND ANY(l IN LABELS(m) WHERE l IN $labels) RETURN m as node, r as edge",
-                    parameters);
-            if (maxNodes == -1) {
-                emitAllNeighbours(result, listener);
-            } else {
-                emitTopNeighbours(result, listener, maxNodes);
-            }
-
-            tx.commit();
-        } finally {
-            tx.close();
-        }
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("nodeId", nodeId);
+      String query = "MATCH (n)-[r:$types]-(m) WHERE ID(n) = $nodeId RETURN m as node, r as edge";
+      query =
+          relationships.isEmpty()
+              ? query.replace(":$types", "")
+              : query.replace("$types", relationships.stream().collect(Collectors.joining("|:")));
+      Result result = tx.execute(query, parameters);
+      if (maxNodes == -1) {
+        emitAllNeighbours(result, listener);
+      } else {
+        emitTopNeighbours(result, listener, maxNodes);
+      }
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public void getNeighbours(Long id, NodeEdgeQueryListener listener, int maxNodes) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
-
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", id);
-            Result result = tx.execute("MATCH (n)-[r]-(m) WHERE ID(n) = $param RETURN m as node, r as edge",
-                    parameters);
-            if (maxNodes == -1) {
-                emitAllNeighbours(result, listener);
-            } else {
-                emitTopNeighbours(result, listener, maxNodes);
-            }
-
-            tx.commit();
-        } finally {
-            tx.close();
-        }
+  private void emitAllNeighbours(Result result, NodeEdgeQueryListener listener) {
+    boolean proceed = true;
+    while (result.hasNext() && proceed) {
+      Map<String, Object> next = result.next();
+      Node node = (Node) next.get("node");
+      proceed = listener.nodeFound(node);
+      Relationship edge = (Relationship) next.get("edge");
+      proceed = proceed && listener.edgeFound(edge);
     }
+  }
 
-    @Override
-    public void getNeighboursWithRelationships(Collection<String> relationships, Long nodeId,
-            NodeEdgeQueryListener listener, int maxNodes) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  private class NodeRels implements Comparable<NodeRels> {
+    Node node;
+    List<Relationship> rels;
 
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("nodeId", nodeId);
-            String query = "MATCH (n)-[r:$types]-(m) WHERE ID(n) = $nodeId RETURN m as node, r as edge";
-            query = relationships.isEmpty() ? query.replace(":$types", "")
-                    : query.replace("$types", relationships.stream().collect(Collectors.joining("|:")));
-            Result result = tx.execute(query, parameters);
-            if (maxNodes == -1) {
-                emitAllNeighbours(result, listener);
-            } else {
-                emitTopNeighbours(result, listener, maxNodes);
-            }
-            tx.commit();
-        } finally {
-            tx.close();
-        }
-    }
-
-    private void emitAllNeighbours(Result result, NodeEdgeQueryListener listener) {
-        boolean proceed = true;
-        while (result.hasNext() && proceed) {
-            Map<String, Object> next = result.next();
-            Node node = (Node) next.get("node");
-            proceed = listener.nodeFound(node);
-            Relationship edge = (Relationship) next.get("edge");
-            proceed = proceed && listener.edgeFound(edge);
-        }
-    }
-
-    private class NodeRels implements Comparable<NodeRels> {
-        Node node;
-        List<Relationship> rels;
-
-        private NodeRels(Node node, List<Relationship> rels) {
-            this.node = node;
-            this.rels = rels;
-        }
-
-        @Override
-        public int compareTo(NodeRels o) {
-            return Integer.compare(o.rels.size(), this.rels.size());
-        }
-    }
-
-    private void emitTopNeighbours(Result result, NodeEdgeQueryListener listener, int top) {
-        HashMap<Long, NodeRels> edgeMap = new HashMap<>();
-        while (result.hasNext()) {
-            Map<String, Object> next = result.next();
-            Node node = (Node) next.get("node");
-            NodeRels nodeRels = edgeMap.get(node.getId());
-            if (nodeRels == null) {
-                nodeRels = new NodeRels(node, new ArrayList<>());
-                edgeMap.put(node.getId(), nodeRels);
-            }
-            Relationship edge = (Relationship) next.get("edge");
-            nodeRels.rels.add(edge);
-        }
-        List<NodeRels> list = new ArrayList<>(edgeMap.values());
-        Collections.sort(list);
-        int added = 0;
-        for (NodeRels nodeRels : list) {
-            listener.nodeFound(nodeRels.node);
-            for (Relationship edge : nodeRels.rels) {
-                listener.edgeFound(edge);
-            }
-            if (++added == top)
-                break;
-        }
+    private NodeRels(Node node, List<Relationship> rels) {
+      this.node = node;
+      this.rels = rels;
     }
 
     @Override
-    public void getConnections(Set<Long> ids, EdgeQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
-
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", ids);
-
-            Result result = tx.execute(
-                    "MATCH (n)-[r]-(m) WHERE ID(n) IN $param AND ID(m) IN $param RETURN r as edge", parameters);
-            ResourceIterator<Relationship> iterator = result.columnAs("edge");
-            boolean proceed = true;
-            while (iterator.hasNext() && proceed) {
-                Relationship edge = iterator.next();
-                proceed = listener.edgeFound(edge);
-            }
-            tx.commit();
-        } finally {
-            tx.close();
-        }
+    public int compareTo(NodeRels o) {
+      return Integer.compare(o.rels.size(), this.rels.size());
     }
+  }
 
-    @Override
-    public void getPaths(Long source, Long target, int maxDistance, PathQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
-
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("source", source);
-            parameters.put("target", target);
-
-            StringBuilder queryBuilder = new StringBuilder("MATCH p = allShortestPaths((n1)-[*1..").append(maxDistance)
-                    .append("]-(n2))");
-            queryBuilder.append(" WHERE ID(n1) = $source");
-            queryBuilder.append(" AND ID(n2) = $target");
-            queryBuilder.append(" RETURN p");
-
-            Result result = tx.execute(queryBuilder.toString(), parameters);
-            ResourceIterator<Path> iterator = result.columnAs("p");
-            boolean proceed = true;
-            while (iterator.hasNext() && proceed) {
-                Path path = iterator.next();
-                proceed = listener.pathFound(path);
-            }
-            tx.commit();
-        } finally {
-            tx.close();
-        }
-
+  private void emitTopNeighbours(Result result, NodeEdgeQueryListener listener, int top) {
+    HashMap<Long, NodeRels> edgeMap = new HashMap<>();
+    while (result.hasNext()) {
+      Map<String, Object> next = result.next();
+      Node node = (Node) next.get("node");
+      NodeRels nodeRels = edgeMap.get(node.getId());
+      if (nodeRels == null) {
+        nodeRels = new NodeRels(node, new ArrayList<>());
+        edgeMap.put(node.getId(), nodeRels);
+      }
+      Relationship edge = (Relationship) next.get("edge");
+      nodeRels.rels.add(edge);
     }
-
-    @Override
-    public void search(String param, NodeQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
-
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", param.toUpperCase());
-
-            String query = "MATCH (n) WHERE ANY(prop IN keys(n) WHERE toUpper(toString(n[prop])) CONTAINS $param) RETURN n";
-
-            Result result = tx.execute(query, parameters);
-            ResourceIterator<Node> resourceIterator = result.columnAs("n");
-            boolean proceed = true;
-            while (resourceIterator.hasNext() && proceed) {
-                Node node = resourceIterator.next();
-                proceed = listener.nodeFound(node);
-            }
-
-            tx.commit();
-        } finally {
-            tx.close();
-        }
-
+    List<NodeRels> list = new ArrayList<>(edgeMap.values());
+    Collections.sort(list);
+    int added = 0;
+    for (NodeRels nodeRels : list) {
+      listener.nodeFound(nodeRels.node);
+      for (Relationship edge : nodeRels.rels) {
+        listener.edgeFound(edge);
+      }
+      if (++added == top) break;
     }
+  }
 
-    @Override
-    public void findConnections(Long id, ConnectionQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void getConnections(Set<Long> ids, EdgeQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", id);
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", ids);
 
-            String query = "MATCH (n)--(m) WHERE ID(n) = $param RETURN DISTINCT m as neighbour, LABELS(m) AS labels";
-
-            Result result = tx.execute(query, parameters);
-            ResourceIterator<Collection<String>> resourceIterator = result.columnAs("labels");
-
-            Map<String, Integer> accum = new HashMap<>();
-            while (resourceIterator.hasNext()) {
-                Collection<String> labels = resourceIterator.next();
-                for (Object label : labels) {
-                    Integer cnt = accum.get(label.toString());
-                    if (cnt == null) {
-                        cnt = 0;
-                    }
-                    cnt++;
-                    accum.put(label.toString(), cnt);
-                }
-            }
-            for (Entry<String, Integer> entry : accum.entrySet()) {
-                listener.connectionsFound(entry.getKey(), entry.getValue());
-            }
-            tx.commit();
-        } finally {
-            tx.close();
-        }
-
+      Result result =
+          tx.execute(
+              "MATCH (n)-[r]-(m) WHERE ID(n) IN $param AND ID(m) IN $param RETURN r as edge",
+              parameters);
+      ResourceIterator<Relationship> iterator = result.columnAs("edge");
+      boolean proceed = true;
+      while (iterator.hasNext() && proceed) {
+        Relationship edge = iterator.next();
+        proceed = listener.edgeFound(edge);
+      }
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public void findRelationships(Long id, ConnectionQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void getPaths(Long source, Long target, int maxDistance, PathQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", id);
-            String query = "MATCH (n)-[r]-() WHERE ID(n) = $param RETURN r as edge";
-            Result result = tx.execute(query, parameters);
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("source", source);
+      parameters.put("target", target);
 
-            Map<String, Integer> accum = new HashMap<>();
-            while (result.hasNext()) {
-                Relationship edge = (Relationship) result.next().get("edge");
-                Integer i = accum.get(edge.getType().name());
-                if (i == null)
-                    i = 0;
-                accum.put(edge.getType().name(), ++i);
-            }
-            for (Entry<String, Integer> entry : accum.entrySet()) {
-                listener.connectionsFound(entry.getKey(), entry.getValue());
-            }
-            tx.commit();
-        } finally {
-            tx.close();
-        }
+      StringBuilder queryBuilder =
+          new StringBuilder("MATCH p = allShortestPaths((n1)-[*1..")
+              .append(maxDistance)
+              .append("]-(n2))");
+      queryBuilder.append(" WHERE ID(n1) = $source");
+      queryBuilder.append(" AND ID(n2) = $target");
+      queryBuilder.append(" RETURN p");
 
+      Result result = tx.execute(queryBuilder.toString(), parameters);
+      ResourceIterator<Path> iterator = result.columnAs("p");
+      boolean proceed = true;
+      while (iterator.hasNext() && proceed) {
+        Path path = iterator.next();
+        proceed = listener.pathFound(path);
+      }
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public List<Node> search(Label label, Map<String, Object> params) {
-        final List<Node> result = new ArrayList<>();
-        search(label, params, new NodeQueryListener() {
+  @Override
+  public void search(String param, NodeQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            @Override
-            public boolean nodeFound(Node node) {
-                result.add(node);
-                return true;
-            }
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", param.toUpperCase());
+
+      String query =
+          "MATCH (n) WHERE ANY(prop IN keys(n) WHERE toUpper(toString(n[prop])) CONTAINS $param) RETURN n";
+
+      Result result = tx.execute(query, parameters);
+      ResourceIterator<Node> resourceIterator = result.columnAs("n");
+      boolean proceed = true;
+      while (resourceIterator.hasNext() && proceed) {
+        Node node = resourceIterator.next();
+        proceed = listener.nodeFound(node);
+      }
+
+      tx.commit();
+    } finally {
+      tx.close();
+    }
+  }
+
+  @Override
+  public void findConnections(Long id, ConnectionQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
+
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", id);
+
+      String query =
+          "MATCH (n)--(m) WHERE ID(n) = $param RETURN DISTINCT m as neighbour, LABELS(m) AS labels";
+
+      Result result = tx.execute(query, parameters);
+      ResourceIterator<Collection<String>> resourceIterator = result.columnAs("labels");
+
+      Map<String, Integer> accum = new HashMap<>();
+      while (resourceIterator.hasNext()) {
+        Collection<String> labels = resourceIterator.next();
+        for (Object label : labels) {
+          Integer cnt = accum.get(label.toString());
+          if (cnt == null) {
+            cnt = 0;
+          }
+          cnt++;
+          accum.put(label.toString(), cnt);
+        }
+      }
+      for (Entry<String, Integer> entry : accum.entrySet()) {
+        listener.connectionsFound(entry.getKey(), entry.getValue());
+      }
+      tx.commit();
+    } finally {
+      tx.close();
+    }
+  }
+
+  @Override
+  public void findRelationships(Long id, ConnectionQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
+
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", id);
+      String query = "MATCH (n)-[r]-() WHERE ID(n) = $param RETURN r as edge";
+      Result result = tx.execute(query, parameters);
+
+      Map<String, Integer> accum = new HashMap<>();
+      while (result.hasNext()) {
+        Relationship edge = (Relationship) result.next().get("edge");
+        Integer i = accum.get(edge.getType().name());
+        if (i == null) i = 0;
+        accum.put(edge.getType().name(), ++i);
+      }
+      for (Entry<String, Integer> entry : accum.entrySet()) {
+        listener.connectionsFound(entry.getKey(), entry.getValue());
+      }
+      tx.commit();
+    } finally {
+      tx.close();
+    }
+  }
+
+  @Override
+  public List<Node> search(Label label, Map<String, Object> params) {
+    final List<Node> result = new ArrayList<>();
+    search(
+        label,
+        params,
+        new NodeQueryListener() {
+
+          @Override
+          public boolean nodeFound(Node node) {
+            result.add(node);
+            return true;
+          }
         });
-        return result;
-    }
+    return result;
+  }
 
-    @Override
-    public void search(Label label, Map<String, Object> params, NodeQueryListener listener, String... ordering) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void search(
+      Label label, Map<String, Object> params, NodeQueryListener listener, String... ordering) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            StringBuilder queryBuilder = new StringBuilder();
-            queryBuilder.append("MATCH (n:").append(label.name()).append(") ");
-            if (!params.isEmpty()) {
-                queryBuilder.append(" WHERE ");
-                Iterator<String> iterator = params.keySet().iterator();
-                while (iterator.hasNext()) {
-                    String name = iterator.next();
-                    queryBuilder.append(" n.").append(name);
-                    if (iterator.hasNext()) {
-                        queryBuilder.append(" AND ");
-                    }
-                }
-            }
-            queryBuilder.append(" RETURN n ");
-
-            if (ordering.length > 0) {
-                queryBuilder.append(" ORDER BY ");
-                queryBuilder.append(Arrays.stream(ordering).map(o -> "n." + o).collect(Collectors.joining(", ")));
-            }
-
-            Result result = tx.execute(queryBuilder.toString(), params);
-            ResourceIterator<Node> resourceIterator = result.columnAs("n");
-            boolean proceed = true;
-            while (resourceIterator.hasNext() && proceed) {
-                Node node = resourceIterator.next();
-                proceed = listener.nodeFound(node);
-            }
-
-            tx.commit();
-        } finally
-
-        {
-            tx.close();
+      StringBuilder queryBuilder = new StringBuilder();
+      queryBuilder.append("MATCH (n:").append(label.name()).append(") ");
+      if (!params.isEmpty()) {
+        queryBuilder.append(" WHERE ");
+        Iterator<String> iterator = params.keySet().iterator();
+        while (iterator.hasNext()) {
+          String name = iterator.next();
+          queryBuilder.append(" n.").append(name);
+          if (iterator.hasNext()) {
+            queryBuilder.append(" AND ");
+          }
         }
+      }
+      queryBuilder.append(" RETURN n ");
 
+      if (ordering.length > 0) {
+        queryBuilder.append(" ORDER BY ");
+        queryBuilder.append(
+            Arrays.stream(ordering).map(o -> "n." + o).collect(Collectors.joining(", ")));
+      }
+
+      Result result = tx.execute(queryBuilder.toString(), params);
+      ResourceIterator<Node> resourceIterator = result.columnAs("n");
+      boolean proceed = true;
+      while (resourceIterator.hasNext() && proceed) {
+        Node node = resourceIterator.next();
+        proceed = listener.nodeFound(node);
+      }
+
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public void findLabels(LabelQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void findLabels(LabelQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            StringBuilder query = new StringBuilder();
-            query.append(" MATCH (n) ");
-            query.append(" WITH DISTINCT labels(n) AS labels ");
-            query.append(" UNWIND labels AS label ");
-            query.append(" RETURN DISTINCT label ");
-            query.append(" ORDER BY label ");
+      StringBuilder query = new StringBuilder();
+      query.append(" MATCH (n) ");
+      query.append(" WITH DISTINCT labels(n) AS labels ");
+      query.append(" UNWIND labels AS label ");
+      query.append(" RETURN DISTINCT label ");
+      query.append(" ORDER BY label ");
 
-            Result result = tx.execute(query.toString());
-            ResourceIterator<String> resourceIterator = result.columnAs("label");
-            while (resourceIterator.hasNext()) {
-                String label = resourceIterator.next();
-                listener.labelFound(label);
-            }
+      Result result = tx.execute(query.toString());
+      ResourceIterator<String> resourceIterator = result.columnAs("label");
+      while (resourceIterator.hasNext()) {
+        String label = resourceIterator.next();
+        listener.labelFound(label);
+      }
 
-            tx.commit();
-        } finally {
-            tx.close();
+      tx.commit();
+    } finally {
+      tx.close();
+    }
+  }
+
+  @Override
+  public void findLinks(ExportLinksQuery query, LinkQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
+
+      StringBuilder queryBuilder = new StringBuilder("MATCH ");
+      StringBuilder whereBuilder = new StringBuilder(" WHERE ");
+      StringBuilder returnBuilder = new StringBuilder(" RETURN DISTINCT ");
+
+      int numOfLinks = query.getNumOfLinks();
+      for (int index = 0; index < numOfLinks; index++) {
+        List<String> types = query.getTypes(index);
+
+        String node = "n_" + index;
+        queryBuilder.append("(").append(node).append(")");
+
+        Iterator<String> iterator = types.iterator();
+        whereBuilder.append("(");
+        while (iterator.hasNext()) {
+          String type = iterator.next();
+          whereBuilder.append(node).append(":").append(type).append(" ");
+          if (iterator.hasNext()) {
+            whereBuilder.append("OR ");
+          }
         }
+        whereBuilder.append(")");
 
-    }
-
-    @Override
-    public void findLinks(ExportLinksQuery query, LinkQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
-
-            StringBuilder queryBuilder = new StringBuilder("MATCH ");
-            StringBuilder whereBuilder = new StringBuilder(" WHERE ");
-            StringBuilder returnBuilder = new StringBuilder(" RETURN DISTINCT ");
-
-            int numOfLinks = query.getNumOfLinks();
-            for (int index = 0; index < numOfLinks; index++) {
-                List<String> types = query.getTypes(index);
-
-                String node = "n_" + index;
-                queryBuilder.append("(").append(node).append(")");
-
-                Iterator<String> iterator = types.iterator();
-                whereBuilder.append("(");
-                while (iterator.hasNext()) {
-                    String type = iterator.next();
-                    whereBuilder.append(node).append(":").append(type).append(" ");
-                    if (iterator.hasNext()) {
-                        whereBuilder.append("OR ");
-                    }
-                }
-                whereBuilder.append(")");
-
-                returnBuilder.append(node);
-                if (index + 1 < numOfLinks) {
-                    int distance = query.getDistance(index);
-                    queryBuilder.append("-[*").append(distance).append("]-");
-                    returnBuilder.append(",");
-                    whereBuilder.append(" AND ");
-                }
-            }
-
-            queryBuilder.append(whereBuilder).append(returnBuilder);
-
-            Result result = tx.execute(queryBuilder.toString());
-
-            while (result.hasNext()) {
-                Map<String, Object> next = result.next();
-                for (int index = 0; index < numOfLinks - 1; index++) {
-                    String node1Name = "n_" + index;
-                    String node2Name = "n_" + (index + 1);
-
-                    Node node1 = (Node) next.get(node1Name);
-                    Node node2 = (Node) next.get(node2Name);
-
-                    listener.linkFound(node1, node2);
-                }
-
-            }
-
-            tx.commit();
-        } catch (Exception e) {
-            log.error("Error executing query.", e);
-        } finally {
-            tx.close();
+        returnBuilder.append(node);
+        if (index + 1 < numOfLinks) {
+          int distance = query.getDistance(index);
+          queryBuilder.append("-[*").append(distance).append("]-");
+          returnBuilder.append(",");
+          whereBuilder.append(" AND ");
         }
-    }
+      }
 
-    @Override
-    public void advancedSearch(String query, FreeQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+      queryBuilder.append(whereBuilder).append(returnBuilder);
 
-            Result result = tx.execute(query);
-            listener.columnsFound(result.columns());
-            while (result.hasNext()) {
-                listener.resultFound(result.next());
-            }
+      Result result = tx.execute(queryBuilder.toString());
 
-            tx.commit();
-        } finally {
-            tx.close();
+      while (result.hasNext()) {
+        Map<String, Object> next = result.next();
+        for (int index = 0; index < numOfLinks - 1; index++) {
+          String node1Name = "n_" + index;
+          String node2Name = "n_" + (index + 1);
+
+          Node node1 = (Node) next.get(node1Name);
+          Node node2 = (Node) next.get(node2Name);
+
+          listener.linkFound(node1, node2);
         }
+      }
 
+      tx.commit();
+    } catch (Exception e) {
+      log.error("Error executing query.", e);
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public void getRelationships(Collection<Long> ids, EdgeQueryListener listener) {
-        Transaction tx = null;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void advancedSearch(String query, FreeQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", ids);
-            Result result = tx.execute("MATCH (n)-[r]-(m) WHERE ID(r) IN $param RETURN r", parameters);
+      Result result = tx.execute(query);
+      listener.columnsFound(result.columns());
+      while (result.hasNext()) {
+        listener.resultFound(result.next());
+      }
 
-            ResourceIterator<Relationship> resourceIterator = result.columnAs("r");
-            boolean proceed = true;
-            while (resourceIterator.hasNext() && proceed) {
-                Relationship relationship = resourceIterator.next();
-                proceed = listener.edgeFound(relationship);
-            }
-
-            tx.commit();
-        } finally {
-            tx.close();
-        }
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
-    @Override
-    public int deleteRelationshipsFromDatasource(String evidenceUUID) {
-        Transaction tx = null;
-        long deletions = 0;
-        try {
-            tx = graphDB.beginTx();
+  @Override
+  public void getRelationships(Collection<Long> ids, EdgeQueryListener listener) {
+    Transaction tx = null;
+    try {
+      tx = graphDB.beginTx();
 
-            HashMap<String, Object> parameters = new HashMap<>(1);
-            parameters.put("param", evidenceUUID);
-            Result result = tx.execute("MATCH ()-[r]-() WHERE r." + GraphConstants.RELATIONSHIP_SOURCE
-                    + " = $param WITH DISTINCT r as dr DELETE dr RETURN count(dr) as size",
-                    parameters);
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", ids);
+      Result result = tx.execute("MATCH (n)-[r]-(m) WHERE ID(r) IN $param RETURN r", parameters);
 
-            if (result.hasNext()) {
-                deletions += (Long) result.next().get("size");
-            }
+      ResourceIterator<Relationship> resourceIterator = result.columnAs("r");
+      boolean proceed = true;
+      while (resourceIterator.hasNext() && proceed) {
+        Relationship relationship = resourceIterator.next();
+        proceed = listener.edgeFound(relationship);
+      }
 
-            tx.commit();
-        } finally {
-            tx.close();
-        }
-        return (int) deletions;
+      tx.commit();
+    } finally {
+      tx.close();
     }
+  }
 
+  @Override
+  public int deleteRelationshipsFromDatasource(String evidenceUUID) {
+    Transaction tx = null;
+    long deletions = 0;
+    try {
+      tx = graphDB.beginTx();
+
+      HashMap<String, Object> parameters = new HashMap<>(1);
+      parameters.put("param", evidenceUUID);
+      Result result =
+          tx.execute(
+              "MATCH ()-[r]-() WHERE r."
+                  + GraphConstants.RELATIONSHIP_SOURCE
+                  + " = $param WITH DISTINCT r as dr DELETE dr RETURN count(dr) as size",
+              parameters);
+
+      if (result.hasNext()) {
+        deletions += (Long) result.next().get("size");
+      }
+
+      tx.commit();
+    } finally {
+      tx.close();
+    }
+    return (int) deletions;
+  }
 }
-

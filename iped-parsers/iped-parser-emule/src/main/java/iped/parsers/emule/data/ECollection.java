@@ -3,7 +3,7 @@ package iped.parsers.emule.data;
 import java.util.List;
 
 public interface ECollection {
-    String getName();
+  String getName();
 
-    List<ECollectionFile> getFiles();
+  List<ECollectionFile> getFiles();
 }

@@ -22,137 +22,135 @@ import iped.app.ui.parallelsorter.ParallelTableRowSorter;
 import iped.viewers.api.CancelableWorker;
 import iped.viewers.api.events.RowSorterTableDataChange;
 import iped.viewers.util.ProgressDialog;
-import lombok.extern.slf4j.Slf4j;
-
-import javax.swing.*;
 import java.awt.*;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.swing.*;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ResultTableRowSorter extends ParallelTableRowSorter<ResultTableSortModel> {
 
-    private static final int MAX_COMPARATOR_CACHE = 3;
+  private static final int MAX_COMPARATOR_CACHE = 3;
 
-
-    private static volatile Map<Integer, RowComparator> comparatorCache = new LinkedHashMap<Integer, RowComparator>(16, 0.75f, true) {
-        /**
-         *
-         */
+  private static volatile Map<Integer, RowComparator> comparatorCache =
+      new LinkedHashMap<Integer, RowComparator>(16, 0.75f, true) {
+        /** */
         private static final long serialVersionUID = 1L;
 
         @Override
         protected boolean removeEldestEntry(Map.Entry<Integer, RowComparator> eldest) {
-            return this.size() > MAX_COMPARATOR_CACHE;
+          return this.size() > MAX_COMPARATOR_CACHE;
         }
-    };
+      };
 
-    public ResultTableRowSorter() {
-        super(new ResultTableSortModel());
-        this.setSortable(0, false);
-        this.setMaxSortKeys(2);
+  public ResultTableRowSorter() {
+    super(new ResultTableSortModel());
+    this.setSortable(0, false);
+    this.setMaxSortKeys(2);
+  }
+
+  @Override
+  public Comparator<?> getComparator(int column) {
+    if (RowComparator.isNewIndexReader()) comparatorCache.clear();
+    RowComparator comp = comparatorCache.get(column);
+    if (comp == null) {
+      comp = new RowComparator(column);
+      comparatorCache.put(column, comp);
+    }
+    return comp;
+  }
+
+  @Override
+  protected boolean useToString(int column) {
+    return false;
+  }
+
+  @Override
+  public void setSortKeys(final List<? extends SortKey> sortKeys) {
+    List<? extends SortKey> oldSortKeys = super.getSortKeys();
+    if ((oldSortKeys == sortKeys) || (oldSortKeys.size() == 0 && sortKeys == null)) {
+      return;
+    }
+    if (sortKeys == null) {
+      super.setSortKeys(null);
+      App.get().resultsModel.fireTableChanged(new RowSorterTableDataChange(App.get().resultsModel));
+    } else {
+      BackgroundSort backgroundSort = new BackgroundSort(sortKeys);
+      backgroundSort.execute();
+    }
+  }
+
+  public void setSortKeysSuper(final List<? extends SortKey> sortKeys) {
+    super.setSortKeys(sortKeys);
+  }
+
+  class BackgroundSort extends CancelableWorker {
+
+    ProgressDialog progressMonitor;
+    List<? extends SortKey> sortKeys;
+    ResultTableRowSorter sorter = new ResultTableRowSorter();
+
+    public BackgroundSort(List<? extends SortKey> sortKeys) {
+      this.sortKeys = sortKeys;
+      progressMonitor =
+          new ProgressDialog(App.get(), this, true, 200, Dialog.ModalityType.APPLICATION_MODAL);
+      progressMonitor.setNote(Messages.getString("ResultTableRowSorter.Sorting")); // $NON-NLS-1$
     }
 
     @Override
-    public Comparator<?> getComparator(int column) {
-        if (RowComparator.isNewIndexReader())
-            comparatorCache.clear();
-        RowComparator comp = comparatorCache.get(column);
-        if (comp == null) {
-            comp = new RowComparator(column);
-            comparatorCache.put(column, comp);
-        }
-        return comp;
+    protected Object doInBackground() {
+      List<String> sortKeysString = getSortKeysString(sortKeys);
+      log.info("Sorting by {}...", sortKeysString);
+      long t = System.currentTimeMillis();
+      sorter.setSortKeysSuper(sortKeys);
+      t = System.currentTimeMillis() - t;
+      log.info("Sorting by {} took {}ms", sortKeysString, t);
+      return null;
+    }
+
+    private List<String> getSortKeysString(List<? extends SortKey> list) {
+      return list.stream()
+          .map(s -> "Col " + s.getColumn() + " order " + s.getSortOrder())
+          .collect(Collectors.toList());
     }
 
     @Override
-    protected boolean useToString(int column) {
-        return false;
+    public void done() {
+      progressMonitor.close();
+      int idx = App.get().resultsTable.getSelectionModel().getLeadSelectionIndex();
+      if (idx != -1) {
+        idx = App.get().resultsTable.convertRowIndexToModel(idx);
+      }
+
+      RowSorter oldSorter = App.get().resultsTable.getRowSorter();
+      App.get().resultsTable.setRowSorter(null);
+
+      if (!this.isCancelled()) {
+        App.get().resultsTable.setRowSorter(sorter);
+        App.get()
+            .resultsModel
+            .fireTableChanged(new RowSorterTableDataChange(App.get().resultsModel, sortKeys));
+      } else {
+        App.get().resultsTable.setRowSorter(oldSorter);
+      }
+
+      App.get().resultsTable.getTableHeader().repaint();
+      App.get().galleryModel.fireTableStructureChanged();
+
+      if (idx != -1) {
+        idx = App.get().resultsTable.convertRowIndexToView(idx);
+        App.get().resultsTable.setRowSelectionInterval(idx, idx);
+      }
     }
 
     @Override
-    public void setSortKeys(final List<? extends SortKey> sortKeys) {
-        List<? extends SortKey> oldSortKeys = super.getSortKeys();
-        if ((oldSortKeys == sortKeys) || (oldSortKeys.size() == 0 && sortKeys == null)) {
-            return;
-        }
-        if (sortKeys == null) {
-            super.setSortKeys(null);
-            App.get().resultsModel.fireTableChanged(new RowSorterTableDataChange(App.get().resultsModel));
-        } else {
-            BackgroundSort backgroundSort = new BackgroundSort(sortKeys);
-            backgroundSort.execute();
-        }
+    public boolean doCancel(boolean mayInterruptIfRunning) {
+      cancel(true);
+      return true;
     }
-
-    public void setSortKeysSuper(final List<? extends SortKey> sortKeys) {
-        super.setSortKeys(sortKeys);
-    }
-
-    class BackgroundSort extends CancelableWorker {
-
-        ProgressDialog progressMonitor;
-        List<? extends SortKey> sortKeys;
-        ResultTableRowSorter sorter = new ResultTableRowSorter();
-
-        public BackgroundSort(List<? extends SortKey> sortKeys) {
-            this.sortKeys = sortKeys;
-            progressMonitor = new ProgressDialog(App.get(), this, true, 200, Dialog.ModalityType.APPLICATION_MODAL);
-            progressMonitor.setNote(Messages.getString("ResultTableRowSorter.Sorting")); //$NON-NLS-1$
-        }
-
-        @Override
-        protected Object doInBackground() {
-            List<String> sortKeysString = getSortKeysString(sortKeys);
-            log.info("Sorting by {}...", sortKeysString);
-            long t = System.currentTimeMillis();
-            sorter.setSortKeysSuper(sortKeys);
-            t = System.currentTimeMillis() - t;
-            log.info("Sorting by {} took {}ms", sortKeysString, t);
-            return null;
-        }
-
-        private List<String> getSortKeysString(List<? extends SortKey> list) {
-            return list.stream().map(s -> "Col " + s.getColumn() + " order " + s.getSortOrder()).collect(Collectors.toList());
-        }
-
-        @Override
-        public void done() {
-            progressMonitor.close();
-            int idx = App.get().resultsTable.getSelectionModel().getLeadSelectionIndex();
-            if (idx != -1) {
-                idx = App.get().resultsTable.convertRowIndexToModel(idx);
-            }
-
-            RowSorter oldSorter = App.get().resultsTable.getRowSorter();
-            App.get().resultsTable.setRowSorter(null);
-
-            if (!this.isCancelled()) {
-                App.get().resultsTable.setRowSorter(sorter);
-                App.get().resultsModel.fireTableChanged(new RowSorterTableDataChange(App.get().resultsModel, sortKeys));
-            } else {
-                App.get().resultsTable.setRowSorter(oldSorter);
-            }
-
-            App.get().resultsTable.getTableHeader().repaint();
-            App.get().galleryModel.fireTableStructureChanged();
-
-            if (idx != -1) {
-                idx = App.get().resultsTable.convertRowIndexToView(idx);
-                App.get().resultsTable.setRowSelectionInterval(idx, idx);
-            }
-
-        }
-
-        @Override
-        public boolean doCancel(boolean mayInterruptIfRunning) {
-            cancel(true);
-            return true;
-        }
-
-    }
-
+  }
 }

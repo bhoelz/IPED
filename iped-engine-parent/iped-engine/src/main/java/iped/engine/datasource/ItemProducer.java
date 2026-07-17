@@ -27,8 +27,6 @@ import iped.engine.localization.Messages;
 import iped.engine.task.SkipCommitDataKeys;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.utils.HashValue;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -36,133 +34,138 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Responsável por instanciar e executar o contador e o produtor de itens do
- * caso que adiciona os itens a fila de processamento. Podem obter os itens de
- * diversas fontes de dados: pastas, relatórios do UFED, imagens forenses ou
- * casos do IPED.
- *
+ * Responsável por instanciar e executar o contador e o produtor de itens do caso que adiciona os
+ * itens a fila de processamento. Podem obter os itens de diversas fontes de dados: pastas,
+ * relatórios do UFED, imagens forenses ou casos do IPED.
  */
 @Slf4j
 public class ItemProducer extends Thread implements Closeable {
 
+  private final ICaseData caseData;
+  private final boolean listOnly;
+  private List<File> datasources;
+  private File output;
+  private Manager manager;
+  private DataSourceReader currentReader;
+  private ArrayList<DataSourceReader> supportedReaders = new ArrayList<DataSourceReader>();
+  private ArrayList<DataSourceReader> instantiatedReaders = new ArrayList<DataSourceReader>();
 
-    private final ICaseData caseData;
-    private final boolean listOnly;
-    private List<File> datasources;
-    private File output;
-    private Manager manager;
-    private DataSourceReader currentReader;
-    private ArrayList<DataSourceReader> supportedReaders = new ArrayList<DataSourceReader>();
-    private ArrayList<DataSourceReader> instantiatedReaders = new ArrayList<DataSourceReader>();
+  public ItemProducer(
+      Manager manager, ICaseData caseData, boolean listOnly, List<File> datasources, File output)
+      throws Exception {
+    this.caseData = caseData;
+    this.listOnly = listOnly;
+    this.datasources = datasources;
+    this.output = output;
+    this.manager = manager;
 
-    public ItemProducer(Manager manager, ICaseData caseData, boolean listOnly, List<File> datasources, File output)
-            throws Exception {
-        this.caseData = caseData;
-        this.listOnly = listOnly;
-        this.datasources = datasources;
-        this.output = output;
-        this.manager = manager;
+    installDataSourceReaders();
+  }
 
-        installDataSourceReaders();
-    }
+  private void installDataSourceReaders() throws Exception {
 
-    private void installDataSourceReaders() throws Exception {
-
-        Class<? extends DataSourceReader>[] readerList = new Class[] { SleuthkitReader.class,
-                IPEDReader.class, UfedXmlReader.class, AD1DataSourceReader.class,
-                FolderTreeReader.class // deve ser o último
+    Class<? extends DataSourceReader>[] readerList =
+        new Class[] {
+          SleuthkitReader.class,
+          IPEDReader.class,
+          UfedXmlReader.class,
+          AD1DataSourceReader.class,
+          FolderTreeReader.class // deve ser o último
         };
 
-        for (Class<? extends DataSourceReader> srcReader : readerList) {
-            Constructor<? extends DataSourceReader> constr = srcReader.getConstructor(ICaseData.class, File.class,
-                    boolean.class);
-            supportedReaders.add(constr.newInstance(caseData, output, listOnly));
-        }
+    for (Class<? extends DataSourceReader> srcReader : readerList) {
+      Constructor<? extends DataSourceReader> constr =
+          srcReader.getConstructor(ICaseData.class, File.class, boolean.class);
+      supportedReaders.add(constr.newInstance(caseData, output, listOnly));
     }
+  }
 
-    public String currentDirectory() {
-        if (currentReader != null) {
-            return currentReader.currentDirectory();
-        } else {
-            return null;
-        }
+  public String currentDirectory() {
+    if (currentReader != null) {
+      return currentReader.currentDirectory();
+    } else {
+      return null;
     }
+  }
 
-    @Override
-    public void close() throws IOException {
-        for (DataSourceReader reader : instantiatedReaders) {
-            reader.close();
-        }
+  @Override
+  public void close() throws IOException {
+    for (DataSourceReader reader : instantiatedReaders) {
+      reader.close();
     }
+  }
 
-    @Override
-    public void run() {
-        // Bind this thread's case context so Manager.getInstance() resolves correctly.
-        CaseContext caseContext = manager.getContext();
-        if (caseContext != null) {
-            CaseContextThreadLocal.set(caseContext);
-        }
-        File currSource = null;
-        try {
-            for (File source : datasources) {
-                currSource = source;
-                if (Thread.interrupted()) {
-                    throw new InterruptedException(Thread.currentThread().getName() + " interrupted."); //$NON-NLS-1$
-                }
-
-                if (listOnly) {
-                    UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", 0, //$NON-NLS-1$
-                            Messages.getString("ItemProducer.Adding") + source.getAbsolutePath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-                    log.info("Adding '{}'", source.getAbsolutePath()); //$NON-NLS-1$
-                }
-
-                for (DataSourceReader srcReader : supportedReaders) {
-                    if (srcReader.isSupported(source)) {
-                        Constructor<? extends DataSourceReader> constr = srcReader.getClass()
-                                .getConstructor(ICaseData.class, File.class, boolean.class);
-                        srcReader = constr.newInstance(caseData, output, listOnly);
-                        instantiatedReaders.add(srcReader);
-                        currentReader = srcReader;
-                        srcReader.read(source);
-                        break;
-                    }
-
-                }
-
-                // executed only when restarting interrupted processing
-                Set<HashValue> parentsWithLostSubitems = (Set<HashValue>) caseData
-                        .getCaseObject(SkipCommitDataKeys.PARENTS_WITH_LOST_SUBITEMS);
-                if (parentsWithLostSubitems != null && parentsWithLostSubitems.size() > 0) {
-                    try (IPEDReader reader = new IPEDReader(caseData, output, listOnly)) {
-                    	reader.read(parentsWithLostSubitems, manager);
-                    }
-                }
-
-            }
-            if (!listOnly) {
-                Item evidence = new Item();
-                evidence.setPath("[queue-end]");
-                evidence.setQueueEnd(true);
-                Manager.getInstance().addItemToQueue(evidence);
-
-            } else {
-                log.info("Total items found: {}", caseData.getDiscoveredEvidences()); //$NON-NLS-1$
-            }
-            UIPropertyListenerProvider.getInstance().firePropertyChange("discoverEnded", 0, 0);
-
-        } catch (Throwable e) {
-            if (manager.exception == null) {
-                String source = currSource != null ? currSource.getAbsolutePath() : "";
-                Exception e1 = new Exception("Error decoding datasource " + source);
-                e1.initCause(e);
-                manager.exception = e1;
-            }
-        } finally {
-            CaseContextThreadLocal.clear();
-        }
-
+  @Override
+  public void run() {
+    // Bind this thread's case context so Manager.getInstance() resolves correctly.
+    CaseContext caseContext = manager.getContext();
+    if (caseContext != null) {
+      CaseContextThreadLocal.set(caseContext);
     }
+    File currSource = null;
+    try {
+      for (File source : datasources) {
+        currSource = source;
+        if (Thread.interrupted()) {
+          throw new InterruptedException(
+              Thread.currentThread().getName() + " interrupted."); // $NON-NLS-1$
+        }
 
+        if (listOnly) {
+          UIPropertyListenerProvider.getInstance()
+              .firePropertyChange(
+                  "mensagem",
+                  0, //$NON-NLS-1$
+                  Messages.getString("ItemProducer.Adding")
+                      + source.getAbsolutePath()
+                      + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+          log.info("Adding '{}'", source.getAbsolutePath()); // $NON-NLS-1$
+        }
+
+        for (DataSourceReader srcReader : supportedReaders) {
+          if (srcReader.isSupported(source)) {
+            Constructor<? extends DataSourceReader> constr =
+                srcReader.getClass().getConstructor(ICaseData.class, File.class, boolean.class);
+            srcReader = constr.newInstance(caseData, output, listOnly);
+            instantiatedReaders.add(srcReader);
+            currentReader = srcReader;
+            srcReader.read(source);
+            break;
+          }
+        }
+
+        // executed only when restarting interrupted processing
+        Set<HashValue> parentsWithLostSubitems =
+            (Set<HashValue>) caseData.getCaseObject(SkipCommitDataKeys.PARENTS_WITH_LOST_SUBITEMS);
+        if (parentsWithLostSubitems != null && parentsWithLostSubitems.size() > 0) {
+          try (IPEDReader reader = new IPEDReader(caseData, output, listOnly)) {
+            reader.read(parentsWithLostSubitems, manager);
+          }
+        }
+      }
+      if (!listOnly) {
+        Item evidence = new Item();
+        evidence.setPath("[queue-end]");
+        evidence.setQueueEnd(true);
+        Manager.getInstance().addItemToQueue(evidence);
+
+      } else {
+        log.info("Total items found: {}", caseData.getDiscoveredEvidences()); // $NON-NLS-1$
+      }
+      UIPropertyListenerProvider.getInstance().firePropertyChange("discoverEnded", 0, 0);
+
+    } catch (Throwable e) {
+      if (manager.exception == null) {
+        String source = currSource != null ? currSource.getAbsolutePath() : "";
+        Exception e1 = new Exception("Error decoding datasource " + source);
+        e1.initCause(e);
+        manager.exception = e1;
+      }
+    } finally {
+      CaseContextThreadLocal.clear();
+    }
+  }
 }

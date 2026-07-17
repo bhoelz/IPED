@@ -22,165 +22,164 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import iped.configuration.Configurable;
 import iped.engine.config.schema.SchemaValidator;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Validates configurations against their JSON schemas.
- * Provides runtime validation of all Configurable components.
+ * Validates configurations against their JSON schemas. Provides runtime validation of all
+ * Configurable components.
  */
 @Slf4j
 public class ConfigurationValidator {
 
-    private final SchemaValidator schemaValidator = new SchemaValidator();
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final Map<String, ObjectNode> schemaCache = new HashMap<>();
+  private final SchemaValidator schemaValidator = new SchemaValidator();
+  private final ObjectMapper mapper = new ObjectMapper();
+  private final Map<String, ObjectNode> schemaCache = new HashMap<>();
 
-    private static final String SCHEMA_RESOURCE_PATH = "/schemas/json/";
-    private static final String SCHEMA_FILE_SUFFIX = ".schema.json";
+  private static final String SCHEMA_RESOURCE_PATH = "/schemas/json/";
+  private static final String SCHEMA_FILE_SUFFIX = ".schema.json";
 
-    /**
-     * Validates a single configuration object against its schema.
-     * Logs validation results; does not throw exceptions.
-     *
-     * @param config The configuration object to validate
-     * @param configurableClass The class implementing Configurable
-     * @return true if validation passed, false otherwise
-     */
-    public boolean validateConfiguration(Object config, Class<?> configurableClass) {
-        try {
-            String componentName = getComponentName(configurableClass);
-            ObjectNode schema = loadSchema(componentName);
+  /**
+   * Validates a single configuration object against its schema. Logs validation results; does not
+   * throw exceptions.
+   *
+   * @param config The configuration object to validate
+   * @param configurableClass The class implementing Configurable
+   * @return true if validation passed, false otherwise
+   */
+  public boolean validateConfiguration(Object config, Class<?> configurableClass) {
+    try {
+      String componentName = getComponentName(configurableClass);
+      ObjectNode schema = loadSchema(componentName);
 
-            if (schema == null) {
-                log.debug("No schema found for component: {}", componentName);
-                return true;
-            }
+      if (schema == null) {
+        log.debug("No schema found for component: {}", componentName);
+        return true;
+      }
 
-            SchemaValidator.ValidationResult result = schemaValidator.validate(config, schema);
+      SchemaValidator.ValidationResult result = schemaValidator.validate(config, schema);
 
-            if (!result.isValid()) {
-                log.warn("Configuration validation failed for {}:\n{}",
-                    componentName, result.getErrorReport());
-                return false;
-            }
+      if (!result.isValid()) {
+        log.warn(
+            "Configuration validation failed for {}:\n{}", componentName, result.getErrorReport());
+        return false;
+      }
 
-            log.debug("Configuration validation passed for: {}", componentName);
-            return true;
+      log.debug("Configuration validation passed for: {}", componentName);
+      return true;
 
-        } catch (Exception e) {
-            log.error("Error during configuration validation", e);
-            return false;
+    } catch (Exception e) {
+      log.error("Error during configuration validation", e);
+      return false;
+    }
+  }
+
+  /**
+   * Validates all configurations in a ConfigurationManager. Returns statistics about validation
+   * results.
+   *
+   * @param configManager The configuration manager to validate
+   * @return ValidationStats with success/failure counts
+   */
+  public ValidationStats validateAll(ConfigurationManager configManager) {
+    ValidationStats stats = new ValidationStats();
+
+    try {
+      for (Configurable<?> configurable : configManager.getObjects()) {
+        Class<?> configurableClass = configurable.getClass();
+        // Validate the canonical config snapshot, not the live engine object: the
+        // latter can carry expensive derived getters (e.g. TaskInstallerConfig's
+        // task-graph resolution) or third-party object graphs Jackson can't safely
+        // walk, neither of which the JSON schemas describe.
+        boolean valid = validateConfiguration(configurable.getConfiguration(), configurableClass);
+
+        if (valid) {
+          stats.successCount++;
+        } else {
+          stats.failureCount++;
+          stats.failedComponents.add(configurableClass.getSimpleName());
         }
+      }
+
+      log.info(
+          "Configuration validation summary: {} passed, {} failed",
+          stats.successCount,
+          stats.failureCount);
+
+    } catch (Exception e) {
+      log.error("Error validating configuration manager", e);
     }
 
-    /**
-     * Validates all configurations in a ConfigurationManager.
-     * Returns statistics about validation results.
-     *
-     * @param configManager The configuration manager to validate
-     * @return ValidationStats with success/failure counts
-     */
-    public ValidationStats validateAll(ConfigurationManager configManager) {
-        ValidationStats stats = new ValidationStats();
+    return stats;
+  }
 
-        try {
-            for (Configurable<?> configurable : configManager.getObjects()) {
-                Class<?> configurableClass = configurable.getClass();
-                // Validate the canonical config snapshot, not the live engine object: the
-                // latter can carry expensive derived getters (e.g. TaskInstallerConfig's
-                // task-graph resolution) or third-party object graphs Jackson can't safely
-                // walk, neither of which the JSON schemas describe.
-                boolean valid = validateConfiguration(configurable.getConfiguration(), configurableClass);
-
-                if (valid) {
-                    stats.successCount++;
-                } else {
-                    stats.failureCount++;
-                    stats.failedComponents.add(configurableClass.getSimpleName());
-                }
-            }
-
-            log.info("Configuration validation summary: {} passed, {} failed",
-                stats.successCount, stats.failureCount);
-
-        } catch (Exception e) {
-            log.error("Error validating configuration manager", e);
-        }
-
-        return stats;
+  /**
+   * Loads a schema from resources. Caches schemas for performance.
+   *
+   * @param componentName The name of the component
+   * @return The loaded schema, or null if not found
+   * @throws IOException If the schema file is invalid JSON
+   */
+  private ObjectNode loadSchema(String componentName) throws IOException {
+    if (schemaCache.containsKey(componentName)) {
+      return schemaCache.get(componentName);
     }
 
-    /**
-     * Loads a schema from resources.
-     * Caches schemas for performance.
-     *
-     * @param componentName The name of the component
-     * @return The loaded schema, or null if not found
-     * @throws IOException If the schema file is invalid JSON
-     */
-    private ObjectNode loadSchema(String componentName) throws IOException {
-        if (schemaCache.containsKey(componentName)) {
-            return schemaCache.get(componentName);
-        }
+    String schemaPath = SCHEMA_RESOURCE_PATH + componentName + SCHEMA_FILE_SUFFIX;
+    InputStream resourceStream = getClass().getResourceAsStream(schemaPath);
 
-        String schemaPath = SCHEMA_RESOURCE_PATH + componentName + SCHEMA_FILE_SUFFIX;
-        InputStream resourceStream = getClass().getResourceAsStream(schemaPath);
-
-        if (resourceStream == null) {
-            return null;
-        }
-
-        try {
-            ObjectNode schema = (ObjectNode) mapper.readTree(resourceStream);
-            schemaCache.put(componentName, schema);
-            return schema;
-        } finally {
-            resourceStream.close();
-        }
+    if (resourceStream == null) {
+      return null;
     }
 
-    /**
-     * Derives component name from Configurable class name.
-     * Maps AnalysisConfig to AnalysisConfig, etc.
-     *
-     * @param configurableClass The Configurable implementation class
-     * @return The schema component name
-     */
-    private String getComponentName(Class<?> configurableClass) {
-        String simpleName = configurableClass.getSimpleName();
+    try {
+      ObjectNode schema = (ObjectNode) mapper.readTree(resourceStream);
+      schemaCache.put(componentName, schema);
+      return schema;
+    } finally {
+      resourceStream.close();
+    }
+  }
 
-        if (simpleName.endsWith("Config")) {
-            return simpleName;
-        }
+  /**
+   * Derives component name from Configurable class name. Maps AnalysisConfig to AnalysisConfig,
+   * etc.
+   *
+   * @param configurableClass The Configurable implementation class
+   * @return The schema component name
+   */
+  private String getComponentName(Class<?> configurableClass) {
+    String simpleName = configurableClass.getSimpleName();
 
-        return simpleName + "Config";
+    if (simpleName.endsWith("Config")) {
+      return simpleName;
     }
 
-    /**
-     * Statistics about validation run.
-     */
-    public static class ValidationStats {
-        public int successCount = 0;
-        public int failureCount = 0;
-        public java.util.List<String> failedComponents = new java.util.ArrayList<>();
+    return simpleName + "Config";
+  }
 
-        public int getTotalValidated() {
-            return successCount + failureCount;
-        }
+  /** Statistics about validation run. */
+  public static class ValidationStats {
+    public int successCount = 0;
+    public int failureCount = 0;
+    public java.util.List<String> failedComponents = new java.util.ArrayList<>();
 
-        public boolean allPassed() {
-            return failureCount == 0;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("ValidationStats{success=%d, failures=%d, total=%d}",
-                successCount, failureCount, getTotalValidated());
-        }
+    public int getTotalValidated() {
+      return successCount + failureCount;
     }
+
+    public boolean allPassed() {
+      return failureCount == 0;
+    }
+
+    @Override
+    public String toString() {
+      return String.format(
+          "ValidationStats{success=%d, failures=%d, total=%d}",
+          successCount, failureCount, getTotalValidated());
+    }
+  }
 }

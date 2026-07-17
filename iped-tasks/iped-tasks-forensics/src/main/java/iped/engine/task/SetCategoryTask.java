@@ -22,48 +22,45 @@ import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.CategoryConfig;
 import iped.engine.config.ConfigurationManager;
-import org.apache.tika.mime.MediaType;
-
 import java.util.Arrays;
 import java.util.List;
+import org.apache.tika.mime.MediaType;
 
 /**
- * Classe que carrega o mapeamento de mimeTypes para Categoria da aplicação.
- * Além disso utiliza regras javascript de definição de categorias baseadas nas
- * propriedades dos itens. Também é responsável por definir a categoria do item.
+ * Classe que carrega o mapeamento de mimeTypes para Categoria da aplicação. Além disso utiliza
+ * regras javascript de definição de categorias baseadas nas propriedades dos itens. Também é
+ * responsável por definir a categoria do item.
  */
 public class SetCategoryTask extends AbstractTask {
 
-    private static String FOLDER_CATEGORY = "Folders"; //$NON-NLS-1$
-    public static String SCANNED_CATEGORY = "Scanned Documents"; //$NON-NLS-1$
+  private static String FOLDER_CATEGORY = "Folders"; // $NON-NLS-1$
+  public static String SCANNED_CATEGORY = "Scanned Documents"; // $NON-NLS-1$
 
-    private CategoryConfig categoryConfig;
+  private CategoryConfig categoryConfig;
 
-    @Override
-    public List<Configurable<?>> getConfigurables() {
-        return Arrays.asList(new CategoryConfig());
+  @Override
+  public List<Configurable<?>> getConfigurables() {
+    return Arrays.asList(new CategoryConfig());
+  }
+
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
+    categoryConfig = configurationManager.findObject(CategoryConfig.class);
+  }
+
+  @Override
+  public void finish() throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  public void process(IItem e) throws Exception {
+
+    if (e.isDir()) {
+      e.setCategory(FOLDER_CATEGORY);
+    } else {
+      String category = categoryConfig.getCategory((MediaType) e.getMediaType());
+      e.setCategory(category);
     }
-
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
-        categoryConfig = configurationManager.findObject(CategoryConfig.class);
-    }
-
-    @Override
-    public void finish() throws Exception {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void process(IItem e) throws Exception {
-
-        if (e.isDir()) {
-            e.setCategory(FOLDER_CATEGORY);
-        } else {
-            String category = categoryConfig.getCategory((MediaType) e.getMediaType());
-            e.setCategory(category);
-        }
-
-    }
-
+  }
 }

@@ -22,370 +22,382 @@ import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.data.CaseData;
 import iped.engine.localization.Messages;
+import iped.engine.lucene.LuceneIndexingAdapter;
 import iped.engine.task.AbstractTask;
 import iped.engine.task.TaskInstaller;
 import iped.engine.util.UIPropertyListenerProvider;
 import iped.engine.util.Util;
 import iped.exception.IPEDException;
 import iped.index.spi.IndexingPort;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.index.IndexWriter;
-import iped.engine.lucene.LuceneIndexingAdapter;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.index.IndexWriter;
 
 /**
- * Responsável por retirar um item da fila e enviá-lo para cada tarefa de
- * processamento instalada: análise de assinatura, hash, expansão de itens,
- * indexação, carving, etc.
+ * Responsável por retirar um item da fila e enviá-lo para cada tarefa de processamento instalada:
+ * análise de assinatura, hash, expansão de itens, indexação, carving, etc.
  *
- * São executados vários Workers paralelamente. Cada Worker possui instâncias
- * próprias das tarefas, para evitar problemas de concorrência.
+ * <p>São executados vários Workers paralelamente. Cada Worker possui instâncias próprias das
+ * tarefas, para evitar problemas de concorrência.
  *
- * Caso haja uma exceção não esperada, ela é armazenada para que possa ser
- * detectada pelo manager.
+ * <p>Caso haja uma exceção não esperada, ela é armazenada para que possa ser detectada pelo
+ * manager.
  */
 @Slf4j
 public class Worker extends Thread {
 
+  private static final String workerNamePrefix = "Worker-"; // $NON-NLS-1$
 
-    private static final String workerNamePrefix = "Worker-"; //$NON-NLS-1$
+  private static final long MIN_WAIT_TIME_TO_SEND_QUEUE_END = 1000;
 
-    private static final long MIN_WAIT_TIME_TO_SEND_QUEUE_END = 1000;
+  /**
+   * Tracks the last time any worker finished processing an item, used to detect stalls. Shared
+   * across all workers for a case — intentionally volatile and static so that a single reader (the
+   * stall-detector) observes all workers without requiring a lock. Multi-case correctness: this is
+   * a coarse liveness signal; a false positive (stall detected because another case is idle) is
+   * acceptable and will simply trigger an early queue-end signal.
+   */
+  private static volatile long lastItemProcessingTime = 0;
 
-    /**
-     * Tracks the last time any worker finished processing an item, used to detect
-     * stalls. Shared across all workers for a case — intentionally volatile and
-     * static so that a single reader (the stall-detector) observes all workers
-     * without requiring a lock. Multi-case correctness: this is a coarse liveness
-     * signal; a false positive (stall detected because another case is idle) is
-     * acceptable and will simply trigger an early queue-end signal.
-     */
-    private static volatile long lastItemProcessingTime = 0;
+  public IndexWriter writer;
+  String baseFilePath;
 
-    public IndexWriter writer;
-    String baseFilePath;
+  /**
+   * Lazily-created, per-Worker {@link IndexingPort}. Never shared across Workers: each instance
+   * wraps this Worker's own {@link #writer}. See ADR 0001 (ports-and-adapters-indexing-seam) for
+   * the rationale.
+   */
+  private IndexingPort indexingPort;
 
-    /**
-     * Lazily-created, per-Worker {@link IndexingPort}. Never shared across
-     * Workers: each instance wraps this Worker's own {@link #writer}. See
-     * ADR 0001 (ports-and-adapters-indexing-seam) for the rationale.
-     */
-    private IndexingPort indexingPort;
+  public volatile AbstractTask runningTask;
+  public List<AbstractTask> tasks = new ArrayList<AbstractTask>();
+  private AbstractTask firstTask;
+  private int itemsBeingProcessed = 0;
 
-    public volatile AbstractTask runningTask;
-    public List<AbstractTask> tasks = new ArrayList<AbstractTask>();
-    private AbstractTask firstTask;
-    private int itemsBeingProcessed = 0;
+  public enum STATE {
+    RUNNING,
+    PAUSING,
+    PAUSED
+  }
 
-    public enum STATE {
-        RUNNING, PAUSING, PAUSED
+  public volatile STATE state = STATE.RUNNING;
+
+  public Manager manager;
+  public Statistics stats;
+  public File output;
+  public CaseData caseData;
+  public volatile Exception exception;
+  public volatile IItem evidence;
+  public final int id;
+
+  private boolean waiting = false;
+
+  private void incItemsBeingProcessed() {
+    itemsBeingProcessed++;
+    manager.getProcessingQueues().incItemsBeingProcessed();
+  }
+
+  public void decItemsBeingProcessed() {
+    itemsBeingProcessed--;
+    manager.getProcessingQueues().decItemsBeingProcessed();
+  }
+
+  /**
+   * Returns this Worker's {@link IndexingPort}, creating it lazily on first access. The returned
+   * instance always wraps <em>this</em> Worker's {@link #writer} — it is never a shared singleton
+   * across Workers.
+   *
+   * @return this Worker's indexing port
+   */
+  public IndexingPort getIndexingPort() {
+    if (indexingPort == null) {
+      indexingPort = new LuceneIndexingAdapter(writer);
+    }
+    return indexingPort;
+  }
+
+  /**
+   * Minimal constructor for subclasses (e.g. {@code AdditionalTaskWorker}) that do not participate
+   * in the full processing pipeline. The full task pipeline is NOT installed; {@code manager},
+   * {@code stats}, {@code caseData}, {@code output}, and {@code writer} remain {@code null} unless
+   * the subclass sets them explicitly.
+   *
+   * @param id worker identifier
+   */
+  protected Worker(int id) {
+    super(new ThreadGroup(workerNamePrefix + id), workerNamePrefix + id); // $NON-NLS-1$
+    this.id = id;
+    this.state = STATE.RUNNING;
+  }
+
+  public Worker(int k, CaseData caseData, IndexWriter writer, File output, Manager manager)
+      throws Exception {
+    super(new ThreadGroup(workerNamePrefix + k), workerNamePrefix + k); // $NON-NLS-1$
+    id = k;
+    this.caseData = caseData;
+    this.writer = writer;
+    this.output = output;
+    this.manager = manager;
+    this.stats = manager.stats;
+    baseFilePath = output.getParentFile().getAbsolutePath();
+
+    if (k == 0) {
+      log.info("Starting Tika"); // $NON-NLS-1$
     }
 
-    public volatile STATE state = STATE.RUNNING;
+    TaskInstaller taskInstaller = new TaskInstaller();
+    taskInstaller.installProcessingTasks(this);
+    doTaskChaining();
+  }
 
-    public Manager manager;
-    public Statistics stats;
-    public File output;
-    public CaseData caseData;
-    public volatile Exception exception;
-    public volatile IItem evidence;
-    public final int id;
+  public void init() throws Exception {
+    initTasks();
+  }
 
-    private boolean waiting = false;
+  private void doTaskChaining() {
+    firstTask = tasks.get(0);
+    for (int i = 0; i < tasks.size() - 1; i++) {
+      tasks.get(i).setNextTask(tasks.get(i + 1));
+    }
+  }
 
-    private void incItemsBeingProcessed() {
-        itemsBeingProcessed++;
-        manager.getProcessingQueues().incItemsBeingProcessed();
+  private void initTasks() throws Exception {
+    for (AbstractTask task : tasks) {
+      if (this.getName().equals(workerNamePrefix + 0)) {
+        log.info("Starting " + task.getName()); // $NON-NLS-1$
+        UIPropertyListenerProvider.getInstance()
+            .firePropertyChange(
+                "mensagem",
+                "", //$NON-NLS-1$ //$NON-NLS-2$
+                Messages.getString("Worker.Starting") + task.getName()); // $NON-NLS-1$
+      }
+      task.init(ConfigurationManager.get());
+    }
+  }
+
+  private void finishTasks() throws Exception {
+    for (AbstractTask task : tasks) {
+      task.finish();
+    }
+  }
+
+  public void finish() throws Exception {
+    synchronized (this) {
+      this.interrupt();
+      this.wait();
+    }
+    if (exception != null) {
+      throw exception;
+    }
+  }
+
+  public synchronized boolean isWaiting() {
+    return this.waiting;
+  }
+
+  public void processNextQueue() {
+    synchronized (this) {
+      this.notifyAll();
+    }
+  }
+
+  /**
+   * Processa o item em todas as tarefas instaladas. Caso ocorra exceção não esperada, armazena
+   * exceção para abortar processamento.
+   *
+   * @param evidence Item a ser processado
+   */
+  private void process(IItem evidence) {
+
+    IItem prevEvidence = this.evidence;
+    if (!evidence.isQueueEnd()) {
+      this.evidence = evidence;
     }
 
-    public void decItemsBeingProcessed() {
-        itemsBeingProcessed--;
-        manager.getProcessingQueues().decItemsBeingProcessed();
-    }
+    try {
 
-    /**
-     * Returns this Worker's {@link IndexingPort}, creating it lazily on first
-     * access. The returned instance always wraps <em>this</em> Worker's
-     * {@link #writer} — it is never a shared singleton across Workers.
-     *
-     * @return this Worker's indexing port
-     */
-    public IndexingPort getIndexingPort() {
-        if (indexingPort == null) {
-            indexingPort = new LuceneIndexingAdapter(writer);
+      log.debug(
+          "{} Processing {} ({} bytes)",
+          getName(),
+          evidence.getPath(),
+          evidence.getLength()); // $NON-NLS-1$
+
+      firstTask.processAndSendToNextTask(evidence);
+
+    } catch (Throwable t) {
+      // ABORTA PROCESSAMENTO NO CASO DE QQ OUTRO ERRO
+      if (exception == null) {
+        if (t instanceof IPEDException) exception = (IPEDException) t;
+        else {
+          exception =
+              new Exception(
+                  this.getName()
+                      + " Error while processing "
+                      + evidence.getPath()
+                      + " (" //$NON-NLS-1$ //$NON-NLS-2$
+                      + evidence.getLength()
+                      + "bytes)"); //$NON-NLS-1$
+          exception.initCause(t);
         }
-        return indexingPort;
+      }
     }
 
-    /**
-     * Minimal constructor for subclasses (e.g. {@code AdditionalTaskWorker})
-     * that do not participate in the full processing pipeline.
-     * The full task pipeline is NOT installed; {@code manager}, {@code stats},
-     * {@code caseData}, {@code output}, and {@code writer} remain {@code null}
-     * unless the subclass sets them explicitly.
-     *
-     * @param id worker identifier
-     */
-    protected Worker(int id) {
-        super(new ThreadGroup(workerNamePrefix + id), workerNamePrefix + id); //$NON-NLS-1$
-        this.id    = id;
-        this.state = STATE.RUNNING;
+    this.evidence = prevEvidence;
+  }
+
+  /**
+   * Processa ou enfileira novo item criado (subitem de zip, pst, carving, etc).
+   *
+   * @param evidence novo item a ser processado.
+   */
+  public void processNewItem(IItem evidence) {
+    processNewItem(evidence, ProcessTime.AUTO);
+  }
+
+  public enum ProcessTime {
+    AUTO,
+    NOW,
+    LATER
+  }
+
+  public void processNewItem(IItem evidence, ProcessTime time) {
+    if (!evidence.isQueueEnd()) {
+      String trackId = iped.engine.util.Util.getTrackID(evidence);
+      CaseContext ctx = manager != null ? manager.getContext() : null;
+      if (ctx != null && !ctx.getProcessedTrackIds().add(trackId)) {
+        log.debug("Skipping duplicate item (trackId={}): {}", trackId, evidence.getPath());
+        return;
+      }
+    }
+    caseData.incDiscoveredEvidences(1);
+    // Se a fila está pequena, enfileira
+    if (time == ProcessTime.LATER
+        || (time == ProcessTime.AUTO
+            && manager.getProcessingQueues().getCurrentQueueSize()
+                < 100 * manager.getNumWorkers())) {
+      manager.getProcessingQueues().addItemFirstNonBlocking(evidence);
+    } // caso contrário processa o item no worker atual
+    else {
+      if (!evidence.isQueueEnd()) {
+        incItemsBeingProcessed();
+      }
+      long t = System.nanoTime() / 1000;
+
+      Util.calctrackIDAndUpdateID(caseData, evidence);
+
+      process(evidence);
+
+      runningTask.addSubitemProcessingTime(System.nanoTime() / 1000 - t);
+    }
+  }
+
+  @Override
+  public void run() {
+
+    log.info("{} started.", getName()); // $NON-NLS-1$
+
+    // Bind this worker thread's case context so Manager.getInstance() resolves correctly.
+    CaseContext caseContext = manager.getContext();
+    if (caseContext != null) {
+      CaseContextThreadLocal.set(caseContext);
     }
 
-    public Worker(int k, CaseData caseData, IndexWriter writer, File output, Manager manager) throws Exception {
-        super(new ThreadGroup(workerNamePrefix + k), workerNamePrefix + k); // $NON-NLS-1$
-        id = k;
-        this.caseData = caseData;
-        this.writer = writer;
-        this.output = output;
-        this.manager = manager;
-        this.stats = manager.stats;
-        baseFilePath = output.getParentFile().getAbsolutePath();
-
-        if (k == 0) {
-            log.info("Starting Tika"); //$NON-NLS-1$
-        }
-
-        TaskInstaller taskInstaller = new TaskInstaller();
-        taskInstaller.installProcessingTasks(this);
-        doTaskChaining();
-    }
-
-    public void init() throws Exception {
-        initTasks();
-    }
-
-    private void doTaskChaining() {
-        firstTask = tasks.get(0);
-        for (int i = 0; i < tasks.size() - 1; i++) {
-            tasks.get(i).setNextTask(tasks.get(i + 1));
-        }
-    }
-
-    private void initTasks() throws Exception {
-        for (AbstractTask task : tasks) {
-            if (this.getName().equals(workerNamePrefix + 0)) {
-                log.info("Starting " + task.getName()); //$NON-NLS-1$
-                UIPropertyListenerProvider.getInstance().firePropertyChange("mensagem", "", //$NON-NLS-1$ //$NON-NLS-2$
-                        Messages.getString("Worker.Starting") + task.getName()); //$NON-NLS-1$
-            }
-            task.init(ConfigurationManager.get());
-        }
-
-    }
-
-    private void finishTasks() throws Exception {
-        for (AbstractTask task : tasks) {
-            task.finish();
-        }
-    }
-
-    public void finish() throws Exception {
-        synchronized (this) {
-            this.interrupt();
-            this.wait();
-        }
-        if (exception != null) {
-            throw exception;
-        }
-    }
-
-    public synchronized boolean isWaiting() {
-        return this.waiting;
-    }
-
-    public void processNextQueue() {
-        synchronized(this) {
-            this.notifyAll();
-        }
-    }
-
-    /**
-     * Processa o item em todas as tarefas instaladas. Caso ocorra exceção não
-     * esperada, armazena exceção para abortar processamento.
-     *
-     * @param evidence
-     *            Item a ser processado
-     */
-    private void process(IItem evidence) {
-
-        IItem prevEvidence = this.evidence;
-        if (!evidence.isQueueEnd()) {
-            this.evidence = evidence;
-        }
+    try {
+      while (!this.isInterrupted() && exception == null) {
 
         try {
-
-            log.debug("{} Processing {} ({} bytes)", getName(), evidence.getPath(), evidence.getLength()); //$NON-NLS-1$
-
-            firstTask.processAndSendToNextTask(evidence);
-
-        } catch (Throwable t) {
-            // ABORTA PROCESSAMENTO NO CASO DE QQ OUTRO ERRO
-            if (exception == null) {
-                if (t instanceof IPEDException)
-                    exception = (IPEDException) t;
-                else {
-                    exception = new Exception(this.getName() + " Error while processing " + evidence.getPath() + " (" //$NON-NLS-1$ //$NON-NLS-2$
-                            + evidence.getLength() + "bytes)"); //$NON-NLS-1$
-                    exception.initCause(t);
-                }
+          evidence = null;
+          boolean sleep = false;
+          while (evidence == null) {
+            if (sleep) {
+              // this should be very rare
+              sleep = false;
+              Thread.sleep(100);
             }
-
-        }
-
-        this.evidence = prevEvidence;
-
-    }
-
-    /**
-     * Processa ou enfileira novo item criado (subitem de zip, pst, carving, etc).
-     *
-     * @param evidence
-     *            novo item a ser processado.
-     */
-    public void processNewItem(IItem evidence) {
-        processNewItem(evidence, ProcessTime.AUTO);
-    }
-
-    public enum ProcessTime {
-        AUTO, NOW, LATER
-    }
-
-    public void processNewItem(IItem evidence, ProcessTime time) {
-        if (!evidence.isQueueEnd()) {
-            String trackId = iped.engine.util.Util.getTrackID(evidence);
-            CaseContext ctx = manager != null ? manager.getContext() : null;
-            if (ctx != null && !ctx.getProcessedTrackIds().add(trackId)) {
-                log.debug("Skipping duplicate item (trackId={}): {}", trackId, evidence.getPath());
-                return;
-            }
-        }
-        caseData.incDiscoveredEvidences(1);
-        // Se a fila está pequena, enfileira
-        if (time == ProcessTime.LATER
-                || (time == ProcessTime.AUTO && manager.getProcessingQueues().getCurrentQueueSize() < 100 * manager.getNumWorkers())) {
-            manager.getProcessingQueues().addItemFirstNonBlocking(evidence);
-        } // caso contrário processa o item no worker atual
-        else {
-            if (!evidence.isQueueEnd()) {
+            synchronized (manager.getProcessingQueues()) {
+              evidence = manager.getProcessingQueues().pollFromCurrentQueue();
+              if (evidence == null) {
+                sleep = true;
+                continue;
+              }
+              if (!evidence.isQueueEnd()) {
                 incItemsBeingProcessed();
+              }
             }
-            long t = System.nanoTime() / 1000;
+          }
 
-            Util.calctrackIDAndUpdateID(caseData, evidence);
+          if (!evidence.isQueueEnd()) {
+            lastItemProcessingTime = System.currentTimeMillis();
 
             process(evidence);
 
-            runningTask.addSubitemProcessingTime(System.nanoTime() / 1000 - t);
-        }
+          } else {
+            IItem queueEnd = evidence;
+            if (manager.getProcessingQueues().isNoItemInQueueOrBeingProcessed()) {
+              manager.getProcessingQueues().addToCurrentQueue(queueEnd);
+              evidence = null;
 
-    }
-
-    @Override
-    public void run() {
-
-        log.info("{} started.", getName()); //$NON-NLS-1$
-
-        // Bind this worker thread's case context so Manager.getInstance() resolves correctly.
-        CaseContext caseContext = manager.getContext();
-        if (caseContext != null) {
-            CaseContextThreadLocal.set(caseContext);
-        }
-
-        try {
-            while (!this.isInterrupted() && exception == null) {
-
+              log.debug(this.getName() + " going to wait queue change.");
+              synchronized (this) {
                 try {
-                    evidence = null;
-                    boolean sleep = false;
-                    while (evidence == null) {
-                        if (sleep) {
-                            // this should be very rare
-                            sleep = false;
-                            Thread.sleep(100);
-                        }
-                        synchronized (manager.getProcessingQueues()) {
-                            evidence = manager.getProcessingQueues().pollFromCurrentQueue();
-                            if (evidence == null) {
-                                sleep = true;
-                                continue;
-                            }
-                            if (!evidence.isQueueEnd()) {
-                                incItemsBeingProcessed();
-                            }
-                        }
-                    }
-
-
-                    if (!evidence.isQueueEnd()) {
-                        lastItemProcessingTime = System.currentTimeMillis();
-
-                        process(evidence);
-
-                    } else {
-                        IItem queueEnd = evidence;
-                        if (manager.getProcessingQueues().isNoItemInQueueOrBeingProcessed()) {
-                            manager.getProcessingQueues().addToCurrentQueue(queueEnd);
-                            evidence = null;
-
-                            log.debug(this.getName() + " going to wait queue change.");
-                            synchronized(this) {
-                                try {
-                                    waiting = true;
-                                    this.wait();
-                                } finally {
-                                    waiting = false;
-                                }
-                            }
-                        } else {
-                            manager.getProcessingQueues().addToCurrentQueue(queueEnd);
-                            long timeSinceLastItemProcessed = System.currentTimeMillis() - lastItemProcessingTime;
-                            if (itemsBeingProcessed > 0 && timeSinceLastItemProcessed >= MIN_WAIT_TIME_TO_SEND_QUEUE_END) {
-                                log.debug(
-                                        this.getName() + " Queue size = "
-                                                + manager.getProcessingQueues().getCurrentQueueSize()
-                                        + " itemsInThisWorker = " + itemsBeingProcessed + " itemsInAllWorkers = "
-                                                + manager.getProcessingQueues().getItemsBeingProcessed());
-                                process(queueEnd);
-
-                            }
-                        }
-                    }
-
-                } catch (InterruptedException e) {
-                    if (manager.getProcessingQueues().getCurrentQueuePriority() == null) {
-                        try {
-                            finishTasks();
-                        } catch (Exception e1) {
-                            if (exception == null) {
-                                exception = e1;
-                            }
-                        } finally {
-                            synchronized (this) {
-                                this.notify();
-                            }
-                        }
-                        break;
-                    }
+                  waiting = true;
+                  this.wait();
+                } finally {
+                  waiting = false;
                 }
-            }
-
-            if (evidence == null) {
-                log.info("{} finished.", getName()); //$NON-NLS-1$
+              }
             } else {
-                AbstractTask task = runningTask;
-                if (task != null)
-                    task.interrupted();
-                log.info("{} interrupted on {} ({} bytes)", getName(), evidence.getPath(), evidence.getLength()); //$NON-NLS-1$
+              manager.getProcessingQueues().addToCurrentQueue(queueEnd);
+              long timeSinceLastItemProcessed = System.currentTimeMillis() - lastItemProcessingTime;
+              if (itemsBeingProcessed > 0
+                  && timeSinceLastItemProcessed >= MIN_WAIT_TIME_TO_SEND_QUEUE_END) {
+                log.debug(
+                    this.getName()
+                        + " Queue size = "
+                        + manager.getProcessingQueues().getCurrentQueueSize()
+                        + " itemsInThisWorker = "
+                        + itemsBeingProcessed
+                        + " itemsInAllWorkers = "
+                        + manager.getProcessingQueues().getItemsBeingProcessed());
+                process(queueEnd);
+              }
             }
-        } finally {
-            // Clear the ThreadLocal context when the worker thread exits
-            CaseContextThreadLocal.clear();
-        }
-    }
+          }
 
+        } catch (InterruptedException e) {
+          if (manager.getProcessingQueues().getCurrentQueuePriority() == null) {
+            try {
+              finishTasks();
+            } catch (Exception e1) {
+              if (exception == null) {
+                exception = e1;
+              }
+            } finally {
+              synchronized (this) {
+                this.notify();
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      if (evidence == null) {
+        log.info("{} finished.", getName()); // $NON-NLS-1$
+      } else {
+        AbstractTask task = runningTask;
+        if (task != null) task.interrupted();
+        log.info(
+            "{} interrupted on {} ({} bytes)",
+            getName(),
+            evidence.getPath(),
+            evidence.getLength()); // $NON-NLS-1$
+      }
+    } finally {
+      // Clear the ThreadLocal context when the worker thread exits
+      CaseContextThreadLocal.clear();
+    }
+  }
 }

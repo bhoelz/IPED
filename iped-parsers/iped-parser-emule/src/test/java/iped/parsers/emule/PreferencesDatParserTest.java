@@ -1,5 +1,7 @@
 package iped.parsers.emule;
 
+import java.io.IOException;
+import java.io.InputStream;
 import junit.framework.TestCase;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -9,30 +11,25 @@ import org.junit.Test;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 public class PreferencesDatParserTest extends TestCase {
 
-    private static InputStream getStream(String name) {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+  private static InputStream getStream(String name) {
+    return Thread.currentThread().getContextClassLoader().getResourceAsStream(name);
+  }
+
+  @Test
+  public void testKnownMetParsing() throws IOException, SAXException, TikaException {
+
+    PreferencesDatParser parser = new PreferencesDatParser();
+    Metadata metadata = new Metadata();
+    ContentHandler handler = new BodyContentHandler();
+    ParseContext context = new ParseContext();
+    parser.getSupportedTypes(context);
+    try (InputStream stream = getStream("test-files/test_preferences.dat")) {
+      parser.parse(stream, handler, metadata, context);
+      String hts = handler.toString();
+      assertTrue(hts.contains("20"));
+      assertTrue(hts.contains("02237df8aa0e92ae78f7bfe1d79a6fb2"));
     }
-
-    @Test
-    public void testKnownMetParsing() throws IOException, SAXException, TikaException {
-
-        PreferencesDatParser parser = new PreferencesDatParser();
-        Metadata metadata = new Metadata();
-        ContentHandler handler = new BodyContentHandler();
-        ParseContext context = new ParseContext();
-        parser.getSupportedTypes(context);
-        try (InputStream stream = getStream("test-files/test_preferences.dat")) {
-            parser.parse(stream, handler, metadata, context);
-            String hts = handler.toString();
-            assertTrue(hts.contains("20"));
-            assertTrue(hts.contains("02237df8aa0e92ae78f7bfe1d79a6fb2"));
-        }
-
-    }
-
+  }
 }

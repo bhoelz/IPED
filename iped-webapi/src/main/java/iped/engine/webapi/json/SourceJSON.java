@@ -2,28 +2,26 @@ package iped.engine.webapi.json;
 
 import io.swagger.annotations.ApiModelProperty;
 
-/**
- * SourceModel represents a IPED source: { "id": "A", "path": "string" }
- */
+/** SourceModel represents a IPED source: { "id": "A", "path": "string" } */
 public class SourceJSON {
-    private String id;
-    private String path;
+  private String id;
+  private String path;
 
-    @ApiModelProperty
-    public String getId() {
-        return id;
-    }
+  @ApiModelProperty
+  public String getId() {
+    return id;
+  }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    @ApiModelProperty
-    public String getPath() {
-        return path;
-    }
+  @ApiModelProperty
+  public String getPath() {
+    return path;
+  }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
+  public void setPath(String path) {
+    this.path = path;
+  }
 }

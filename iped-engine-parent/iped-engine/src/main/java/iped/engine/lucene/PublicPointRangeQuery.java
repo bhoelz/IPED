@@ -5,17 +5,16 @@ import org.apache.lucene.search.PointRangeQuery;
 
 public class PublicPointRangeQuery extends PointRangeQuery {
 
-    private PointRangeQuery origQuery;
+  private PointRangeQuery origQuery;
 
-    public PublicPointRangeQuery(String field, PointRangeQuery origQuery) {
-        super(field, origQuery.getLowerPoint(), origQuery.getUpperPoint(), origQuery.getNumDims());
-        this.origQuery = origQuery;
-    }
+  public PublicPointRangeQuery(String field, PointRangeQuery origQuery) {
+    super(field, origQuery.getLowerPoint(), origQuery.getUpperPoint(), origQuery.getNumDims());
+    this.origQuery = origQuery;
+  }
 
-    @Override
-    protected String toString(int dimension, byte[] value) {
-        //return origQuery.toString(dimension, value);
-        return "Dim:" + dimension + " Value:" + Hex.encodeHexString(value);
-    }
-
+  @Override
+  protected String toString(int dimension, byte[] value) {
+    // return origQuery.toString(dimension, value);
+    return "Dim:" + dimension + " Value:" + Hex.encodeHexString(value);
+  }
 }

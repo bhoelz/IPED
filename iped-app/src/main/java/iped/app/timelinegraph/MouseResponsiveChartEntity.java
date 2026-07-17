@@ -3,7 +3,7 @@ package iped.app.timelinegraph;
 import java.awt.*;
 
 public interface MouseResponsiveChartEntity {
-    public Paint getMouseOverPaint();
+  public Paint getMouseOverPaint();
 
-    public void setMouseOverPaint(Paint mouseOverPaint);
+  public void setMouseOverPaint(Paint mouseOverPaint);
 }

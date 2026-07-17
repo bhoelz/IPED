@@ -1,14 +1,14 @@
 /*
- 	Utils
-  Class for contining utility functions.
+	Utils
+ Class for contining utility functions.
 
-  This file is part of JavaDBF packege.
+ This file is part of JavaDBF packege.
 
-  author: anil@linuxense.com
-  license: LGPL (http://www.gnu.org/copyleft/lesser.html)
+ author: anil@linuxense.com
+ license: LGPL (http://www.gnu.org/copyleft/lesser.html)
 
-  $Id: Utils.java,v 1.7 2004/03/31 16:00:34 anil Exp $
- */
+ $Id: Utils.java,v 1.7 2004/03/31 16:00:34 anil Exp $
+*/
 package com.linuxense.javadbf;
 
 import java.io.DataInput;
@@ -18,162 +18,162 @@ import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.Locale;
 
-/**
- * Miscelaneous functions required by the JavaDBF package.
- */
+/** Miscelaneous functions required by the JavaDBF package. */
 public final class Utils {
 
-    public static final int ALIGN_LEFT = 10;
-    public static final int ALIGN_RIGHT = 12;
+  public static final int ALIGN_LEFT = 10;
+  public static final int ALIGN_RIGHT = 12;
 
-    private Utils() {
+  private Utils() {}
+
+  public static int readLittleEndianInt(DataInput in) throws IOException {
+
+    int bigEndian = 0;
+    for (int shiftBy = 0; shiftBy < 32; shiftBy += 8) {
+
+      bigEndian |= (in.readUnsignedByte() & 0xff) << shiftBy;
     }
 
-    public static int readLittleEndianInt(DataInput in) throws IOException {
+    return bigEndian;
+  }
 
-        int bigEndian = 0;
-        for (int shiftBy = 0; shiftBy < 32; shiftBy += 8) {
+  public static short readLittleEndianShort(DataInput in) throws IOException {
 
-            bigEndian |= (in.readUnsignedByte() & 0xff) << shiftBy;
-        }
+    int low = in.readUnsignedByte() & 0xff;
+    int high = in.readUnsignedByte();
 
-        return bigEndian;
+    return (short) (high << 8 | low);
+  }
+
+  public static byte[] trimLeftSpaces(byte[] arr) {
+
+    StringBuffer t_sb = new StringBuffer(arr.length);
+
+    for (int i = 0; i < arr.length; i++) {
+
+      if (arr[i] != ' ') {
+
+        t_sb.append((char) arr[i]);
+      }
     }
 
-    public static short readLittleEndianShort(DataInput in) throws IOException {
+    return t_sb.toString().getBytes();
+  }
 
-        int low = in.readUnsignedByte() & 0xff;
-        int high = in.readUnsignedByte();
+  public static short littleEndian(short value) {
 
-        return (short) (high << 8 | low);
+    short num1 = value;
+    short mask = (short) 0xff;
+
+    short num2 = (short) (num1 & mask);
+    num2 <<= 8;
+    mask <<= 8;
+
+    num2 |= (num1 & mask) >> 8;
+
+    return num2;
+  }
+
+  public static int littleEndian(int value) {
+
+    int num1 = value;
+    int mask = 0xff;
+    int num2 = 0x00;
+
+    num2 |= num1 & mask;
+
+    for (int i = 1; i < 4; i++) {
+
+      num2 <<= 8;
+      mask <<= 8;
+      num2 |= (num1 & mask) >> (8 * i);
     }
 
-    public static byte[] trimLeftSpaces(byte[] arr) {
+    return num2;
+  }
 
-        StringBuffer t_sb = new StringBuffer(arr.length);
+  public static byte[] textPadding(String text, String characterSetName, int length)
+      throws java.io.UnsupportedEncodingException {
 
-        for (int i = 0; i < arr.length; i++) {
+    return textPadding(text, characterSetName, length, Utils.ALIGN_LEFT);
+  }
 
-            if (arr[i] != ' ') {
+  public static byte[] textPadding(String text, String characterSetName, int length, int alignment)
+      throws java.io.UnsupportedEncodingException {
 
-                t_sb.append((char) arr[i]);
-            }
-        }
+    return textPadding(text, characterSetName, length, alignment, (byte) ' ');
+  }
 
-        return t_sb.toString().getBytes();
+  public static byte[] textPadding(
+      String text, String characterSetName, int length, int alignment, byte paddingByte)
+      throws java.io.UnsupportedEncodingException {
+
+    if (text.length() >= length) {
+
+      return text.substring(0, length).getBytes(characterSetName);
     }
 
-    public static short littleEndian(short value) {
+    byte byte_array[] = new byte[length];
+    Arrays.fill(byte_array, paddingByte);
 
-        short num1 = value;
-        short mask = (short) 0xff;
+    switch (alignment) {
+      case ALIGN_LEFT:
+        System.arraycopy(text.getBytes(characterSetName), 0, byte_array, 0, text.length());
+        break;
 
-        short num2 = (short) (num1 & mask);
-        num2 <<= 8;
-        mask <<= 8;
-
-        num2 |= (num1 & mask) >> 8;
-
-        return num2;
+      case ALIGN_RIGHT:
+        int t_offset = length - text.length();
+        System.arraycopy(text.getBytes(characterSetName), 0, byte_array, t_offset, text.length());
+        break;
     }
 
-    public static int littleEndian(int value) {
+    return byte_array;
+  }
 
-        int num1 = value;
-        int mask = 0xff;
-        int num2 = 0x00;
+  public static byte[] doubleFormating(
+      Double doubleNum, String characterSetName, int fieldLength, int sizeDecimalPart)
+      throws java.io.UnsupportedEncodingException {
 
-        num2 |= num1 & mask;
+    int sizeWholePart = fieldLength - (sizeDecimalPart > 0 ? (sizeDecimalPart + 1) : 0);
 
-        for (int i = 1; i < 4; i++) {
+    StringBuffer format = new StringBuffer(fieldLength);
 
-            num2 <<= 8;
-            mask <<= 8;
-            num2 |= (num1 & mask) >> (8 * i);
-        }
+    for (int i = 0; i < sizeWholePart; i++) {
 
-        return num2;
+      format.append("#");
     }
 
-    public static byte[] textPadding(String text, String characterSetName, int length)
-            throws java.io.UnsupportedEncodingException {
+    if (sizeDecimalPart > 0) {
 
-        return textPadding(text, characterSetName, length, Utils.ALIGN_LEFT);
+      format.append(".");
+
+      for (int i = 0; i < sizeDecimalPart; i++) {
+
+        format.append("0");
+      }
     }
 
-    public static byte[] textPadding(String text, String characterSetName, int length, int alignment)
-            throws java.io.UnsupportedEncodingException {
+    // DBF numeric fields must use a dot decimal separator regardless of the
+    // JVM default locale, since readers parse them with Double.parseDouble
+    DecimalFormat df =
+        new DecimalFormat(format.toString(), DecimalFormatSymbols.getInstance(Locale.US));
 
-        return textPadding(text, characterSetName, length, alignment, (byte) ' ');
+    return textPadding(
+        df.format(doubleNum.doubleValue()).toString(), characterSetName, fieldLength, ALIGN_RIGHT);
+  }
+
+  public static boolean contains(byte[] arr, byte value) {
+
+    boolean found = false;
+    for (int i = 0; i < arr.length; i++) {
+
+      if (arr[i] == value) {
+
+        found = true;
+        break;
+      }
     }
 
-    public static byte[] textPadding(String text, String characterSetName, int length, int alignment, byte paddingByte)
-            throws java.io.UnsupportedEncodingException {
-
-        if (text.length() >= length) {
-
-            return text.substring(0, length).getBytes(characterSetName);
-        }
-
-        byte byte_array[] = new byte[length];
-        Arrays.fill(byte_array, paddingByte);
-
-        switch (alignment) {
-
-            case ALIGN_LEFT:
-                System.arraycopy(text.getBytes(characterSetName), 0, byte_array, 0, text.length());
-                break;
-
-            case ALIGN_RIGHT:
-                int t_offset = length - text.length();
-                System.arraycopy(text.getBytes(characterSetName), 0, byte_array, t_offset, text.length());
-                break;
-        }
-
-        return byte_array;
-    }
-
-    public static byte[] doubleFormating(Double doubleNum, String characterSetName, int fieldLength,
-            int sizeDecimalPart) throws java.io.UnsupportedEncodingException {
-
-        int sizeWholePart = fieldLength - (sizeDecimalPart > 0 ? (sizeDecimalPart + 1) : 0);
-
-        StringBuffer format = new StringBuffer(fieldLength);
-
-        for (int i = 0; i < sizeWholePart; i++) {
-
-            format.append("#");
-        }
-
-        if (sizeDecimalPart > 0) {
-
-            format.append(".");
-
-            for (int i = 0; i < sizeDecimalPart; i++) {
-
-                format.append("0");
-            }
-        }
-
-        // DBF numeric fields must use a dot decimal separator regardless of the
-        // JVM default locale, since readers parse them with Double.parseDouble
-        DecimalFormat df = new DecimalFormat(format.toString(), DecimalFormatSymbols.getInstance(Locale.US));
-
-        return textPadding(df.format(doubleNum.doubleValue()).toString(), characterSetName, fieldLength, ALIGN_RIGHT);
-    }
-
-    public static boolean contains(byte[] arr, byte value) {
-
-        boolean found = false;
-        for (int i = 0; i < arr.length; i++) {
-
-            if (arr[i] == value) {
-
-                found = true;
-                break;
-            }
-        }
-
-        return found;
-    }
+    return found;
+  }
 }

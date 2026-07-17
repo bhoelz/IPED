@@ -1,24 +1,24 @@
 package iped.engine.task.regex.validator;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
+
 public class PlacaRegexValidatorServiceTest {
 
-    PlacaRegexValidatorService service = new PlacaRegexValidatorService();
+  PlacaRegexValidatorService service = new PlacaRegexValidatorService();
 
-    @Test
-    public void testCarLicensePlateService() {
+  @Test
+  public void testCarLicensePlateService() {
 
-        String plate = "Jhl-2330";
-        assertEquals("JHL2330", service.format(plate));
-    }
+    String plate = "Jhl-2330";
+    assertEquals("JHL2330", service.format(plate));
+  }
 
-    @Test
-    public void testValidCarLicensePlateService() {
+  @Test
+  public void testValidCarLicensePlateService() {
 
-        assertTrue(service.validate("CAR PLATE JJJ-2442"));
-    }
+    assertTrue(service.validate("CAR PLATE JJJ-2442"));
+  }
 }

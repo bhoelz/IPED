@@ -5,6 +5,9 @@ import iped.engine.data.IPEDMultiSource;
 import iped.engine.data.IPEDSource;
 import iped.engine.task.index.IndexItem;
 import iped.properties.BasicProps;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.br.BrazilianAnalyzer;
@@ -20,94 +23,87 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 @Slf4j
 public class SimilarDocumentSearch {
 
+  private static final CharArraySet stopSet = getStopWords();
 
-    private static final CharArraySet stopSet = getStopWords();
+  public Query getQueryForSimilarDocs(IItemId item, int matchPercent, IPEDSource appCase) {
 
-    public Query getQueryForSimilarDocs(IItemId item, int matchPercent, IPEDSource appCase) {
+    try {
+      MoreLikeThis mlt = new MoreLikeThis(appCase.getReader());
+      String[] fields = {IndexItem.CONTENT};
 
-        try {
-            MoreLikeThis mlt = new MoreLikeThis(appCase.getReader());
-            String[] fields = { IndexItem.CONTENT };
+      mlt.setMaxQueryTerms(50);
+      mlt.setFieldNames(fields);
+      mlt.setAnalyzer(appCase.getAnalyzer());
+      mlt.setBoost(true);
+      mlt.setMinDocFreq(2);
+      mlt.setMaxDocFreqPct(10);
+      mlt.setMinTermFreq(1);
+      mlt.setMaxNumTokensParsed(10000);
+      mlt.setMinWordLen(4);
+      mlt.setMaxWordLen(25);
+      mlt.setStopWords(stopSet);
+      /*
+       * StandardParser autoParser = new StandardParser();
+       * autoParser.setFallback(Configuration.fallBackParser);
+       * autoParser.setErrorParser(Configuration.errorParser);
+       * autoParser.setPrintMetadata(false);
+       *
+       * EvidenceFile ev = App.get().appCase.getItemByItemId(item); Metadata m = new
+       * Metadata(); m.set(StandardParser.INDEXER_CONTENT_TYPE,
+       * ev.getMediaTypeString());
+       *
+       * ParsingReader pr = new ParsingReader(autoParser, ev.getStream(), m, new
+       * ParseContext()); pr.startBackgroundParsing();
+       *
+       * String[] keyTerms = mlt.retrieveInterestingTerms(pr, IndexItem.CONTENT);
+       */
 
-            mlt.setMaxQueryTerms(50);
-            mlt.setFieldNames(fields);
-            mlt.setAnalyzer(appCase.getAnalyzer());
-            mlt.setBoost(true);
-            mlt.setMinDocFreq(2);
-            mlt.setMaxDocFreqPct(10);
-            mlt.setMinTermFreq(1);
-            mlt.setMaxNumTokensParsed(10000);
-            mlt.setMinWordLen(4);
-            mlt.setMaxWordLen(25);
-            mlt.setStopWords(stopSet);
-            /*
-             * StandardParser autoParser = new StandardParser();
-             * autoParser.setFallback(Configuration.fallBackParser);
-             * autoParser.setErrorParser(Configuration.errorParser);
-             * autoParser.setPrintMetadata(false);
-             *
-             * EvidenceFile ev = App.get().appCase.getItemByItemId(item); Metadata m = new
-             * Metadata(); m.set(StandardParser.INDEXER_CONTENT_TYPE,
-             * ev.getMediaTypeString());
-             *
-             * ParsingReader pr = new ParsingReader(autoParser, ev.getStream(), m, new
-             * ParseContext()); pr.startBackgroundParsing();
-             *
-             * String[] keyTerms = mlt.retrieveInterestingTerms(pr, IndexItem.CONTENT);
-             */
+      // Approach below Works just with term vectors indexed
+      // TODO: test approach above again, so we could disable term vectors, decreasing
+      // index size a lot, and we could also accept external documents not in the case
 
-            // Approach below Works just with term vectors indexed
-            // TODO: test approach above again, so we could disable term vectors, decreasing
-            // index size a lot, and we could also accept external documents not in the case
+      Query parentQuery = IntPoint.newExactQuery(BasicProps.ID, item.getId());
+      QueryBitSetProducer parentFilter =
+          new QueryBitSetProducer(QueryBuilder.getMatchAllItemsQuery());
+      ToChildBlockJoinQuery toChildQuery = new ToChildBlockJoinQuery(parentQuery, parentFilter);
 
-            Query parentQuery = IntPoint.newExactQuery(BasicProps.ID, item.getId());
-            QueryBitSetProducer parentFilter = new QueryBitSetProducer(QueryBuilder.getMatchAllItemsQuery());
-            ToChildBlockJoinQuery toChildQuery = new ToChildBlockJoinQuery(parentQuery, parentFilter);
+      if (appCase instanceof IPEDMultiSource) {
+        appCase = ((IPEDMultiSource) appCase).getAtomicSourceBySourceId(item.getSourceId());
+      }
+      IPEDSearcher searcher = new IPEDSearcher(appCase, toChildQuery);
+      searcher.setRewritequery(false);
 
-            if (appCase instanceof IPEDMultiSource) {
-                appCase = ((IPEDMultiSource) appCase).getAtomicSourceBySourceId(item.getSourceId());
-            }
-            IPEDSearcher searcher = new IPEDSearcher(appCase, toChildQuery);
-            searcher.setRewritequery(false);
+      int[] docs = searcher.luceneSearch().docs;
+      Arrays.sort(docs);
+      int docId = docs[0];
 
-            int[] docs = searcher.luceneSearch().docs;
-            Arrays.sort(docs);
-            int docId = docs[0];
+      List<String> keyTerms = Arrays.asList(mlt.retrieveInterestingTerms(docId));
 
-            List<String> keyTerms = Arrays.asList(mlt.retrieveInterestingTerms(docId));
+      BooleanQuery.Builder query = new BooleanQuery.Builder();
+      log.info("{} representative terms: {}", keyTerms.size(), keyTerms.toString());
 
-            BooleanQuery.Builder query = new BooleanQuery.Builder();
-            log.info("{} representative terms: {}", keyTerms.size(), keyTerms.toString());
+      for (String s : keyTerms) {
+        query.add(new TermQuery(new Term(IndexItem.CONTENT, s)), Occur.SHOULD);
+      }
 
-            for (String s : keyTerms) {
-                query.add(new TermQuery(new Term(IndexItem.CONTENT, s)), Occur.SHOULD);
-            }
+      query.setMinimumNumberShouldMatch(keyTerms.size() * matchPercent / 100);
 
-            query.setMinimumNumberShouldMatch(keyTerms.size() * matchPercent / 100);
+      return query.build();
 
-            return query.build();
-
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        return null;
+    } catch (IOException e1) {
+      e1.printStackTrace();
     }
+    return null;
+  }
 
-    private static CharArraySet getStopWords() {
-        CharArraySet stopSet = new CharArraySet(16, false);
-        stopSet.addAll(BrazilianAnalyzer.getDefaultStopSet());
-        stopSet.addAll(PortugueseAnalyzer.getDefaultStopSet());
-        stopSet.addAll(EnglishAnalyzer.getDefaultStopSet());
-        return stopSet;
-    }
-
+  private static CharArraySet getStopWords() {
+    CharArraySet stopSet = new CharArraySet(16, false);
+    stopSet.addAll(BrazilianAnalyzer.getDefaultStopSet());
+    stopSet.addAll(PortugueseAnalyzer.getDefaultStopSet());
+    stopSet.addAll(EnglishAnalyzer.getDefaultStopSet());
+    return stopSet;
+  }
 }
-
-

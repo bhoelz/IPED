@@ -3,45 +3,54 @@ package iped.app.timelinegraph.swingworkers;
 import iped.app.timelinegraph.IpedDateAxis;
 import iped.app.ui.BookmarksController;
 import iped.viewers.api.IMultiSearchResultProvider;
-
-import javax.swing.*;
 import java.util.Date;
+import javax.swing.*;
 
 /*
  *  Extends SelectWorker, so the bitset of docids is mounted based on date interval. This bitset is used internally to check the docids.
  */
 public class CheckWorker extends HighlightWorker {
 
-    public CheckWorker(IpedDateAxis domainAxis, IMultiSearchResultProvider resultsProvider, Date start, Date end, boolean highlight, boolean clearPreviousSelection) {
-        super(domainAxis, resultsProvider, start, end, highlight, clearPreviousSelection);
-    }
+  public CheckWorker(
+      IpedDateAxis domainAxis,
+      IMultiSearchResultProvider resultsProvider,
+      Date start,
+      Date end,
+      boolean highlight,
+      boolean clearPreviousSelection) {
+    super(domainAxis, resultsProvider, start, end, highlight, clearPreviousSelection);
+  }
 
-    public CheckWorker(IpedDateAxis domainAxis, IMultiSearchResultProvider resultsProvider, Date start, Date end, boolean clearPreviousSelection) {
-        this(domainAxis, resultsProvider, start, end, true, clearPreviousSelection);
-    }
+  public CheckWorker(
+      IpedDateAxis domainAxis,
+      IMultiSearchResultProvider resultsProvider,
+      Date start,
+      Date end,
+      boolean clearPreviousSelection) {
+    this(domainAxis, resultsProvider, start, end, true, clearPreviousSelection);
+  }
 
-    @Override
-    public void processResultsItem(JTable t, int i) {
-        Boolean checked = (Boolean) t.getModel().getValueAt(i, 1);
-        t.getModel().setValueAt(!checked.booleanValue(), i, 1);
-    }
+  @Override
+  public void processResultsItem(JTable t, int i) {
+    Boolean checked = (Boolean) t.getModel().getValueAt(i, 1);
+    t.getModel().setValueAt(!checked.booleanValue(), i, 1);
+  }
 
-    @Override
-    protected void doProcess() {
-        BookmarksController.get().setMultiSetting(true);
-        super.doProcess();
-    }
+  @Override
+  protected void doProcess() {
+    BookmarksController.get().setMultiSetting(true);
+    super.doProcess();
+  }
 
-    @Override
-    protected void done() {
-        BookmarksController.get().setMultiSetting(false);
-        resultsProvider.getIPEDSource().getMultiBookmarks().saveState();
-        BookmarksController.get().updateUISelection();
-        super.done();
-    }
+  @Override
+  protected void done() {
+    BookmarksController.get().setMultiSetting(false);
+    resultsProvider.getIPEDSource().getMultiBookmarks().saveState();
+    BookmarksController.get().updateUISelection();
+    super.done();
+  }
 
-    public void clear() {
-        // t.clearSelection();
-    }
-
+  public void clear() {
+    // t.clearSelection();
+  }
 }

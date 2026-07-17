@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -25,48 +25,47 @@ import java.io.IOException;
  */
 class ManagedSearch extends ShareazaEntity {
 
-    private boolean allowG2;
-    private boolean allowG1;
-    private boolean allowED2K;
-    private boolean allowDC;
-    private int priority;
-    private boolean active;
-    private boolean receive;
-    private final QuerySearch querySearch = new QuerySearch();
+  private boolean allowG2;
+  private boolean allowG1;
+  private boolean allowED2K;
+  private boolean allowDC;
+  private int priority;
+  private boolean active;
+  private boolean receive;
+  private final QuerySearch querySearch = new QuerySearch();
 
-    public ManagedSearch() {
-        super("MANAGED SEARCH"); //$NON-NLS-1$
+  public ManagedSearch() {
+    super("MANAGED SEARCH"); // $NON-NLS-1$
+  }
+
+  @Override
+  public void read(MFCParser ar) throws IOException {
+    int version = ar.readInt();
+    querySearch.read(ar);
+    priority = ar.readInt();
+    active = ar.readBool();
+    receive = ar.readBool();
+
+    if (version >= 3) {
+      allowG2 = ar.readBool();
+      allowG1 = ar.readBool();
+      allowED2K = ar.readBool();
     }
 
-    @Override
-    public void read(MFCParser ar) throws IOException {
-        int version = ar.readInt();
-        querySearch.read(ar);
-        priority = ar.readInt();
-        active = ar.readBool();
-        receive = ar.readBool();
-
-        if (version >= 3) {
-            allowG2 = ar.readBool();
-            allowG1 = ar.readBool();
-            allowED2K = ar.readBool();
-        }
-
-        if (version >= 4) {
-            allowDC = ar.readBool();
-        }
+    if (version >= 4) {
+      allowDC = ar.readBool();
     }
+  }
 
-    @Override
-    protected void writeImpl(ShareazaOutputGenerator f) {
-        f.out("Allow G2: " + allowG2); //$NON-NLS-1$
-        f.out("Allow G1: " + allowG1); //$NON-NLS-1$
-        f.out("Allow ED2K: " + allowED2K); //$NON-NLS-1$
-        f.out("Allow DC: " + allowDC); //$NON-NLS-1$
-        f.out("Priority: %d", priority); //$NON-NLS-1$
-        f.out("Active: " + active); //$NON-NLS-1$
-        f.out("Receive: " + receive); //$NON-NLS-1$
-        querySearch.write(f);
-    }
-
+  @Override
+  protected void writeImpl(ShareazaOutputGenerator f) {
+    f.out("Allow G2: " + allowG2); // $NON-NLS-1$
+    f.out("Allow G1: " + allowG1); // $NON-NLS-1$
+    f.out("Allow ED2K: " + allowED2K); // $NON-NLS-1$
+    f.out("Allow DC: " + allowDC); // $NON-NLS-1$
+    f.out("Priority: %d", priority); // $NON-NLS-1$
+    f.out("Active: " + active); // $NON-NLS-1$
+    f.out("Receive: " + receive); // $NON-NLS-1$
+    querySearch.write(f);
+  }
 }

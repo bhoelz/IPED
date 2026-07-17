@@ -32,95 +32,87 @@ package org.arabidopsis.ahocorasick;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A state represents an element in the Aho-Corasick tree.
- */
+/** A state represents an element in the Aho-Corasick tree. */
 class State {
-    // Arbitrarily chosen constant. If this state ends up getting
-    // deeper than THRESHOLD_TO_USE_SPARSE, then we switch over to a
-    // sparse edge representation. I did a few tests, and there's a
-    // local minima here. We may want to choose a more sophisticated
-    // strategy.
-    protected static final int THRESHOLD_TO_USE_SPARSE = Integer.MAX_VALUE;
+  // Arbitrarily chosen constant. If this state ends up getting
+  // deeper than THRESHOLD_TO_USE_SPARSE, then we switch over to a
+  // sparse edge representation. I did a few tests, and there's a
+  // local minima here. We may want to choose a more sophisticated
+  // strategy.
+  protected static final int THRESHOLD_TO_USE_SPARSE = Integer.MAX_VALUE;
 
-    private int depth;
-    public DenseEdgeList edgeList;
-    public State fail;
-    public List<Object> outputs;
+  private int depth;
+  public DenseEdgeList edgeList;
+  public State fail;
+  public List<Object> outputs;
 
-    public State(int depth) {
-        this.depth = depth;
-        // if (depth > THRESHOLD_TO_USE_SPARSE)
-        // this.edgeList = new SparseEdgeList();
-        // else
-        this.edgeList = new DenseEdgeList();
-        this.fail = null;
+  public State(int depth) {
+    this.depth = depth;
+    // if (depth > THRESHOLD_TO_USE_SPARSE)
+    // this.edgeList = new SparseEdgeList();
+    // else
+    this.edgeList = new DenseEdgeList();
+    this.fail = null;
+  }
+
+  public State extend(byte b) {
+    if (this.edgeList.get(b) != null) return this.edgeList.get(b);
+
+    State nextState = new State(this.depth + 1);
+    this.edgeList.put(b, nextState);
+
+    return nextState;
+  }
+
+  public State extendAll(byte[] bytes) {
+    State state = this;
+
+    for (int i = 0; i < bytes.length; i++) {
+      if (state.edgeList.get(bytes[i]) != null) state = state.edgeList.get(bytes[i]);
+      else state = state.extend(bytes[i]);
     }
 
-    public State extend(byte b) {
-        if (this.edgeList.get(b) != null)
-            return this.edgeList.get(b);
+    return state;
+  }
 
-        State nextState = new State(this.depth + 1);
-        this.edgeList.put(b, nextState);
+  /**
+   * Returns the size of the tree rooted at this State. Note: do not call this if there are loops in
+   * the edgelist graph, such as those introduced by AhoCorasick.prepare().
+   */
+  public int size() {
+    byte[] keys = edgeList.keys();
+    int result = 1;
+    for (int i = 0; i < keys.length; i++) result += edgeList.get(keys[i]).size();
 
-        return nextState;
-    }
+    return result;
+  }
 
-    public State extendAll(byte[] bytes) {
-        State state = this;
+  public final State get(byte b) {
+    return this.edgeList.get(b);
+  }
 
-        for (int i = 0; i < bytes.length; i++) {
-            if (state.edgeList.get(bytes[i]) != null)
-                state = state.edgeList.get(bytes[i]);
-            else
-                state = state.extend(bytes[i]);
-        }
+  public void put(byte b, State s) {
+    this.edgeList.put(b, s);
+  }
 
-        return state;
-    }
+  public byte[] keys() {
+    return this.edgeList.keys();
+  }
 
-    /**
-     * Returns the size of the tree rooted at this State. Note: do not call this if
-     * there are loops in the edgelist graph, such as those introduced by
-     * AhoCorasick.prepare().
-     */
-    public int size() {
-        byte[] keys = edgeList.keys();
-        int result = 1;
-        for (int i = 0; i < keys.length; i++)
-            result += edgeList.get(keys[i]).size();
+  public final State getFail() {
+    return this.fail;
+  }
 
-        return result;
-    }
+  public void setFail(State f) {
+    this.fail = f;
+  }
 
-    public final State get(byte b) {
-        return this.edgeList.get(b);
-    }
+  public void addOutput(Object o) {
+    if (outputs == null) this.outputs = new ArrayList<Object>();
+    this.outputs.add(o);
+  }
 
-    public void put(byte b, State s) {
-        this.edgeList.put(b, s);
-    }
-
-    public byte[] keys() {
-        return this.edgeList.keys();
-    }
-
-    public final State getFail() {
-        return this.fail;
-    }
-
-    public void setFail(State f) {
-        this.fail = f;
-    }
-
-    public void addOutput(Object o) {
-        if (outputs == null)
-            this.outputs = new ArrayList<Object>();
-        this.outputs.add(o);
-    }
-
-    public final List<Object> getOutputs() {
-        return this.outputs;
-    }
+  public final List<Object> getOutputs() {
+    return this.outputs;
+  }
 }

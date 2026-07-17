@@ -2,46 +2,45 @@ package iped.parsers.ufed.util;
 
 import iped.data.IItemReader;
 import iped.properties.ExtraProperties;
-import org.apache.tika.metadata.Metadata;
-
 import java.util.Arrays;
 import java.util.List;
+import org.apache.tika.metadata.Metadata;
 
 public class UfedUtils {
 
-    public static String readUfedMetadata(Metadata metadata, String property) {
-        return metadata.get(ExtraProperties.UFED_META_PREFIX + property);
-    }
+  public static String readUfedMetadata(Metadata metadata, String property) {
+    return metadata.get(ExtraProperties.UFED_META_PREFIX + property);
+  }
 
-    public static String readUfedMetadata(IItemReader item, String property) {
-        return readUfedMetadata(item.getMetadata(), property);
-    }
+  public static String readUfedMetadata(IItemReader item, String property) {
+    return readUfedMetadata(item.getMetadata(), property);
+  }
 
-    public static String readUfedMetadata(Object metadata, String property) {
-        return readUfedMetadata((Metadata) metadata, property);
-    }
+  public static String readUfedMetadata(Object metadata, String property) {
+    return readUfedMetadata((Metadata) metadata, property);
+  }
 
-    public static List<String> readUfedMetadataArray(Metadata metadata, String property) {
-        return Arrays.asList(metadata.getValues(ExtraProperties.UFED_META_PREFIX + property));
-    }
+  public static List<String> readUfedMetadataArray(Metadata metadata, String property) {
+    return Arrays.asList(metadata.getValues(ExtraProperties.UFED_META_PREFIX + property));
+  }
 
-    public static List<String> readUfedMetadataArray(IItemReader item, String property) {
-        return readUfedMetadataArray(item.getMetadata(), property);
-    }
+  public static List<String> readUfedMetadataArray(IItemReader item, String property) {
+    return readUfedMetadataArray(item.getMetadata(), property);
+  }
 
-    public static List<String> readUfedMetadataArray(Object metadata, String property) {
-        return readUfedMetadataArray((Metadata) metadata, property);
-    }
+  public static List<String> readUfedMetadataArray(Object metadata, String property) {
+    return readUfedMetadataArray((Metadata) metadata, property);
+  }
 
-    public static void removeUfedMetadata(Metadata metadata, String property) {
-        metadata.remove(ExtraProperties.UFED_META_PREFIX + property);
-    }
+  public static void removeUfedMetadata(Metadata metadata, String property) {
+    metadata.remove(ExtraProperties.UFED_META_PREFIX + property);
+  }
 
-    public static void removeUfedMetadata(IItemReader item, String property) {
-        removeUfedMetadata(item.getMetadata(), property);
-    }
+  public static void removeUfedMetadata(IItemReader item, String property) {
+    removeUfedMetadata(item.getMetadata(), property);
+  }
 
-    public static void removeUfedMetadata(Object metadata, String property) {
-        removeUfedMetadata((Metadata) metadata, property);
-    }
+  public static void removeUfedMetadata(Object metadata, String property) {
+    removeUfedMetadata((Metadata) metadata, property);
+  }
 }

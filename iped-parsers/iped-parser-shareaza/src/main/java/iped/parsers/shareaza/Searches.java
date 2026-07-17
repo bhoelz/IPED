@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2015, Fabio Melo Pfeifer
- * 
+ *
  * This file is part of Indexador e Processador de Evidencias Digitais (IPED).
  *
  * IPED is free software: you can redistribute it and/or modify
@@ -27,26 +27,25 @@ import java.util.List;
  */
 class Searches extends ShareazaEntity {
 
-    private final List<SearchWnd> searchWindows = new ArrayList<>();
+  private final List<SearchWnd> searchWindows = new ArrayList<>();
 
-    public Searches() {
-        super("SEARCHES"); //$NON-NLS-1$
+  public Searches() {
+    super("SEARCHES"); // $NON-NLS-1$
+  }
+
+  @Override
+  public void read(MFCParser ar) throws IOException {
+    while (ar.readCount() == 1) {
+      SearchWnd searchWnd = new SearchWnd();
+      searchWnd.read(ar);
+      searchWindows.add(searchWnd);
     }
+  }
 
-    @Override
-    public void read(MFCParser ar) throws IOException {
-        while (ar.readCount() == 1) {
-            SearchWnd searchWnd = new SearchWnd();
-            searchWnd.read(ar);
-            searchWindows.add(searchWnd);
-        }
+  @Override
+  protected void writeImpl(ShareazaOutputGenerator f) {
+    for (SearchWnd searchWnd : searchWindows) {
+      searchWnd.write(f);
     }
-
-    @Override
-    protected void writeImpl(ShareazaOutputGenerator f) {
-        for (SearchWnd searchWnd : searchWindows) {
-            searchWnd.write(f);
-        }
-    }
-
+  }
 }

@@ -6,158 +6,169 @@ import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
 import iped.engine.CmdLineArgs;
 import iped.engine.config.ConfigurationManager;
 import iped.exception.IPEDException;
-import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
 import java.io.File;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 @Slf4j
 public class MicrosoftTranscriptTask extends AbstractTranscriptTask {
 
+  private static final String SUBSCRIPTION_KEY = "azureSubscriptionKey";
 
-    private static final String SUBSCRIPTION_KEY = "azureSubscriptionKey";
+  private static Semaphore maxConcurrentRequests;
 
-    private static Semaphore maxConcurrentRequests;
+  private SpeechConfig config;
 
-    private SpeechConfig config;
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
 
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
+    super.init(configurationManager);
 
-        super.init(configurationManager);
-
-        if (!transcriptConfig.isEnabled()) {
-            return;
-        }
-
-        // caseData is null when running standalone (no case, so no -X extra params
-        // mechanism either); fall through to the same "missing credential" error
-        // below rather than NPE-ing.
-        CmdLineArgs args = caseData != null ? (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName()) : null;
-        String speechSubscriptionKey = args != null ? args.getExtraParams().get(SUBSCRIPTION_KEY) : null;
-        if (speechSubscriptionKey == null && (caseData == null || !caseData.isIpedReport())) {
-            throw new IPEDException(
-                    "You must pass -X" + SUBSCRIPTION_KEY + "=XXX param to enable audio transcription.");
-        }
-
-        config = SpeechConfig.fromSubscription(speechSubscriptionKey, transcriptConfig.getServiceRegion());
-
-        config.setProfanity(ProfanityOption.Raw);
-
-        config.setOutputFormat(OutputFormat.Detailed);
-
-        if (maxConcurrentRequests == null) {
-            maxConcurrentRequests = new Semaphore(transcriptConfig.getMaxConcurrentRequests());
-        }
+    if (!transcriptConfig.isEnabled()) {
+      return;
     }
 
-    @Override
-    public void finish() throws Exception {
-        super.finish();
+    // caseData is null when running standalone (no case, so no -X extra params
+    // mechanism either); fall through to the same "missing credential" error
+    // below rather than NPE-ing.
+    CmdLineArgs args =
+        caseData != null ? (CmdLineArgs) caseData.getCaseObject(CmdLineArgs.class.getName()) : null;
+    String speechSubscriptionKey =
+        args != null ? args.getExtraParams().get(SUBSCRIPTION_KEY) : null;
+    if (speechSubscriptionKey == null && (caseData == null || !caseData.isIpedReport())) {
+      throw new IPEDException(
+          "You must pass -X" + SUBSCRIPTION_KEY + "=XXX param to enable audio transcription.");
     }
 
-    @Override
-    protected TextAndScore transcribeAudio(File tmpFile) throws Exception {
+    config =
+        SpeechConfig.fromSubscription(speechSubscriptionKey, transcriptConfig.getServiceRegion());
 
-        int tries = 0;
-        AtomicBoolean ok = new AtomicBoolean();
-        TextAndScore textAndScore = null;
-        while (!ok.get() && ++tries <= 3) {
-            ok.set(true);
-            AutoDetectSourceLanguageConfig langConfig = AutoDetectSourceLanguageConfig
-                    .fromLanguages(transcriptConfig.getLanguages());
-            AudioConfig audioInput = AudioConfig.fromWavFileInput(tmpFile.getAbsolutePath());
-            maxConcurrentRequests.acquire();
-            try (SpeechRecognizer recognizer = new SpeechRecognizer(config, langConfig, audioInput)) {
+    config.setProfanity(ProfanityOption.Raw);
 
-                Semaphore stopTranslationWithFileSemaphore = new Semaphore(0);
+    config.setOutputFormat(OutputFormat.Detailed);
 
-                StringBuilder result = new StringBuilder();
-                AtomicDouble score = new AtomicDouble();
-                AtomicInteger frags = new AtomicInteger();
+    if (maxConcurrentRequests == null) {
+      maxConcurrentRequests = new Semaphore(transcriptConfig.getMaxConcurrentRequests());
+    }
+  }
 
-                recognizer.recognizing.addEventListener((s, e) -> {
-                    // System.out.println("RECOGNIZING: Text=" + e.getResult().getText());
-                });
+  @Override
+  public void finish() throws Exception {
+    super.finish();
+  }
 
-                recognizer.recognized.addEventListener((s, e) -> {
-                    if (e.getResult().getReason() == ResultReason.RecognizedSpeech) {
-                        if (frags.get() > 0) {
-                            result.append(' ');
-                        }
-                        result.append(e.getResult().getText());
+  @Override
+  protected TextAndScore transcribeAudio(File tmpFile) throws Exception {
 
-                        try {
-                            String details = e.getResult().getProperties()
-                                    .getProperty(PropertyId.SpeechServiceResponse_JsonResult);
-                            JSONObject json = (JSONObject) new JSONParser().parse(details);
-                            score.addAndGet(
-                                    (Double) ((JSONObject) ((JSONArray) json.get("NBest")).get(0)).get("Confidence"));
-                            frags.incrementAndGet();
+    int tries = 0;
+    AtomicBoolean ok = new AtomicBoolean();
+    TextAndScore textAndScore = null;
+    while (!ok.get() && ++tries <= 3) {
+      ok.set(true);
+      AutoDetectSourceLanguageConfig langConfig =
+          AutoDetectSourceLanguageConfig.fromLanguages(transcriptConfig.getLanguages());
+      AudioConfig audioInput = AudioConfig.fromWavFileInput(tmpFile.getAbsolutePath());
+      maxConcurrentRequests.acquire();
+      try (SpeechRecognizer recognizer = new SpeechRecognizer(config, langConfig, audioInput)) {
 
-                        } catch (Exception e1) {
-                            e1.printStackTrace();
-                        }
+        Semaphore stopTranslationWithFileSemaphore = new Semaphore(0);
 
-                    } else if (e.getResult().getReason() == ResultReason.NoMatch) {
-                        ok.set(false);
-                        log.warn("NOMATCH: Speech could not be recognized with {}", evidence.getPath());
-                    }
-                });
+        StringBuilder result = new StringBuilder();
+        AtomicDouble score = new AtomicDouble();
+        AtomicInteger frags = new AtomicInteger();
 
-                recognizer.canceled.addEventListener((s, e) -> {
-                    if (e.getReason() == CancellationReason.Error) {
-                        ok.set(false);
-                        log.error("Transcription of {} failed errorCode={} details={}", evidence.getPath(),
-                                e.getErrorCode(), e.getErrorDetails());
-                    }
-                    stopTranslationWithFileSemaphore.release();
-                });
+        recognizer.recognizing.addEventListener(
+            (s, e) -> {
+              // System.out.println("RECOGNIZING: Text=" + e.getResult().getText());
+            });
 
-                recognizer.sessionStopped.addEventListener((s, e) -> {
-                    stopTranslationWithFileSemaphore.release();
-                });
+        recognizer.recognized.addEventListener(
+            (s, e) -> {
+              if (e.getResult().getReason() == ResultReason.RecognizedSpeech) {
+                if (frags.get() > 0) {
+                  result.append(' ');
+                }
+                result.append(e.getResult().getText());
 
-                // Starts continuous recognition. Uses StopContinuousRecognitionAsync() to stop
-                // recognition.
-                recognizer.startContinuousRecognitionAsync().get();
+                try {
+                  String details =
+                      e.getResult()
+                          .getProperties()
+                          .getProperty(PropertyId.SpeechServiceResponse_JsonResult);
+                  JSONObject json = (JSONObject) new JSONParser().parse(details);
+                  score.addAndGet(
+                      (Double)
+                          ((JSONObject) ((JSONArray) json.get("NBest")).get(0)).get("Confidence"));
+                  frags.incrementAndGet();
 
-                // Waits for completion.
-                boolean acquired = stopTranslationWithFileSemaphore.tryAcquire(
-                        MIN_TIMEOUT + (transcriptConfig.getTimeoutPerSec() * tmpFile.length() / WAV_BYTES_PER_SEC),
-                        TimeUnit.SECONDS);
-                if (!acquired) {
-                    ok.set(false);
-                    throw new TimeoutException("Timeout waiting for transcription.");
+                } catch (Exception e1) {
+                  e1.printStackTrace();
                 }
 
-                // Stops recognition.
-                recognizer.stopContinuousRecognitionAsync().get();
+              } else if (e.getResult().getReason() == ResultReason.NoMatch) {
+                ok.set(false);
+                log.warn("NOMATCH: Speech could not be recognized with {}", evidence.getPath());
+              }
+            });
 
-                textAndScore = new TextAndScore();
-                textAndScore.text = result.toString();
-                textAndScore.score = score.doubleValue() / (frags.intValue() != 0 ? frags.intValue() : 1);
+        recognizer.canceled.addEventListener(
+            (s, e) -> {
+              if (e.getReason() == CancellationReason.Error) {
+                ok.set(false);
+                log.error(
+                    "Transcription of {} failed errorCode={} details={}",
+                    evidence.getPath(),
+                    e.getErrorCode(),
+                    e.getErrorDetails());
+              }
+              stopTranslationWithFileSemaphore.release();
+            });
 
-                log.debug("MS Transcript of {}: {}", evidence.getPath(), result.toString());
+        recognizer.sessionStopped.addEventListener(
+            (s, e) -> {
+              stopTranslationWithFileSemaphore.release();
+            });
 
-            } catch (Exception ex) {
-                log.error("Error transcribing {} {}", evidence.getPath(), ex.toString());
-                log.warn("", ex);
+        // Starts continuous recognition. Uses StopContinuousRecognitionAsync() to stop
+        // recognition.
+        recognizer.startContinuousRecognitionAsync().get();
 
-            } finally {
-                maxConcurrentRequests.release();
-            }
+        // Waits for completion.
+        boolean acquired =
+            stopTranslationWithFileSemaphore.tryAcquire(
+                MIN_TIMEOUT
+                    + (transcriptConfig.getTimeoutPerSec() * tmpFile.length() / WAV_BYTES_PER_SEC),
+                TimeUnit.SECONDS);
+        if (!acquired) {
+          ok.set(false);
+          throw new TimeoutException("Timeout waiting for transcription.");
         }
 
-        return textAndScore;
+        // Stops recognition.
+        recognizer.stopContinuousRecognitionAsync().get();
 
+        textAndScore = new TextAndScore();
+        textAndScore.text = result.toString();
+        textAndScore.score = score.doubleValue() / (frags.intValue() != 0 ? frags.intValue() : 1);
+
+        log.debug("MS Transcript of {}: {}", evidence.getPath(), result.toString());
+
+      } catch (Exception ex) {
+        log.error("Error transcribing {} {}", evidence.getPath(), ex.toString());
+        log.warn("", ex);
+
+      } finally {
+        maxConcurrentRequests.release();
+      }
     }
 
+    return textAndScore;
+  }
 }

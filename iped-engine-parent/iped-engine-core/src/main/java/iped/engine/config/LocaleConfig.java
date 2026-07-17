@@ -2,7 +2,6 @@ package iped.engine.config;
 
 import iped.localization.LocaleResolver;
 import iped.utils.UTF8Properties;
-
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
@@ -11,52 +10,51 @@ import java.util.Locale;
 
 public class LocaleConfig extends AbstractPropertiesConfigurable {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-    public static final String CONFIG_FILE = "LocalConfig.toml"; //$NON-NLS-1$
-    private static final String HOST_COUNTRY = "hostCountryCode";
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    public static final DirectoryStream.Filter<Path> filter = new Filter<Path>() {
+  public static final String CONFIG_FILE = "LocalConfig.toml"; // $NON-NLS-1$
+  private static final String HOST_COUNTRY = "hostCountryCode";
+
+  public static final DirectoryStream.Filter<Path> filter =
+      new Filter<Path>() {
         @Override
         public boolean accept(Path entry) throws IOException {
-            return entry.endsWith(CONFIG_FILE);
+          return entry.endsWith(CONFIG_FILE);
         }
-    };
+      };
 
-    static {
-        String country = System.getProperty(HOST_COUNTRY);
-        if (country == null) {
-            System.setProperty(HOST_COUNTRY, Locale.getDefault().getCountry());
-        }
-        Locale.setDefault(Locale.forLanguageTag("en")); //$NON-NLS-1$
+  static {
+    String country = System.getProperty(HOST_COUNTRY);
+    if (country == null) {
+      System.setProperty(HOST_COUNTRY, Locale.getDefault().getCountry());
     }
+    Locale.setDefault(Locale.forLanguageTag("en")); // $NON-NLS-1$
+  }
 
-    public static String getHostCountry() {
-        return System.getProperty(HOST_COUNTRY);
-    }
+  public static String getHostCountry() {
+    return System.getProperty(HOST_COUNTRY);
+  }
 
-    Locale locale = Locale.getDefault();
+  Locale locale = Locale.getDefault();
 
-    @Override
-    public Filter<Path> getResourceLookupFilter() {
-        return filter;
-    }
+  @Override
+  public Filter<Path> getResourceLookupFilter() {
+    return filter;
+  }
 
-    @Override
-    public void processProperties(UTF8Properties properties) {
+  @Override
+  public void processProperties(UTF8Properties properties) {
 
-        String value;
+    String value;
 
-        value = properties.getProperty("locale"); //$NON-NLS-1$
-        if (value != null && !value.trim().isEmpty())
-            locale = Locale.forLanguageTag(value.trim());
+    value = properties.getProperty("locale"); // $NON-NLS-1$
+    if (value != null && !value.trim().isEmpty()) locale = Locale.forLanguageTag(value.trim());
 
-        LocaleResolver.setLocale(locale);
-    }
+    LocaleResolver.setLocale(locale);
+  }
 
-    public Locale getLocale() {
-        return locale;
-    }
+  public Locale getLocale() {
+    return locale;
+  }
 }

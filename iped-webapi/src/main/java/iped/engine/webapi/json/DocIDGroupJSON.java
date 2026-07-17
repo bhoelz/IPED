@@ -1,40 +1,35 @@
 package iped.engine.webapi.json;
 
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
 
-/**
- * DocIDGroupModel lists IDs of a single source: { "source": "A", "ids":[0,1,2]
- * }
- */
+/** DocIDGroupModel lists IDs of a single source: { "source": "A", "ids":[0,1,2] } */
 public class DocIDGroupJSON {
-    private String source;
-    private List<Integer> ids;
+  private String source;
+  private List<Integer> ids;
 
-    public DocIDGroupJSON() {
-    }
+  public DocIDGroupJSON() {}
 
-    public DocIDGroupJSON(String source, List<Integer> ids) {
-        this.source = source;
-        this.ids = ids;
-    }
+  public DocIDGroupJSON(String source, List<Integer> ids) {
+    this.source = source;
+    this.ids = ids;
+  }
 
-    @ApiModelProperty
-    public String getSource() {
-        return source;
-    }
+  @ApiModelProperty
+  public String getSource() {
+    return source;
+  }
 
-    public void setSource(String source) {
-        this.source = source;
-    }
+  public void setSource(String source) {
+    this.source = source;
+  }
 
-    @ApiModelProperty
-    public List<Integer> getIds() {
-        return ids;
-    }
+  @ApiModelProperty
+  public List<Integer> getIds() {
+    return ids;
+  }
 
-    public void setIds(List<Integer> ids) {
-        this.ids = ids;
-    }
+  public void setIds(List<Integer> ids) {
+    this.ids = ids;
+  }
 }

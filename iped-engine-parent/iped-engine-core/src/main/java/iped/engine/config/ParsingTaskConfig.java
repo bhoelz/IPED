@@ -4,173 +4,172 @@ import iped.utils.UTF8Properties;
 
 public class ParsingTaskConfig extends AbstractTaskPropertiesConfig {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    public static final String ENABLE_PARAM = "enableFileParsing";
-    public static final String CONF_FILE = "ParsingTaskConfig.toml";
+  public static final String ENABLE_PARAM = "enableFileParsing";
+  public static final String CONF_FILE = "ParsingTaskConfig.toml";
 
-    public static final String NUM_EXTERNAL_PARSERS = "numExternalParsers";
-    public static final String SOURCES_WITH_PARSERS = "sourcesWithInternalParsers";
+  public static final String NUM_EXTERNAL_PARSERS = "numExternalParsers";
+  public static final String SOURCES_WITH_PARSERS = "sourcesWithInternalParsers";
 
-    private boolean enableExternalParsing = false;
-    private int numExternalParsers;
-    private String externalParsingMaxMem = "512";
-    private boolean parseCorruptedFiles = true;
-    private boolean parseUnknownFiles = true;
-    private int timeOut = 180;
-    private int timeOutPerMB = 2;
-    private int minRawStringSize = 4;
-    private boolean storeTextCacheOnDisk = true;
-    private boolean sortPDFChars;
-    private boolean processImagesInPDFs = false;
-    private String phoneParsersToUse;
-    private String internalParsersList;
+  private boolean enableExternalParsing = false;
+  private int numExternalParsers;
+  private String externalParsingMaxMem = "512";
+  private boolean parseCorruptedFiles = true;
+  private boolean parseUnknownFiles = true;
+  private int timeOut = 180;
+  private int timeOutPerMB = 2;
+  private int minRawStringSize = 4;
+  private boolean storeTextCacheOnDisk = true;
+  private boolean sortPDFChars;
+  private boolean processImagesInPDFs = false;
+  private String phoneParsersToUse;
+  private String internalParsersList;
 
-    @Override
-    public String getTaskEnableProperty() {
-        return ENABLE_PARAM;
+  @Override
+  public String getTaskEnableProperty() {
+    return ENABLE_PARAM;
+  }
+
+  @Override
+  public String getTaskConfigFileName() {
+    return CONF_FILE;
+  }
+
+  @Override
+  public void processProperties(UTF8Properties properties) {
+
+    String value = properties.getProperty("parseCorruptedFiles"); // $NON-NLS-1$
+    if (value != null) {
+      parseCorruptedFiles = Boolean.valueOf(value.trim());
     }
 
-    @Override
-    public String getTaskConfigFileName() {
-        return CONF_FILE;
+    value = properties.getProperty("parseUnknownFiles"); // $NON-NLS-1$
+    if (value != null) {
+      parseUnknownFiles = Boolean.valueOf(value.trim());
     }
 
-    @Override
-    public void processProperties(UTF8Properties properties) {
-
-        String value = properties.getProperty("parseCorruptedFiles"); //$NON-NLS-1$
-        if (value != null) {
-            parseCorruptedFiles = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("parseUnknownFiles"); //$NON-NLS-1$
-        if (value != null) {
-            parseUnknownFiles = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("enableExternalParsing"); //$NON-NLS-1$
-        if (value != null) {
-            enableExternalParsing = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty(NUM_EXTERNAL_PARSERS); // $NON-NLS-1$
-        if (value != null && !value.trim().equalsIgnoreCase("auto")) { //$NON-NLS-1$
-            numExternalParsers = Integer.valueOf(value.trim());
-        } else {
-            OCRConfig ocrconfig = ConfigurationManager.get().findObject(OCRConfig.class);
-            if (ocrconfig.isOCREnabled() == null) {
-                throw new RuntimeException(OCRConfig.class.getSimpleName() + " must be loaded before "
-                        + this.getClass().getSimpleName());
-            }
-            int div = ocrconfig.isOCREnabled() ? 1 : 2;
-            numExternalParsers = Math.max((int) Math.ceil((float) Runtime.getRuntime().availableProcessors() / div), 2);
-        }
-
-        value = properties.getProperty("externalParsingMaxMem"); //$NON-NLS-1$
-        if (value != null) {
-            externalParsingMaxMem = value.trim();
-        }
-
-        value = properties.getProperty("timeOut"); //$NON-NLS-1$
-        if (value != null) {
-            timeOut = Integer.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("timeOutPerMB"); //$NON-NLS-1$
-        if (value != null) {
-            timeOutPerMB = Integer.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("minRawStringSize"); //$NON-NLS-1$
-        if (value != null) {
-            minRawStringSize = Integer.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("storeTextCacheOnDisk"); //$NON-NLS-1$
-        if (value != null && !value.trim().isEmpty()) {
-            storeTextCacheOnDisk = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("sortPDFChars"); //$NON-NLS-1$
-        if (value != null) {
-            sortPDFChars = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("processImagesInPDFs"); //$NON-NLS-1$
-        if (value != null) {
-            processImagesInPDFs = Boolean.valueOf(value.trim());
-        }
-
-        value = properties.getProperty("phoneParsersToUse"); //$NON-NLS-1$
-        if (value != null) {
-            phoneParsersToUse = value.trim();
-        }
-
-        value = properties.getProperty(SOURCES_WITH_PARSERS); // $NON-NLS-1$
-        if (value != null) {
-            internalParsersList = value.trim();
-        }
-
+    value = properties.getProperty("enableExternalParsing"); // $NON-NLS-1$
+    if (value != null) {
+      enableExternalParsing = Boolean.valueOf(value.trim());
     }
 
-    public boolean isEnableExternalParsing() {
-        return enableExternalParsing;
+    value = properties.getProperty(NUM_EXTERNAL_PARSERS); // $NON-NLS-1$
+    if (value != null && !value.trim().equalsIgnoreCase("auto")) { // $NON-NLS-1$
+      numExternalParsers = Integer.valueOf(value.trim());
+    } else {
+      OCRConfig ocrconfig = ConfigurationManager.get().findObject(OCRConfig.class);
+      if (ocrconfig.isOCREnabled() == null) {
+        throw new RuntimeException(
+            OCRConfig.class.getSimpleName()
+                + " must be loaded before "
+                + this.getClass().getSimpleName());
+      }
+      int div = ocrconfig.isOCREnabled() ? 1 : 2;
+      numExternalParsers =
+          Math.max((int) Math.ceil((float) Runtime.getRuntime().availableProcessors() / div), 2);
     }
 
-    public int getNumExternalParsers() {
-        return numExternalParsers;
+    value = properties.getProperty("externalParsingMaxMem"); // $NON-NLS-1$
+    if (value != null) {
+      externalParsingMaxMem = value.trim();
     }
 
-    public String getExternalParsingMaxMem() {
-        return externalParsingMaxMem;
+    value = properties.getProperty("timeOut"); // $NON-NLS-1$
+    if (value != null) {
+      timeOut = Integer.valueOf(value.trim());
     }
 
-    public boolean isParseCorruptedFiles() {
-        return parseCorruptedFiles;
+    value = properties.getProperty("timeOutPerMB"); // $NON-NLS-1$
+    if (value != null) {
+      timeOutPerMB = Integer.valueOf(value.trim());
     }
 
-    public boolean isParseUnknownFiles() {
-        return parseUnknownFiles;
+    value = properties.getProperty("minRawStringSize"); // $NON-NLS-1$
+    if (value != null) {
+      minRawStringSize = Integer.valueOf(value.trim());
     }
 
-    public int getTimeOut() {
-        return timeOut;
+    value = properties.getProperty("storeTextCacheOnDisk"); // $NON-NLS-1$
+    if (value != null && !value.trim().isEmpty()) {
+      storeTextCacheOnDisk = Boolean.valueOf(value.trim());
     }
 
-    public int getTimeOutPerMB() {
-        return timeOutPerMB;
+    value = properties.getProperty("sortPDFChars"); // $NON-NLS-1$
+    if (value != null) {
+      sortPDFChars = Boolean.valueOf(value.trim());
     }
 
-    public boolean isStoreTextCacheOnDisk() {
-        return storeTextCacheOnDisk;
+    value = properties.getProperty("processImagesInPDFs"); // $NON-NLS-1$
+    if (value != null) {
+      processImagesInPDFs = Boolean.valueOf(value.trim());
     }
 
-    public boolean isSortPDFChars() {
-        return sortPDFChars;
+    value = properties.getProperty("phoneParsersToUse"); // $NON-NLS-1$
+    if (value != null) {
+      phoneParsersToUse = value.trim();
     }
 
-    public boolean isProcessImagesInPDFs() {
-        return processImagesInPDFs;
+    value = properties.getProperty(SOURCES_WITH_PARSERS); // $NON-NLS-1$
+    if (value != null) {
+      internalParsersList = value.trim();
     }
+  }
 
-    public String getPhoneParsersToUse() {
-        return phoneParsersToUse;
-    }
+  public boolean isEnableExternalParsing() {
+    return enableExternalParsing;
+  }
 
-    public int getMinRawStringSize() {
-        return minRawStringSize;
-    }
+  public int getNumExternalParsers() {
+    return numExternalParsers;
+  }
 
-    public String getInternalParsersList() {
-        return internalParsersList;
-    }
+  public String getExternalParsingMaxMem() {
+    return externalParsingMaxMem;
+  }
 
-    public void setInternalParsersList(String internalParsersList) {
-        this.internalParsersList = internalParsersList;
-    }
+  public boolean isParseCorruptedFiles() {
+    return parseCorruptedFiles;
+  }
 
+  public boolean isParseUnknownFiles() {
+    return parseUnknownFiles;
+  }
+
+  public int getTimeOut() {
+    return timeOut;
+  }
+
+  public int getTimeOutPerMB() {
+    return timeOutPerMB;
+  }
+
+  public boolean isStoreTextCacheOnDisk() {
+    return storeTextCacheOnDisk;
+  }
+
+  public boolean isSortPDFChars() {
+    return sortPDFChars;
+  }
+
+  public boolean isProcessImagesInPDFs() {
+    return processImagesInPDFs;
+  }
+
+  public String getPhoneParsersToUse() {
+    return phoneParsersToUse;
+  }
+
+  public int getMinRawStringSize() {
+    return minRawStringSize;
+  }
+
+  public String getInternalParsersList() {
+    return internalParsersList;
+  }
+
+  public void setInternalParsersList(String internalParsersList) {
+    this.internalParsersList = internalParsersList;
+  }
 }

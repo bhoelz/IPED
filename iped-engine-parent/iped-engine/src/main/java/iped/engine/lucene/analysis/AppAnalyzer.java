@@ -26,68 +26,66 @@ import iped.engine.index.IndexMetadata;
 import iped.engine.task.index.IndexItem;
 import iped.localization.LocalizedProperties;
 import iped.properties.ExtraProperties;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 
 /*
  * Define analizadores, tokenizadores implicitamente, de indexação específicos para cada propriedade,
  */
 public class AppAnalyzer {
 
-    public static Analyzer get() {
-        Map<String, Analyzer> analyzerPerField = new HashMap<String, Analyzer>();
-        analyzerPerField.put(IndexItem.CATEGORY, new StandardASCIIAnalyzer());
-        analyzerPerField.put(LocalizedProperties.getLocalizedField(IndexItem.CATEGORY),
-                new StandardASCIIAnalyzer());
-        analyzerPerField.put(IndexItem.ID, new KeywordAnalyzer());
-        analyzerPerField.put(IndexItem.PARENTID, new KeywordAnalyzer());
-        analyzerPerField.put(IndexItem.EVIDENCE_UUID, new KeywordAnalyzer());
-        analyzerPerField.put(ExtraProperties.UFED_ID, new KeywordAnalyzer());
-        analyzerPerField.put(ExtraProperties.UFED_FILE_ID, new KeywordAnalyzer());
-        analyzerPerField.put(ExtraProperties.UFED_JUMP_TARGETS, new KeywordAnalyzer());
-        analyzerPerField.put(ExtraProperties.UFED_COORDINATE_ID, new KeywordAnalyzer());
+  public static Analyzer get() {
+    Map<String, Analyzer> analyzerPerField = new HashMap<String, Analyzer>();
+    analyzerPerField.put(IndexItem.CATEGORY, new StandardASCIIAnalyzer());
+    analyzerPerField.put(
+        LocalizedProperties.getLocalizedField(IndexItem.CATEGORY), new StandardASCIIAnalyzer());
+    analyzerPerField.put(IndexItem.ID, new KeywordAnalyzer());
+    analyzerPerField.put(IndexItem.PARENTID, new KeywordAnalyzer());
+    analyzerPerField.put(IndexItem.EVIDENCE_UUID, new KeywordAnalyzer());
+    analyzerPerField.put(ExtraProperties.UFED_ID, new KeywordAnalyzer());
+    analyzerPerField.put(ExtraProperties.UFED_FILE_ID, new KeywordAnalyzer());
+    analyzerPerField.put(ExtraProperties.UFED_JUMP_TARGETS, new KeywordAnalyzer());
+    analyzerPerField.put(ExtraProperties.UFED_COORDINATE_ID, new KeywordAnalyzer());
 
-        analyzerPerField.put(IndexItem.CREATED, new KeywordAnalyzer());
-        analyzerPerField.put(IndexItem.MODIFIED, new KeywordAnalyzer());
-        analyzerPerField.put(IndexItem.ACCESSED, new KeywordAnalyzer());
-        analyzerPerField.put(IndexItem.CHANGED, new KeywordAnalyzer());
-        analyzerPerField.put(IndexItem.TIMESTAMP, new KeywordAnalyzer());
+    analyzerPerField.put(IndexItem.CREATED, new KeywordAnalyzer());
+    analyzerPerField.put(IndexItem.MODIFIED, new KeywordAnalyzer());
+    analyzerPerField.put(IndexItem.ACCESSED, new KeywordAnalyzer());
+    analyzerPerField.put(IndexItem.CHANGED, new KeywordAnalyzer());
+    analyzerPerField.put(IndexItem.TIMESTAMP, new KeywordAnalyzer());
 
-        IndexSettings indexConfig = ConfigurationManager.get().findObjectInstanceOf(IndexSettings.class);
-        StandardASCIIAnalyzer hashAnalyzer = new StandardASCIIAnalyzer();
-        hashAnalyzer.setMaxTokenLength(Integer.MAX_VALUE);
-        hashAnalyzer.setConvertCharsToLower(true);
-        analyzerPerField.put(HashAlgorithm.MD5.toString(), hashAnalyzer);
-        analyzerPerField.put(HashAlgorithm.EDONKEY.toString(), hashAnalyzer);
-        analyzerPerField.put(HashAlgorithm.SHA1.toString(), hashAnalyzer);
-        analyzerPerField.put(HashAlgorithm.SHA256.toString(), hashAnalyzer);
-        analyzerPerField.put(HashAlgorithm.SHA512.toString(), hashAnalyzer);
-        analyzerPerField.put(PhotoDNAConstants.PHOTO_DNA, hashAnalyzer);
+    IndexSettings indexConfig =
+        ConfigurationManager.get().findObjectInstanceOf(IndexSettings.class);
+    StandardASCIIAnalyzer hashAnalyzer = new StandardASCIIAnalyzer();
+    hashAnalyzer.setMaxTokenLength(Integer.MAX_VALUE);
+    hashAnalyzer.setConvertCharsToLower(true);
+    analyzerPerField.put(HashAlgorithm.MD5.toString(), hashAnalyzer);
+    analyzerPerField.put(HashAlgorithm.EDONKEY.toString(), hashAnalyzer);
+    analyzerPerField.put(HashAlgorithm.SHA1.toString(), hashAnalyzer);
+    analyzerPerField.put(HashAlgorithm.SHA256.toString(), hashAnalyzer);
+    analyzerPerField.put(HashAlgorithm.SHA512.toString(), hashAnalyzer);
+    analyzerPerField.put(PhotoDNAConstants.PHOTO_DNA, hashAnalyzer);
 
-        StandardASCIIAnalyzer defaultAnalyzer = new StandardASCIIAnalyzer();
-        defaultAnalyzer.setMaxTokenLength(indexConfig.getMaxTokenLength());
-        defaultAnalyzer.setFilterNonLatinChars(indexConfig.isFilterNonLatinChars());
-        defaultAnalyzer.setConvertCharsToAscii(indexConfig.isConvertCharsToAscii());
-        defaultAnalyzer.setConvertCharsToLower(indexConfig.isConvertCharsToLowerCase());
-        defaultAnalyzer.setExtraCharsToIndex(indexConfig.getExtraCharsToIndex());
+    StandardASCIIAnalyzer defaultAnalyzer = new StandardASCIIAnalyzer();
+    defaultAnalyzer.setMaxTokenLength(indexConfig.getMaxTokenLength());
+    defaultAnalyzer.setFilterNonLatinChars(indexConfig.isFilterNonLatinChars());
+    defaultAnalyzer.setConvertCharsToAscii(indexConfig.isConvertCharsToAscii());
+    defaultAnalyzer.setConvertCharsToLower(indexConfig.isConvertCharsToLowerCase());
+    defaultAnalyzer.setExtraCharsToIndex(indexConfig.getExtraCharsToIndex());
 
-        return new NonFinalPerFieldAnalyzerWrapper(defaultAnalyzer, analyzerPerField) {
-            protected Analyzer getWrappedAnalyzer(String fieldName) {
-                if (fieldName != null) {
-                    // Use actual (non localized) field names to check if it is a date (See #2175).
-                    fieldName = LocalizedProperties.getNonLocalizedField(fieldName);
-                    if (Date.class.equals(IndexMetadata.getMetadataTypes().get(fieldName))) {
-                        return new KeywordAnalyzer();
-                    }
-                }
-                return super.getWrappedAnalyzer(fieldName);
-            }
-        };
-    }
-
+    return new NonFinalPerFieldAnalyzerWrapper(defaultAnalyzer, analyzerPerField) {
+      protected Analyzer getWrappedAnalyzer(String fieldName) {
+        if (fieldName != null) {
+          // Use actual (non localized) field names to check if it is a date (See #2175).
+          fieldName = LocalizedProperties.getNonLocalizedField(fieldName);
+          if (Date.class.equals(IndexMetadata.getMetadataTypes().get(fieldName))) {
+            return new KeywordAnalyzer();
+          }
+        }
+        return super.getWrappedAnalyzer(fieldName);
+      }
+    };
+  }
 }
-

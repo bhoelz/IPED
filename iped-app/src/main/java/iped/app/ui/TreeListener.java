@@ -27,19 +27,6 @@ import iped.exception.ParseException;
 import iped.exception.QueryNodeException;
 import iped.viewers.api.IFilter;
 import iped.viewers.api.IQueryFilterer;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -48,206 +35,218 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 
 @Slf4j
-public class TreeListener extends MouseAdapter implements TreeSelectionListener, ActionListener, TreeExpansionListener, IQueryFilterer {
+public class TreeListener extends MouseAdapter
+    implements TreeSelectionListener, ActionListener, TreeExpansionListener, IQueryFilterer {
 
+  private Query treeQuery, recursiveTreeQuery;
+  boolean rootSelected = false;
+  HashSet<TreePath> selection = new HashSet<TreePath>();
+  private long collapsedTime = 0;
+  private boolean clearing = false;
+  private ArrayList<IFilter> definedFilters;
 
-    private Query treeQuery, recursiveTreeQuery;
-    boolean rootSelected = false;
-    HashSet<TreePath> selection = new HashSet<TreePath>();
-    private long collapsedTime = 0;
-    private boolean clearing = false;
-    private ArrayList<IFilter> definedFilters;
+  @Override
+  public void valueChanged(TreeSelectionEvent evt) {
 
-    @Override
-    public void valueChanged(TreeSelectionEvent evt) {
+    for (TreePath path : evt.getPaths()) {
+      if (selection.contains(path)) {
+        selection.remove(path);
+      } else {
+        selection.add(path);
+      }
+    }
 
-        for (TreePath path : evt.getPaths()) {
-            if (selection.contains(path)) {
-                selection.remove(path);
-            } else {
-                selection.add(path);
-            }
+    if (System.currentTimeMillis() - collapsedTime < 200) {
+      collapsedTime = 0;
+      return;
+    }
+
+    rootSelected = false;
+    for (TreePath path : selection) {
+      if (((Node) path.getLastPathComponent()).docId == -1) {
+        rootSelected = true;
+        break;
+      }
+    }
+
+    definedFilters = null;
+    if (rootSelected || selection.isEmpty()) {
+      treeQuery = new TermQuery(new Term(IndexItem.ISROOT, "true")); // $NON-NLS-1$
+      recursiveTreeQuery = null;
+    } else {
+      String treeQueryStr = ""; // $NON-NLS-1$
+      BooleanQuery.Builder recursiveQueryBuilder = new BooleanQuery.Builder();
+
+      for (TreePath path : selection) {
+        Document doc = ((Node) path.getLastPathComponent()).getDoc();
+
+        String parentId = doc.get(IndexItem.ID);
+
+        String sourceUUID = doc.get(IndexItem.EVIDENCE_UUID);
+        treeQueryStr +=
+            "("
+                + IndexItem.PARENTID
+                + ":"
+                + parentId
+                + " && "
+                + IndexItem.EVIDENCE_UUID
+                + ":" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                + sourceUUID
+                + ") "; //$NON-NLS-1$
+
+        BooleanQuery.Builder subQuery = new BooleanQuery.Builder();
+        subQuery.add(new TermQuery(new Term(IndexItem.PARENTIDs, parentId)), Occur.MUST);
+        subQuery.add(new TermQuery(new Term(IndexItem.EVIDENCE_UUID, sourceUUID)), Occur.MUST);
+        recursiveQueryBuilder.add(subQuery.build(), Occur.SHOULD);
+      }
+      recursiveTreeQuery = recursiveQueryBuilder.build();
+
+      try {
+        treeQuery = new QueryBuilder(App.get().appCase).getQuery(treeQueryStr);
+      } catch (ParseException | QueryNodeException e) {
+        e.printStackTrace();
+      }
+    }
+    actionPerformed(null);
+  }
+
+  public void navigateToParent(int docId) {
+
+    LinkedList<Node> path = new LinkedList<Node>();
+    String parentId = null;
+    try {
+      do {
+        Document doc = App.get().appCase.getReader().storedFields().document(docId);
+
+        parentId = doc.get(IndexItem.PARENTID);
+        if (parentId != null) {
+          IPEDSource src = (IPEDSource) App.get().appCase.getAtomicSource(docId);
+          docId = src.getLuceneId(Integer.parseInt(parentId));
+          if (docId == -1) {
+            throw new RuntimeException("Parent with id = " + parentId + " not found in the index");
+          }
+          docId += App.get().appCase.getBaseLuceneId(src);
+          path.addFirst(((TreeViewModel) App.get().tree.getModel()).new Node(docId));
         }
+      } while (parentId != null);
 
-        if (System.currentTimeMillis() - collapsedTime < 200) {
-            collapsedTime = 0;
-            return;
-        }
+    } catch (Exception e) {
+      log.error("Navigate to parent failed!", e);
+      return;
+    }
 
-        rootSelected = false;
-        for (TreePath path : selection) {
-            if (((Node) path.getLastPathComponent()).docId == -1) {
-                rootSelected = true;
-                break;
-            }
-        }
+    path.addFirst((Node) App.get().tree.getModel().getRoot());
 
-        definedFilters = null;
-        if (rootSelected || selection.isEmpty()) {
-            treeQuery = new TermQuery(new Term(IndexItem.ISROOT, "true")); //$NON-NLS-1$
-            recursiveTreeQuery = null;
+    App.get().moveEvidenveTabToFront();
+
+    TreePath treePath = new TreePath(path.toArray());
+    App.get().tree.setExpandsSelectedPaths(true);
+    App.get().tree.setSelectionPath(treePath);
+    App.get().tree.scrollPathToVisible(treePath);
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+
+    if ((App.get().recursiveTreeList.isSelected() && rootSelected) || selection.isEmpty()) {
+      App.get().setEvidenceDefaultColor(true);
+    } else {
+      App.get().setEvidenceDefaultColor(false);
+    }
+
+    if (!clearing) App.get().appletListener.updateFileListing();
+
+    if (selection.size() == 1 && selection.iterator().next().getPathCount() > 2) {
+      int luceneId = ((Node) selection.iterator().next().getLastPathComponent()).docId;
+      FileProcessor parsingTask = new FileProcessor(luceneId, false);
+      parsingTask.execute();
+    }
+  }
+
+  @Override
+  public void treeExpanded(TreeExpansionEvent event) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void treeCollapsed(TreeExpansionEvent event) {
+    collapsedTime = System.currentTimeMillis();
+  }
+
+  @Override
+  public void mousePressed(MouseEvent e) {
+    if (e.isPopupTrigger()) {
+      showTreeMenu(e);
+    }
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    if (e.isPopupTrigger()) {
+      showTreeMenu(e);
+    }
+  }
+
+  private void showTreeMenu(MouseEvent e) {
+    MenuClass menu = new MenuClass(true);
+    menu.show(e.getComponent(), e.getX(), e.getY());
+  }
+
+  @Override
+  public void clearFilter() {
+    clearing = true;
+    App.get().tree.clearSelection();
+    clearing = false;
+  }
+
+  @Override
+  public List getDefinedFilters() {
+    TreeListener self = this;
+    if (definedFilters == null) {
+      definedFilters = new ArrayList<IFilter>();
+      if (selection.size() >= 1) {
+        if (App.get().recursiveTreeList.isSelected()) {
+          definedFilters.add(new QueryFilter(self.recursiveTreeQuery));
         } else {
-            String treeQueryStr = ""; //$NON-NLS-1$
-            BooleanQuery.Builder recursiveQueryBuilder = new BooleanQuery.Builder();
-
-            for (TreePath path : selection) {
-                Document doc = ((Node) path.getLastPathComponent()).getDoc();
-
-                String parentId = doc.get(IndexItem.ID);
-
-                String sourceUUID = doc.get(IndexItem.EVIDENCE_UUID);
-                treeQueryStr += "(" + IndexItem.PARENTID + ":" + parentId + " && " + IndexItem.EVIDENCE_UUID + ":" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                        + sourceUUID + ") "; //$NON-NLS-1$
-
-                BooleanQuery.Builder subQuery = new BooleanQuery.Builder();
-                subQuery.add(new TermQuery(new Term(IndexItem.PARENTIDs, parentId)), Occur.MUST);
-                subQuery.add(new TermQuery(new Term(IndexItem.EVIDENCE_UUID, sourceUUID)), Occur.MUST);
-                recursiveQueryBuilder.add(subQuery.build(), Occur.SHOULD);
-            }
-            recursiveTreeQuery = recursiveQueryBuilder.build();
-
-            try {
-                treeQuery = new QueryBuilder(App.get().appCase).getQuery(treeQueryStr);
-            } catch (ParseException | QueryNodeException e) {
-                e.printStackTrace();
-            }
+          definedFilters.add(new QueryFilter(self.treeQuery));
         }
-        actionPerformed(null);
-
+      }
     }
+    return definedFilters;
+  }
 
-    public void navigateToParent(int docId) {
+  @Override
+  public boolean hasFiltersApplied() {
+    return recursiveTreeQuery != null;
+  }
 
-        LinkedList<Node> path = new LinkedList<Node>();
-        String parentId = null;
-        try {
-            do {
-                Document doc = App.get().appCase.getReader().storedFields().document(docId);
+  @Override
+  public Query getQuery() {
+    if (App.get().recursiveTreeList.isSelected()) return recursiveTreeQuery;
+    else return treeQuery;
+  }
 
-                parentId = doc.get(IndexItem.PARENTID);
-                if (parentId != null) {
-                    IPEDSource src = (IPEDSource) App.get().appCase.getAtomicSource(docId);
-                    docId = src.getLuceneId(Integer.parseInt(parentId));
-                    if (docId == -1) {
-                        throw new RuntimeException("Parent with id = " + parentId + " not found in the index");
-                    }
-                    docId += App.get().appCase.getBaseLuceneId(src);
-                    path.addFirst(((TreeViewModel) App.get().tree.getModel()).new Node(docId));
-                }
-            } while (parentId != null);
+  public String toString() {
+    return "Evidence panel";
+  }
 
-        } catch (Exception e) {
-            log.error("Navigate to parent failed!", e);
-            return;
-        }
-
-        path.addFirst((Node) App.get().tree.getModel().getRoot());
-
-        App.get().moveEvidenveTabToFront();
-
-        TreePath treePath = new TreePath(path.toArray());
-        App.get().tree.setExpandsSelectedPaths(true);
-        App.get().tree.setSelectionPath(treePath);
-        App.get().tree.scrollPathToVisible(treePath);
-
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-        if ((App.get().recursiveTreeList.isSelected() && rootSelected) || selection.isEmpty()) {
-            App.get().setEvidenceDefaultColor(true);
-        } else {
-            App.get().setEvidenceDefaultColor(false);
-        }
-
-        if (!clearing)
-            App.get().appletListener.updateFileListing();
-
-        if (selection.size() == 1 && selection.iterator().next().getPathCount() > 2) {
-            int luceneId = ((Node) selection.iterator().next().getLastPathComponent()).docId;
-            FileProcessor parsingTask = new FileProcessor(luceneId, false);
-            parsingTask.execute();
-        }
-
-    }
-
-    @Override
-    public void treeExpanded(TreeExpansionEvent event) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void treeCollapsed(TreeExpansionEvent event) {
-        collapsedTime = System.currentTimeMillis();
-
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            showTreeMenu(e);
-        }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            showTreeMenu(e);
-        }
-    }
-
-    private void showTreeMenu(MouseEvent e) {
-        MenuClass menu = new MenuClass(true);
-        menu.show(e.getComponent(), e.getX(), e.getY());
-    }
-
-    @Override
-    public void clearFilter() {
-        clearing = true;
-        App.get().tree.clearSelection();
-        clearing = false;
-    }
-
-    @Override
-    public List getDefinedFilters() {
-        TreeListener self = this;
-        if (definedFilters == null) {
-            definedFilters = new ArrayList<IFilter>();
-            if (selection.size() >= 1) {
-                if (App.get().recursiveTreeList.isSelected()) {
-                    definedFilters.add(new QueryFilter(self.recursiveTreeQuery));
-                } else {
-                    definedFilters.add(new QueryFilter(self.treeQuery));
-                }
-            }
-        }
-        return definedFilters;
-    }
-
-    @Override
-    public boolean hasFiltersApplied() {
-        return recursiveTreeQuery != null;
-    }
-
-    @Override
-    public Query getQuery() {
-        if (App.get().recursiveTreeList.isSelected())
-            return recursiveTreeQuery;
-        else
-            return treeQuery;
-    }
-
-    public String toString() {
-        return "Evidence panel";
-    }
-
-    @Override
-    public boolean hasFilters() {
-        return recursiveTreeQuery != null;
-    }
-
+  @Override
+  public boolean hasFilters() {
+    return recursiveTreeQuery != null;
+  }
 }

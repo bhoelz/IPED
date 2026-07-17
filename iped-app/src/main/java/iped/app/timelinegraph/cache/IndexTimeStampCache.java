@@ -4,291 +4,301 @@ import iped.app.timelinegraph.IpedChartsPanel;
 import iped.app.timelinegraph.cache.persistance.CachePersistance;
 import iped.engine.core.Manager;
 import iped.viewers.api.IMultiSearchResultProvider;
-import lombok.extern.slf4j.Slf4j;
-import org.jfree.data.time.TimePeriod;
-import org.roaringbitmap.RoaringBitmap;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
+import org.jfree.data.time.TimePeriod;
+import org.roaringbitmap.RoaringBitmap;
 
 @Slf4j
 public class IndexTimeStampCache implements TimeStampCache {
 
+  ArrayList<Class<? extends TimePeriod>> periodClassesToCache =
+      new ArrayList<Class<? extends TimePeriod>>();
 
-    ArrayList<Class<? extends TimePeriod>> periodClassesToCache = new ArrayList<Class<? extends TimePeriod>>();
+  AtomicInteger running = new AtomicInteger();
+  Semaphore timeStampCacheSemaphore = new Semaphore(1);
+  IMultiSearchResultProvider resultsProvider;
+  IpedChartsPanel ipedChartsPanel;
+  TimeZone timezone;
 
-    AtomicInteger running = new AtomicInteger();
-    Semaphore timeStampCacheSemaphore = new Semaphore(1);
-    IMultiSearchResultProvider resultsProvider;
-    IpedChartsPanel ipedChartsPanel;
-    TimeZone timezone;
+  TimeIndexedMap newCache = new TimeIndexedMap();
 
-    TimeIndexedMap newCache = new TimeIndexedMap();
-
-    public IndexTimeStampCache(IpedChartsPanel ipedChartsPanel, IMultiSearchResultProvider resultsProvider) {
-        this.resultsProvider = resultsProvider;
-        this.ipedChartsPanel = ipedChartsPanel;
-        this.timezone = ipedChartsPanel.getTimeZone();
-        try {
-            timeStampCacheSemaphore.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+  public IndexTimeStampCache(
+      IpedChartsPanel ipedChartsPanel, IMultiSearchResultProvider resultsProvider) {
+    this.resultsProvider = resultsProvider;
+    this.ipedChartsPanel = ipedChartsPanel;
+    this.timezone = ipedChartsPanel.getTimeZone();
+    try {
+      timeStampCacheSemaphore.acquire();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
+  }
 
-    SortedSet<String> eventTypes = new TreeSet<String>();
-    final Object monitor = new Object();
+  SortedSet<String> eventTypes = new TreeSet<String>();
+  final Object monitor = new Object();
 
-    @Override
-    public void run() {
-        int oldPriority = Thread.currentThread().getPriority();
-        Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+  @Override
+  public void run() {
+    int oldPriority = Thread.currentThread().getPriority();
+    Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+    try {
+
+      if (newCache.size() > 0) {
+        return;
+      }
+
+      boolean cacheExists = false;
+
+      if (periodClassesToCache.size() == 0) {
+        periodClassesToCache.add(ipedChartsPanel.getTimePeriodClass());
+      }
+      for (Class periodClasses : periodClassesToCache) {
+        CachePersistance cp = CachePersistance.getInstance();
         try {
+          TimeIndexedMap c = cp.loadNewCache(periodClasses);
+          if (c != null) {
+            cacheExists = true;
+          }
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
 
-            if (newCache.size() > 0) {
-                return;
-            }
+      if (!cacheExists) {
+        Date d1 = new Date();
+        log.info("Starting to build time cache of [{}]...", periodClassesToCache.toString());
 
-            boolean cacheExists = false;
+        ArrayList<EventTimestampCache> cacheLoaders = new ArrayList<EventTimestampCache>();
 
-            if (periodClassesToCache.size() == 0) {
-                periodClassesToCache.add(ipedChartsPanel.getTimePeriodClass());
-            }
+        String[] cachedEventNames = ipedChartsPanel.getOrdToEventName();
+
+        int ord = 0;
+        while (ord < cachedEventNames.length) {
+          String eventType = cachedEventNames[ord];
+          if (eventType != null && !eventType.isEmpty()) {
+            cacheLoaders.add(
+                new EventTimestampCache(
+                    ipedChartsPanel, resultsProvider, this, cachedEventNames[ord], ord));
+          }
+          ord++;
+        }
+        running.set(cacheLoaders.size());
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(1);
+        for (EventTimestampCache cacheLoader : cacheLoaders) {
+          threadPool.execute(cacheLoader);
+        }
+
+        try {
+          synchronized (monitor) {
+            monitor.wait();
+
+            if (Manager.getInstance() != null && Manager.getInstance().isProcessingFinished()) {}
+            CachePersistance cp = CachePersistance.getInstance();
+            cp.saveNewCache(this);
+
+            cacheLoaders.clear();
+
+            newCache = null; // liberates data used to create indexes for garbage collection
+
+            newCache = new TimeIndexedMap();
             for (Class periodClasses : periodClassesToCache) {
-                CachePersistance cp = CachePersistance.getInstance();
-                try {
-                    TimeIndexedMap c = cp.loadNewCache(periodClasses);
-                    if (c != null) {
-                        cacheExists = true;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+              newCache.setIndexFile(periodClasses.getSimpleName(), cp.getBaseDir());
+              LinkedHashSet<CacheTimePeriodEntry> times = new LinkedHashSet<CacheTimePeriodEntry>();
+              newCache.put(periodClasses.getSimpleName(), times);
             }
 
-            if (!cacheExists) {
-                Date d1 = new Date();
-                log.info("Starting to build time cache of [{}]...", periodClassesToCache.toString());
+            newCache.createOrLoadUpperPeriodIndex(this);
 
-                ArrayList<EventTimestampCache> cacheLoaders = new ArrayList<EventTimestampCache>();
-
-                String[] cachedEventNames = ipedChartsPanel.getOrdToEventName();
-
-                int ord = 0;
-                while (ord < cachedEventNames.length) {
-                    String eventType = cachedEventNames[ord];
-                    if (eventType != null && !eventType.isEmpty()) {
-                        cacheLoaders.add(new EventTimestampCache(ipedChartsPanel, resultsProvider, this, cachedEventNames[ord], ord));
-                    }
-                    ord++;
-                }
-                running.set(cacheLoaders.size());
-
-                ExecutorService threadPool = Executors.newFixedThreadPool(1);
-                for (EventTimestampCache cacheLoader : cacheLoaders) {
-                    threadPool.execute(cacheLoader);
-                }
-
-                try {
-                    synchronized (monitor) {
-                        monitor.wait();
-
-                        if (Manager.getInstance() != null && Manager.getInstance().isProcessingFinished()) {
-                        }
-                        CachePersistance cp = CachePersistance.getInstance();
-                        cp.saveNewCache(this);
-
-                        cacheLoaders.clear();
-
-                        newCache = null;// liberates data used to create indexes for garbage collection
-
-                        newCache = new TimeIndexedMap();
-                        for (Class periodClasses : periodClassesToCache) {
-                            newCache.setIndexFile(periodClasses.getSimpleName(), cp.getBaseDir());
-                            LinkedHashSet<CacheTimePeriodEntry> times = new LinkedHashSet<CacheTimePeriodEntry>();
-                            newCache.put(periodClasses.getSimpleName(), times);
-                        }
-
-                        newCache.createOrLoadUpperPeriodIndex(this);
-
-                        Date d2 = new Date();
-                        log.info("Time to build timeline index of [{}]: {}ms", periodClassesToCache.toString(), (d2.getTime() - d1.getTime()));
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-            } else {
-                CachePersistance cp = CachePersistance.getInstance();
-                for (Class periodClasses : periodClassesToCache) {
-                    newCache.setIndexFile(periodClasses.getSimpleName(), cp.getBaseDir());
-                }
-                newCache.createOrLoadUpperPeriodIndex(this);
-            }
-            ipedChartsPanel.getIpedTimelineDatasetManager().setCacheLoaded(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            Thread.currentThread().setPriority(oldPriority);
-            timeStampCacheSemaphore.release();
-        }
-    }
-
-    public void addTimePeriodClassToCache(Class<? extends TimePeriod> timePeriodClass) {
-        periodClassesToCache.add(timePeriodClass);
-    }
-
-    public boolean hasTimePeriodClassToCache(Class<? extends TimePeriod> timePeriodClass) {
-        try {
-            timeStampCacheSemaphore.acquire();// pause until cache is populated
+            Date d2 = new Date();
+            log.info(
+                "Time to build timeline index of [{}]: {}ms",
+                periodClassesToCache.toString(),
+                (d2.getTime() - d1.getTime()));
+          }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            timeStampCacheSemaphore.release();
+          e.printStackTrace();
         }
-        return periodClassesToCache.contains(timePeriodClass);
+
+      } else {
+        CachePersistance cp = CachePersistance.getInstance();
+        for (Class periodClasses : periodClassesToCache) {
+          newCache.setIndexFile(periodClasses.getSimpleName(), cp.getBaseDir());
+        }
+        newCache.createOrLoadUpperPeriodIndex(this);
+      }
+      ipedChartsPanel.getIpedTimelineDatasetManager().setCacheLoaded(true);
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      Thread.currentThread().setPriority(oldPriority);
+      timeStampCacheSemaphore.release();
+    }
+  }
+
+  public void addTimePeriodClassToCache(Class<? extends TimePeriod> timePeriodClass) {
+    periodClassesToCache.add(timePeriodClass);
+  }
+
+  public boolean hasTimePeriodClassToCache(Class<? extends TimePeriod> timePeriodClass) {
+    try {
+      timeStampCacheSemaphore.acquire(); // pause until cache is populated
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } finally {
+      timeStampCacheSemaphore.release();
+    }
+    return periodClassesToCache.contains(timePeriodClass);
+  }
+
+  @Override
+  public ArrayList<Class<? extends TimePeriod>> getPeriodClassesToCache() {
+    return periodClassesToCache;
+  }
+
+  @Override
+  public Map<String, List<CacheTimePeriodEntry>> getCachedList() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public RoaringBitmap add(
+      Class<? extends TimePeriod> timePeriodClass, Date t, String eventType, RoaringBitmap docs) {
+    PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
+    if (l == null) {
+      l = new PersistedArrayList(timePeriodClass);
+      newCache.put(timePeriodClass.getSimpleName(), l);
     }
 
-    @Override
-    public ArrayList<Class<? extends TimePeriod>> getPeriodClassesToCache() {
-        return periodClassesToCache;
+    if (docs == null) {
+      docs = new RoaringBitmap();
     }
 
-    @Override
-    public Map<String, List<CacheTimePeriodEntry>> getCachedList() {
-        // TODO Auto-generated method stub
-        return null;
+    CacheTimePeriodEntry selectedCt = null;
+    CacheEventEntry selectedCe = null;
+
+    selectedCt = l.get(t.getTime());
+
+    if (selectedCt == null) {
+      selectedCt = new CacheTimePeriodEntry();
+      selectedCt.date = t.getTime();
+      l.add(selectedCt);
     }
 
-    public RoaringBitmap add(Class<? extends TimePeriod> timePeriodClass, Date t, String eventType, RoaringBitmap docs) {
-        PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
-        if (l == null) {
-            l = new PersistedArrayList(timePeriodClass);
-            newCache.put(timePeriodClass.getSimpleName(), l);
-        }
+    selectedCt.addEventEntry(eventType, docs);
 
-        if (docs == null) {
-            docs = new RoaringBitmap();
-        }
+    return docs;
+  }
 
-        CacheTimePeriodEntry selectedCt = null;
-        CacheEventEntry selectedCe = null;
-
-        selectedCt = l.get(t.getTime());
-
-        if (selectedCt == null) {
-            selectedCt = new CacheTimePeriodEntry();
-            selectedCt.date = t.getTime();
-            l.add(selectedCt);
-        }
-
-        selectedCt.addEventEntry(eventType, docs);
-
-        return docs;
+  public RoaringBitmap add(
+      Class<? extends TimePeriod> timePeriodClass,
+      Date t,
+      int eventInternalOrd,
+      RoaringBitmap docs) {
+    PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
+    if (l == null) {
+      l = new PersistedArrayList(timePeriodClass);
+      newCache.put(timePeriodClass.getSimpleName(), l);
     }
 
-    public RoaringBitmap add(Class<? extends TimePeriod> timePeriodClass, Date t, int eventInternalOrd, RoaringBitmap docs) {
-        PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
-        if (l == null) {
-            l = new PersistedArrayList(timePeriodClass);
-            newCache.put(timePeriodClass.getSimpleName(), l);
-        }
-
-        if (docs == null) {
-            docs = new RoaringBitmap();
-        }
-
-        CacheTimePeriodEntry selectedCt = null;
-        CacheEventEntry selectedCe = null;
-
-        selectedCt = l.get(t.getTime());
-
-        if (selectedCt == null) {
-            selectedCt = new CacheTimePeriodEntry();
-            selectedCt.date = t.getTime();
-            l.add(selectedCt);
-        }
-
-        selectedCt.addEventEntry(eventInternalOrd, docs);
-
-        return docs;
+    if (docs == null) {
+      docs = new RoaringBitmap();
     }
 
-    public RoaringBitmap get(Class<? extends TimePeriod> timePeriodClass, Date t, Integer eventInternalOrd) {
-        PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
-        if (l == null) {
-            l = new PersistedArrayList(timePeriodClass);
-            newCache.put(timePeriodClass.getSimpleName(), l);
-        }
-        CacheTimePeriodEntry selectedCt = l.get(t.getTime());
+    CacheTimePeriodEntry selectedCt = null;
+    CacheEventEntry selectedCe = null;
 
-        if (selectedCt == null) {
-            return null;
-        }
+    selectedCt = l.get(t.getTime());
 
-        RoaringBitmap result = selectedCt.getEventDocIds(eventInternalOrd);
-        if (result == null) {
-            return null;
-        }
-
-        return result;
+    if (selectedCt == null) {
+      selectedCt = new CacheTimePeriodEntry();
+      selectedCt.date = t.getTime();
+      l.add(selectedCt);
     }
 
-    public RoaringBitmap get(Class<? extends TimePeriod> timePeriodClass, Date t, String eventType) {
-        PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
-        if (l == null) {
-            l = new PersistedArrayList(timePeriodClass);
-            newCache.put(timePeriodClass.getSimpleName(), l);
-        }
-        CacheTimePeriodEntry selectedCt = l.get(t.getTime());
+    selectedCt.addEventEntry(eventInternalOrd, docs);
 
-        if (selectedCt == null) {
-            return null;
-        }
+    return docs;
+  }
 
-        RoaringBitmap result = selectedCt.getEventDocIds(eventType);
-        if (result == null) {
-            return null;
-        }
+  public RoaringBitmap get(
+      Class<? extends TimePeriod> timePeriodClass, Date t, Integer eventInternalOrd) {
+    PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
+    if (l == null) {
+      l = new PersistedArrayList(timePeriodClass);
+      newCache.put(timePeriodClass.getSimpleName(), l);
+    }
+    CacheTimePeriodEntry selectedCt = l.get(t.getTime());
 
-        return result;
+    if (selectedCt == null) {
+      return null;
     }
 
-    @Override
-    public Map<String, Set<CacheTimePeriodEntry>> getNewCache() {
-        return newCache;
+    RoaringBitmap result = selectedCt.getEventDocIds(eventInternalOrd);
+    if (result == null) {
+      return null;
     }
 
-    @Override
-    public TimeZone getCacheTimeZone() {
-        return this.timezone;
+    return result;
+  }
+
+  public RoaringBitmap get(Class<? extends TimePeriod> timePeriodClass, Date t, String eventType) {
+    PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
+    if (l == null) {
+      l = new PersistedArrayList(timePeriodClass);
+      newCache.put(timePeriodClass.getSimpleName(), l);
+    }
+    CacheTimePeriodEntry selectedCt = l.get(t.getTime());
+
+    if (selectedCt == null) {
+      return null;
     }
 
-    public void add(Class<? extends TimePeriod> timePeriodClass, Date t, Integer eventInternalOrd, int doc) {
-        PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
-        if (l == null) {
-            l = new PersistedArrayList(timePeriodClass);
-            synchronized (this) {
-                newCache.put(timePeriodClass.getSimpleName(), l);
-            }
-        }
-
-        CacheTimePeriodEntry selectedCt = null;
-        CacheEventEntry selectedCe = null;
-
-        selectedCt = l.get(t.getTime());
-
-        if (selectedCt == null) {
-            selectedCt = new CacheTimePeriodEntry();
-            selectedCt.date = t.getTime();
-            l.add(selectedCt);
-        }
-
-        selectedCt.addEventEntry(eventInternalOrd, doc);
+    RoaringBitmap result = selectedCt.getEventDocIds(eventType);
+    if (result == null) {
+      return null;
     }
 
+    return result;
+  }
+
+  @Override
+  public Map<String, Set<CacheTimePeriodEntry>> getNewCache() {
+    return newCache;
+  }
+
+  @Override
+  public TimeZone getCacheTimeZone() {
+    return this.timezone;
+  }
+
+  public void add(
+      Class<? extends TimePeriod> timePeriodClass, Date t, Integer eventInternalOrd, int doc) {
+    PersistedArrayList l = (PersistedArrayList) newCache.get(timePeriodClass.getSimpleName());
+    if (l == null) {
+      l = new PersistedArrayList(timePeriodClass);
+      synchronized (this) {
+        newCache.put(timePeriodClass.getSimpleName(), l);
+      }
+    }
+
+    CacheTimePeriodEntry selectedCt = null;
+    CacheEventEntry selectedCe = null;
+
+    selectedCt = l.get(t.getTime());
+
+    if (selectedCt == null) {
+      selectedCt = new CacheTimePeriodEntry();
+      selectedCt.date = t.getTime();
+      l.add(selectedCt);
+    }
+
+    selectedCt.addEventEntry(eventInternalOrd, doc);
+  }
 }

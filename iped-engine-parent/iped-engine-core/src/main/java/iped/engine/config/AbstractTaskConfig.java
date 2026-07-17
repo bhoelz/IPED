@@ -2,55 +2,52 @@ package iped.engine.config;
 
 import iped.configuration.Configurable;
 import iped.configuration.EnabledInterface;
-
 import java.io.IOException;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 
 public abstract class AbstractTaskConfig<T> implements Configurable<T>, EnabledInterface {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-    protected EnableTaskProperty enabledProp;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    public abstract String getTaskEnableProperty();
+  protected EnableTaskProperty enabledProp;
 
-    public abstract String getTaskConfigFileName();
+  public abstract String getTaskEnableProperty();
 
-    public abstract void processTaskConfig(Path resource) throws IOException;
+  public abstract String getTaskConfigFileName();
 
-    @Override
-    public Filter<Path> getResourceLookupFilter() {
-        return new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.endsWith(getTaskConfigFileName()) || entry.endsWith(Configuration.CONFIG_FILE);
-            }
-        };
+  public abstract void processTaskConfig(Path resource) throws IOException;
+
+  @Override
+  public Filter<Path> getResourceLookupFilter() {
+    return new Filter<Path>() {
+      @Override
+      public boolean accept(Path entry) throws IOException {
+        return entry.endsWith(getTaskConfigFileName()) || entry.endsWith(Configuration.CONFIG_FILE);
+      }
+    };
+  }
+
+  @Override
+  public void processConfig(Path resource) throws IOException {
+    if (Configuration.CONFIG_FILE.equals(resource.getFileName().toString())) {
+      if (enabledProp == null) {
+        enabledProp = new EnableTaskProperty(getTaskEnableProperty());
+      }
+      enabledProp.processConfig(resource);
+    } else {
+      processTaskConfig(resource);
     }
+  }
 
-    @Override
-    public void processConfig(Path resource) throws IOException {
-        if (Configuration.CONFIG_FILE.equals(resource.getFileName().toString())) {
-            if (enabledProp == null) {
-                enabledProp = new EnableTaskProperty(getTaskEnableProperty());
-            }
-            enabledProp.processConfig(resource);
-        } else {
-            processTaskConfig(resource);
-        }
-    }
+  @Override
+  public boolean isEnabled() {
+    return enabledProp.isEnabled();
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return enabledProp.isEnabled();
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        enabledProp.setEnabled(enabled);
-    }
-
+  @Override
+  public void setEnabled(boolean enabled) {
+    enabledProp.setEnabled(enabled);
+  }
 }

@@ -3,44 +3,46 @@ package iped.parsers.discord.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class DiscordSticker {
-    @JsonProperty("id")
-    private String id;
-    @JsonProperty("name")
-    private String name;
-    @JsonProperty("format_type")
-    private String formatType;
-    String hash = null;
+  @JsonProperty("id")
+  private String id;
 
-    public String getId() {
-        return id;
-    }
+  @JsonProperty("name")
+  private String name;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+  @JsonProperty("format_type")
+  private String formatType;
 
-    public String getName() {
-        return name;
-    }
+  String hash = null;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public String getFormatType() {
-        return formatType;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public void setFormatType(String formatType) {
-        this.formatType = formatType;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setMediaHash(String hash) {
-        this.hash = hash;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getMediaHash() {
-        return hash;
-    }
+  public String getFormatType() {
+    return formatType;
+  }
 
+  public void setFormatType(String formatType) {
+    this.formatType = formatType;
+  }
+
+  public void setMediaHash(String hash) {
+    this.hash = hash;
+  }
+
+  public String getMediaHash() {
+    return hash;
+  }
 }

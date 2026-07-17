@@ -3,6 +3,9 @@ package iped.parsers.fork;
 import iped.parsers.util.ItemInfo;
 import iped.parsers.util.Messages;
 import iped.properties.ExtraProperties;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
@@ -12,103 +15,98 @@ import org.apache.tika.parser.ParseContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-
 @Slf4j
 public class EmbeddedDocumentParser implements EmbeddedDocumentExtractor, Serializable {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-    // Utilizado para restringir tamanho máximo do nome de subitens de zips
-    // corrompidos
-    private static int NAME_MAX_LEN = 256;
+  // Utilizado para restringir tamanho máximo do nome de subitens de zips
+  // corrompidos
+  private static int NAME_MAX_LEN = 256;
 
+  private transient ParseContext context;
 
-    private transient ParseContext context;
+  public static class NameTitle {
 
-    public static class NameTitle {
+    public String name;
+    public boolean hasTitle;
 
-        public String name;
-        public boolean hasTitle;
+    public NameTitle(String name, boolean hasTitle) {
+      this.name = name;
+      this.hasTitle = hasTitle;
+    }
+  }
 
-        public NameTitle(String name, boolean hasTitle) {
-            this.name = name;
-            this.hasTitle = hasTitle;
-        }
+  public EmbeddedDocumentParser(ParseContext context) {
+    this.context = context;
+  }
+
+  public void setContext(ParseContext context) {
+    this.context = context;
+  }
+
+  @Override
+  public void parseEmbedded(
+      InputStream stream, ContentHandler handler, Metadata metadata, boolean outputHtml)
+      throws SAXException, IOException {
+
+    ItemInfo itemInfo = context.get(ItemInfo.class);
+    itemInfo.incChild();
+
+    String name = getNameTitle(metadata, itemInfo.getChild()).name;
+    char[] nameChars = (name + "\n\n").toCharArray(); // $NON-NLS-1$
+
+    handler.characters(nameChars, 0, nameChars.length);
+
+    String subitemPath = itemInfo.getPath() + ">>" + name; // $NON-NLS-1$
+    ParsingEmbeddedDocumentExtractor embeddedParser = new ParsingEmbeddedDocumentExtractor(context);
+    try {
+      embeddedParser.parseEmbedded(stream, handler, metadata, false);
+
+    } catch (Exception e) {
+      // do not interrupt parsing of parent doc if parsing of child doc fails
+      log.warn(
+          "{} Error while parsing subitem {}\t\t{}",
+          Thread.currentThread().getName(),
+          subitemPath, //$NON-NLS-1$
+          e.toString());
+    }
+  }
+
+  public static NameTitle getNameTitle(Metadata metadata, int child) {
+    boolean hasTitle = false;
+    String name = metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY);
+    if (name == null || name.isEmpty()) {
+      name = metadata.get(ExtraProperties.MESSAGE_SUBJECT);
+      if (name == null || name.isEmpty()) {
+        name = metadata.get(TikaCoreProperties.TITLE);
+      }
+      if (name != null) {
+        hasTitle = true;
+      }
+    }
+    if (name == null || name.isEmpty()) {
+      name = metadata.get(TikaCoreProperties.EMBEDDED_RELATIONSHIP_ID);
     }
 
-    public EmbeddedDocumentParser(ParseContext context) {
-        this.context = context;
+    if (name == null || name.isEmpty()) {
+      name = Messages.getString("EmbeddedDocumentParser.UnNamed") + child; // $NON-NLS-1$
     }
 
-    public void setContext(ParseContext context) {
-        this.context = context;
+    if (name.length() > NAME_MAX_LEN) {
+      int maxSize = NAME_MAX_LEN;
+      if (Character.isHighSurrogate(name.charAt(maxSize - 1))) {
+        // avoid creating invalid strings ending with high surrogate char, see #638
+        maxSize--;
+      }
+      name = name.substring(0, maxSize);
     }
+    return new NameTitle(name, hasTitle);
+  }
 
-    @Override
-    public void parseEmbedded(InputStream stream, ContentHandler handler, Metadata metadata, boolean outputHtml)
-            throws SAXException, IOException {
-
-        ItemInfo itemInfo = context.get(ItemInfo.class);
-        itemInfo.incChild();
-
-        String name = getNameTitle(metadata, itemInfo.getChild()).name;
-        char[] nameChars = (name + "\n\n").toCharArray(); //$NON-NLS-1$
-
-        handler.characters(nameChars, 0, nameChars.length);
-
-        String subitemPath = itemInfo.getPath() + ">>" + name; //$NON-NLS-1$
-        ParsingEmbeddedDocumentExtractor embeddedParser = new ParsingEmbeddedDocumentExtractor(context);
-        try {
-            embeddedParser.parseEmbedded(stream, handler, metadata, false);
-
-        } catch (Exception e) {
-            // do not interrupt parsing of parent doc if parsing of child doc fails
-            log.warn("{} Error while parsing subitem {}\t\t{}", Thread.currentThread().getName(), subitemPath, //$NON-NLS-1$
-                    e.toString());
-        }
-
-    }
-
-    public static NameTitle getNameTitle(Metadata metadata, int child) {
-        boolean hasTitle = false;
-        String name = metadata.get(TikaCoreProperties.RESOURCE_NAME_KEY);
-        if (name == null || name.isEmpty()) {
-            name = metadata.get(ExtraProperties.MESSAGE_SUBJECT);
-            if (name == null || name.isEmpty()) {
-                name = metadata.get(TikaCoreProperties.TITLE);
-            }
-            if (name != null) {
-                hasTitle = true;
-            }
-        }
-        if (name == null || name.isEmpty()) {
-            name = metadata.get(TikaCoreProperties.EMBEDDED_RELATIONSHIP_ID);
-        }
-
-        if (name == null || name.isEmpty()) {
-            name = Messages.getString("EmbeddedDocumentParser.UnNamed") + child; //$NON-NLS-1$
-        }
-
-        if (name.length() > NAME_MAX_LEN) {
-            int maxSize = NAME_MAX_LEN;
-            if (Character.isHighSurrogate(name.charAt(maxSize - 1))) {
-                // avoid creating invalid strings ending with high surrogate char, see #638
-                maxSize--;
-            }
-            name = name.substring(0, maxSize);
-        }
-        return new NameTitle(name, hasTitle);
-    }
-
-    @Override
-    public boolean shouldParseEmbedded(Metadata metadata) {
-        return true;
-    }
-
+  @Override
+  public boolean shouldParseEmbedded(Metadata metadata) {
+    return true;
+  }
 }

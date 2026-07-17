@@ -24,6 +24,13 @@ import iped.search.IItemSearcher;
 import iped.utils.IOUtil;
 import iped.utils.LockManager;
 import iped.viewers.HtmlLinkViewer;
+import java.io.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
@@ -35,270 +42,276 @@ import org.apache.tika.sax.ContentHandlerDecorator;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantLock;
-
 @Slf4j
 public class MakePreviewTask extends AbstractTask {
 
+  private MakePreviewConfig previewConfig;
 
-    private MakePreviewConfig previewConfig;
+  private StandardParser parser;
 
-    private StandardParser parser;
+  private static LockManager<PreviewKey> lockManager;
 
-    private static LockManager<PreviewKey> lockManager;
+  @Override
+  public List<Configurable<?>> getConfigurables() {
+    return Arrays.asList(new MakePreviewConfig());
+  }
 
-    @Override
-    public List<Configurable<?>> getConfigurables() {
-        return Arrays.asList(new MakePreviewConfig());
+  @Override
+  public void init(ConfigurationManager configurationManager) throws Exception {
+    previewConfig = configurationManager.findObject(MakePreviewConfig.class);
+
+    parser = new StandardParser();
+    parser.setPrintMetadata(false);
+    parser.setIgnoreStyle(false);
+
+    initLockManager();
+  }
+
+  private static synchronized void initLockManager() {
+    if (lockManager == null) {
+      lockManager = new LockManager<>();
+    }
+  }
+
+  @Override
+  public void finish() throws Exception {}
+
+  public boolean isSupportedType(String contentType) {
+    return previewConfig.getSupportedMimes().contains(contentType)
+        || mayContainLinks(contentType)
+        || isSupportedTypeCSV(contentType);
+  }
+
+  private boolean mayContainLinks(String contentType) {
+    return previewConfig.getSupportedMimesWithLinks().contains(contentType);
+  }
+
+  private boolean isSupportedTypeCSV(String contentType) {
+    return false; // contentType.equals("application/x-shareaza-library-dat");
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return previewConfig.isEnabled();
+  }
+
+  @Override
+  protected void process(IItem evidence) throws Exception {
+
+    String mediaType = evidence.getMediaTypeString();
+    if (evidence.getLength() == Long.valueOf(0)
+        || !isSupportedType(mediaType)
+        || !evidence.isToAddToCase()) {
+      return;
     }
 
-    @Override
-    public void init(ConfigurationManager configurationManager) throws Exception {
-        previewConfig = configurationManager.findObject(MakePreviewConfig.class);
-
-        parser = new StandardParser();
-        parser.setPrintMetadata(false);
-        parser.setIgnoreStyle(false);
-
-        initLockManager();
+    String ext = "html"; // $NON-NLS-1$
+    if (isSupportedTypeCSV(mediaType)) {
+      ext = "csv"; // $NON-NLS-1$
     }
 
-    private static synchronized void initLockManager() {
-        if (lockManager == null) {
-            lockManager = new LockManager<>();
-        }
+    PreviewKey key = PreviewKey.create(evidence);
+    ReentrantLock lock = lockManager.getLock(key);
+    lock.lock();
+    try {
+      // skip if evidence already has preview
+      if (evidence.hasPreview()
+          && PreviewRepositoryManager.get(output).previewExists(evidence)
+          && ext.equals(evidence.getPreviewExt())) {
+        return;
+      }
+      if (evidence.getViewFile() != null
+          && evidence.getViewFile().exists()
+          && StringUtils.isNotBlank(evidence.getHash())
+          && evidence
+              .getViewFile()
+              .equals(
+                  Util.getFileFromHash(
+                      new File(output, PreviewConstants.VIEW_FOLDER_NAME),
+                      evidence.getHash(),
+                      ext))) {
+        return;
+      }
+
+      log.debug("Generating preview of {} ({} bytes)", evidence.getPath(), evidence.getLength());
+      makeHtmlPreviewAndStore(evidence, mediaType, ext);
+
+    } catch (Throwable e) {
+      log.warn(
+          "Error generating preview of {} ({} bytes) {}",
+          evidence.getPath(),
+          evidence.getLength(), // $NON-NLS-1$
+          e.toString());
+      log.debug("", e);
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  private void makeHtmlPreviewAndStore(IItem evidence, String mediaType, String viewExt)
+      throws Throwable {
+
+    PreviewRepository previewRepo = PreviewRepositoryManager.get(output);
+    if (previewRepo.previewExists(evidence)) {
+      evidence.setHasPreview(true);
+      evidence.setPreviewExt(viewExt);
+      return;
     }
 
-    @Override
-    public void finish() throws Exception {
+    PipedInputStream inputStream = new PipedInputStream(8192);
+    PipedOutputStream outputStream = new PipedOutputStream(inputStream);
+
+    final Metadata metadata = new Metadata();
+    ParsingTaskSupport.fillMetadata(evidence, metadata);
+
+    // Não é necessário fechar tis pois será fechado em evidence.dispose()
+    final TikaInputStream tis = (TikaInputStream) evidence.getTikaStream();
+
+    final ParseContext context = new ParseContext();
+    // caseData is null when running standalone (no case): previews still work,
+    // just without resolving cross-item references (e.g. linked OLE objects).
+    IItemSearcher itemSearcher =
+        caseData != null
+            ? (IItemSearcher) caseData.getCaseObject(IItemSearcher.class.getName())
+            : null;
+    context.set(IItemSearcher.class, itemSearcher);
+    context.set(IItemReader.class, evidence);
+    context.set(ItemInfo.class, ItemInfoFactory.getItemInfo(evidence));
+    context.set(EmbeddedDocumentExtractor.class, new EmptyEmbeddedDocumentExtractor());
+
+    ParsingTaskConfig parsingConfig =
+        ConfigurationManager.get().findObject(ParsingTaskConfig.class);
+
+    // ForkServer timeout
+    if (evidence.getLength() != null) {
+      int timeOutBySize = (int) (evidence.getLength() / 1000000) * parsingConfig.getTimeOutPerMB();
+      int totalTimeout = (parsingConfig.getTimeOut() + timeOutBySize) * 1000;
+      context.set(ParsingTimeout.class, new ParsingTimeout(totalTimeout));
     }
 
-    public boolean isSupportedType(String contentType) {
-        return previewConfig.getSupportedMimes().contains(contentType) || mayContainLinks(contentType)
-                || isSupportedTypeCSV(contentType);
+    // Habilita parsing de subitens embutidos, o que ficaria ruim no preview de
+    // certos arquivos
+    // Ex: Como renderizar no preview html um PDF embutido num banco de dados?
+    // context.set(Parser.class, parser);
+
+    ContentHandler handler;
+    if (!isSupportedTypeCSV(evidence.getMediaTypeString())) {
+      String comment = null;
+      if (mayContainLinks(mediaType)) {
+        comment = HtmlLinkViewer.PREVIEW_WITH_LINKS_HEADER;
+      }
+      handler = new ToXMLContentHandlerWithComment(outputStream, "UTF-8", comment); // $NON-NLS-1$
+    } else {
+      handler = new ToCSVContentHandler(outputStream, "UTF-8"); // $NON-NLS-1$
+    }
+    final ProgressContentHandler pch = new ProgressContentHandler(handler);
+
+    if (QueuesProcessingOrder.getProcessingQueue((MediaType) evidence.getMediaType()) == 0) {
+      parser.setCanUseForkParser(true);
+    } else {
+      parser.setCanUseForkParser(false);
     }
 
-    private boolean mayContainLinks(String contentType) {
-        return previewConfig.getSupportedMimesWithLinks().contains(contentType);
-    }
+    final CountDownLatch latch = new CountDownLatch(2); // latch for 2 threads
+    final AtomicReference<Throwable> exception = new AtomicReference<>();
+    Thread producerThread =
+        new Thread(Thread.currentThread().getName() + "-MakePreviewThread-Producer") {
+          @Override
+          public void run() {
+            try {
+              parser.parse(tis, pch, metadata, context);
 
-    private boolean isSupportedTypeCSV(String contentType) {
-        return false;// contentType.equals("application/x-shareaza-library-dat");
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return previewConfig.isEnabled();
-    }
-
-    @Override
-    protected void process(IItem evidence) throws Exception {
-
-        String mediaType = evidence.getMediaTypeString();
-        if (evidence.getLength() == Long.valueOf(0) || !isSupportedType(mediaType) || !evidence.isToAddToCase()) {
-            return;
-        }
-
-        String ext = "html"; //$NON-NLS-1$
-        if (isSupportedTypeCSV(mediaType)) {
-            ext = "csv"; //$NON-NLS-1$
-        }
-
-        PreviewKey key = PreviewKey.create(evidence);
-        ReentrantLock lock = lockManager.getLock(key);
-        lock.lock();
-        try {
-            // skip if evidence already has preview
-            if (evidence.hasPreview() && PreviewRepositoryManager.get(output).previewExists(evidence) && ext.equals(evidence.getPreviewExt())) {
-                return;
+            } catch (Throwable e) {
+              exception.compareAndSet(null, e);
+            } finally {
+              latch.countDown();
+              IOUtil.closeQuietly(outputStream);
             }
-            if (evidence.getViewFile() != null && evidence.getViewFile().exists() && StringUtils.isNotBlank(evidence.getHash())
-                    && evidence.getViewFile().equals(Util.getFileFromHash(new File(output, PreviewConstants.VIEW_FOLDER_NAME), evidence.getHash(), ext))) {
-                return;
-            }
-
-            log.debug("Generating preview of {} ({} bytes)", evidence.getPath(), evidence.getLength());
-            makeHtmlPreviewAndStore(evidence, mediaType, ext);
-
-        } catch (Throwable e) {
-            log.warn("Error generating preview of {} ({} bytes) {}", evidence.getPath(), evidence.getLength(), //$NON-NLS-1$
-                    e.toString());
-            log.debug("", e);
-        } finally {
-            lock.unlock();
-        }
-
-    }
-
-    private void makeHtmlPreviewAndStore(IItem evidence, String mediaType, String viewExt) throws Throwable {
-
-        PreviewRepository previewRepo = PreviewRepositoryManager.get(output);
-        if (previewRepo.previewExists(evidence)) {
-            evidence.setHasPreview(true);
-            evidence.setPreviewExt(viewExt);
-            return;
-        }
-
-        PipedInputStream inputStream = new PipedInputStream(8192);
-        PipedOutputStream outputStream = new PipedOutputStream(inputStream);
-
-        final Metadata metadata = new Metadata();
-        ParsingTaskSupport.fillMetadata(evidence, metadata);
-
-        // Não é necessário fechar tis pois será fechado em evidence.dispose()
-        final TikaInputStream tis = (TikaInputStream) evidence.getTikaStream();
-
-        final ParseContext context = new ParseContext();
-        // caseData is null when running standalone (no case): previews still work,
-        // just without resolving cross-item references (e.g. linked OLE objects).
-        IItemSearcher itemSearcher = caseData != null
-                ? (IItemSearcher) caseData.getCaseObject(IItemSearcher.class.getName())
-                : null;
-        context.set(IItemSearcher.class, itemSearcher);
-        context.set(IItemReader.class, evidence);
-        context.set(ItemInfo.class, ItemInfoFactory.getItemInfo(evidence));
-        context.set(EmbeddedDocumentExtractor.class, new EmptyEmbeddedDocumentExtractor());
-
-        ParsingTaskConfig parsingConfig = ConfigurationManager.get().findObject(ParsingTaskConfig.class);
-
-        // ForkServer timeout
-        if (evidence.getLength() != null) {
-            int timeOutBySize = (int) (evidence.getLength() / 1000000) * parsingConfig.getTimeOutPerMB();
-            int totalTimeout = (parsingConfig.getTimeOut() + timeOutBySize) * 1000;
-            context.set(ParsingTimeout.class, new ParsingTimeout(totalTimeout));
-        }
-
-        // Habilita parsing de subitens embutidos, o que ficaria ruim no preview de
-        // certos arquivos
-        // Ex: Como renderizar no preview html um PDF embutido num banco de dados?
-        // context.set(Parser.class, parser);
-
-        ContentHandler handler;
-        if (!isSupportedTypeCSV(evidence.getMediaTypeString())) {
-            String comment = null;
-            if (mayContainLinks(mediaType)) {
-                comment = HtmlLinkViewer.PREVIEW_WITH_LINKS_HEADER;
-            }
-            handler = new ToXMLContentHandlerWithComment(outputStream, "UTF-8", comment); //$NON-NLS-1$
-        } else {
-            handler = new ToCSVContentHandler(outputStream, "UTF-8"); //$NON-NLS-1$
-        }
-        final ProgressContentHandler pch = new ProgressContentHandler(handler);
-
-        if (QueuesProcessingOrder.getProcessingQueue((MediaType) evidence.getMediaType()) == 0) {
-            parser.setCanUseForkParser(true);
-        } else {
-            parser.setCanUseForkParser(false);
-        }
-
-        final CountDownLatch latch = new CountDownLatch(2); // latch for 2 threads
-        final AtomicReference<Throwable> exception = new AtomicReference<>();
-        Thread producerThread = new Thread(Thread.currentThread().getName() + "-MakePreviewThread-Producer") {
-            @Override
-            public void run() {
-                try {
-                    parser.parse(tis, pch, metadata, context);
-
-                } catch (Throwable e) {
-                    exception.compareAndSet(null, e);
-                } finally {
-                    latch.countDown();
-                    IOUtil.closeQuietly(outputStream);
-                }
-            }
+          }
         };
 
-        Thread consumerThread = new Thread(Thread.currentThread().getName() + "-MakePreviewThread-Consumer") {
-            @Override
-            public void run() {
-                try {
-                    PreviewRepositoryManager.get(output).storeRawPreview(evidence, inputStream);
-                    evidence.setHasPreview(true);
-                    evidence.setPreviewExt(viewExt);
-                } catch (Throwable e) {
-                    exception.compareAndSet(null, e);
-                    log.info("ERROR {} {}", evidence.getHash(), e.getMessage() );
+    Thread consumerThread =
+        new Thread(Thread.currentThread().getName() + "-MakePreviewThread-Consumer") {
+          @Override
+          public void run() {
+            try {
+              PreviewRepositoryManager.get(output).storeRawPreview(evidence, inputStream);
+              evidence.setHasPreview(true);
+              evidence.setPreviewExt(viewExt);
+            } catch (Throwable e) {
+              exception.compareAndSet(null, e);
+              log.info("ERROR {} {}", evidence.getHash(), e.getMessage());
 
-                } finally {
-                    latch.countDown();
-                    IOUtil.closeQuietly(inputStream);
-                }
+            } finally {
+              latch.countDown();
+              IOUtil.closeQuietly(inputStream);
             }
+          }
         };
 
-        producerThread.start();
-        consumerThread.start();
+    producerThread.start();
+    consumerThread.start();
 
-        long start = System.currentTimeMillis();
-        while (latch.getCount() > 0) {
-            if (pch.getProgress()) {
-                start = System.currentTimeMillis();
-            }
+    long start = System.currentTimeMillis();
+    while (latch.getCount() > 0) {
+      if (pch.getProgress()) {
+        start = System.currentTimeMillis();
+      }
 
-            if ((System.currentTimeMillis() - start) / 1000 >= parsingConfig.getTimeOut()) {
-                producerThread.interrupt();
-                consumerThread.interrupt();
-                if (stats != null) {
-                    stats.incTimeouts();
-                }
-                throw new TimeoutException();
-            }
-            latch.await(1000, TimeUnit.MILLISECONDS);
-            if (exception.get() != null) {
-                throw exception.get();
-            }
+      if ((System.currentTimeMillis() - start) / 1000 >= parsingConfig.getTimeOut()) {
+        producerThread.interrupt();
+        consumerThread.interrupt();
+        if (stats != null) {
+          stats.incTimeouts();
         }
+        throw new TimeoutException();
+      }
+      latch.await(1000, TimeUnit.MILLISECONDS);
+      if (exception.get() != null) {
+        throw exception.get();
+      }
+    }
+  }
+
+  private class ToXMLContentHandlerWithComment extends ToXMLContentHandler {
+
+    private String comment;
+
+    public ToXMLContentHandlerWithComment(OutputStream stream, String encoding, String comment)
+        throws UnsupportedEncodingException {
+      super(stream, encoding);
+      this.comment = comment;
     }
 
-    private class ToXMLContentHandlerWithComment extends ToXMLContentHandler {
+    @Override
+    public void startDocument() throws SAXException {
+      super.startDocument();
+      if (comment != null) {
+        this.write(comment + "\n"); // $NON-NLS-1$
+      }
+    }
+  }
 
-        private String comment;
+  public class ProgressContentHandler extends ContentHandlerDecorator {
 
-        public ToXMLContentHandlerWithComment(OutputStream stream, String encoding, String comment)
-                throws UnsupportedEncodingException {
-            super(stream, encoding);
-            this.comment = comment;
-        }
+    private volatile boolean progress = false;
 
-        @Override
-        public void startDocument() throws SAXException {
-            super.startDocument();
-            if (comment != null) {
-                this.write(comment + "\n"); //$NON-NLS-1$
-            }
-        }
+    public ProgressContentHandler(ContentHandler handler) {
+      super(handler);
     }
 
-    public class ProgressContentHandler extends ContentHandlerDecorator {
-
-        private volatile boolean progress = false;
-
-        public ProgressContentHandler(ContentHandler handler) {
-            super(handler);
-        }
-
-        @Override
-        public void characters(char[] ch, int start, int length) throws SAXException {
-            progress = true;
-            super.characters(ch, start, length);
-        }
-
-        public boolean getProgress() {
-            if (progress) {
-                progress = false;
-                return true;
-            }
-            return false;
-        }
-
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+      progress = true;
+      super.characters(ch, start, length);
     }
 
+    public boolean getProgress() {
+      if (progress) {
+        progress = false;
+        return true;
+      }
+      return false;
+    }
+  }
 }
-
-
