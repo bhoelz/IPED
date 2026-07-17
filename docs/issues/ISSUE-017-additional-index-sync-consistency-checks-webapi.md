@@ -1,11 +1,11 @@
 # ISSUE-017: Sync/consistency checks reportable via iped-webapi
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-additional-index-ROADMAP.md](../roadmaps/iped-additional-index-ROADMAP.md)
 - Roadmap section: Phase 3 — Operations
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-16
 
 ## Summary
 
@@ -24,3 +24,6 @@ There is no reporting mechanism today to detect drift between an additional stor
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-additional-index-ROADMAP.md`, status set to `planned` based on the original `[ ]` marker.
+
+### 2026-07-16
+- Added per-store consistency checker, process-local health registry, and `GET /v2/cases/{caseId}/additional-index/consistency`.

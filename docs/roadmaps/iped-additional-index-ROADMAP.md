@@ -33,7 +33,7 @@ Design doc: [ADDITIONAL_PROCESSING.md](../../iped-engine-parent/iped-additional-
 
 ## Phase 3 — Operations — `planned`
 - [ISSUE-016](../issues/ISSUE-016-additional-index-rebuild-tooling.md) — Rebuild tooling from the authoritative case index — `done`
-- [ISSUE-017](../issues/ISSUE-017-additional-index-sync-consistency-checks-webapi.md) — Sync/consistency checks reportable via iped-webapi — `planned`
+- [ISSUE-017](../issues/ISSUE-017-additional-index-sync-consistency-checks-webapi.md) — Sync/consistency checks reportable via iped-webapi — `done`
 - [ISSUE-018](../issues/ISSUE-018-additional-index-distributed-segment-output.md) — Distributed-processing support for per-segment output — `planned`
 
 ## Progress checks
