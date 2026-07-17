@@ -294,6 +294,7 @@
 
   // ── Mode switching ─────────────────────────────────────────────────────
   window.ipedSetMode = function (mode) {
+    localStorage.setItem('iped.mode', mode);
     document.querySelectorAll('.mode-seg button').forEach(function (b) {
       b.classList.toggle('on', b.dataset.mode === mode);
     });
@@ -309,6 +310,20 @@
       active.dispatchEvent(new CustomEvent('view-activated'));
     }
   };
+
+  document.addEventListener('keydown', function (event) {
+    if (event.target && /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+    if (event.key === 'Escape') {
+      var modal = document.getElementById('modal');
+      if (modal) modal.innerHTML = '';
+    }
+    if (event.altKey && /^[1-5]$/.test(event.key)) {
+      event.preventDefault();
+      ipedSetMode(['table','gallery','timeline','graph','map'][Number(event.key) - 1]);
+    }
+  });
+  var savedMode = localStorage.getItem('iped.mode');
+  if (savedMode) window.ipedSetMode(savedMode);
 
   // ── Gallery toggle helper ──────────────────────────────────────────────
   window.ipedGalleryToggle = function (eventName, btnId) {

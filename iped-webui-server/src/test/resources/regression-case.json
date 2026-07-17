@@ -1,0 +1,5 @@
+{
+  "caseId": "pilot-regression-case",
+  "journeys": ["open-case", "search", "select-result", "open-viewer", "export"],
+  "requiredCapabilities": ["bookmarks", "viewerSearch", "export", "companionFallback"]
+}

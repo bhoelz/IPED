@@ -59,6 +59,7 @@ export class ViewerComponent extends IslandBase implements OnChanges {
   @Input('item-id')   itemId    = '';
   @Input('media-type') mediaType = '';
   @Input('highlight') highlight  = '';
+  @Input('companion-fallback') companionFallback = 'true';
   @Input('api-base') override apiBase = '/api';
 
   protected readonly loading          = signal(false);
@@ -86,6 +87,14 @@ export class ViewerComponent extends IslandBase implements OnChanges {
   protected readonly contentUrl = computed(() =>
     this.itemId ? `${this.itemUrlBase()}/content` : ''
   );
+
+  protected readonly companionUrl = computed(() =>
+    this.itemId ? `iped-companion://open?item=${encodeURIComponent(this.itemId)}` : ''
+  );
+
+  protected companionEnabled(): boolean {
+    return this.companionFallback !== 'false';
+  }
 
   /**
    * Effective image URL — appends `?format=png` for TIFF types so the browser

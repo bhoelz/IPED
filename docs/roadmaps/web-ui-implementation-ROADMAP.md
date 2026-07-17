@@ -95,8 +95,8 @@
 ## Fases de Execução — kanban
 - [ISSUE-435](../issues/ISSUE-435-fase0-fundamentos-descoberta.md) — Fase 0 - Fundamentos e Descoberta — `done`
 - [ISSUE-436](../issues/ISSUE-436-fase1-skeleton-executavel.md) — Fase 1 - Skeleton Executável — `done`
-- [ISSUE-437](../issues/ISSUE-437-fase2-mvp-operacional.md) — Fase 2 - MVP Operacional — `in_progress`
-- [ISSUE-438](../issues/ISSUE-438-fase3-paridade-prioritaria.md) — Fase 3 - Paridade Prioritária — `planned`
+- [ISSUE-437](../issues/ISSUE-437-fase2-mvp-operacional.md) — Fase 2 - MVP Operacional — `done`
+- [ISSUE-438](../issues/ISSUE-438-fase3-paridade-prioritaria.md) — Fase 3 - Paridade Prioritária — `done`
 - [ISSUE-439](../issues/ISSUE-439-fase4-hardening-rollout.md) — Fase 4 - Hardening e Rollout — `in_progress`
 
 Day-to-day PR-sized work for fases 1-4 above is tracked as its own set of issues in

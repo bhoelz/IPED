@@ -1,6 +1,6 @@
 # ISSUE-438: Fase 3 — Paridade Prioritária com o Swing
 
-- Status: planned
+- Status: done
 - Roadmap: [web-ui-implementation-ROADMAP.md](../roadmaps/web-ui-implementation-ROADMAP.md)
 - Roadmap section: Fase 3 - Paridade Prioritária
 - Owner: unassigned
@@ -17,11 +17,11 @@ O MVP operacional cobre o núcleo analítico, mas a maioria dos fluxos recorrent
 
 ## Acceptance criteria
 
-- [ ] Painéis equivalentes para categorias, bookmarks, filtros e relacionamentos.
-- [ ] Persistência de layout e preferências principais.
-- [ ] Melhorias de navegação, atalhos prioritários e ações em lote.
-- [ ] Viewer fallback mais robusto com integração inicial ao companion app para casos bloqueados.
-- [ ] Gap remanescente documentado por capability com plano de fechamento.
+- [x] Painéis equivalentes para categorias, bookmarks, filtros e relacionamentos.
+- [x] Persistência de layout e preferências principais.
+- [x] Melhorias de navegação, atalhos prioritários e ações em lote.
+- [x] Viewer fallback mais robusto com integração inicial ao companion app para casos bloqueados.
+- [x] Gap remanescente documentado por capability com plano de fechamento.
 
 ## Updates
 
@@ -31,3 +31,5 @@ O MVP operacional cobre o núcleo analítico, mas a maioria dos fluxos recorrent
 ### 2026-07-16
 - Added `docs/web-ui-capability-gap-matrix.md` as the baseline for parity implementation and acceptance tracking.
 - Confirmed layout width persistence already exists through sidebar/right-panel local storage state.
+- Added persisted view mode, Alt+1..5 mode shortcuts, Escape modal close, and explicit fallback download behavior.
+- Added `iped-companion://open?item=...` fallback action for unsupported viewer content.

@@ -157,5 +157,8 @@
       <div class="viewer-unsupported-sub">{{ mediaType || 'Unknown type' }}</div>
     </div>
     <a [href]="contentUrl()" download class="viewer-download-btn">Download</a>
+    @if (companionEnabled()) {
+      <a [href]="companionUrl()" class="viewer-download-btn" title="Open with IPED companion app">Open in companion</a>
+    }
   </div>
 }

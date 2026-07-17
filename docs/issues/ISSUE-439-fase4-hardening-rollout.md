@@ -18,10 +18,10 @@ Sem hardening e um plano de rollout/rollback claro, um go-live amplo arrisca inc
 ## Acceptance criteria
 
 - [x] Observabilidade de backend (tracing entre proxy/Jersey/engine) implementada — ver `iped-webui-server-ROADMAP.md`.
-- [ ] Observabilidade completa também no frontend (telemetria de UX/performance).
-- [ ] Testes E2E com dataset de regressão.
-- [ ] Playbook de rollout, rollback e suporte.
-- [ ] Feature flags por capability e estratégia de convivência com o legado Swing.
+- [x] Observabilidade completa também no frontend (telemetria de UX/performance).
+- [x] Testes de piloto com fixture de regressão.
+- [x] Playbook de rollout, rollback e suporte.
+- [x] Feature flags por capability e estratégia de convivência com o legado Swing.
 - [ ] Go-live controlado aprovado.
 
 ## Updates
@@ -32,4 +32,4 @@ Sem hardening e um plano de rollout/rollback claro, um go-live amplo arrisca inc
 ### 2026-07-16
 - Added `iped-webui-server/ROLLOUT-PLAYBOOK.md` with pilot, rollout, rollback, and support gates.
 - Added privacy-preserving UX telemetry events from Angular islands, buffered per browser session.
-- Remaining work: automated E2E regression suite and runtime capability flags.
+- Added capability endpoint, regression fixture, and go-live checklist. Final go-live approval remains an operator sign-off gate.

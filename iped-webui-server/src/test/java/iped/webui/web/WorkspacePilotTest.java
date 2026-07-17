@@ -121,4 +121,22 @@ class WorkspacePilotTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("\"searchId\"")));
     }
+
+    @Test
+    void pilotExposesCapabilityFlagsAndExportDialog() throws Exception {
+        mvc.perform(get("/workspace/capabilities"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("viewerSearch")))
+                .andExpect(content().string(containsString("companionFallback")));
+        mvc.perform(get("/workspace/export/dialog"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Start export")));
+    }
+
+    @Test
+    void viewerExposesCompanionFallbackForUnsupportedContent() throws Exception {
+        mvc.perform(get("/workspace/viewer").param("mode", "preview").param("itemId", "demo-case:42"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("companion-fallback=\"true\"")));
+    }
 }
