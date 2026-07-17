@@ -1,11 +1,11 @@
 # ISSUE-015: Graph store coordination with iped-engine-graph
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-additional-index-ROADMAP.md](../roadmaps/iped-additional-index-ROADMAP.md)
 - Roadmap section: Phase 2 — First-class connectors
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-16
 
 ## Summary
 
@@ -24,3 +24,6 @@ Without coordination, `iped-engine-graph` and the additional-index connector fra
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-additional-index-ROADMAP.md`, status set to `planned` based on the original `[ ]` marker.
+
+### 2026-07-16
+- Added shared `EvidenceRelationship` and `IGraphStoreConnector` contracts, a reference in-memory backend, and configurable `graph-store-backend` selection in `GraphConfiguration`.

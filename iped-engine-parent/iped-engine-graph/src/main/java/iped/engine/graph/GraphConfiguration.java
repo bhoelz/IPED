@@ -78,6 +78,9 @@ public class GraphConfiguration implements Serializable {
     @JsonAlias("post-generation-statements")
     private List<String> postGenerationStatements;
 
+    @JsonAlias("graph-store-backend")
+    private String graphStoreBackend = "neo4j";
+
     private Pattern excludeCategoriesPattern;
 
     private List<GraphEntity> entities;
@@ -212,6 +215,13 @@ public class GraphConfiguration implements Serializable {
 
     public List<String> getPostGenerationStatements() {
         return postGenerationStatements;
+    }
+
+    public String getGraphStoreBackend() { return graphStoreBackend; }
+
+    public void setGraphStoreBackend(String graphStoreBackend) {
+        if (graphStoreBackend == null || graphStoreBackend.isBlank()) throw new IllegalArgumentException("graph-store-backend is required");
+        this.graphStoreBackend = graphStoreBackend;
     }
 
     public List<GraphEntity> getEntities() {
