@@ -1,11 +1,11 @@
 # ISSUE-018: Distributed-processing support for per-segment additional-index output
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-additional-index-ROADMAP.md](../roadmaps/iped-additional-index-ROADMAP.md)
 - Roadmap section: Phase 3 — Operations
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-16
 
 ## Summary
 
@@ -24,3 +24,6 @@ Distributed agents process evidence in segments; there is currently no defined s
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-additional-index-ROADMAP.md`, status set to `planned` based on the original `[ ]` marker.
+
+### 2026-07-16
+- Added `AdditionalStoreSegment` envelopes and deterministic `SegmentOutputMerger` reference strategy (`MERGE_BY_ITEM`), preserving case, connector, and item-ID traceability.
