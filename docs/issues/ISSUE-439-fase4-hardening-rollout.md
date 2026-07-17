@@ -5,7 +5,7 @@
 - Roadmap section: Fase 4 - Hardening e Rollout
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-17
 
 ## Summary
 
@@ -33,3 +33,10 @@ Sem hardening e um plano de rollout/rollback claro, um go-live amplo arrisca inc
 - Added `iped-webui-server/ROLLOUT-PLAYBOOK.md` with pilot, rollout, rollback, and support gates.
 - Added privacy-preserving UX telemetry events from Angular islands, buffered per browser session.
 - Added capability endpoint, regression fixture, and go-live checklist. Final go-live approval remains an operator sign-off gate.
+
+### 2026-07-17
+- Executed `mvn --% -pl iped-webui-server -am verify` on the release JDK; build and test gates passed.
+- Recorded the regression fixture journeys and added an explicit operator sign-off block to
+  `iped-webui-server/ROLLOUT-CHECKLIST.md`.
+- Status remains `in_progress`: capability review, rollback artifact recording and analyst pilot
+  approval require an authorized operator decision and cannot be inferred from automated tests.
