@@ -28,7 +28,7 @@ Design doc: [ADDITIONAL_PROCESSING.md](../../iped-engine-parent/iped-additional-
 
 ## Phase 2 — First-class connectors — `planned`
 - [ISSUE-013](../issues/ISSUE-013-additional-index-vector-store-connector.md) — Vector store connector for semantic/similarity search — `done`
-- [ISSUE-014](../issues/ISSUE-014-additional-index-timeseries-store-connector.md) — Time-series store connector for temporal analytics — `planned`
+- [ISSUE-014](../issues/ISSUE-014-additional-index-timeseries-store-connector.md) — Time-series store connector for temporal analytics — `done`
 - [ISSUE-015](../issues/ISSUE-015-additional-index-graph-store-coordination.md) — Graph store coordination with iped-engine-graph — `planned`
 
 ## Phase 3 — Operations — `planned`
