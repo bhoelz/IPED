@@ -42,25 +42,25 @@
         <!--dependencies-->
         <tika.version>3.3.0</tika.version>
 <!--        <pdfbox.version>3.0.7</pdfbox.version>-->
-        <lucene.version>10.4.0</lucene.version>
+        <lucene.version>10.5.0</lucene.version>
         <sleuthkit.version>4.12.0.p1</sleuthkit.version>
         <libreoffice.version>7.2.2</libreoffice.version>
         <slf4j.version>2.0.18</slf4j.version>
-        <jackson.version>2.21.3</jackson.version>
+        <jackson.version>2.22.1</jackson.version>
         <log4j.version>2.26.0</log4j.version>
         <lombok.version>1.18.46</lombok.version>
-        <junit.version>6.0.3</junit.version>
+        <junit.version>6.1.2</junit.version>
         <icepdf.version>7.4.1</icepdf.version>
 
 <!--        <xerial.sqlite.version>3.41.2.2</xerial.sqlite.version>-->
-        <xerial.sqlite.version>3.53.1.0</xerial.sqlite.version>
+        <xerial.sqlite.version>3.53.2.0</xerial.sqlite.version>
         <!-- Current (jdk18on) and legacy (jdk15on) BouncyCastle artifact families both land
              on the reactor classpath transitively (jdk18on via libfqlite/Tika's newer modules,
              jdk15on via Tika's PDFBox-related modules). They are different Maven artifactIds,
              not just different versions of the same GA, so this dependencyManagement only
              converges duplicate versions *within* each family; it does not merge the two
              families into one (see DEPENDENCIES.md risk #4 follow-up). -->
-        <bouncycastle.jdk18on.version>1.83</bouncycastle.jdk18on.version>
+        <bouncycastle.jdk18on.version>1.85</bouncycastle.jdk18on.version>
         <bouncycastle.jdk15on.version>1.70</bouncycastle.jdk15on.version>
         <dockingframes.version>1.1.2</dockingframes.version>
         <telegram.version>1.0.14</telegram.version>
@@ -173,7 +173,7 @@
         <dependency>
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit5</artifactId>
-            <version>1.4.1</version>
+            <version>1.4.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
