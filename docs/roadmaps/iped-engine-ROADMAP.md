@@ -12,7 +12,7 @@
 - Source of truth for case/search semantics; this must stay true through 5.0.
 
 ## Phase 1 — Slim down to orchestration — `in_progress`
-- [ISSUE-082](../issues/ISSUE-082-move-datasource-code-to-siblings.md) — Move remaining datasource-specific code to sibling modules — `in_progress`
+- [ISSUE-082](../issues/ISSUE-082-move-datasource-code-to-siblings.md) — Move remaining datasource-specific code to sibling modules — `done`
 - [ISSUE-083](../issues/ISSUE-083-move-task-config-to-owning-modules.md) — Move task-specific configuration classes to owning iped-tasks-* modules — `in_progress`
 - [ISSUE-084](../issues/ISSUE-084-archunit-engine-boundary-rule.md) — ArchUnit rule forbidding engine imports of app/task-impl/parser-impl types — `done`
 - [ISSUE-085](../issues/ISSUE-085-finish-logging-migration.md) — Finish logging migration to @Slf4j/log4j2 in remaining classes — `done`

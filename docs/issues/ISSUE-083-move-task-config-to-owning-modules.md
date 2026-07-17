@@ -5,7 +5,7 @@
 - Roadmap section: Phase 1 — Slim down to orchestration
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-17
 
 ## Summary
 
@@ -24,3 +24,13 @@ Several task-specific config classes remain in `iped-engine` rather than their o
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-engine-ROADMAP.md`, status set to `in_progress`.
+
+### 2026-07-17
+- Confirmed the completed ownership moves covered by ISSUE-302 through ISSUE-306
+  (`ImageThumbTaskConfig`, `VideoThumbsConfig`, `HtmlReportTaskConfig`, `IndexTaskConfig`,
+  `ExportByKeywordsConfig` and `RegexTaskConfig`).
+- Remaining engine-owned configuration candidates were inventoried: `CategoryConfig`,
+  `CategoryToExpandConfig`, `ParsersConfig`, `ExternalParsersConfig`, `AIFiltersConfig`,
+  `FaceRecognitionConfig`, `AgeEstimationConfig` and `TaskInstallerConfig`.
+- Status remains `in_progress`: moving these classes requires redirecting engine/app consumers and
+  configuration schema ownership; this is the next implementation slice for ISSUE-083.
