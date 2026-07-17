@@ -26,7 +26,7 @@
     -->
     <properties>
         <maven.compiler.release>25</maven.compiler.release>
-        <spring-boot.version>4.0.6</spring-boot.version>
+        <spring-boot.version>4.1.0</spring-boot.version>
         <rocker.version>2.4.0</rocker.version>
         <frontend-plugin.version>2.0.0</frontend-plugin.version>
         <!-- npm workspace that produces the Vite island bundle -->
