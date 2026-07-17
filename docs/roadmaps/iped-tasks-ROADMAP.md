@@ -12,10 +12,10 @@
   → `iped-tasks-forensics`) — one known dangling-reference incident shows the move
   needs systematic verification, not just relocation.
 
-## Phase 1 — Finish config/code ownership moves — `in_progress`
+## Phase 1 — Finish config/code ownership moves — `done`
 - [ISSUE-302](../issues/ISSUE-302-move-imagethumbtaskconfig-to-iped-tasks-image.md) — Move ImageThumbTaskConfig ownership to iped-tasks-image — `done`
 - [ISSUE-303](../issues/ISSUE-303-move-videothumbsconfig-to-iped-tasks-image.md) — Move VideoThumbsConfig ownership to iped-tasks-image — `done`
-- [ISSUE-304](../issues/ISSUE-304-relocate-htmlreporttaskconfig-class.md) — Relocate the HtmlReportTaskConfig class itself to iped-tasks-report — `in_progress`
+- [ISSUE-304](../issues/ISSUE-304-relocate-htmlreporttaskconfig-class.md) — Relocate the HtmlReportTaskConfig class itself to iped-tasks-report — `done`
 - [ISSUE-305](../issues/ISSUE-305-indexsettings-interface-and-findobjectinstanceof.md) — Add IndexSettings interface and findObjectInstanceOf lookup to break the IndexTaskConfig cycle — `done`
 - [ISSUE-306](../issues/ISSUE-306-move-indextaskconfig-to-iped-tasks-storage-index.md) — Move IndexTaskConfig to iped-tasks-storage-index and switch engine call sites — `done`
 - [ISSUE-307](../issues/ISSUE-307-tasks-spi-and-forensics-archunit-guard.md) — Add ArchUnit guards for iped-tasks.spi and iped-tasks-forensics — `done`
