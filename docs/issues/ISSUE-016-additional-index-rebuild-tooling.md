@@ -1,11 +1,11 @@
 # ISSUE-016: Rebuild tooling for additional indexes from the case index
 
-- Status: planned
+- Status: done
 - Roadmap: [iped-additional-index-ROADMAP.md](../roadmaps/iped-additional-index-ROADMAP.md)
 - Roadmap section: Phase 3 — Operations
 - Owner: unassigned
 - Created: 2026-06-21
-- Updated: 2026-06-21
+- Updated: 2026-07-16
 
 ## Summary
 
@@ -24,3 +24,6 @@ There is currently no way to rebuild an additional index independently of full e
 
 ### 2026-06-21
 - Issue created during roadmap consolidation, extracted from `iped-additional-index-ROADMAP.md`, status set to `planned` based on the original `[ ]` marker.
+
+### 2026-07-16
+- Added `AdditionalIndexRebuildTool`, projection-based rebuild reports, and a test proving additional records can be regenerated without reopening original evidence.

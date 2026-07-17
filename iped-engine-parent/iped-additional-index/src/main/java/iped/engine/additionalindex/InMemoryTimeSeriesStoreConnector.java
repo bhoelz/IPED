@@ -23,5 +23,5 @@ public final class InMemoryTimeSeriesStoreConnector implements ITimeSeriesStoreC
     @Override public void commit() { }
     @Override public boolean supportsItemIdTraceability() { return true; }
     @Override public AdditionalStoreConsistencyPolicy consistencyPolicy() { return AdditionalStoreConsistencyPolicy.COMMIT_ATOMIC; }
-    @Override public void close() { events.clear(); }
+    @Override public void close() { }
 }
