@@ -6,6 +6,7 @@ import iped.engine.config.ConfigurationManager;
 import iped.engine.config.LocalConfig;
 import iped.engine.data.CaseData;
 import iped.engine.data.IPEDSource;
+import iped.engine.osint.EngineOsintServices;
 import iped.engine.search.IPEDSearcher;
 import iped.engine.task.index.IndexItem.KnnVector;
 import iped.parsers.python.PythonParser;
@@ -175,6 +176,67 @@ public class PythonTask extends AbstractTask {
       }
     }
   }
+
+    private Jep getJep() throws JepException {
+        return getJep(true);
+    }
+
+    private Jep getJep(boolean init) throws JepException {
+        Jep jep = PythonParser.getJep();
+        long threadId = Thread.currentThread().getId();
+        if (scriptLoaded.get(threadId) == null) {
+            loadScript(jep, init);
+            scriptLoaded.put(threadId, true);
+        }
+        return jep;
+    }
+
+    private void setGlobalVars(Jep jep) throws JepException {
+        setGlobalVar(jep, "caseData", this.caseData);
+        setGlobalVar(jep, "moduleDir", this.output);
+        setGlobalVar(jep, "worker", this.worker);
+        setGlobalVar(jep, "stats", this.stats);
+        setGlobalVar(jep, "logger", log);
+        setGlobalVar(jep, "javaConverter", new Converter());
+        setGlobalVar(jep, "ImageUtil", new ImageUtil());
+        setGlobalVar(jep, "osint", EngineOsintServices.scriptingFacade(this.output));
+
+        LocalConfig localConfig = ConfigurationManager.get().findObject(LocalConfig.class);
+        setGlobalVar(jep, "numThreads", Integer.valueOf(localConfig.getNumThreads()));
+    }
+
+    private void setGlobalVar(Jep jep, String name, Object obj) throws JepException {
+        jep.set(name, obj); // $NON-NLS-1$
+        globals.add(name);
+    }
+
+    private void setModuleVar(Jep jep, String moduleName, String name, Object obj) throws JepException {
+        setGlobalVar(jep, name, obj);
+        jep.eval(moduleName + "." + name + " = " + name);
+    }
+
+    private void loadScript(Jep jep, boolean init) throws JepException {
+
+        if (jep == null) {
+            return;
+        }
+
+        setGlobalVars(jep);
+
+        jep.eval("import sys");
+        jep.eval("sys.path.append('" + scriptFile.getParentFile().getAbsolutePath().replace("\\", "\\\\") + "')");
+
+        String className = scriptFile.getName().replace(".py","");
+        moduleName = className;
+
+        jep.eval("import " + moduleName);
+
+        // imports the script responsible for holding the instances per worker globally
+        jep.eval("from PythonTaskInstancesHolder import PythonTaskInstancesHolder");
+        jep.eval("PythonTaskInstancesHolder = PythonTaskInstancesHolder()");
+
+        // sets logger object
+        jep.eval("PythonTaskInstancesHolder.logger = logger");
 
   @Override
   public String getName() {

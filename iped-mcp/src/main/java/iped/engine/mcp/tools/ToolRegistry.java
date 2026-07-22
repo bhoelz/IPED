@@ -26,11 +26,17 @@ public class ToolRegistry {
     all.addAll(new CaseTools(client, audit, session).specifications());
     all.addAll(new SearchTools(client, audit, session).specifications());
     all.addAll(new DocumentTools(client, audit, session).specifications());
+    all.addAll(new OsintTools(client, audit, session).specifications());
     // BookmarkTools registers read specs always; write specs only when BOOKMARKS is granted
     all.addAll(new BookmarkTools(client, audit, session).specifications());
     // Write tools — gated by capability
     if (session.can(GrantedCapabilities.BOOKMARKS)) {
       all.addAll(new TagTools(client, audit, session).specifications());
+    }
+    if (session.can(GrantedCapabilities.JOBS)) {
+      all.addAll(new JobTools(client, audit, session).specifications());
+    }
+    return rateLimit(all);
     }
     if (session.can(GrantedCapabilities.JOBS)) {
       all.addAll(new JobTools(client, audit, session).specifications());

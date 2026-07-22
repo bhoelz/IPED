@@ -22,6 +22,7 @@ import iped.configuration.Configurable;
 import iped.data.IItem;
 import iped.engine.config.ConfigurationManager;
 import iped.engine.data.IPEDSource;
+import iped.engine.osint.EngineOsintServices;
 import iped.engine.search.IPEDSearcher;
 import java.io.*;
 import java.util.Collections;
@@ -83,6 +84,7 @@ public class ScriptTask extends AbstractTask {
     engine.put("moduleDir", this.output); // $NON-NLS-1$
     engine.put("worker", this.worker); // $NON-NLS-1$
     engine.put("stats", this.stats); // $NON-NLS-1$
+    engine.put("osint", EngineOsintServices.scriptingFacade(this.output)); //$NON-NLS-1$
 
     scriptName = (String) inv.invokeFunction("getName"); // $NON-NLS-1$
 

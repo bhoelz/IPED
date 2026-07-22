@@ -79,10 +79,62 @@ class WebApiStub extends WebApiClient {
     return List.of("review", "suspicious");
   }
 
-  @Override
-  public void tagItem(String sourceId, int docId, String tag) {
-    calls.add("tagItem:" + sourceId + ":" + docId + ":" + tag);
-  }
+    @Override
+    public List<Map<String, Object>> listOsintPlugins() {
+        calls.add("listOsintPlugins");
+        return List.of(Map.of(
+                "id", "basic-profile-lookup",
+                "displayName", "Basic Profile Lookup",
+                "supportedIndicatorTypes", List.of("USERNAME", "EMAIL", "DOMAIN", "URL")));
+    }
+
+    @Override
+    public Map<String, Object> getOsintPlugin(String pluginId) {
+        calls.add("getOsintPlugin:" + pluginId);
+        return Map.of(
+                "id", pluginId,
+                "displayName", "Basic Profile Lookup",
+                "description", "Stub OSINT plugin");
+    }
+
+    @Override
+    public Map<String, Object> searchOsint(Map<String, Object> body) {
+        calls.add("searchOsint:" + body.get("sourceId"));
+        return Map.of(
+                "sourceId", body.get("sourceId"),
+                "itemId", body.getOrDefault("itemId", 7),
+                "results", List.of(Map.of(
+                        "executionId", "osint-1",
+                        "pluginId", "basic-profile-lookup",
+                        "indicatorType", body.getOrDefault("indicatorType", "USERNAME"),
+                        "normalizedValue", body.getOrDefault("value", "alice"),
+                        "hits", List.of(Map.of("source", "github", "title", "github lookup")))));
+    }
+
+    @Override
+    public Map<String, Object> listOsintResults(String sourceId, Integer itemId, String pluginId, int limit) {
+        calls.add("listOsintResults:" + sourceId);
+        return Map.of("results", List.of(Map.of(
+                "executionId", "osint-1",
+                "pluginId", pluginId == null ? "basic-profile-lookup" : pluginId,
+                "itemId", itemId == null ? 7 : itemId,
+                "sourceId", sourceId == null ? "demo-1" : sourceId)));
+    }
+
+    @Override
+    public Map<String, Object> getOsintResult(String sourceId, String executionId) {
+        calls.add("getOsintResult:" + executionId);
+        return Map.of(
+                "executionId", executionId,
+                "pluginId", "basic-profile-lookup",
+                "sourceId", sourceId == null ? "demo-1" : sourceId,
+                "status", "completed");
+    }
+
+    @Override
+    public void tagItem(String sourceId, int docId, String tag) {
+        calls.add("tagItem:" + sourceId + ":" + docId + ":" + tag);
+    }
 
   @Override
   public void untagItem(String sourceId, int docId, String tag) {
