@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.googlecode.libphonenumber</groupId>
             <artifactId>libphonenumber</artifactId>
-            <version>8.9.14</version>
+            <version>9.0.35</version>
         </dependency>
         <dependency>
             <groupId>br.dpf</groupId>
@@ -64,7 +64,7 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
-            <version>1.3</version>
+            <version>3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -31,8 +31,8 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.html.HtmlEncodingDetector;
 import org.apache.tika.parser.microsoft.rtf.RTFParser;
-import org.bbottema.rtftohtml.RTF2HTMLConverter;
-import org.bbottema.rtftohtml.impl.RTF2HTMLConverterRFCCompliant;
+import org.bbottema.rtftohtml.OutlookRtfToHtmlConverter;
+import org.bbottema.rtftohtml.RtfToHtmlConverter;
 
 /**
  * @author guilherme.dutra
@@ -445,9 +445,9 @@ public class MsgViewer extends HtmlViewer {
       try {
         corpo = getTikaRTFToHTML(msg).trim();
         if (corpo.isEmpty() || hasOnlyBasicChars(corpo)) {
-          RTF2HTMLConverter converter = RTF2HTMLConverterRFCCompliant.INSTANCE;
+          RtfToHtmlConverter converter = OutlookRtfToHtmlConverter.INSTANCE;
           String rtfString = msg.getRtfBody().trim();
-          corpo = converter.rtf2html(rtfString);
+          corpo = converter.toHtml(rtfString);
         }
         if (!corpo.matches(".*<(br|BR)/?>.*")) {
           corpo = "<pre>" + corpo + "</pre>";

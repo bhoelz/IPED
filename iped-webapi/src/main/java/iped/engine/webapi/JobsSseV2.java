@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import iped.engine.webapi.JobRegistry.JobEntry;
 import iped.engine.webapi.JobRegistry.JobEvent;
+import java.io.IOException;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -34,7 +35,7 @@ public class JobsSseV2 {
   @ApiOperation("SSE stream for real-time job progress")
   @GET
   @Produces(MediaType.SERVER_SENT_EVENTS)
-  public void events(@PathParam("id") String id, @Context SseEventSink sink) {
+  public void events(@PathParam("id") String id, @Context SseEventSink sink) throws IOException {
     var jobOpt = JobRegistry.get(id);
     if (jobOpt.isEmpty()) {
       OutboundSseEvent notFound =

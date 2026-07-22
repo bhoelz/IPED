@@ -6,6 +6,7 @@ import ezvcard.io.chain.ChainingHtmlWriter;
 import ezvcard.property.*;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import iped.parsers.util.IndentityHtmlParser;
 import iped.parsers.util.Messages;
 import iped.properties.ExtraProperties;
@@ -73,7 +74,11 @@ public class VCardParser extends AbstractParser {
       ByteArrayOutputStream bout = new ByteArrayOutputStream();
       try (PrintWriter out =
           new PrintWriter(new OutputStreamWriter(bout, StandardCharsets.UTF_8))) {
-        new ChainingHtmlWriter(vcards).template(TEMPLATE).go(out);
+        try {
+          new ChainingHtmlWriter(vcards).template(TEMPLATE).go(out);
+        } catch (TemplateException e) {
+          throw new TikaException("Unable to render vCard HTML", e);
+        }
       }
       InputStream is = new ByteArrayInputStream(bout.toByteArray());
 
