@@ -1,0 +1,53 @@
+name: Quality contract — advisory
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detectar segredos (bloqueante)
+        uses: gitleaks/gitleaks-action@v2
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Build, testes, qualidade e cobertura
+        continue-on-error: true
+        run: |
+          if [ -x ./mvnw ]; then ./mvnw verify; else mvn verify; fi
+      - name: SAST e dependências (advisory)
+        continue-on-error: true
+        run: |
+          mkdir -p .quality
+          pipx run semgrep --config auto --json --output .quality/semgrep.json .
+          npx --yes @google/osv-scanner scan --format json --output .quality/osv.json .
+      - name: Publicar resumo e contrato
+        if: always()
+        run: |
+          mkdir -p .quality
+          python - <<'PY'
+          import json, os
+          report={"contractVersion":"1.0","project":os.environ["GITHUB_REPOSITORY"],"commit":os.environ["GITHUB_SHA"],"mode":"ADVISORY","gates":{"secrets":"blocking","quality":"advisory","coverage":"advisory","sast":"advisory","dependencies":"advisory"}}
+          open(".quality/quality-report.json","w").write(json.dumps(report,indent=2)+"\n")
+          PY
+          echo "## Quality contract (advisory)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Gitleaks bloqueia; qualidade, cobertura, SAST e dependências estão em baseline." >> "$GITHUB_STEP_SUMMARY"
+      - name: Reter relatórios por 30 dias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports
+          path: .quality/
+          retention-days: 30

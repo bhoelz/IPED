@@ -13,3 +13,6 @@ iped-webui/node_modules/
 iped-webui/dist/
 # Claude Code project directory (local settings, worktrees — not for VCS)
 .claude/
+
+# CI quality artifacts
+.quality/
